@@ -1,0 +1,10 @@
+# Root‐inherited
+node_modules/
+dist/
+*.log
+
+# TypeScript artifacts
+*.tsbuildinfo
+
+# Editor files
+.vscode/

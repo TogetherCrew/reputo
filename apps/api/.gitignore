@@ -1,0 +1,24 @@
+# Dependencies
+node_modules/
+
+# Build Output
+dist/
+**/*.js
+**/*.js.map
+**/*.d.ts
+
+# Environment
+.env
+.env.*.local
+
+# Logs
+logs/
+*.log
+
+# Test outputs
+coverage/
+jest.config.ts
+
+# Editor & OS
+.vscode/
+.DS_Store

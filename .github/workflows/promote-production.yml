@@ -1,0 +1,73 @@
+name: Promote to Production 🚀
+run-name: Promote to Production 🚀
+
+on:
+    workflow_dispatch:
+        inputs:
+            commit:
+                description: 'Commit SHA of the staging image to promote'
+                required: true
+                type: string
+
+concurrency:
+    group: ci-${{ github.ref }}
+    cancel-in-progress: true
+
+permissions:
+    contents: read
+    packages: write
+
+env:
+    REGISTRY: ghcr.io
+    IMAGE_PREFIX: ghcr.io/togethercrew/reputo
+
+jobs:
+    promote:
+        runs-on: ubuntu-latest
+        environment:
+            name: production
+            url: https://logid.xyz
+        strategy:
+            matrix:
+                image: [api, ui, workflows]
+        steps:
+            - name: Login to GitHub Container Registry
+              uses: docker/login-action@v3
+              with:
+                  registry: ghcr.io
+                  username: ${{ github.actor }}
+                  password: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Promote ${{ matrix.image }} to production
+              run: |
+                  SOURCE_TAG="main-${{ inputs.commit }}"
+                  PROD_TAG="prod-${{ inputs.commit }}"
+
+                  echo "Promoting ${{ matrix.image }} from $SOURCE_TAG to $PROD_TAG"
+
+                  # Pull the staging image
+                  docker pull ${{ env.IMAGE_PREFIX }}/${{ matrix.image }}:$SOURCE_TAG
+
+                  # Tag for production
+                  docker tag ${{ env.IMAGE_PREFIX }}/${{ matrix.image }}:$SOURCE_TAG ${{ env.IMAGE_PREFIX }}/${{ matrix.image }}:$PROD_TAG
+                  docker tag ${{ env.IMAGE_PREFIX }}/${{ matrix.image }}:$SOURCE_TAG ${{ env.IMAGE_PREFIX }}/${{ matrix.image }}:production
+
+                  # Push production tags
+                  docker push ${{ env.IMAGE_PREFIX }}/${{ matrix.image }}:$PROD_TAG
+                  docker push ${{ env.IMAGE_PREFIX }}/${{ matrix.image }}:production
+
+                  echo "Successfully promoted ${{ matrix.image }} to production"
+
+    wait-for-watchtower:
+        name: wait-for-watchtower
+        needs: promote
+        runs-on: ubuntu-latest
+        environment:
+            name: production
+            url: https://logid.xyz
+        steps:
+            - name: Wait for Watchtower to pull the new image
+              run: sleep 90
+            - name: “✅ Deployment should now be live”
+              run: |
+                  echo "✅ Your app should be up at ${{ job.environment.url }}"

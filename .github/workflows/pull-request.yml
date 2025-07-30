@@ -1,0 +1,21 @@
+name: Pull Request 🔍️
+run-name: Pull Request 🔍️
+
+on:
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality-gate:
+    uses: ./.github/workflows/_quality-gate.yml
+
+  build:
+    needs: quality-gate
+    uses: ./.github/workflows/_build-and-push.yml
+    with:
+      ref: ${{ github.sha }}
+      push: false
