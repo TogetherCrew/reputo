@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { helloWorld } from '@reptuo/reputation-algorithms';
+import { helloWorld } from '@reputo/reputation-algorithms';
 
 @Injectable()
 export class AppService {
