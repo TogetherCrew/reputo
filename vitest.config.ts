@@ -2,6 +2,7 @@ import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
     test: {
+        projects: ['packages/*', 'apps/*'],
         reporters: ['default'],
         coverage: {
             provider: 'v8',
@@ -9,6 +10,5 @@ export default defineConfig({
             reportsDirectory: './coverage',
         },
         watch: false,
-        projects: ['packages/*', 'apps/*'],
     },
 })
