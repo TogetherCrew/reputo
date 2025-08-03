@@ -7,10 +7,6 @@ on:
             ref: { type: string, required: true }
             push: { type: boolean, required: true }
             tags: { type: string, required: false, default: '' }
-        outputs:
-            image-tag:
-                description: 'The tag used for the built images'
-                value: ${{ jobs.docker-images.outputs.image-tag }}
 
 env:
     IMAGE_PREFIX: ghcr.io/togethercrew/reputo
