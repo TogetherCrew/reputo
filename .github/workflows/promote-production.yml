@@ -24,9 +24,6 @@ env:
 jobs:
     promote:
         runs-on: ubuntu-latest
-        environment:
-            name: production
-            url: https://logid.xyz
         strategy:
             matrix:
                 image: [api, ui, workflows]
