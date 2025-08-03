@@ -1,0 +1,29 @@
+{
+    "name": "@reputo/reputation-algorithms",
+    "version": "1.0.0",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "private": "true",
+    "exports": {
+        ".": {
+            "import": "./dist/index.js",
+            "require": "./dist/index.js"
+        }
+    },
+    "scripts": {
+        "build": "tsc -p tsconfig.json",
+        "dev": "tsx watch src/index.ts",
+        "check": "pnpm exec biome check --write",
+        "format": "pnpm exec biome format --write",
+        "lint": "pnpm exec biome lint --write",
+        "test": "echo \"no tests yet\"",
+        "release": "semantic-release"
+    },
+    "devDependencies": {
+        "tsx": "^4.7.0"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "packageManager": "pnpm@10.12.4"
+}

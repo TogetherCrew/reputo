@@ -1,0 +1,28 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+
+# Your rule content
+Overview
+This monorepo is managed with pnpm workspaces and contains four codebases:
+• apps/api — backend service written in NestJS
+• apps/ui — web client built with Vite and TypeScript
+• apps/workflows — background workflows using the Temporal TypeScript SDK
+• packages/reputation-algorithms — shared ranking and scoring logic in TypeScript
+
+Tooling and Infrastructure
+• Containerization: every service is packaged and run as a Docker image.
+• CI/CD: GitHub Actions builds and pushes images, then drives environment promotion.
+
+Branch and Environment Strategy
+• Preview — Pull Preview spins up an ephemeral environment per PR for design and QA feedback.
+• Staging — triggered by merges to main; image tagged latest; Watchtower automatically pulls and restarts containers for regression and release testing.
+• Production — promoted manually; image tagged production; Watchtower redeploys the vetted staging image, giving a zero-rebuild release that runs the exact bits tested in staging.
+
+Branching Model
+GitHub Flow with short-lived feature branches that open pull requests, go through review, and merge into main.
+
+Rollbacks
+Re-tag the previous production image and let Watchtower redeploy, enabling fast, reproducible rollbacks.

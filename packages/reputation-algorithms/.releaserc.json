@@ -1,0 +1,18 @@
+{
+    "extends": "semantic-release-monorepo",
+    "branches": ["main"],
+
+    "plugins": [
+        "@semantic-release/commit-analyzer",
+        "semantic-release-commits-lint",
+        "@semantic-release/release-notes-generator",
+        ["@semantic-release/changelog"],
+        [
+            "@semantic-release/git",
+            {
+                "assets": ["package.json", "CHANGELOG.md"],
+                "message": "chore(release): Scope(reputation-algorithms) ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
+            }
+        ]
+    ]
+}

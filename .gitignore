@@ -1,0 +1,39 @@
+# Node modules & lockfiles
+node_modules/
+
+# Build outputs
+dist/
+**/dist/
+
+# Logs
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Editor/OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Docker
+docker-compose.override.yml
+
+# ENV
+.env*
+**/.env*
+**/*.env
+
+# Husky
+.husky/
+
+# Changesets
+changeset/
+
+# Coverage
+coverage/
+
+
+#env
+*.env
