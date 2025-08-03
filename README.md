@@ -471,18 +471,7 @@ Fast rollback capability:
 
 ### Commit Convention
 
-We use [Conventional Commits](https://conventionalcommits.org/) enforced by commitlint:
-
-```
-feat(scope): add new feature
-fix(scope): bug fix
-docs(scope): documentation update
-style(scope): formatting changes
-refactor(scope): code refactoring
-test(scope): add or update tests
-chore(scope): maintenance tasks
-ci(scope): CI/CD pipeline changes
-```
+We use [Conventional Commits](https://conventionalcommits.org/) enforced by commitlint.
 
 **Scopes**: `api`, `ui`, `workflows`, `algorithms`, `docker`, `ci`
 
