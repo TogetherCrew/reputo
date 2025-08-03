@@ -22,11 +22,10 @@
 6. [Environment Setup](#environment-setup)
 7. [Docker & Infrastructure](#docker--infrastructure)
 8. [Testing](#testing)
-9. [Architecture](#architecture)
-10. [Deployment & Release](#deployment--release)
-11. [Contributing](#contributing)
-12. [License](#license)
-13. [Team](#team)
+9. [Deployment & Release](#deployment--release)
+10. [Contributing](#contributing)
+11. [License](#license)
+12. [Team](#team)
 
 ---
 
