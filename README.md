@@ -1,4 +1,4 @@
-![Reputo](.github/assets/banner.png 'Reputo')
+![Reputo](.github/assets/banner.png "Reputo")
 
 <p align="center">
   <br/>
@@ -36,6 +36,9 @@
 ```bash
 # Install dependencies
 pnpm install
+
+# Build project
+pnpm build
 
 # Run all services in parallel
 pnpm dev
@@ -240,9 +243,9 @@ We follow a three-tier deployment strategy with automated promotion:
 
 - **Trigger**: Merge to `main` branch (automated)
 - **URL**:
-    - UI: [staging.logid.xyz](https://staging.logid.xyz)
-    - API: [api-staging.logid.xyz](https://api-staging.logid.xyz)
-    - Traefik: [traefik-staging.logid.xyz/dashboard](https://traefik-staging.logid.xyz/dashboard/)
+  - UI: [staging.logid.xyz](https://staging.logid.xyz)
+  - API: [api-staging.logid.xyz](https://api-staging.logid.xyz)
+  - Traefik: [traefik-staging.logid.xyz/dashboard](https://traefik-staging.logid.xyz/dashboard/)
 - **Deployment**: Watchtower auto-pulls `staging` tagged images
 - **Purpose**: Integration testing and release preparation
 
@@ -250,9 +253,9 @@ We follow a three-tier deployment strategy with automated promotion:
 
 - **Trigger**: Manual workflow dispatch with commit SHA
 - **URL**:
-    - UI: [logid.xyz](https://logid.xyz)
-    - API: [api.logid.xyz](https://api.logid.xyz)
-    - Traefik: [traefik.logid.xyz/dashboard](https://traefik.logid.xyz/dashboard/)
+  - UI: [logid.xyz](https://logid.xyz)
+  - API: [api.logid.xyz](https://api.logid.xyz)
+  - Traefik: [traefik.logid.xyz/dashboard](https://traefik.logid.xyz/dashboard/)
 - **Process**: Promotes staging images with `production` tags
 - **Purpose**: Live user-facing environment
 
@@ -391,19 +394,21 @@ pnpm --filter @reputo/api test
 ### Automated Staging Deployment
 
 1. **Quality Gate**: Merge to `main` triggers comprehensive testing
-    - Parallel linting, formatting, type checking
-    - Full test suite execution with coverage
-    - Multi-target Docker builds
+
+   - Parallel linting, formatting, type checking
+   - Full test suite execution with coverage
+   - Multi-target Docker builds
 
 2. **Build & Push**: After quality gate passes
-    - Multi-stage Docker image builds
-    - Push to GitHub Container Registry with `staging` tag
-    - Semantic versioning and changelog generation
+
+   - Multi-stage Docker image builds
+   - Push to GitHub Container Registry with `staging` tag
+   - Semantic versioning and changelog generation
 
 3. **Staging Deployment**: Watchtower auto-deployment
-    - Detects new `staging` images
-    - Rolling restart of containers
-    - Health check verification
+   - Detects new `staging` images
+   - Rolling restart of containers
+   - Health check verification
 
 ### Manual Production Promotion
 
@@ -411,22 +416,23 @@ pnpm --filter @reputo/api test
 
 2. **Trigger promotion** workflow:
 
-    ```bash
-    # Via GitHub CLI
-    gh workflow run promote-production.yml -f commit=abc123...
+   ```bash
+   # Via GitHub CLI
+   gh workflow run promote-production.yml -f commit=abc123...
 
-    # Via GitHub UI
-    Actions → Promote to Production → Run workflow
-    ```
+   # Via GitHub UI
+   Actions → Promote to Production → Run workflow
+   ```
 
 3. **Automated promotion**:
-    - Re-tags staging images with `production` tag
-    - Watchtower detects and deploys to production
-    - Zero-rebuild deployment (exact staging artifacts)
+
+   - Re-tags staging images with `production` tag
+   - Watchtower detects and deploys to production
+   - Zero-rebuild deployment (exact staging artifacts)
 
 4. **Verification**:
-    - Health checks validate deployment
-    - Rollback capability via image re-tagging
+   - Health checks validate deployment
+   - Rollback capability via image re-tagging
 
 ### Image Tagging Strategy
 
@@ -451,20 +457,21 @@ Fast rollback capability:
 
 1. **Create feature branch** from `main`
 
-    ```bash
-    git checkout -b feature/your-feature-name
-    ```
+   ```bash
+   git checkout -b feature/your-feature-name
+   ```
 
 2. **Make changes** with conventional commits
 
-    ```bash
-    git commit -m "feat(api): add user authentication endpoint"
-    ```
+   ```bash
+   git commit -m "feat(api): add user authentication endpoint"
+   ```
 
 3. **Open Pull Request** to `main`
-    - Add `pullpreview` label for preview deployment
-    - Ensure CI passes (quality gate + tests)
-    - Request review from maintainers
+
+   - Add `pullpreview` label for preview deployment
+   - Ensure CI passes (quality gate + tests)
+   - Request review from maintainers
 
 4. **Merge** after approval (squash merge preferred)
 
