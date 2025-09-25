@@ -20,7 +20,10 @@
         "release": "semantic-release"
     },
     "devDependencies": {
-        "tsx": "^4.7.0"
+        "jiti": "^2.6.0",
+        "typedoc": "^0.28.13",
+        "typescript": "^5.9.2",
+        "vitest": "^3.2.4"
     },
     "keywords": [],
     "author": "",
