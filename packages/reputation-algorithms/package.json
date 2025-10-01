@@ -17,6 +17,14 @@
         "check": "pnpm exec biome check --write",
         "format": "pnpm exec biome format --write",
         "lint": "pnpm exec biome lint --write",
+        "build": "tsc -p tsconfig.json",
+        "prebuild": "pnpm compile:validator && pnpm gen:registry",
+        "compile:validator": "node --loader jiti/esm ./src/build/compile-validator.ts",
+        "gen:registry": "node --loader jiti/esm ./src/build/gen-registry.ts",
+        "algorithm:new": "node --loader jiti/esm ./src/build/scaffold-algorithm.ts",
+        "test": "vitest run",
+        "test:watch": "vitest",
+        "test:algorithms": "vitest run -t \"@registry\"",
         "release": "semantic-release"
     },
     "devDependencies": {
