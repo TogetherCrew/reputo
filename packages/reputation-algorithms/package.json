@@ -20,6 +20,10 @@
         "gen:registry": "tsx src/build/gen-registry.ts",
         "algorithm:new": "tsx src/build/scaffold-algorithm.ts",
         "test:algorithms": "tsx src/build/validate-registry.ts",
+        "test": "vitest run",
+        "test:watch": "vitest",
+        "test:coverage": "vitest run --coverage",
+        "typecheck": "tsc --noEmit",
         "prebuild": "pnpm gen:registry && pnpm test:algorithms",
         "build": "tsc",
         "release": "semantic-release"
