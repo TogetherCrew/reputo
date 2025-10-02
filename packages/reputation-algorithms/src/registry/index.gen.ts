@@ -3,12 +3,6 @@
 
 import type { AlgorithmDefinition } from '../api/types.js';
 
-export const REGISTRY_INDEX = {
-  voting_engagement: ['1.0.0'],
-} as const;
+export const REGISTRY_INDEX = {} as const;
 
-import _voting_engagement_1_0_0 from './voting_engagement/1.0.0.json';
-
-export const _DEFINITIONS: Record<string, AlgorithmDefinition> = {
-  'voting_engagement@1.0.0': _voting_engagement_1_0_0 as AlgorithmDefinition,
-} as const;
+export const _DEFINITIONS: Record<string, AlgorithmDefinition> = {} as const;
