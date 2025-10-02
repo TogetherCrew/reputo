@@ -18,6 +18,8 @@
         "format": "pnpm exec biome format --write",
         "lint": "pnpm exec biome lint --write",
         "gen:registry": "tsx src/build/gen-registry.ts",
+        "test:algorithms": "tsx src/build/validate-registry.ts",
+        "prebuild": "pnpm gen:registry && pnpm test:algorithms",
         "build": "tsc",
         "release": "semantic-release"
     },
