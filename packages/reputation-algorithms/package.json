@@ -18,13 +18,6 @@
         "format": "pnpm exec biome format --write",
         "lint": "pnpm exec biome lint --write",
         "build": "tsc",
-        "prebuild": "tsc",
-        "compile:validator": "tsc",
-        "gen:registry": "tsc",
-        "algorithm:new": "tsc",
-        "test": "vitest run",
-        "test:watch": "vitest",
-        "test:algorithms": "vitest run -t \"@registry\"",
         "release": "semantic-release"
     },
     "devDependencies": {
