@@ -1,0 +1,14 @@
+{
+    "key": "missing_fields",
+    "name": "Missing Fields",
+    "description": "Algorithm missing required category field",
+    "version": "1.0.0",
+    "inputs": [],
+    "outputs": [
+        {
+            "key": "result",
+            "type": "score_map",
+            "entity": "user"
+        }
+    ]
+}

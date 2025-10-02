@@ -1,0 +1,15 @@
+{
+    "key": "invalid_version",
+    "name": "Invalid Version",
+    "category": "custom",
+    "description": "Algorithm with invalid version",
+    "version": "v1.0",
+    "inputs": [],
+    "outputs": [
+        {
+            "key": "result",
+            "type": "score_map",
+            "entity": "user"
+        }
+    ]
+}
