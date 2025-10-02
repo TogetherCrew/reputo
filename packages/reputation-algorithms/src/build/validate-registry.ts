@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import Ajv from 'ajv';
+import Ajv2020 from 'ajv/dist/2020.js';
 import addFormats from 'ajv-formats';
 
 import {
@@ -22,11 +22,13 @@ interface RegistryEntry {
   content: unknown;
 }
 
-function createValidator(): Ajv {
-  const ajv = new Ajv({
+function createValidator(): Ajv2020 {
+  const ajv = new Ajv2020({
     allErrors: true,
     verbose: true,
     strict: true,
+    strictRequired: false,
+    allowUnionTypes: true,
     validateFormats: true,
   });
 
@@ -71,7 +73,7 @@ function scanRegistryFiles(registryPath: string): RegistryEntry[] {
   return entries;
 }
 
-function validateEntry(entry: RegistryEntry, validator: Ajv): void {
+function validateEntry(entry: RegistryEntry, validator: Ajv2020): void {
   const { key: folderKey, version: filenameVersion, filePath, content } = entry;
 
   if (typeof content !== 'object' || content === null) {

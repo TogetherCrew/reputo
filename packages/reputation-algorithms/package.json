@@ -4,7 +4,7 @@
     "description": "Framework-agnostic TypeScript library for describing, validating, and discovering versioned algorithm definitions via a read-only registry. JSON Schema–driven, Ajv-validated, identical API in Node and the browser; no code execution.",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
-    "private": "true",
+    "private": true,
     "exports": {
         ".": {
             "types": "./dist/index.d.ts",
