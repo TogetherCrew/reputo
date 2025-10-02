@@ -21,6 +21,8 @@
         "release": "semantic-release"
     },
     "devDependencies": {
+        "ajv": "^8.17.1",
+        "ajv-formats": "^3.0.1",
         "jiti": "^2.6.0",
         "typedoc": "^0.28.13",
         "typescript": "^5.9.2",
