@@ -16,11 +16,11 @@ export type {
   NotFoundErrorCode,
   ValidationErrorDetail,
   VersionString,
-} from './api';
+} from './api/index.js';
 export {
   getAlgorithmDefinition,
   listAlgorithmDefinitionKeys,
   listAlgorithmDefinitionVersions,
   NotFoundError,
   resolveLatestVersion,
-} from './api';
+} from './api/index.js';
