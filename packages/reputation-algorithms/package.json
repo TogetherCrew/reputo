@@ -18,6 +18,7 @@
         "format": "pnpm exec biome format --write",
         "lint": "pnpm exec biome lint --write",
         "gen:registry": "tsx src/build/gen-registry.ts",
+        "algorithm:new": "tsx src/build/scaffold-algorithm.ts",
         "test:algorithms": "tsx src/build/validate-registry.ts",
         "prebuild": "pnpm gen:registry && pnpm test:algorithms",
         "build": "tsc",
