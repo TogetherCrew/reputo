@@ -17,6 +17,7 @@
         "check": "pnpm exec biome check --write",
         "format": "pnpm exec biome format --write",
         "lint": "pnpm exec biome lint --write",
+        "gen:registry": "tsx src/build/gen-registry.ts",
         "build": "tsc",
         "release": "semantic-release"
     },
@@ -24,6 +25,7 @@
         "ajv": "^8.17.1",
         "ajv-formats": "^3.0.1",
         "jiti": "^2.6.0",
+        "tsx": "^4.7.0",
         "typedoc": "^0.28.13",
         "typescript": "^5.9.2",
         "vitest": "^3.2.4"
