@@ -5,7 +5,7 @@ import type {
   IOItem,
   VersionString,
 } from '../shared/types/index.js';
-
+import { keyToDisplayName } from '../shared/utils/index.js';
 /**
  * Template configuration interface for customization
  */
@@ -25,16 +25,6 @@ const DEFAULT_TEMPLATE_CONFIG: Required<TemplateConfig> = {
   includeExampleOutput: true,
   customDescription: 'TODO: Add algorithm description',
 } as const;
-
-/**
- * Converts snake_case key to Title Case name
- */
-export function keyToDisplayName(key: AlgorithmKey): string {
-  return key
-    .split('_')
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
-}
 
 /**
  * Creates default input template

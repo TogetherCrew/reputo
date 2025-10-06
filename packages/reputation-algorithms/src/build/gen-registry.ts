@@ -1,6 +1,7 @@
 import { readdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { compareSemVer } from '../shared/utils/index.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -9,47 +10,6 @@ interface AlgorithmVersion {
   key: string;
   version: string;
   filePath: string;
-}
-
-function parseSemVer(version: string): {
-  major: number;
-  minor: number;
-  patch: number;
-  prerelease: string;
-  build: string;
-} {
-  const regex = /^(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z-.]+))?(?:\+([0-9A-Za-z-.]+))?$/;
-  const match = version.match(regex);
-
-  if (!match) {
-    throw new Error(`Invalid semantic version: ${version}`);
-  }
-
-  return {
-    major: Number.parseInt(match[1] || '0', 10),
-    minor: Number.parseInt(match[2] || '0', 10),
-    patch: Number.parseInt(match[3] || '0', 10),
-    prerelease: match[4] || '',
-    build: match[5] || '',
-  };
-}
-
-function compareSemVer(a: string, b: string): number {
-  const aParsed = parseSemVer(a);
-  const bParsed = parseSemVer(b);
-
-  if (aParsed.major !== bParsed.major) return aParsed.major - bParsed.major;
-  if (aParsed.minor !== bParsed.minor) return aParsed.minor - bParsed.minor;
-  if (aParsed.patch !== bParsed.patch) return aParsed.patch - bParsed.patch;
-
-  if (aParsed.prerelease && !bParsed.prerelease) return -1;
-  if (!aParsed.prerelease && bParsed.prerelease) return 1;
-
-  if (aParsed.prerelease !== bParsed.prerelease) {
-    return aParsed.prerelease < bParsed.prerelease ? -1 : 1;
-  }
-
-  return 0;
 }
 
 function scanRegistry(registryPath: string): Map<string, AlgorithmVersion[]> {
@@ -156,4 +116,4 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   main();
 }
 
-export { scanRegistry, generateRegistryIndex, compareSemVer };
+export { scanRegistry, generateRegistryIndex };

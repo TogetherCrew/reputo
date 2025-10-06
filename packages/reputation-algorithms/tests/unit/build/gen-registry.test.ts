@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { compareSemVer } from '../../../src/build/gen-registry';
+import { compareSemVer } from '../../../src/shared/utils/index.js';
 
 describe('Build: Registry Generator', () => {
   describe('compareSemVer', () => {
