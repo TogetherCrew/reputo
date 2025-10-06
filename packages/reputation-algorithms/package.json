@@ -24,7 +24,7 @@
         "test:watch": "vitest",
         "test:coverage": "vitest run --coverage",
         "typecheck": "tsc --noEmit",
-        "prebuild": "pnpm update:registry && pnpm algorithm:test",
+        "prebuild": "pnpm algorithm:test && pnpm update:registry",
         "build": "tsc",
         "release": "semantic-release"
     },
