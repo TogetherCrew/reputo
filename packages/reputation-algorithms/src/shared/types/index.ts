@@ -1,4 +1,4 @@
-// Re-export all types from shared for backward compatibility
+// Algorithm types
 export type {
   AlgorithmCategory,
   AlgorithmDefinition,
@@ -10,4 +10,7 @@ export type {
   IOPrimitiveType,
   JsonSchema2020_12,
   VersionString,
-} from '../shared/types/index.js';
+} from './algorithm.js';
+
+// Validation types
+export type { ValidationErrorDetail, ValidationResult } from './validation.js';

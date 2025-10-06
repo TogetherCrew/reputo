@@ -1,12 +1,4 @@
-import type { AlgorithmKey, VersionString } from '../api/types.js';
-
-/**
- * Validation result interface for better error handling
- */
-export interface ValidationResult {
-  readonly isValid: boolean;
-  readonly errors: readonly string[];
-}
+import type { AlgorithmKey, ValidationResult, VersionString } from '../shared/types/index.js';
 
 /**
  * Validates algorithm key format

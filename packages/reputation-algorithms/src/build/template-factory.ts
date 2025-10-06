@@ -1,4 +1,10 @@
-import type { AlgorithmCategory, AlgorithmDefinition, AlgorithmKey, IOItem, VersionString } from '../api/types.js';
+import type {
+  AlgorithmCategory,
+  AlgorithmDefinition,
+  AlgorithmKey,
+  IOItem,
+  VersionString,
+} from '../shared/types/index.js';
 
 /**
  * Template configuration interface for customization

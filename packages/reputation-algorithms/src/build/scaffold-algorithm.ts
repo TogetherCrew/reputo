@@ -2,7 +2,7 @@ import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import type { AlgorithmKey, VersionString } from '../api/types.js';
+import type { AlgorithmKey, VersionString } from '../shared/types/index.js';
 import { createAlgorithmTemplate, type TemplateConfig } from './template-factory.js';
 import { validateKeyVersion } from './validation.js';
 

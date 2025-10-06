@@ -4,13 +4,8 @@ import { fileURLToPath } from 'node:url';
 import Ajv2020 from 'ajv/dist/2020.js';
 import addFormats from 'ajv-formats';
 
-import {
-  DuplicateError,
-  KeyMismatchError,
-  ValidationError,
-  type ValidationErrorDetail,
-  VersionMismatchError,
-} from '../api/error.js';
+import { DuplicateError, KeyMismatchError, ValidationError, VersionMismatchError } from '../api/error.js';
+import type { ValidationErrorDetail } from '../shared/types/index.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
