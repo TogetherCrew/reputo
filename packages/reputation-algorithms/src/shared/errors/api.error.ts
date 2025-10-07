@@ -1,4 +1,4 @@
-import type { NotFoundErrorCode } from '../types/errors.js';
+import type { NotFoundErrorCode } from '../types/errors';
 
 export class NotFoundError extends Error {
   public override readonly name = 'NotFoundError';
@@ -7,8 +7,12 @@ export class NotFoundError extends Error {
   public readonly version: string | undefined;
 
   constructor(code: NotFoundErrorCode, key: string, version?: string) {
-    const message = code === 'KEY_NOT_FOUND' ? 'Algorithm not found' : 'Version not found';
-    super(message);
+    const messageMap: Record<NotFoundErrorCode, string> = {
+      KEY_NOT_FOUND: 'Algorithm not found',
+      VERSION_NOT_FOUND: 'Version not found',
+    };
+
+    super(messageMap[code]);
 
     this.code = code;
     this.key = key;

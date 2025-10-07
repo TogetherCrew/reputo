@@ -1,7 +1,7 @@
 import { _DEFINITIONS, REGISTRY_INDEX } from '../registry/index.gen';
 import { NotFoundError } from '../shared/errors';
 
-function getVersionsForKey(key: string): readonly string[] {
+function getAlgorithmDefinitionVersionsByKey(key: string): readonly string[] {
   const versions = REGISTRY_INDEX[key as keyof typeof REGISTRY_INDEX];
 
   if (!versions) {
@@ -11,8 +11,8 @@ function getVersionsForKey(key: string): readonly string[] {
   return versions;
 }
 
-function resolveVersion(key: string, version: string | 'latest'): string {
-  const versions = getVersionsForKey(key);
+function resolveAlgorithmDefinitionVersion(key: string, version: string | 'latest'): string {
+  const versions = getAlgorithmDefinitionVersionsByKey(key);
 
   const resolved = version === 'latest' ? versions[versions.length - 1] : version;
 
@@ -32,16 +32,18 @@ export function getAlgorithmDefinitionKeys(): readonly string[] {
 }
 
 export function getAlgorithmDefinitionVersions(key: string): readonly string[] {
-  return getVersionsForKey(key);
+  return getAlgorithmDefinitionVersionsByKey(key);
 }
 
 export function getAlgorithmLatestVersion(key: string): string {
-  return resolveVersion(key, 'latest');
+  return resolveAlgorithmDefinitionVersion(key, 'latest');
 }
 
-export function getAlgorithmDefinition(opts: { key: string; version?: string | 'latest' }): Record<string, unknown> {
-  const { key, version = 'latest' } = opts;
-  const resolvedVersion = resolveVersion(key, version);
+export const resolveLatestVersion: (key: string) => string = getAlgorithmLatestVersion;
+
+export function getAlgorithmDefinition(filters: { key: string; version?: string | 'latest' }): Record<string, unknown> {
+  const { key, version = 'latest' } = filters;
+  const resolvedVersion = resolveAlgorithmDefinitionVersion(key, version);
   const definitionKey = `${key}@${resolvedVersion}` as keyof typeof _DEFINITIONS;
   const definition = _DEFINITIONS[definitionKey];
   return JSON.parse(JSON.stringify(definition)) as Record<string, unknown>;

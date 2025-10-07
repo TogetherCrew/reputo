@@ -1,6 +1,6 @@
-import type { ValidationErrorDetail } from '../types/validation.js';
+import type { ValidationErrorDetail } from '../types/validation';
 
-export abstract class BuildError extends Error {
+abstract class CliError extends Error {
   public readonly filePath: string;
   public readonly key: string | undefined;
   public readonly version: string | undefined;
@@ -18,13 +18,13 @@ export abstract class BuildError extends Error {
   }
 }
 
-export class DuplicateError extends BuildError {
+export class DuplicateError extends CliError {
   constructor(filePath: string, key: string, version: string) {
     super('DuplicateError', `Duplicate definition for ${key}@${version} at ${filePath}`, filePath, key, version);
   }
 }
 
-export class VersionMismatchError extends BuildError {
+export class VersionMismatchError extends CliError {
   public readonly filenameVersion: string;
   public readonly contentVersion: string;
 
@@ -41,7 +41,7 @@ export class VersionMismatchError extends BuildError {
   }
 }
 
-export class KeyMismatchError extends BuildError {
+export class KeyMismatchError extends CliError {
   public readonly folderKey: string;
   public readonly contentKey: string;
 
@@ -58,7 +58,7 @@ export class KeyMismatchError extends BuildError {
   }
 }
 
-export class ValidationError extends BuildError {
+export class ValidationError extends CliError {
   public readonly errors: readonly ValidationErrorDetail[];
 
   constructor(filePath: string, errors: readonly ValidationErrorDetail[], key?: string, version?: string) {

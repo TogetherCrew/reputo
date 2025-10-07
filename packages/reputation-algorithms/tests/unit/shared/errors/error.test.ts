@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { NotFoundError } from '../../../src/api/index.js';
+import { NotFoundError } from '../../../../src/shared/errors/api.error.js';
 import {
   DuplicateError,
   KeyMismatchError,
   ValidationError,
   VersionMismatchError,
-} from '../../../src/shared/errors/index.js';
+} from '../../../../src/shared/errors/cli.error.js';
 
 describe('Errors: NotFoundError', () => {
   describe('KEY_NOT_FOUND', () => {
@@ -57,11 +57,6 @@ describe('Errors: DuplicateError', () => {
     expect(error.message).toContain('Duplicate definition');
     expect(error.message).toContain('test_algo@1.0.0');
     expect(error.message).toContain('/src/registry/test_algo/1.0.0.json');
-  });
-
-  it('should extend Error and BuildError', () => {
-    const error = new DuplicateError('/path/file.json', 'key', '1.0.0');
-    expect(error).toBeInstanceOf(Error);
   });
 });
 

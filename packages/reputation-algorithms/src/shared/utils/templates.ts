@@ -1,7 +1,10 @@
-import { keyToDisplayName } from './formatting.js';
-/**
- * Template configuration interface for customization
- */
+export function keyToDisplayName(key: string): string {
+  return key
+    .split('_')
+    .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
 export interface TemplateConfig {
   readonly category?: string;
   readonly includeExampleInput?: boolean;
@@ -9,9 +12,6 @@ export interface TemplateConfig {
   readonly customDescription?: string;
 }
 
-/**
- * Default template configuration
- */
 const DEFAULT_TEMPLATE_CONFIG: Required<TemplateConfig> = {
   category: 'custom',
   includeExampleInput: true,
@@ -19,9 +19,6 @@ const DEFAULT_TEMPLATE_CONFIG: Required<TemplateConfig> = {
   customDescription: 'TODO: Add algorithm description',
 } as const;
 
-/**
- * Creates default input template
- */
 function createDefaultInput(): unknown {
   return {
     key: 'input_data',
@@ -42,9 +39,6 @@ function createDefaultInput(): unknown {
   };
 }
 
-/**
- * Creates default output template
- */
 function createDefaultOutput(): unknown {
   return {
     key: 'result',
@@ -55,9 +49,6 @@ function createDefaultOutput(): unknown {
   };
 }
 
-/**
- * Creates algorithm definition template with customizable options
- */
 export function createAlgorithmTemplate(key: string, version: string, config: TemplateConfig = {}): unknown {
   const finalConfig = { ...DEFAULT_TEMPLATE_CONFIG, ...config };
 

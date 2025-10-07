@@ -1,9 +1,12 @@
 import { readFileSync } from 'node:fs';
 
-import { DuplicateError, KeyMismatchError, ValidationError, VersionMismatchError } from '../shared/errors/index.js';
-import { getModuleFileAndDir, resolveRegistryPath } from '../shared/utils/paths';
-import { scanRegistryDirectory } from '../shared/utils/registry-scanner';
-import { createValidatorWithSchema } from '../shared/utils/schemaValidator';
+import { DuplicateError, KeyMismatchError, ValidationError, VersionMismatchError } from '../shared/errors';
+import {
+  createValidatorWithSchema,
+  getModuleFileAndDir,
+  resolveRegistryPath,
+  scanRegistryDirectory,
+} from '../shared/utils';
 
 const { dirname: __dirname } = getModuleFileAndDir(import.meta.url);
 
@@ -146,4 +149,6 @@ function main(): void {
   }
 }
 
-main();
+if (import.meta.url === `file://${process.argv[1]}`) {
+  main();
+}

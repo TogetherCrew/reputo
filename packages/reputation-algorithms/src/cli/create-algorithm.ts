@@ -1,8 +1,13 @@
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { validateKey, validateVersion } from '../shared/utils/key-version-validator';
-import { getModuleFileAndDir, resolveRegistryPath } from '../shared/utils/paths';
-import { createAlgorithmTemplate, type TemplateConfig } from '../shared/utils/template-factory';
+import {
+  createAlgorithmTemplate,
+  getModuleFileAndDir,
+  resolveRegistryPath,
+  type TemplateConfig,
+  validateKey,
+  validateVersion,
+} from '../shared/utils';
 
 const { dirname: __dirname } = getModuleFileAndDir(import.meta.url);
 
@@ -96,4 +101,6 @@ function main(): void {
   createAlgorithm(key, version);
 }
 
-main();
+if (import.meta.url === `file://${process.argv[1]}`) {
+  main();
+}

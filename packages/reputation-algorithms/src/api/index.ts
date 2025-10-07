@@ -1,6 +1,2 @@
-export {
-  getAlgorithmDefinition,
-  getAlgorithmDefinitionKeys,
-  getAlgorithmDefinitionVersions,
-  getAlgorithmLatestVersion,
-} from './registry';
+export { NotFoundError } from '../shared/errors';
+export * from './registry';

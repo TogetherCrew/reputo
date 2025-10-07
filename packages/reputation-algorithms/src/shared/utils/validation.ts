@@ -3,17 +3,92 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import Ajv2020 from 'ajv/dist/2020.js';
 import addFormats from 'ajv-formats';
-import { ValidationError } from '../errors/index.js';
-import type { ValidationErrorDetail } from '../types/index.js';
+import { ValidationError } from '../errors/index';
+import type { ValidationErrorDetail, ValidationResult } from '../types/index';
 
-/**
- * Default schema path relative to this module
- */
+export function validateKey(key: string): ValidationResult {
+  const errors: string[] = [];
+
+  if (!key || key.length < 2) {
+    errors.push('Key must be at least 2 characters long');
+  }
+
+  const pattern = /^[a-z][a-z0-9_]*$/;
+  if (!pattern.test(key)) {
+    errors.push(
+      'Key must be snake_case, start with a letter, and contain only lowercase letters, numbers, and underscores',
+    );
+  }
+
+  return {
+    isValid: errors.length === 0,
+    errors,
+  };
+}
+
+export function validateVersion(version: string): ValidationResult {
+  const errors: string[] = [];
+
+  if (!version) {
+    errors.push('Version is required');
+  }
+
+  const pattern = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-[0-9A-Za-z-.]+)?(?:\+[0-9A-Za-z-.]+)?$/;
+  if (!pattern.test(version)) {
+    errors.push('Version must be a valid semantic version (e.g., 1.0.0, 2.1.3-beta, 3.0.0+build.123)');
+  }
+
+  return {
+    isValid: errors.length === 0,
+    errors,
+  };
+}
+
+export interface ParsedSemVer {
+  readonly major: number;
+  readonly minor: number;
+  readonly patch: number;
+  readonly prerelease: string;
+  readonly build: string;
+}
+
+function parseSemVer(version: string): ParsedSemVer {
+  const regex = /^(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z-.]+))?(?:\+([0-9A-Za-z-.]+))?$/;
+  const match = version.match(regex);
+
+  if (!match) {
+    throw new Error(`Invalid semantic version: ${version}`);
+  }
+
+  return {
+    major: Number.parseInt(match[1] || '0', 10),
+    minor: Number.parseInt(match[2] || '0', 10),
+    patch: Number.parseInt(match[3] || '0', 10),
+    prerelease: match[4] || '',
+    build: match[5] || '',
+  };
+}
+
+export function compareSemVer(a: string, b: string): number {
+  const aParsed = parseSemVer(a);
+  const bParsed = parseSemVer(b);
+
+  if (aParsed.major !== bParsed.major) return aParsed.major - bParsed.major;
+  if (aParsed.minor !== bParsed.minor) return aParsed.minor - bParsed.minor;
+  if (aParsed.patch !== bParsed.patch) return aParsed.patch - bParsed.patch;
+
+  if (aParsed.prerelease && !bParsed.prerelease) return -1;
+  if (!aParsed.prerelease && bParsed.prerelease) return 1;
+
+  if (aParsed.prerelease !== bParsed.prerelease) {
+    return aParsed.prerelease < bParsed.prerelease ? -1 : 1;
+  }
+
+  return 0;
+}
+
 const DEFAULT_SCHEMA_PATH = '../schema/algorithm-definition.schema.json';
 
-/**
- * Validator instance for algorithm definitions
- */
 export class AlgorithmValidator {
   private readonly ajv: Ajv2020;
   private validateAlgorithm: ReturnType<Ajv2020['compile']> | null = null;
@@ -35,19 +110,11 @@ export class AlgorithmValidator {
     }
   }
 
-  /**
-   * Load algorithm definition schema
-   */
   loadSchema(schema: Record<string, unknown>): void {
     this.ajv.addSchema(schema, 'algorithm-definition');
     this.validateAlgorithm = this.ajv.compile(schema);
   }
 
-  /**
-   * Validate an algorithm definition object
-   * @param definition - Algorithm definition to validate
-   * @returns Validation result with errors if any
-   */
   validate(definition: unknown): {
     isValid: boolean;
     errors: ValidationErrorDetail[];
@@ -72,12 +139,6 @@ export class AlgorithmValidator {
     return { isValid: false, errors };
   }
 
-  /**
-   * Validate and throw on error (for easier error handling)
-   * @param definition - Algorithm definition to validate
-   * @param filePath - File path for error context
-   * @throws ValidationError if validation fails
-   */
   validateAndThrow(definition: unknown, filePath = 'runtime'): unknown {
     const result = this.validate(definition);
 
@@ -94,17 +155,11 @@ export class AlgorithmValidator {
     return definition;
   }
 
-  /**
-   * Get the underlying Ajv instance for advanced usage
-   */
   getAjv(): Ajv2020 {
     return this.ajv;
   }
 }
 
-/**
- * Load algorithm definition schema from file system
- */
 function loadAlgorithmSchema(): Record<string, unknown> {
   const __filename = fileURLToPath(import.meta.url);
   const __dirname = dirname(__filename);
@@ -120,9 +175,6 @@ function loadAlgorithmSchema(): Record<string, unknown> {
   }
 }
 
-/**
- * Create validator with auto-loaded schema from default location
- */
 export function createValidatorWithSchema(): AlgorithmValidator {
   const schema = loadAlgorithmSchema();
   return new AlgorithmValidator(schema);

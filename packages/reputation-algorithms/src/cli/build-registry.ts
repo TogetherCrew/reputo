@@ -1,9 +1,14 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
 import type { RegistryGeneratorConfig } from '../shared/types/registry';
-import { getModuleFileAndDir, resolveRegistryIndexPath, resolveRegistryPath } from '../shared/utils/paths';
-import { generateRegistryIndexContent, generateRegistryStats } from '../shared/utils/registry-index-generator';
-import { scanRegistryDirectory } from '../shared/utils/registry-scanner';
+import {
+  generateRegistryIndexContent,
+  generateRegistryStats,
+  getModuleFileAndDir,
+  resolveRegistryIndexPath,
+  resolveRegistryPath,
+  scanRegistryDirectory,
+} from '../shared/utils';
 
 const { dirname: __dirname } = getModuleFileAndDir(import.meta.url);
 
@@ -23,7 +28,7 @@ export function buildRegistry(config: Partial<RegistryGeneratorConfig> = {}): vo
     console.log(generateRegistryStats(registryIndex));
 
     console.log('📝 Generating registry index...');
-    const indexContent = generateRegistryIndexContent(registryIndex);
+    const indexContent = generateRegistryIndexContent(registryIndex, finalConfig.includeMetadata);
     const normalizedContent = indexContent.endsWith('\n') ? indexContent : `${indexContent}\n`;
 
     const exists = existsSync(finalConfig.outputPath);
@@ -49,4 +54,6 @@ function main(): void {
   buildRegistry();
 }
 
-main();
+if (import.meta.url === `file://${process.argv[1]}`) {
+  main();
+}

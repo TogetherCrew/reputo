@@ -1,12 +1,14 @@
-export type IOType = 'csv' | 'number' | 'boolean' | 'array' | 'score_map' | 'string' | 'object' | (string & {});
+export type IoType = 'csv' | 'number' | 'boolean' | 'array' | 'score_map' | 'string' | 'object' | (string & {});
 
-export interface IoItem {
+interface BaseIoItem {
   key: string;
-  type: IOType;
   label?: string;
   description?: string;
+}
 
-  csv?: {
+export interface CsvIoItem extends BaseIoItem {
+  type: 'csv';
+  csv: {
     hasHeader?: boolean;
     delimiter?: string;
     maxRows?: number;
@@ -22,6 +24,8 @@ export interface IoItem {
   };
   entity?: string;
 }
+
+export type IoItem = CsvIoItem;
 
 export interface AlgorithmDefinition {
   key: string;
