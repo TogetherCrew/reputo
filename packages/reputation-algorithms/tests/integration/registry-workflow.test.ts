@@ -7,7 +7,7 @@ import {
   listAlgorithmDefinitionKeys,
   listAlgorithmDefinitionVersions,
   resolveLatestVersion,
-} from '../../src/api/registry';
+} from '../../src/api/index.js';
 
 describe('Integration: Registry Workflow', () => {
   describe('End-to-End API Usage', () => {

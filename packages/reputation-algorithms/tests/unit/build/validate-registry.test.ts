@@ -22,7 +22,7 @@ describe('Build: Schema Validation', () => {
     });
     addFormats(ajv);
 
-    const schemaPath = join(__dirname, '../../../src/schema/algorithm-definition.schema.json');
+    const schemaPath = join(__dirname, '../../../src/shared/schema/algorithm-definition.schema.json');
     const schemaContent = readFileSync(schemaPath, 'utf-8');
     const schema = JSON.parse(schemaContent);
     ajv.addSchema(schema, 'algorithm-definition');

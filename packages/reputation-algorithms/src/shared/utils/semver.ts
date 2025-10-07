@@ -15,7 +15,7 @@ export interface ParsedSemVer {
  * @returns Parsed version components
  * @throws Error if version format is invalid
  */
-export function parseSemVer(version: string): ParsedSemVer {
+function parseSemVer(version: string): ParsedSemVer {
   const regex = /^(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z-.]+))?(?:\+([0-9A-Za-z-.]+))?$/;
   const match = version.match(regex);
 

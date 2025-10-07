@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
+import { NotFoundError } from '../../../src/api/index.js';
 import {
   DuplicateError,
   KeyMismatchError,
-  NotFoundError,
   ValidationError,
   VersionMismatchError,
-} from '../../../src/api/error';
+} from '../../../src/shared/errors/index.js';
 
 describe('Errors: NotFoundError', () => {
   describe('KEY_NOT_FOUND', () => {

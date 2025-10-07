@@ -1,16 +1,8 @@
-// Algorithm types
+export type { AlgorithmDefinition, IOType, IoItem } from './algorithm';
+export type { NotFoundErrorCode } from './errors.js';
 export type {
-  AlgorithmCategory,
-  AlgorithmDefinition,
-  AlgorithmKey,
-  CSVColumn,
-  CSVColumnType,
-  CSVMeta,
-  IOItem,
-  IOPrimitiveType,
-  JsonSchema2020_12,
-  VersionString,
-} from './algorithm.js';
-
-// Validation types
+  AlgorithmVersion,
+  RegistryGeneratorConfig,
+  RegistryIndex,
+} from './registry';
 export type { ValidationErrorDetail, ValidationResult } from './validation.js';

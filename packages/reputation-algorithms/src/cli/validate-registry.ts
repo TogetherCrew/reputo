@@ -1,14 +1,11 @@
-import { readdirSync, readFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
-import Ajv2020 from 'ajv/dist/2020.js';
-import addFormats from 'ajv-formats';
+import { readFileSync } from 'node:fs';
 
-import { DuplicateError, KeyMismatchError, ValidationError, VersionMismatchError } from '../api/error.js';
-import type { ValidationErrorDetail } from '../shared/types/index.js';
+import { DuplicateError, KeyMismatchError, ValidationError, VersionMismatchError } from '../shared/errors/index.js';
+import { getModuleFileAndDir, resolveRegistryPath } from '../shared/utils/paths';
+import { scanRegistryDirectory } from '../shared/utils/registry-scanner';
+import { createValidatorWithSchema } from '../shared/utils/schemaValidator';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+const { dirname: __dirname } = getModuleFileAndDir(import.meta.url);
 
 interface RegistryEntry {
   key: string;
@@ -17,58 +14,25 @@ interface RegistryEntry {
   content: unknown;
 }
 
-function createValidator(): Ajv2020 {
-  const ajv = new Ajv2020({
-    allErrors: true,
-    verbose: true,
-    strict: true,
-    strictRequired: false,
-    allowUnionTypes: true,
-    validateFormats: true,
-  });
-
-  addFormats(ajv);
-
-  const schemaPath = join(__dirname, '../schema/algorithm-definition.schema.json');
-  const schemaContent = readFileSync(schemaPath, 'utf-8');
-  const schema = JSON.parse(schemaContent);
-
-  ajv.addSchema(schema, 'algorithm-definition');
-
-  return ajv;
+function createValidator(): ReturnType<typeof createValidatorWithSchema> {
+  return createValidatorWithSchema();
 }
 
-function scanRegistryFiles(registryPath: string): RegistryEntry[] {
+export function scanRegistryFiles(registryPath: string): RegistryEntry[] {
   const entries: RegistryEntry[] = [];
-  const directories = readdirSync(registryPath, { withFileTypes: true });
+  const index = scanRegistryDirectory(registryPath);
 
-  for (const dir of directories) {
-    if (!dir.isDirectory()) continue;
-
-    const folderKey = dir.name;
-    const keyPath = join(registryPath, folderKey);
-    const files = readdirSync(keyPath, { withFileTypes: true });
-
-    for (const file of files) {
-      if (!file.isFile() || !file.name.endsWith('.json')) continue;
-
-      const filenameVersion = file.name.replace('.json', '');
-      const filePath = join(keyPath, file.name);
+  for (const [key, versions] of index.algorithms) {
+    for (const { version, filePath } of versions) {
       const content = JSON.parse(readFileSync(filePath, 'utf-8'));
-
-      entries.push({
-        key: folderKey,
-        version: filenameVersion,
-        filePath,
-        content,
-      });
+      entries.push({ key, version, filePath, content });
     }
   }
 
   return entries;
 }
 
-function validateEntry(entry: RegistryEntry, validator: Ajv2020): void {
+export function validateEntry(entry: RegistryEntry, validator: ReturnType<typeof createValidator>): void {
   const { key: folderKey, version: filenameVersion, filePath, content } = entry;
 
   if (typeof content !== 'object' || content === null) {
@@ -83,22 +47,12 @@ function validateEntry(entry: RegistryEntry, validator: Ajv2020): void {
   }
 
   const data = content as Record<string, unknown>;
+  const result = validator.validate(content);
 
-  const validate = validator.getSchema('algorithm-definition');
-  if (!validate) {
-    throw new Error('Failed to get validator');
-  }
-
-  if (!validate(content)) {
-    const errors: ValidationErrorDetail[] = (validate.errors || []).map((e) => ({
-      instancePath: e.instancePath,
-      message: e.message || undefined,
-      keyword: e.keyword,
-      params: e.params || {},
-    }));
+  if (!result.isValid) {
     throw new ValidationError(
       filePath,
-      errors,
+      result.errors,
       data['key'] as string | undefined,
       data['version'] as string | undefined,
     );
@@ -116,7 +70,7 @@ function validateEntry(entry: RegistryEntry, validator: Ajv2020): void {
   }
 }
 
-function checkDuplicates(entries: RegistryEntry[]): void {
+export function checkDuplicates(entries: RegistryEntry[]): void {
   const seen = new Map<string, string>();
 
   for (const entry of entries) {
@@ -139,10 +93,21 @@ function checkDuplicates(entries: RegistryEntry[]): void {
   }
 }
 
-function main(): void {
-  const registryPath = join(__dirname, '../registry');
+export function validateRegistry(registryPath: string = resolveRegistryPath(__dirname)): void {
+  const validator = createValidator();
+  const entries = scanRegistryFiles(registryPath);
 
-  console.log('Validating algorithm registry...');
+  for (const entry of entries) {
+    validateEntry(entry, validator);
+  }
+
+  checkDuplicates(entries);
+}
+
+function main(): void {
+  const registryPath = resolveRegistryPath(__dirname);
+
+  console.log('🔎 Validating algorithm registry...');
   console.log(`Registry path: ${registryPath}`);
   console.log('');
 
@@ -181,8 +146,4 @@ function main(): void {
   }
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
-  main();
-}
-
-export { validateEntry, checkDuplicates, scanRegistryFiles };
+main();

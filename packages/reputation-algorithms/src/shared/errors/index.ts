@@ -1,5 +1,6 @@
 // Runtime API errors
-export type { NotFoundError, NotFoundErrorCode } from './api.error';
+export type { NotFoundErrorCode } from '../types/errors.js';
+export { NotFoundError } from './api.error.js';
 
 // Build-time errors
 export {
@@ -8,4 +9,4 @@ export {
   KeyMismatchError,
   ValidationError,
   VersionMismatchError,
-} from './build.error';
+} from './build.error.js';

@@ -1,22 +1,8 @@
-export type {
-  AlgorithmCategory,
-  AlgorithmDefinition,
-  AlgorithmKey,
-  CSVColumn,
-  CSVColumnType,
-  CSVMeta,
-  ErrorCode,
-  IOItem,
-  IOPrimitiveType,
-  JsonSchema2020_12,
-  NotFoundErrorCode,
-  ValidationErrorDetail,
-  VersionString,
-} from './api/index.js';
 export {
   getAlgorithmDefinition,
-  listAlgorithmDefinitionKeys,
-  listAlgorithmDefinitionVersions,
-  NotFoundError,
-  resolveLatestVersion,
-} from './api/index.js';
+  getAlgorithmDefinitionKeys,
+  getAlgorithmDefinitionVersions,
+  getAlgorithmLatestVersion,
+} from './api';
+
+export type { AlgorithmDefinition, IOType, IoItem } from './shared';

@@ -1,4 +1,4 @@
-import type { AlgorithmKey, ValidationResult, VersionString } from '../shared/types/index.js';
+import type { ValidationResult } from '../types/index.js';
 
 /**
  * Validates algorithm key format
@@ -42,24 +42,5 @@ export function validateVersion(version: string): ValidationResult {
   return {
     isValid: errors.length === 0,
     errors,
-  };
-}
-
-/**
- * Legacy boolean validation functions for backward compatibility
- */
-export const validateKeyBoolean = (key: string): boolean => validateKey(key).isValid;
-export const validateVersionBoolean = (version: string): boolean => validateVersion(version).isValid;
-
-/**
- * Validates both key and version together
- */
-export function validateKeyVersion(key: AlgorithmKey, version: VersionString): ValidationResult {
-  const keyResult = validateKey(key);
-  const versionResult = validateVersion(version);
-
-  return {
-    isValid: keyResult.isValid && versionResult.isValid,
-    errors: [...keyResult.errors, ...versionResult.errors],
   };
 }

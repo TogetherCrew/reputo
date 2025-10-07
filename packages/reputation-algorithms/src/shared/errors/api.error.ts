@@ -1,11 +1,5 @@
-/**
- * Error codes for NotFoundError
- */
-export type NotFoundErrorCode = 'KEY_NOT_FOUND' | 'VERSION_NOT_FOUND';
+import type { NotFoundErrorCode } from '../types/errors.js';
 
-/**
- * Runtime error thrown when algorithm or version is not found
- */
 export class NotFoundError extends Error {
   public override readonly name = 'NotFoundError';
   public readonly code: NotFoundErrorCode;
@@ -14,7 +8,6 @@ export class NotFoundError extends Error {
 
   constructor(code: NotFoundErrorCode, key: string, version?: string) {
     const message = code === 'KEY_NOT_FOUND' ? 'Algorithm not found' : 'Version not found';
-
     super(message);
 
     this.code = code;

@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { NotFoundError } from '../../../src/api/error';
 import {
   getAlgorithmDefinition,
   listAlgorithmDefinitionKeys,
   listAlgorithmDefinitionVersions,
+  NotFoundError,
   resolveLatestVersion,
-} from '../../../src/api/registry';
+} from '../../../src/api/index.js';
 
 describe('API: listAlgorithmDefinitionKeys', () => {
   it('should return all algorithm keys sorted alphabetically (ASCII)', () => {
