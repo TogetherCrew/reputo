@@ -1,5 +1,6 @@
 import { _DEFINITIONS, REGISTRY_INDEX } from '../registry/index.gen.js';
 import { NotFoundError } from '../shared/errors/index.js';
+import type { AlgorithmDefinition } from '../shared/types/algorithm.js';
 
 function getAlgorithmDefinitionVersionsByKey(key: string): readonly string[] {
   const versions = REGISTRY_INDEX[key as keyof typeof REGISTRY_INDEX];
@@ -80,12 +81,50 @@ export function getAlgorithmDefinitionLatestVersion(key: string): string {
 }
 
 /**
+ * Retrieves the latest version for a specific algorithm definition.
+ * Alias for getAlgorithmDefinitionLatestVersion for backward compatibility.
+ *
+ * @param key - The algorithm key to get the latest version for
+ * @returns The latest version string for the algorithm
+ * @throws {NotFoundError} When the algorithm key is not found in the registry
+ *
+ * @example
+ * ```typescript
+ * const latestVersion = getAlgorithmLatestVersion('voting-engagement');
+ * console.log('Latest version:', latestVersion);
+ * // Output: '2.0.0'
+ * ```
+ */
+export function getAlgorithmLatestVersion(key: string): string {
+  return getAlgorithmDefinitionLatestVersion(key);
+}
+
+/**
+ * Resolves the latest version for a specific algorithm definition.
+ * Alias for getAlgorithmLatestVersion for convenience.
+ *
+ * @param key - The algorithm key to get the latest version for
+ * @returns The latest version string for the algorithm
+ * @throws {NotFoundError} When the algorithm key is not found in the registry
+ *
+ * @example
+ * ```typescript
+ * const latestVersion = resolveLatestVersion('voting-engagement');
+ * console.log('Latest version:', latestVersion);
+ * // Output: '2.0.0'
+ * ```
+ */
+export function resolveLatestVersion(key: string): string {
+  return getAlgorithmLatestVersion(key);
+}
+
+/**
  * Retrieves a complete algorithm definition by key and version.
  *
  * @param filters - Object containing the algorithm key and optional version
  * @param filters.key - The algorithm key to retrieve
  * @param filters.version - The version to retrieve (defaults to 'latest')
- * @returns A JSON object of the algorithm definition
+ * @returns A deep copy of the algorithm definition object
  * @throws {NotFoundError} When the algorithm key or version is not found
  *
  * @example
@@ -101,10 +140,16 @@ export function getAlgorithmDefinitionLatestVersion(key: string): string {
  * // Output: { "key": "voting-engagement", "version": "1.0.0", ... }
  * ```
  */
-export function getAlgorithmDefinition(filters: { key: string; version?: string | 'latest' }): string {
+export function getAlgorithmDefinition(filters: { key: string; version?: string | 'latest' }): AlgorithmDefinition {
   const { key, version = 'latest' } = filters;
   const resolvedVersion = resolveAlgorithmDefinitionVersion(key, version);
   const definitionKey = `${key}@${resolvedVersion}` as keyof typeof _DEFINITIONS;
   const definition = _DEFINITIONS[definitionKey];
-  return JSON.stringify(definition);
+
+  if (!definition) {
+    throw new NotFoundError('KEY_NOT_FOUND', key);
+  }
+
+  // Return a deep copy to ensure immutability
+  return JSON.parse(JSON.stringify(definition));
 }
