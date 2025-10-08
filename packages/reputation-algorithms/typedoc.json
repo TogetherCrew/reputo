@@ -30,7 +30,6 @@
     },
 
     "githubPages": false,
-    "plugin": [],
 
     "commentStyle": "jsdoc",
     "excludeNotDocumented": false,

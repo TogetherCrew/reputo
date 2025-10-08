@@ -16,18 +16,6 @@ Framework-agnostic TypeScript library for describing, validating, and discoverin
 pnpm add @reputo/reputation-algorithms
 ```
 
-## Usage
-
-```typescript
-import { validateAlgorithm, getAlgorithm } from '@reputo/reputation-algorithms'
-
-// Validate an algorithm definition
-const isValid = validateAlgorithm(algorithmData)
-
-// Get algorithm from registry
-const algorithm = getAlgorithm('voting_engagement', '1.0.0')
-```
-
 ## Development
 
 ```bash
