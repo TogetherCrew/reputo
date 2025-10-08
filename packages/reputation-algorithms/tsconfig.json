@@ -4,11 +4,12 @@
         "composite": true,
 
         "target": "ES2022",
-        "lib": ["ES2022"],
+        "lib": ["ES2022", "DOM"],
 
         "module": "ESNext",
         "moduleResolution": "bundler",
         "moduleDetection": "force",
+        "types": ["node"],
 
         "rootDir": "./src",
         "outDir": "./dist",

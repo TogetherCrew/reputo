@@ -1,4 +1,5 @@
 import { Controller, Get } from '@nestjs/common';
+import { type AlgorithmDefinition } from '@reputo/reputation-algorithms';
 
 import { AppService } from './app.service';
 
@@ -7,7 +8,7 @@ export class AppController {
   constructor(private readonly appService: AppService) {}
 
   @Get('algorithms')
-  getAvailableAlgorithms(): string {
+  getAvailableAlgorithms(): AlgorithmDefinition {
     return this.appService.getAvailableAlgorithms();
   }
 

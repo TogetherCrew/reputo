@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import {
+  type AlgorithmDefinition,
   getAlgorithmDefinition,
   getAlgorithmDefinitionKeys,
   getAlgorithmDefinitionLatestVersion,
@@ -8,7 +9,7 @@ import {
 
 @Injectable()
 export class AppService {
-  getAvailableAlgorithms(): string {
+  getAvailableAlgorithms(): AlgorithmDefinition {
     const algorithm = getAlgorithmDefinition({ key: 'voting_engagement' });
     console.log('Available algorithms:', getAlgorithmDefinitionKeys());
     console.log('Algorithm versions:', getAlgorithmDefinitionVersions('voting_engagement'));
