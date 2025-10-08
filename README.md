@@ -137,7 +137,7 @@ reputo/
 | `apps/api`                       | ![nestjs](https://img.shields.io/badge/-NestJS-E0234E?logo=nestjs&logoColor=white&style=flat)                                                                                        | REST API with health checks      | ✅ Basic Setup | -                                                            |
 | `apps/ui`                        | ![react](https://img.shields.io/badge/-React-61DAFB?logo=react&logoColor=black&style=flat) + ![vite](https://img.shields.io/badge/-Vite-646CFF?logo=vite&logoColor=white&style=flat) | Single-page application          | ✅ Basic Setup | -                                                            |
 | `apps/workflows`                 | ![typescript](https://img.shields.io/badge/-TypeScript-3178C6?logo=typescript&logoColor=white&style=flat)                                                                            | Temporal workflows               | 🔄 In Progress | -                                                            |
-| `packages/reputation-algorithms` | ![typescript](https://img.shields.io/badge/-TypeScript-3178C6?logo=typescript&logoColor=white&style=flat)                                                                            | Algorithm registry & definitions | ✅ Ready       | [📚 TypeDoc](packages/reputation-algorithms/docs/index.html) |
+| `packages/reputation-algorithms` | ![typescript](https://img.shields.io/badge/-TypeScript-3178C6?logo=typescript&logoColor=white&style=flat)                                                                            | Algorithm registry & definitions | ✅ Ready       | [📚 TypeDoc](packages/reputation-algorithms/docs/globals.md) |
 
 ---
 

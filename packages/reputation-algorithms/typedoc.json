@@ -30,7 +30,7 @@
     },
 
     "githubPages": false,
-
+    "plugin": ["typedoc-plugin-markdown"],
     "commentStyle": "jsdoc",
     "excludeNotDocumented": false,
     "excludeNotDocumentedKinds": [],
