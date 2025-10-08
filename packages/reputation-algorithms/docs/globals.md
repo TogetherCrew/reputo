@@ -20,7 +20,4 @@
 
 - [getAlgorithmDefinitionKeys](functions/getAlgorithmDefinitionKeys.md)
 - [getAlgorithmDefinitionVersions](functions/getAlgorithmDefinitionVersions.md)
-- [getAlgorithmDefinitionLatestVersion](functions/getAlgorithmDefinitionLatestVersion.md)
-- [getAlgorithmLatestVersion](functions/getAlgorithmLatestVersion.md)
-- [resolveLatestVersion](functions/resolveLatestVersion.md)
 - [getAlgorithmDefinition](functions/getAlgorithmDefinition.md)

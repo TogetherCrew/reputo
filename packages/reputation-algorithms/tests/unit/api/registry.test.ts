@@ -1,5 +1,5 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { NotFoundError } from '../../../src/api';
+import { describe, expect, it, vi } from 'vitest';
+import { NotFoundError } from '../../../src/shared/errors/index.js';
 
 const hoisted = vi.hoisted(() => {
   const REGISTRY_INDEX = {
@@ -398,8 +398,6 @@ import {
   getAlgorithmDefinition,
   getAlgorithmDefinitionKeys,
   getAlgorithmDefinitionVersions,
-  getAlgorithmLatestVersion,
-  resolveLatestVersion,
 } from '../../../src/api/registry';
 
 describe('API: getAlgorithmDefinitionKeys', () => {
@@ -490,106 +488,18 @@ describe('API: getAlgorithmDefinitionVersions', () => {
   });
 });
 
-describe('API: getAlgorithmLatestVersion', () => {
-  it('should return the latest version for algorithms with multiple versions', () => {
-    const latest = getAlgorithmLatestVersion('voting_power');
-
-    expect(typeof latest).toBe('string');
-    expect(latest).toBe('2.1.0');
-  });
-
-  it('should return the only version for single-version algorithms', () => {
-    const latest = getAlgorithmLatestVersion('reputation_rank');
-
-    expect(latest).toBe('1.0.0');
-  });
-
-  it('should return the highest SemVer version', () => {
-    const latest = getAlgorithmLatestVersion('content_moderation');
-    const allVersions = getAlgorithmDefinitionVersions('content_moderation');
-
-    expect(latest).toBe(allVersions[allVersions.length - 1]);
-    expect(latest).toBe('2.0.0');
-  });
-
-  it('should handle algorithms with 0.x.x versions correctly', () => {
-    const latest = getAlgorithmLatestVersion('engagement_score');
-
-    expect(latest).toBe('1.0.0');
-  });
-
-  it('should return latest patch version when minor version is same', () => {
-    const latest = getAlgorithmLatestVersion('voting_power');
-    const allVersions = getAlgorithmDefinitionVersions('voting_power');
-
-    expect(latest).toBe('2.1.0');
-    expect(latest).toBe(allVersions[allVersions.length - 1]);
-  });
-
-  it('should throw NotFoundError for unknown key', () => {
-    expect(() => getAlgorithmLatestVersion('non_existent_algo')).toThrow(NotFoundError);
-
-    try {
-      getAlgorithmLatestVersion('non_existent_algo');
-    } catch (error) {
-      expect(error).toBeInstanceOf(NotFoundError);
-      if (error instanceof NotFoundError) {
-        expect(error.code).toBe('KEY_NOT_FOUND');
-        expect(error.key).toBe('non_existent_algo');
-      }
-    }
-  });
-});
-
-describe('API: resolveLatestVersion (alias)', () => {
-  it('should return the latest version for algorithms with multiple versions', () => {
-    const latest = resolveLatestVersion('voting_power');
-
-    expect(typeof latest).toBe('string');
-    expect(latest).toBe('2.1.0');
-  });
-
-  it('should return the same result as getAlgorithmLatestVersion', () => {
-    const algorithms = ['content_moderation', 'engagement_score', 'reputation_rank', 'voting_power'];
-
-    for (const algo of algorithms) {
-      const latest1 = resolveLatestVersion(algo);
-      const latest2 = getAlgorithmLatestVersion(algo);
-      expect(latest1).toBe(latest2);
-    }
-  });
-
-  it('should work consistently across all algorithms', () => {
-    expect(resolveLatestVersion('content_moderation')).toBe('2.0.0');
-    expect(resolveLatestVersion('engagement_score')).toBe('1.0.0');
-    expect(resolveLatestVersion('reputation_rank')).toBe('1.0.0');
-    expect(resolveLatestVersion('voting_power')).toBe('2.1.0');
-  });
-
-  it('should throw NotFoundError for unknown key', () => {
-    expect(() => resolveLatestVersion('non_existent_algo')).toThrow(NotFoundError);
-
-    try {
-      resolveLatestVersion('non_existent_algo');
-    } catch (error) {
-      expect(error).toBeInstanceOf(NotFoundError);
-      if (error instanceof NotFoundError) {
-        expect(error.code).toBe('KEY_NOT_FOUND');
-        expect(error.key).toBe('non_existent_algo');
-      }
-    }
-  });
-});
-
 describe('API: getAlgorithmDefinition', () => {
   describe('valid requests', () => {
     it('should return definition for valid key and version', () => {
-      const definition = getAlgorithmDefinition({
+      const definitionString = getAlgorithmDefinition({
         key: 'content_moderation',
         version: '1.0.0',
       });
 
-      expect(definition).toBeDefined();
+      expect(definitionString).toBeDefined();
+      expect(typeof definitionString).toBe('string');
+
+      const definition = JSON.parse(definitionString);
       expect(definition.key).toBe('content_moderation');
       expect(definition.version).toBe('1.0.0');
       expect(definition.name).toBe('Content Moderation');
@@ -598,14 +508,17 @@ describe('API: getAlgorithmDefinition', () => {
     });
 
     it('should return specific version when requested', () => {
-      const v1 = getAlgorithmDefinition({
+      const v1String = getAlgorithmDefinition({
         key: 'voting_power',
         version: '1.0.0',
       });
-      const v2 = getAlgorithmDefinition({
+      const v2String = getAlgorithmDefinition({
         key: 'voting_power',
         version: '2.1.0',
       });
+
+      const v1 = JSON.parse(v1String);
+      const v2 = JSON.parse(v2String);
 
       expect(v1.version).toBe('1.0.0');
       expect(v2.version).toBe('2.1.0');
@@ -613,49 +526,54 @@ describe('API: getAlgorithmDefinition', () => {
     });
 
     it('should return latest version when version is "latest"', () => {
-      const latest = getAlgorithmDefinition({
+      const latestString = getAlgorithmDefinition({
         key: 'voting_power',
         version: 'latest',
       });
 
+      const latest = JSON.parse(latestString);
       expect(latest.version).toBe('2.1.0');
     });
 
     it('should return latest version when version is not specified', () => {
-      const definition = getAlgorithmDefinition({
+      const definitionString = getAlgorithmDefinition({
         key: 'content_moderation',
       });
 
+      const definition = JSON.parse(definitionString);
       expect(definition.version).toBe('2.0.0');
     });
 
     it('should handle single-version algorithms', () => {
-      const definition = getAlgorithmDefinition({
+      const definitionString = getAlgorithmDefinition({
         key: 'reputation_rank',
       });
 
+      const definition = JSON.parse(definitionString);
       expect(definition.version).toBe('1.0.0');
       expect(definition.key).toBe('reputation_rank');
     });
 
     it('should return different definitions for different versions', () => {
-      const v1_0 = getAlgorithmDefinition({
+      const v1_0String = getAlgorithmDefinition({
         key: 'content_moderation',
         version: '1.0.0',
       });
-      const v1_1 = getAlgorithmDefinition({
+      const v1_1String = getAlgorithmDefinition({
         key: 'content_moderation',
         version: '1.1.0',
       });
-      const v2_0 = getAlgorithmDefinition({
+      const v2_0String = getAlgorithmDefinition({
         key: 'content_moderation',
         version: '2.0.0',
       });
 
+      const v1_0 = JSON.parse(v1_0String);
+      const v1_1 = JSON.parse(v1_1String);
+      const v2_0 = JSON.parse(v2_0String);
+
       expect(v1_0.inputs).toHaveLength(1);
-
       expect(v1_1.inputs).toHaveLength(2);
-
       expect(v2_0.inputs).toHaveLength(1);
       expect(v2_0.outputs).toHaveLength(2);
     });
@@ -663,11 +581,12 @@ describe('API: getAlgorithmDefinition', () => {
 
   describe('structure validation', () => {
     it('should have valid inputs array structure', () => {
-      const definition = getAlgorithmDefinition({
+      const definitionString = getAlgorithmDefinition({
         key: 'voting_power',
         version: '1.0.0',
       });
 
+      const definition = JSON.parse(definitionString);
       const inputs = definition.inputs as Array<Record<string, unknown>>;
       expect(Array.isArray(inputs)).toBe(true);
       expect(inputs.length).toBeGreaterThan(0);
@@ -680,11 +599,12 @@ describe('API: getAlgorithmDefinition', () => {
     });
 
     it('should have valid outputs array structure with at least one output', () => {
-      const definition = getAlgorithmDefinition({
+      const definitionString = getAlgorithmDefinition({
         key: 'engagement_score',
         version: '1.0.0',
       });
 
+      const definition = JSON.parse(definitionString);
       const outputs = definition.outputs as Array<Record<string, unknown>>;
       expect(Array.isArray(outputs)).toBe(true);
       expect(outputs.length).toBeGreaterThan(0);
@@ -697,11 +617,12 @@ describe('API: getAlgorithmDefinition', () => {
     });
 
     it('should handle algorithms with multiple outputs', () => {
-      const definition = getAlgorithmDefinition({
+      const definitionString = getAlgorithmDefinition({
         key: 'voting_power',
         version: '2.1.0',
       });
 
+      const definition = JSON.parse(definitionString);
       const outputs = definition.outputs as Array<Record<string, unknown>>;
       expect(outputs).toHaveLength(2);
       expect(outputs[0]!.key).toBe('voting_power');
@@ -709,11 +630,12 @@ describe('API: getAlgorithmDefinition', () => {
     });
 
     it('should validate inputs evolve across versions', () => {
-      const v1_2 = getAlgorithmDefinition({
+      const v1_2String = getAlgorithmDefinition({
         key: 'voting_power',
         version: '1.2.0',
       });
 
+      const v1_2 = JSON.parse(v1_2String);
       const inputs = v1_2.inputs as Array<Record<string, unknown>>;
       expect(inputs).toHaveLength(2);
       expect(inputs[0]!.key).toBe('stakes');
@@ -724,7 +646,8 @@ describe('API: getAlgorithmDefinition', () => {
       const algorithms = ['content_moderation', 'engagement_score', 'reputation_rank', 'voting_power'];
 
       for (const key of algorithms) {
-        const definition = getAlgorithmDefinition({ key });
+        const definitionString = getAlgorithmDefinition({ key });
+        const definition = JSON.parse(definitionString);
 
         expect(definition.key).toBeTruthy();
         expect(definition.name).toBeTruthy();
@@ -796,18 +719,24 @@ describe('API: getAlgorithmDefinition', () => {
   });
 
   describe('immutability', () => {
-    it('should return deep copy (not reference)', () => {
-      const def1 = getAlgorithmDefinition({
+    it('should return JSON string representation', () => {
+      const def1String = getAlgorithmDefinition({
         key: 'voting_power',
         version: '1.0.0',
       });
-      const def2 = getAlgorithmDefinition({
+      const def2String = getAlgorithmDefinition({
         key: 'voting_power',
         version: '1.0.0',
       });
 
+      const def1 = JSON.parse(def1String);
+      const def2 = JSON.parse(def2String);
+
       expect(def1).toEqual(def2);
-      expect(def1).not.toBe(def2);
+      expect(typeof def1String).toBe('string');
+      expect(typeof def2String).toBe('string');
+      // Since we're returning JSON strings, they should be identical for the same definition
+      expect(def1String).toBe(def2String);
     });
   });
 
@@ -816,24 +745,28 @@ describe('API: getAlgorithmDefinition', () => {
       const versions = ['1.0.0', '1.1.0', '1.2.0', '1.3.0'];
 
       for (const version of versions) {
-        const def = getAlgorithmDefinition({
+        const defString = getAlgorithmDefinition({
           key: 'voting_power',
           version,
         });
+        const def = JSON.parse(defString);
         expect(def.version).toBe(version);
         expect(def.key).toBe('voting_power');
       }
     });
 
     it('should handle major version changes correctly', () => {
-      const v1 = getAlgorithmDefinition({
+      const v1String = getAlgorithmDefinition({
         key: 'content_moderation',
         version: '1.2.0',
       });
-      const v2 = getAlgorithmDefinition({
+      const v2String = getAlgorithmDefinition({
         key: 'content_moderation',
         version: '2.0.0',
       });
+
+      const v1 = JSON.parse(v1String);
+      const v2 = JSON.parse(v2String);
 
       const v1Inputs = v1.inputs as Array<Record<string, unknown>>;
       const v2Inputs = v2.inputs as Array<Record<string, unknown>>;

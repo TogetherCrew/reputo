@@ -1,19 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import {
-  type AlgorithmDefinition,
   getAlgorithmDefinition,
   getAlgorithmDefinitionKeys,
-  getAlgorithmDefinitionLatestVersion,
   getAlgorithmDefinitionVersions,
 } from '@reputo/reputation-algorithms';
 
 @Injectable()
 export class AppService {
-  getAvailableAlgorithms(): AlgorithmDefinition {
+  getAvailableAlgorithms(): string {
     const algorithm = getAlgorithmDefinition({ key: 'voting_engagement' });
     console.log('Available algorithms:', getAlgorithmDefinitionKeys());
     console.log('Algorithm versions:', getAlgorithmDefinitionVersions('voting_engagement'));
-    console.log('Algorithm latest version:', getAlgorithmDefinitionLatestVersion('voting_engagement'));
 
     return algorithm;
   }

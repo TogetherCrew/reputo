@@ -8,7 +8,7 @@
 
 > **getAlgorithmDefinitionKeys**(): readonly `string`[]
 
-Defined in: [api/registry.ts:43](https://github.com/TogetherCrew/reputo/blob/0ed4dcc2bc5d7d34aede436d32405afb8fe52d0b/packages/reputation-algorithms/src/api/registry.ts#L43)
+Defined in: [api/registry.ts:46](https://github.com/TogetherCrew/reputo/blob/eeb748343323cd0cc935172e77e2112482891bd2/packages/reputation-algorithms/src/api/registry.ts#L46)
 
 Retrieves all available algorithm definition keys from the registry.
 
@@ -16,12 +16,12 @@ Retrieves all available algorithm definition keys from the registry.
 
 readonly `string`[]
 
-A sorted array of algorithm keys that are available in the registry
+A sorted array of algorithm keys available in the registry
 
 ## Example
 
-```typescript
-const keys = getAlgorithmDefinitionKeys();
-console.log('Available algorithms:', keys);
-// Output: ['voting-engagement', 'contrubition-score', ...]
+```ts
+const keys = getAlgorithmDefinitionKeys()
+console.log('Available algorithms:', keys)
+// e.g. ['voting-engagement', 'contribution-score', ...]
 ```

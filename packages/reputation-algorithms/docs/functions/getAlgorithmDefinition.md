@@ -6,9 +6,9 @@
 
 # Function: getAlgorithmDefinition()
 
-> **getAlgorithmDefinition**(`filters`): [`AlgorithmDefinition`](../interfaces/AlgorithmDefinition.md)
+> **getAlgorithmDefinition**(`filters`): `string`
 
-Defined in: [api/registry.ts:143](https://github.com/TogetherCrew/reputo/blob/0ed4dcc2bc5d7d34aede436d32405afb8fe52d0b/packages/reputation-algorithms/src/api/registry.ts#L143)
+Defined in: [api/registry.ts:107](https://github.com/TogetherCrew/reputo/blob/eeb748343323cd0cc935172e77e2112482891bd2/packages/reputation-algorithms/src/api/registry.ts#L107)
 
 Retrieves a complete algorithm definition by key and version.
 
@@ -32,9 +32,9 @@ The version to retrieve (defaults to 'latest')
 
 ## Returns
 
-[`AlgorithmDefinition`](../interfaces/AlgorithmDefinition.md)
+`string`
 
-A deep copy of the algorithm definition object
+A JSON string representation of the algorithm definition object
 
 ## Throws
 
@@ -42,14 +42,11 @@ When the algorithm key or version is not found
 
 ## Example
 
-```typescript
-const definition = getAlgorithmDefinition({ key: 'voting-engagement' });
+```ts
+const definition = getAlgorithmDefinition({ key: 'voting-engagement' })
 
-const definition = getAlgorithmDefinition({
+const specific = getAlgorithmDefinition({
   key: 'voting-engagement',
   version: '1.0.0'
-});
-
-console.log('Algorithm definition:', definition);
-// Output: { "key": "voting-engagement", "version": "1.0.0", ... }
+})
 ```

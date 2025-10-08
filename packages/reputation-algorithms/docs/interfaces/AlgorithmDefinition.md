@@ -6,7 +6,7 @@
 
 # Interface: AlgorithmDefinition
 
-Defined in: [shared/types/algorithm.ts:85](https://github.com/TogetherCrew/reputo/blob/0ed4dcc2bc5d7d34aede436d32405afb8fe52d0b/packages/reputation-algorithms/src/shared/types/algorithm.ts#L85)
+Defined in: [shared/types/algorithm.ts:85](https://github.com/TogetherCrew/reputo/blob/eeb748343323cd0cc935172e77e2112482891bd2/packages/reputation-algorithms/src/shared/types/algorithm.ts#L85)
 
 Complete algorithm definition structure.
 
@@ -16,7 +16,7 @@ Complete algorithm definition structure.
 
 > **key**: `string`
 
-Defined in: [shared/types/algorithm.ts:87](https://github.com/TogetherCrew/reputo/blob/0ed4dcc2bc5d7d34aede436d32405afb8fe52d0b/packages/reputation-algorithms/src/shared/types/algorithm.ts#L87)
+Defined in: [shared/types/algorithm.ts:87](https://github.com/TogetherCrew/reputo/blob/eeb748343323cd0cc935172e77e2112482891bd2/packages/reputation-algorithms/src/shared/types/algorithm.ts#L87)
 
 Unique identifier for the algorithm
 
@@ -26,7 +26,7 @@ Unique identifier for the algorithm
 
 > **name**: `string`
 
-Defined in: [shared/types/algorithm.ts:89](https://github.com/TogetherCrew/reputo/blob/0ed4dcc2bc5d7d34aede436d32405afb8fe52d0b/packages/reputation-algorithms/src/shared/types/algorithm.ts#L89)
+Defined in: [shared/types/algorithm.ts:89](https://github.com/TogetherCrew/reputo/blob/eeb748343323cd0cc935172e77e2112482891bd2/packages/reputation-algorithms/src/shared/types/algorithm.ts#L89)
 
 Human-readable name of the algorithm
 
@@ -36,7 +36,7 @@ Human-readable name of the algorithm
 
 > **category**: [`AlgorithmCategory`](../type-aliases/AlgorithmCategory.md)
 
-Defined in: [shared/types/algorithm.ts:91](https://github.com/TogetherCrew/reputo/blob/0ed4dcc2bc5d7d34aede436d32405afb8fe52d0b/packages/reputation-algorithms/src/shared/types/algorithm.ts#L91)
+Defined in: [shared/types/algorithm.ts:91](https://github.com/TogetherCrew/reputo/blob/eeb748343323cd0cc935172e77e2112482891bd2/packages/reputation-algorithms/src/shared/types/algorithm.ts#L91)
 
 Category classification for organizing algorithms
 
@@ -46,7 +46,7 @@ Category classification for organizing algorithms
 
 > **description**: `string`
 
-Defined in: [shared/types/algorithm.ts:93](https://github.com/TogetherCrew/reputo/blob/0ed4dcc2bc5d7d34aede436d32405afb8fe52d0b/packages/reputation-algorithms/src/shared/types/algorithm.ts#L93)
+Defined in: [shared/types/algorithm.ts:93](https://github.com/TogetherCrew/reputo/blob/eeb748343323cd0cc935172e77e2112482891bd2/packages/reputation-algorithms/src/shared/types/algorithm.ts#L93)
 
 Detailed description of what the algorithm does and how it works
 
@@ -56,7 +56,7 @@ Detailed description of what the algorithm does and how it works
 
 > **version**: `string`
 
-Defined in: [shared/types/algorithm.ts:95](https://github.com/TogetherCrew/reputo/blob/0ed4dcc2bc5d7d34aede436d32405afb8fe52d0b/packages/reputation-algorithms/src/shared/types/algorithm.ts#L95)
+Defined in: [shared/types/algorithm.ts:95](https://github.com/TogetherCrew/reputo/blob/eeb748343323cd0cc935172e77e2112482891bd2/packages/reputation-algorithms/src/shared/types/algorithm.ts#L95)
 
 Semantic version of the algorithm definition
 
@@ -66,7 +66,7 @@ Semantic version of the algorithm definition
 
 > **inputs**: [`CsvIoItem`](CsvIoItem.md)[]
 
-Defined in: [shared/types/algorithm.ts:97](https://github.com/TogetherCrew/reputo/blob/0ed4dcc2bc5d7d34aede436d32405afb8fe52d0b/packages/reputation-algorithms/src/shared/types/algorithm.ts#L97)
+Defined in: [shared/types/algorithm.ts:97](https://github.com/TogetherCrew/reputo/blob/eeb748343323cd0cc935172e77e2112482891bd2/packages/reputation-algorithms/src/shared/types/algorithm.ts#L97)
 
 Array of input data specifications
 
@@ -76,6 +76,6 @@ Array of input data specifications
 
 > **outputs**: [`CsvIoItem`](CsvIoItem.md)[]
 
-Defined in: [shared/types/algorithm.ts:99](https://github.com/TogetherCrew/reputo/blob/0ed4dcc2bc5d7d34aede436d32405afb8fe52d0b/packages/reputation-algorithms/src/shared/types/algorithm.ts#L99)
+Defined in: [shared/types/algorithm.ts:99](https://github.com/TogetherCrew/reputo/blob/eeb748343323cd0cc935172e77e2112482891bd2/packages/reputation-algorithms/src/shared/types/algorithm.ts#L99)
 
 Array of output data specifications

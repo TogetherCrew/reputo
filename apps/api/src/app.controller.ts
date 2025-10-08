@@ -8,7 +8,7 @@ export class AppController {
   constructor(private readonly appService: AppService) {}
 
   @Get('algorithms')
-  getAvailableAlgorithms(): AlgorithmDefinition {
+  getAvailableAlgorithms(): string {
     return this.appService.getAvailableAlgorithms();
   }
 
