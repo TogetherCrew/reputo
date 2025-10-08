@@ -1,11 +1,20 @@
 import { Injectable } from '@nestjs/common';
-import { helloWorld } from '@reputo/reputation-algorithms';
+import {
+  getAlgorithmDefinition,
+  getAlgorithmDefinitionKeys,
+  getAlgorithmDefinitionLatestVersion,
+  getAlgorithmDefinitionVersions,
+} from '@reputo/reputation-algorithms';
 
 @Injectable()
 export class AppService {
-  getHello(): string {
-    console.log(helloWorld('Nest!!!'));
-    return 'Hello World';
+  getAvailableAlgorithms(): string {
+    const algorithm = getAlgorithmDefinition({ key: 'voting_engagement' });
+    console.log('Available algorithms:', getAlgorithmDefinitionKeys());
+    console.log('Algorithm versions:', getAlgorithmDefinitionVersions('voting_engagement'));
+    console.log('Algorithm latest version:', getAlgorithmDefinitionLatestVersion('voting_engagement'));
+
+    return algorithm;
   }
 
   getHealth() {

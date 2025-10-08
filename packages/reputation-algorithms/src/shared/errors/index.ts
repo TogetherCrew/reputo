@@ -1,3 +1,3 @@
-export * from '../types/errors';
-export * from './api.error';
-export * from './cli.error';
+export * from '../types/errors.js';
+export * from './api.error.js';
+export * from './cli.error.js';

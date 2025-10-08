@@ -1,4 +1,4 @@
-import type { ValidationErrorDetail } from '../types/validation';
+import type { ValidationErrorDetail } from '../types/validation.js';
 
 abstract class CliError extends Error {
   public readonly filePath: string;

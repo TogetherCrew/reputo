@@ -9,6 +9,14 @@
         ".": {
             "types": "./dist/index.d.ts",
             "default": "./dist/index.js"
+        },
+        "./api": {
+            "types": "./dist/api/index.d.ts",
+            "default": "./dist/api/index.js"
+        },
+        "./api/registry": {
+            "types": "./dist/api/registry.d.ts",
+            "default": "./dist/api/registry.js"
         }
     },
     "type": "module",
@@ -26,7 +34,9 @@
         "typecheck": "tsc --noEmit",
         "prebuild": "pnpm registry:validate && pnpm registry:build",
         "build": "tsc",
-        "release": "semantic-release"
+        "release": "semantic-release",
+        "docs": "typedoc",
+        "clean": "rm -rf coverage dist docs node_modules tsconfig.tsbuildinfo"
     },
     "devDependencies": {
         "ajv": "^8.17.1",

@@ -119,7 +119,7 @@ function generateImportsAndDefinitions(
       const relativePath = `./${key}/${version}.json`;
       const definitionKey = `${key}@${version}`;
 
-      imports.push(`import ${importName} from '${relativePath}';`);
+      imports.push(`import ${importName} from '${relativePath}' with { type: 'json' };`);
       definitions.push(`  '${definitionKey}': ${importName} as unknown,`);
     }
   }

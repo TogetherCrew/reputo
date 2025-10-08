@@ -1,4 +1,4 @@
-import type { NotFoundErrorCode } from '../types/errors';
+import type { NotFoundErrorCode } from '../types/errors.js';
 
 export class NotFoundError extends Error {
   public override readonly name = 'NotFoundError';

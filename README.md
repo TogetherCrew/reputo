@@ -1,4 +1,4 @@
-![Reputo](.github/assets/banner.png "Reputo")
+![Reputo](.github/assets/banner.png 'Reputo')
 
 <p align="center">
   <br/>
@@ -132,12 +132,201 @@ reputo/
 
 ## Apps & Packages
 
-| Path                             | Stack                                                                                                                                                                                | Notes                       | Status         |
-| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------- | -------------- |
-| `apps/api`                       | ![nestjs](https://img.shields.io/badge/-NestJS-E0234E?logo=nestjs&logoColor=white&style=flat)                                                                                        | REST API with health checks | ✅ Basic Setup |
-| `apps/ui`                        | ![react](https://img.shields.io/badge/-React-61DAFB?logo=react&logoColor=black&style=flat) + ![vite](https://img.shields.io/badge/-Vite-646CFF?logo=vite&logoColor=white&style=flat) | Single-page application     | ✅ Basic Setup |
-| `apps/workflows`                 | ![typescript](https://img.shields.io/badge/-TypeScript-3178C6?logo=typescript&logoColor=white&style=flat)                                                                            | Temporal workflows          | 🔄 In Progress |
-| `packages/reputation-algorithms` | ![typescript](https://img.shields.io/badge/-TypeScript-3178C6?logo=typescript&logoColor=white&style=flat)                                                                            | Pure algorithms – no I/O    | 🔄 In Progress |
+| Path                             | Stack                                                                                                                                                                                | Notes                            | Status         |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------- | -------------- |
+| `apps/api`                       | ![nestjs](https://img.shields.io/badge/-NestJS-E0234E?logo=nestjs&logoColor=white&style=flat)                                                                                        | REST API with health checks      | ✅ Basic Setup |
+| `apps/ui`                        | ![react](https://img.shields.io/badge/-React-61DAFB?logo=react&logoColor=black&style=flat) + ![vite](https://img.shields.io/badge/-Vite-646CFF?logo=vite&logoColor=white&style=flat) | Single-page application          | ✅ Basic Setup |
+| `apps/workflows`                 | ![typescript](https://img.shields.io/badge/-TypeScript-3178C6?logo=typescript&logoColor=white&style=flat)                                                                            | Temporal workflows               | 🔄 In Progress |
+| `packages/reputation-algorithms` | ![typescript](https://img.shields.io/badge/-TypeScript-3178C6?logo=typescript&logoColor=white&style=flat)                                                                            | Algorithm registry & definitions | ✅ Ready       |
+
+---
+
+## Reputation Algorithms Library
+
+The `@reputo/reputation-algorithms` package provides a framework-agnostic TypeScript library for describing, validating, and discovering versioned algorithm definitions via a read-only registry. This library serves as the foundation for Reputo's reputation scoring system.
+
+### Key Features
+
+- **Type-safe**: Full TypeScript support with comprehensive type definitions
+- **Schema-driven**: JSON Schema validation using Ajv for robust data validation
+- **Framework-agnostic**: Works identically in Node.js and browser environments
+- **Registry-based**: Read-only registry for algorithm discovery and versioning
+- **No code execution**: Safe, validation-only approach that prevents arbitrary code execution
+- **Versioned algorithms**: Semantic versioning support for algorithm evolution
+
+### Algorithm Categories
+
+The library supports four main categories of reputation algorithms:
+
+- **`engagement`**: Algorithms focused on user engagement metrics (e.g., voting patterns, participation)
+- **`quality`**: Algorithms measuring content or user quality (e.g., contribution scoring)
+- **`activity`**: Algorithms tracking user activity patterns (e.g., frequency, consistency)
+- **`custom`**: Custom or specialized algorithms for specific use cases
+
+### Available Algorithms
+
+Currently available algorithms include:
+
+- **`voting_engagement`** (v1.0.0): Computes voting engagement scores using entropy-based calculations
+    - Input: CSV with voter data (collection_id, proposal_id, vote, timestamp, round)
+    - Output: Voting engagement scores by user (Ve(i) in [0,1])
+
+### API Usage
+
+```typescript
+import {
+    getAlgorithmDefinition,
+    getAlgorithmDefinitionKeys,
+    getAlgorithmDefinitionVersions,
+    getAlgorithmDefinitionLatestVersion,
+} from '@reputo/reputation-algorithms'
+
+// Get all available algorithm keys
+const keys = getAlgorithmDefinitionKeys()
+// Returns: ['voting_engagement', ...]
+
+// Get versions for a specific algorithm
+const versions = getAlgorithmDefinitionVersions('voting_engagement')
+// Returns: ['1.0.0']
+
+// Get the latest version
+const latestVersion = getAlgorithmDefinitionLatestVersion('voting_engagement')
+// Returns: '1.0.0'
+
+// Get algorithm definition
+const definition = getAlgorithmDefinition({
+    key: 'voting_engagement',
+    version: '1.0.0', // or 'latest'
+})
+```
+
+### Algorithm Definition Structure
+
+Each algorithm definition includes:
+
+```typescript
+interface AlgorithmDefinition {
+    key: string // Unique algorithm identifier
+    name: string // Human-readable name
+    category: AlgorithmCategory // Algorithm category
+    description: string // Detailed description
+    version: string // Semantic version
+    inputs: IoItem[] // Input data specifications
+    outputs: IoItem[] // Output data specifications
+}
+```
+
+### Input/Output Types
+
+The library supports various I/O types:
+
+- **CSV**: Comma-separated values with configurable parsing
+- **Number**: Numeric values
+- **Boolean**: True/false values
+- **Array**: Array of values
+- **Score Map**: Mapping of scores to entities
+- **String**: Text values
+- **Object**: Complex object structures
+
+### Development Commands
+
+```bash
+# Create a new algorithm definition
+pnpm --filter @reputo/reputation-algorithms algorithm:create <key> <version>
+
+# Validate registry integrity
+pnpm --filter @reputo/reputation-algorithms registry:validate
+
+# Build registry index
+pnpm --filter @reputo/reputation-algorithms registry:build
+
+# Generate documentation
+pnpm --filter @reputo/reputation-algorithms docs
+
+# Run tests
+pnpm --filter @reputo/reputation-algorithms test
+```
+
+### Integration with Apps
+
+All apps in the monorepo integrate with the reputation algorithms library:
+
+#### API Service (`apps/api`)
+
+```typescript
+// In apps/api/src/app.service.ts
+import { getAlgorithmDefinitionKeys } from '@reputo/reputation-algorithms'
+
+@Injectable()
+export class AppService {
+    getAvailableAlgorithms(): string[] {
+        const algorithms = getAlgorithmDefinitionKeys()
+        console.log('Available algorithms:', algorithms)
+        return algorithms
+    }
+}
+```
+
+#### UI Application (`apps/ui`)
+
+```typescript
+// In apps/ui/src/App.tsx
+import { getAlgorithmDefinitionKeys } from '@reputo/reputation-algorithms'
+
+function App() {
+    const [algorithms, setAlgorithms] = useState<string[]>([])
+
+    useEffect(() => {
+        const availableAlgorithms = getAlgorithmDefinitionKeys()
+        setAlgorithms(availableAlgorithms)
+    }, [])
+
+    // Render available algorithms...
+}
+```
+
+#### Workflows Service (`apps/workflows`)
+
+```typescript
+// In apps/workflows/src/index.ts
+import { getAlgorithmDefinitionKeys } from '@reputo/reputation-algorithms'
+
+export function getAvailableAlgorithms(): string[] {
+    return getAlgorithmDefinitionKeys()
+}
+```
+
+### Documentation
+
+Comprehensive API documentation is generated using TypeDoc and available at:
+
+- **Local**: `packages/reputation-algorithms/docs/index.html`
+- **Generated**: Run `pnpm --filter @reputo/reputation-algorithms docs`
+- **Package README**: See [`packages/reputation-algorithms/README.md`](packages/reputation-algorithms/README.md) for detailed package documentation
+
+### Referencing the Library
+
+All apps in the monorepo can reference the reputation algorithms library using the workspace protocol:
+
+```typescript
+// In any app (api, ui, workflows)
+import {
+    getAlgorithmDefinitionKeys,
+    getAlgorithmDefinition,
+    getAlgorithmDefinitionVersions,
+    getAlgorithmDefinitionLatestVersion,
+} from '@reputo/reputation-algorithms'
+
+// Get all available algorithm keys
+const algorithms = getAlgorithmDefinitionKeys()
+console.log('Available algorithms:', algorithms)
+```
+
+The library is automatically available as a dependency in all apps:
+
+- ✅ `apps/api` - Uses `@reputo/reputation-algorithms` for algorithm discovery
+- ✅ `apps/ui` - Uses `@reputo/reputation-algorithms` for frontend algorithm management
+- ✅ `apps/workflows` - Uses `@reputo/reputation-algorithms` for workflow algorithm processing
 
 ---
 
@@ -243,9 +432,9 @@ We follow a three-tier deployment strategy with automated promotion:
 
 - **Trigger**: Merge to `main` branch (automated)
 - **URL**:
-  - UI: [staging.logid.xyz](https://staging.logid.xyz)
-  - API: [api-staging.logid.xyz](https://api-staging.logid.xyz)
-  - Traefik: [traefik-staging.logid.xyz/dashboard](https://traefik-staging.logid.xyz/dashboard/)
+    - UI: [staging.logid.xyz](https://staging.logid.xyz)
+    - API: [api-staging.logid.xyz](https://api-staging.logid.xyz)
+    - Traefik: [traefik-staging.logid.xyz/dashboard](https://traefik-staging.logid.xyz/dashboard/)
 - **Deployment**: Watchtower auto-pulls `staging` tagged images
 - **Purpose**: Integration testing and release preparation
 
@@ -253,9 +442,9 @@ We follow a three-tier deployment strategy with automated promotion:
 
 - **Trigger**: Manual workflow dispatch with commit SHA
 - **URL**:
-  - UI: [logid.xyz](https://logid.xyz)
-  - API: [api.logid.xyz](https://api.logid.xyz)
-  - Traefik: [traefik.logid.xyz/dashboard](https://traefik.logid.xyz/dashboard/)
+    - UI: [logid.xyz](https://logid.xyz)
+    - API: [api.logid.xyz](https://api.logid.xyz)
+    - Traefik: [traefik.logid.xyz/dashboard](https://traefik.logid.xyz/dashboard/)
 - **Process**: Promotes staging images with `production` tags
 - **Purpose**: Live user-facing environment
 
@@ -394,21 +583,19 @@ pnpm --filter @reputo/api test
 ### Automated Staging Deployment
 
 1. **Quality Gate**: Merge to `main` triggers comprehensive testing
-
-   - Parallel linting, formatting, type checking
-   - Full test suite execution with coverage
-   - Multi-target Docker builds
+    - Parallel linting, formatting, type checking
+    - Full test suite execution with coverage
+    - Multi-target Docker builds
 
 2. **Build & Push**: After quality gate passes
-
-   - Multi-stage Docker image builds
-   - Push to GitHub Container Registry with `staging` tag
-   - Semantic versioning and changelog generation
+    - Multi-stage Docker image builds
+    - Push to GitHub Container Registry with `staging` tag
+    - Semantic versioning and changelog generation
 
 3. **Staging Deployment**: Watchtower auto-deployment
-   - Detects new `staging` images
-   - Rolling restart of containers
-   - Health check verification
+    - Detects new `staging` images
+    - Rolling restart of containers
+    - Health check verification
 
 ### Manual Production Promotion
 
@@ -416,23 +603,22 @@ pnpm --filter @reputo/api test
 
 2. **Trigger promotion** workflow:
 
-   ```bash
-   # Via GitHub CLI
-   gh workflow run promote-production.yml -f commit=abc123...
+    ```bash
+    # Via GitHub CLI
+    gh workflow run promote-production.yml -f commit=abc123...
 
-   # Via GitHub UI
-   Actions → Promote to Production → Run workflow
-   ```
+    # Via GitHub UI
+    Actions → Promote to Production → Run workflow
+    ```
 
 3. **Automated promotion**:
-
-   - Re-tags staging images with `production` tag
-   - Watchtower detects and deploys to production
-   - Zero-rebuild deployment (exact staging artifacts)
+    - Re-tags staging images with `production` tag
+    - Watchtower detects and deploys to production
+    - Zero-rebuild deployment (exact staging artifacts)
 
 4. **Verification**:
-   - Health checks validate deployment
-   - Rollback capability via image re-tagging
+    - Health checks validate deployment
+    - Rollback capability via image re-tagging
 
 ### Image Tagging Strategy
 
@@ -457,21 +643,20 @@ Fast rollback capability:
 
 1. **Create feature branch** from `main`
 
-   ```bash
-   git checkout -b feature/your-feature-name
-   ```
+    ```bash
+    git checkout -b feature/your-feature-name
+    ```
 
 2. **Make changes** with conventional commits
 
-   ```bash
-   git commit -m "feat(api): add user authentication endpoint"
-   ```
+    ```bash
+    git commit -m "feat(api): add user authentication endpoint"
+    ```
 
 3. **Open Pull Request** to `main`
-
-   - Add `pullpreview` label for preview deployment
-   - Ensure CI passes (quality gate + tests)
-   - Request review from maintainers
+    - Add `pullpreview` label for preview deployment
+    - Ensure CI passes (quality gate + tests)
+    - Request review from maintainers
 
 4. **Merge** after approval (squash merge preferred)
 

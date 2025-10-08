@@ -6,7 +6,7 @@
         "target": "ES2022",
         "lib": ["ES2022"],
 
-        "module": "ES2022",
+        "module": "ESNext",
         "moduleResolution": "bundler",
         "moduleDetection": "force",
 
@@ -18,9 +18,10 @@
 
         "resolveJsonModule": true,
         "isolatedModules": true,
-        "verbatimModuleSyntax": true,
         "isolatedDeclarations": true,
         "forceConsistentCasingInFileNames": true,
+        "esModuleInterop": true,
+        "allowSyntheticDefaultImports": true,
 
         "strict": true,
         "noImplicitAny": true,
