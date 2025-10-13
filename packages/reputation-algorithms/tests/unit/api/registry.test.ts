@@ -708,7 +708,7 @@ describe('API: getAlgorithmDefinition', () => {
       ).toThrow(NotFoundError);
     });
 
-    it('should throw NotFoundError for older versions when only latest is requested', () => {
+    it('should throw NotFoundError when requesting an unsupported version', () => {
       expect(() =>
         getAlgorithmDefinition({
           key: 'reputation_rank',

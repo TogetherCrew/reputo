@@ -3,8 +3,8 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import Ajv2020 from 'ajv/dist/2020.js';
 import addFormats from 'ajv-formats';
-import { ValidationError } from '../errors/index';
-import type { ValidationErrorDetail, ValidationResult } from '../types/index';
+import { ValidationError } from '../errors/index.js';
+import type { ValidationErrorDetail, ValidationResult } from '../types/index.js';
 
 export function validateKey(key: string): ValidationResult {
   const errors: string[] = [];

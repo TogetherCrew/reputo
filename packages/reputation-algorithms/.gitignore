@@ -222,7 +222,5 @@ $RECYCLE.BIN/
 
 # End of https://www.toptal.com/developers/gitignore/api/node,linux,macos,windows
 
-!.env
-!.env.*
-.env.*.local
-.env.local
+!.env.example
+!.env.*.example
