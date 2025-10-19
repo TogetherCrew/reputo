@@ -35,5 +35,4 @@ const SnapshotSchema = new Schema<Snapshot, SnapshotModel>(
     minimize: false,
   },
 );
-SnapshotSchema.index({ algorithmPreset: 1 });
 export default SnapshotSchema as Schema<Snapshot, SnapshotModel>;

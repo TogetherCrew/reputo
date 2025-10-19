@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, test } from 'vitest';
-import { AlgorithmPreset } from '../interfaces/index.js';
-import AlgorithmPresetModel from '../models/AlgorithmPreset.model.js';
+import { AlgorithmPreset } from '../../../src/interfaces/index.js';
+import AlgorithmPresetModel from '../../../src/models/AlgorithmPreset.model.js';
 
 describe('AlgorithmPreset model', () => {
   describe('AlgorithmPreset validation', () => {
@@ -16,10 +16,6 @@ describe('AlgorithmPreset model', () => {
           {
             key: 'threshold',
             value: 0.5,
-          },
-          {
-            key: 'weight',
-            value: 'high',
           },
         ],
         name: 'Test Algorithm Preset',

@@ -1,7 +1,7 @@
 import { Types } from 'mongoose';
 import { beforeEach, describe, expect, test } from 'vitest';
-import { Snapshot } from '../interfaces/index.js';
-import SnapshotModel from '../models/Snapshot.model.js';
+import { Snapshot } from '../../../src/interfaces/index.js';
+import SnapshotModel from '../../../src/models/Snapshot.model.js';
 
 describe('Snapshot model', () => {
   describe('Snapshot validation', () => {

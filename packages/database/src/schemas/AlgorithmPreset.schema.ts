@@ -23,13 +23,15 @@ const AlgorithmPresetSchema = new Schema<AlgorithmPreset, AlgorithmPresetModel>(
       },
       { _id: false },
     ),
-    inputs: new Schema<AlgorithmPreset['inputs'][number]>(
-      {
-        key: { type: String, required: true },
-        value: { type: Schema.Types.Mixed },
-      },
-      { _id: false },
-    ),
+    inputs: [
+      new Schema<AlgorithmPreset['inputs'][number]>(
+        {
+          key: { type: String, required: true },
+          value: { type: Schema.Types.Mixed },
+        },
+        { _id: false },
+      ),
+    ],
     name: { type: String },
     description: { type: String },
   },
@@ -39,7 +41,5 @@ const AlgorithmPresetSchema = new Schema<AlgorithmPreset, AlgorithmPresetModel>(
     minimize: false,
   },
 );
-
-AlgorithmPresetSchema.index({ 'spec.key': 1, 'spec.version': 1 });
 
 export default AlgorithmPresetSchema as Schema<AlgorithmPreset, AlgorithmPresetModel>;
