@@ -84,17 +84,17 @@ docker ps
 
 ### Development Environment
 
-- **Node.js**: 20.x or higher
-- **pnpm**: 10.12.4 or higher (specified in `packageManager`)
-- **Docker**: For containerized development
-- **Git**: With Lefthook for git hooks
+-   **Node.js**: 20.x or higher
+-   **pnpm**: 10.12.4 or higher (specified in `packageManager`)
+-   **Docker**: For containerized development
+-   **Git**: With Lefthook for git hooks
 
 ### Production/Staging Deployment
 
-- **Docker & Docker Compose**: Container orchestration
-- **Traefik**: Reverse proxy (included in compose)
-- **Domain & DNS**: For SSL certificate generation
-- **Cloudflare API Token**: For DNS challenge (Let's Encrypt)
+-   **Docker & Docker Compose**: Container orchestration
+-   **Traefik**: Reverse proxy (included in compose)
+-   **Domain & DNS**: For SSL certificate generation
+-   **Cloudflare API Token**: For DNS challenge (Let's Encrypt)
 
 ---
 
@@ -107,7 +107,8 @@ reputo/
 │   ├── ui/                         # React + Vite frontend
 │   └── workflows/                  # Temporal workflows
 ├── packages/
-│   └── reputation-algorithms/      # Shared TypeScript algorithms
+│   ├── reputation-algorithms/      # Shared TypeScript algorithms
+│   └── database/                   # Mongoose database layer
 ├── docker/
 │   ├── docker-compose.yml          # Production/staging setup
 │   ├── docker-compose.local.yml    # Local development
@@ -132,12 +133,13 @@ reputo/
 
 ## Apps & Packages
 
-| Path                             | Stack                                                                                                                                                                                | Notes                            | Status         | Documentation                                                |
-| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------- | -------------- | ------------------------------------------------------------ |
-| `apps/api`                       | ![nestjs](https://img.shields.io/badge/-NestJS-E0234E?logo=nestjs&logoColor=white&style=flat)                                                                                        | REST API with health checks      | ✅ Basic Setup | -                                                            |
-| `apps/ui`                        | ![react](https://img.shields.io/badge/-React-61DAFB?logo=react&logoColor=black&style=flat) + ![vite](https://img.shields.io/badge/-Vite-646CFF?logo=vite&logoColor=white&style=flat) | Single-page application          | ✅ Basic Setup | -                                                            |
-| `apps/workflows`                 | ![typescript](https://img.shields.io/badge/-TypeScript-3178C6?logo=typescript&logoColor=white&style=flat)                                                                            | Temporal workflows               | 🔄 In Progress | -                                                            |
-| `packages/reputation-algorithms` | ![typescript](https://img.shields.io/badge/-TypeScript-3178C6?logo=typescript&logoColor=white&style=flat)                                                                            | Algorithm registry & definitions | ✅ Ready       | [📚 README](packages/reputation-algorithms/docs/globals.md) |
+| Path                             | Stack                                                                                                                                                                                                           | Notes                               | Status         | Documentation                                               |
+| -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- | -------------- | ----------------------------------------------------------- |
+| `apps/api`                       | ![nestjs](https://img.shields.io/badge/-NestJS-E0234E?logo=nestjs&logoColor=white&style=flat)                                                                                                                   | REST API with health checks         | ✅ Basic Setup | -                                                           |
+| `apps/ui`                        | ![react](https://img.shields.io/badge/-React-61DAFB?logo=react&logoColor=black&style=flat) + ![vite](https://img.shields.io/badge/-Vite-646CFF?logo=vite&logoColor=white&style=flat)                            | Single-page application             | ✅ Basic Setup | -                                                           |
+| `apps/workflows`                 | ![typescript](https://img.shields.io/badge/-TypeScript-3178C6?logo=typescript&logoColor=white&style=flat)                                                                                                       | Temporal workflows                  | 🔄 In Progress | -                                                           |
+| `packages/reputation-algorithms` | ![typescript](https://img.shields.io/badge/-TypeScript-3178C6?logo=typescript&logoColor=white&style=flat)                                                                                                       | Algorithm registry & definitions    | ✅ Ready       | [📚 README](packages/reputation-algorithms/docs/globals.md) |
+| `packages/database`              | ![mongoose](https://img.shields.io/badge/-Mongoose-880000?logo=mongoose&logoColor=white&style=flat) + ![typescript](https://img.shields.io/badge/-TypeScript-3178C6?logo=typescript&logoColor=white&style=flat) | Type-safe database models & schemas | ✅ Ready       | [📚 README](packages/database/docs/globals.md)              |
 
 ---
 
@@ -145,15 +147,15 @@ reputo/
 
 ### Tools & Conventions
 
-- **Monorepo**: pnpm workspaces with workspace protocol for internal packages
-- **Test runner**: Vitest with SWC compilation and V8 coverage
-- **Lint/Format**: Biome (replaces ESLint + Prettier) for consistent code style
-- **Git hooks**: Lefthook for pre-commit checks and commit message validation
-- **Versioning**: Semantic Release with conventional commits
-- **Containers**: Multi-stage Docker builds with optimized production images
-- **CI/CD**: GitHub Actions with comprehensive quality gates
-- **Branching**: GitHub Flow (feature branches → main)
-- **Package Manager**: pnpm 10.12.4 with workspace dependencies
+-   **Monorepo**: pnpm workspaces with workspace protocol for internal packages
+-   **Test runner**: Vitest with SWC compilation and V8 coverage
+-   **Lint/Format**: Biome (replaces ESLint + Prettier) for consistent code style
+-   **Git hooks**: Lefthook for pre-commit checks and commit message validation
+-   **Versioning**: Semantic Release with conventional commits
+-   **Containers**: Multi-stage Docker builds with optimized production images
+-   **CI/CD**: GitHub Actions with comprehensive quality gates
+-   **Branching**: GitHub Flow (feature branches → main)
+-   **Package Manager**: pnpm 10.12.4 with workspace dependencies
 
 ### Code Quality Pipeline
 
@@ -203,6 +205,11 @@ pnpm --filter @reputo/workflows build
 pnpm --filter @reputo/reputation-algorithms dev
 pnpm --filter @reputo/reputation-algorithms build
 pnpm --filter @reputo/reputation-algorithms test
+
+# Database development
+pnpm --filter @reputo/database build
+pnpm --filter @reputo/database test
+pnpm --filter @reputo/database docs
 ```
 
 ### Development Workflow
@@ -233,31 +240,31 @@ We follow a three-tier deployment strategy with automated promotion:
 
 #### Preview Environment (Pull Requests)
 
-- **Trigger**: Adding `pullpreview` label to PRs
-- **Infrastructure**: AWS Lightsail (auto-provisioned via PullPreview)
-- **URL**: Dynamic subdomain generated per PR
-- **Cleanup**: Auto-expires after 48h or PR closure
-- **Purpose**: Design review and QA testing
+-   **Trigger**: Adding `pullpreview` label to PRs
+-   **Infrastructure**: AWS Lightsail (auto-provisioned via PullPreview)
+-   **URL**: Dynamic subdomain generated per PR
+-   **Cleanup**: Auto-expires after 48h or PR closure
+-   **Purpose**: Design review and QA testing
 
 #### Staging Environment
 
-- **Trigger**: Merge to `main` branch (automated)
-- **URL**:
-    - UI: [staging.logid.xyz](https://staging.logid.xyz)
-    - API: [api-staging.logid.xyz](https://api-staging.logid.xyz)
-    - Traefik: [traefik-staging.logid.xyz/dashboard](https://traefik-staging.logid.xyz/dashboard/)
-- **Deployment**: Watchtower auto-pulls `staging` tagged images
-- **Purpose**: Integration testing and release preparation
+-   **Trigger**: Merge to `main` branch (automated)
+-   **URL**:
+    -   UI: [staging.logid.xyz](https://staging.logid.xyz)
+    -   API: [api-staging.logid.xyz](https://api-staging.logid.xyz)
+    -   Traefik: [traefik-staging.logid.xyz/dashboard](https://traefik-staging.logid.xyz/dashboard/)
+-   **Deployment**: Watchtower auto-pulls `staging` tagged images
+-   **Purpose**: Integration testing and release preparation
 
 #### Production Environment
 
-- **Trigger**: Manual workflow dispatch with commit SHA
-- **URL**:
-    - UI: [logid.xyz](https://logid.xyz)
-    - API: [api.logid.xyz](https://api.logid.xyz)
-    - Traefik: [traefik.logid.xyz/dashboard](https://traefik.logid.xyz/dashboard/)
-- **Process**: Promotes staging images with `production` tags
-- **Purpose**: Live user-facing environment
+-   **Trigger**: Manual workflow dispatch with commit SHA
+-   **URL**:
+    -   UI: [logid.xyz](https://logid.xyz)
+    -   API: [api.logid.xyz](https://api.logid.xyz)
+    -   Traefik: [traefik.logid.xyz/dashboard](https://traefik.logid.xyz/dashboard/)
+-   **Process**: Promotes staging images with `production` tags
+-   **Purpose**: Live user-facing environment
 
 ### Environment Variables
 
@@ -301,11 +308,11 @@ docker build -f docker/Dockerfile --target api -t reputo/api .
 
 Features:
 
-- **TLS**: Automatic HTTPS with Let's Encrypt via Cloudflare DNS challenge
-- **Routing**: Domain-based routing with middleware support
-- **Dashboard**: Protected with basic authentication
-- **Health checks**: Built-in monitoring and failover
-- **CORS**: Configurable cross-origin resource sharing
+-   **TLS**: Automatic HTTPS with Let's Encrypt via Cloudflare DNS challenge
+-   **Routing**: Domain-based routing with middleware support
+-   **Dashboard**: Protected with basic authentication
+-   **Health checks**: Built-in monitoring and failover
+-   **CORS**: Configurable cross-origin resource sharing
 
 ### Container Registry
 
@@ -321,10 +328,10 @@ ghcr.io/togethercrew/reputo/workflows:${TAG}
 
 Automated container updates with:
 
-- Image monitoring with label-based filtering
-- Rolling restart strategy to minimize downtime
-- Automatic cleanup of old images
-- 60-second polling interval for rapid deployments
+-   Image monitoring with label-based filtering
+-   Rolling restart strategy to minimize downtime
+-   Automatic cleanup of old images
+-   60-second polling interval for rapid deployments
 
 ### Docker Commands
 
@@ -369,23 +376,23 @@ pnpm --filter @reputo/api test
 
 ### Testing Configuration
 
-- **Framework**: Vitest with SWC compilation for fast execution
-- **Coverage**: V8 coverage provider with comprehensive reporting
-- **Layout**: Tests adjacent to source files (`*.test.ts`, `*.spec.ts`)
-- **Reporting**: Coverage reports generated in `coverage/` directory
-- **Config**: Shared configuration in `vitest.config.ts` with project-specific overrides
+-   **Framework**: Vitest with SWC compilation for fast execution
+-   **Coverage**: V8 coverage provider with comprehensive reporting
+-   **Layout**: Tests adjacent to source files (`*.test.ts`, `*.spec.ts`)
+-   **Reporting**: Coverage reports generated in `coverage/` directory
+-   **Config**: Shared configuration in `vitest.config.ts` with project-specific overrides
 
 ### Coverage Targets
 
-- Minimum coverage thresholds enforced in CI
-- Coverage reports uploaded to Codecov for tracking
-- Per-package coverage reporting for monorepo visibility
+-   Minimum coverage thresholds enforced in CI
+-   Coverage reports uploaded to Codecov for tracking
+-   Per-package coverage reporting for monorepo visibility
 
 ### Test Types
 
-- **Unit tests**: Individual function/component testing
-- **Integration tests**: API endpoint testing with supertest
-- **E2E tests**: Planned for UI workflow testing
+-   **Unit tests**: Individual function/component testing
+-   **Integration tests**: API endpoint testing with supertest
+-   **E2E tests**: Planned for UI workflow testing
 
 ---
 
@@ -394,11 +401,13 @@ pnpm --filter @reputo/api test
 ### Automated Staging Deployment
 
 1. **Quality Gate**: Merge to `main` triggers comprehensive testing
+
     - Parallel linting, formatting, type checking
     - Full test suite execution with coverage
     - Multi-target Docker builds
 
 2. **Build & Push**: After quality gate passes
+
     - Multi-stage Docker image builds
     - Push to GitHub Container Registry with `staging` tag
     - Semantic versioning and changelog generation
@@ -423,6 +432,7 @@ pnpm --filter @reputo/api test
     ```
 
 3. **Automated promotion**:
+
     - Re-tags staging images with `production` tag
     - Watchtower detects and deploys to production
     - Zero-rebuild deployment (exact staging artifacts)
@@ -433,9 +443,9 @@ pnpm --filter @reputo/api test
 
 ### Image Tagging Strategy
 
-- **Feature branches**: `main-{commit-sha}` for specific testing
-- **Staging**: `staging` (auto-deployed from main branch)
-- **Production**: `production` and `prod-{commit-sha}` (manually promoted from staging)
+-   **Feature branches**: `main-{commit-sha}` for specific testing
+-   **Staging**: `staging` (auto-deployed from main branch)
+-   **Production**: `production` and `prod-{commit-sha}` (manually promoted from staging)
 
 ### Rollback Process
 
@@ -465,6 +475,7 @@ Fast rollback capability:
     ```
 
 3. **Open Pull Request** to `main`
+
     - Add `pullpreview` label for preview deployment
     - Ensure CI passes (quality gate + tests)
     - Request review from maintainers
@@ -475,17 +486,17 @@ Fast rollback capability:
 
 We use [Conventional Commits](https://conventionalcommits.org/) enforced by commitlint.
 
-**Scopes**: `api`, `ui`, `workflows`, `algorithms`, `docker`, `ci`
+**Scopes**: `api`, `ui`, `workflows`, `algorithms`, `database`, `docker`, `ci`
 
 ### Pull Request Checklist
 
-- [ ] `pnpm check` passes (Biome formatting and linting)
-- [ ] `pnpm test` passes with adequate coverage
-- [ ] Documentation updated if needed
-- [ ] PR has descriptive title and body
-- [ ] Conventional commit messages used
-- [ ] At least one reviewer approval
-- [ ] Preview deployment tested (if applicable)
+-   [ ] `pnpm check` passes (Biome formatting and linting)
+-   [ ] `pnpm test` passes with adequate coverage
+-   [ ] Documentation updated if needed
+-   [ ] PR has descriptive title and body
+-   [ ] Conventional commit messages used
+-   [ ] At least one reviewer approval
+-   [ ] Preview deployment tested (if applicable)
 
 ---
 

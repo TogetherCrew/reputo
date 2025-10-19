@@ -8,9 +8,9 @@ COPY . /usr/src/app
 WORKDIR /usr/src/app
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile --ignore-scripts
 RUN pnpm run -r build
-RUN pnpm deploy --filter=api --prod /prod/api
-RUN pnpm deploy --filter=ui --prod /prod/ui
-RUN pnpm deploy --filter=workflows --prod /prod/workflows
+RUN pnpm deploy --filter=api --prod --legacy --ignore-scripts /prod/api
+RUN pnpm deploy --filter=ui --prod --legacy --ignore-scripts /prod/ui
+RUN pnpm deploy --filter=workflows --prod --legacy --ignore-scripts /prod/workflows
 
 FROM base AS api
 COPY --from=build /prod/api /prod/api

@@ -16,7 +16,7 @@ Framework-agnostic TypeScript library for describing, validating, and discoverin
 pnpm add @reputo/reputation-algorithms
 ```
 
-## Library usage
+## Usage
 
 The public API provides helpers to discover and retrieve algorithm definitions from the read-only registry. See the full API reference in [docs](docs/globals.md).
 
@@ -96,6 +96,6 @@ Definitions live under `packages/reputation-algorithms/src/registry/` as version
 
 ## License
 
-Released under the **GPL-3.0** license. See [LICENSE](LICENSE) file for details.
+Released under the **GPL-3.0** license. See [LICENSE](../../LICENSE) file for details.
 
 This project is open source and welcomes contributions from the community.

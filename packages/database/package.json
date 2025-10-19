@@ -1,7 +1,7 @@
 {
-    "name": "@reputo/reputation-algorithms",
+    "name": "@reputo/database",
     "version": "0.0.0",
-    "description": "Framework-agnostic TypeScript library for describing, validating, and discovering versioned algorithm definitions via a read-only registry. JSON Schema–driven, Ajv-validated, identical API in Node and the browser; no code execution.",
+    "description": "Mongoose-based database layer for the Reputo ecosystem.",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
     "private": true,
@@ -9,14 +9,6 @@
         ".": {
             "types": "./dist/index.d.ts",
             "default": "./dist/index.js"
-        },
-        "./api": {
-            "types": "./dist/api/index.d.ts",
-            "default": "./dist/api/index.js"
-        },
-        "./api/registry": {
-            "types": "./dist/api/registry.d.ts",
-            "default": "./dist/api/registry.js"
         }
     },
     "type": "module",
@@ -25,36 +17,37 @@
         "check": "pnpm exec biome check --write",
         "format": "pnpm exec biome format --write",
         "lint": "pnpm exec biome lint --write",
-        "registry:build": "tsx src/cli/build-registry.ts",
-        "algorithm:create": "tsx src/cli/create-algorithm.ts",
-        "registry:validate": "tsx src/cli/validate-registry.ts",
         "test": "vitest run",
         "test:watch": "vitest",
         "test:coverage": "vitest run --coverage",
         "typecheck": "tsc --noEmit",
-        "prebuild": "pnpm registry:validate && pnpm registry:build",
         "build": "tsc",
         "release": "semantic-release",
         "docs": "typedoc",
         "clean": "rm -rf coverage dist docs node_modules tsconfig.tsbuildinfo"
     },
+    "dependencies": {
+        "mongoose": "^8.19.1"
+    },
     "devDependencies": {
+        "@semantic-release/changelog": "^6.0.3",
+        "@semantic-release/commit-analyzer": "^11.1.0",
+        "@semantic-release/git": "^10.0.1",
+        "@semantic-release/release-notes-generator": "^12.1.0",
         "@types/node": "^22.17.0",
-        "ajv": "^8.17.1",
-        "ajv-formats": "^3.0.1",
+        "semantic-release": "^23.0.2",
+        "semantic-release-commits-lint": "^1.1.0",
+        "semantic-release-monorepo": "^7.0.2",
         "tsx": "^4.7.0",
         "typedoc": "^0.28.13",
         "typedoc-plugin-markdown": "^4.9.0",
         "typescript": "^5.9.2",
-        "vitest": "^3.2.4",
-        "semantic-release": "^23.0.2",
-        "semantic-release-commits-lint": "^1.1.0",
-        "semantic-release-monorepo": "^7.0.2"
+        "vitest": "^3.2.4"
     },
     "keywords": [
         "typescript",
-        "algorithms",
-        "reputation"
+        "database",
+        "mongoose"
     ],
     "files": [
         "dist",
