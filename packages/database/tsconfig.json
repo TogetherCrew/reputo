@@ -1,0 +1,50 @@
+{
+    "compilerOptions": {
+        "incremental": true,
+        "composite": true,
+
+        "target": "ES2022",
+        "lib": ["ES2022", "DOM"],
+
+        "module": "ESNext",
+        "moduleResolution": "bundler",
+        "moduleDetection": "force",
+        "types": ["node"],
+
+        "rootDir": "./src",
+        "outDir": "./dist",
+        "declaration": true,
+        "declarationMap": true,
+        "sourceMap": true,
+
+        "resolveJsonModule": true,
+        "isolatedModules": true,
+        "isolatedDeclarations": true,
+        "forceConsistentCasingInFileNames": true,
+        "esModuleInterop": true,
+        "allowSyntheticDefaultImports": true,
+
+        "strict": true,
+        "noImplicitAny": true,
+        "strictNullChecks": true,
+        "strictFunctionTypes": true,
+        "strictBindCallApply": true,
+        "strictPropertyInitialization": true,
+        "noImplicitThis": true,
+        "useUnknownInCatchVariables": true,
+        "alwaysStrict": true,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "exactOptionalPropertyTypes": true,
+        "noImplicitReturns": true,
+        "noFallthroughCasesInSwitch": true,
+        "noUncheckedIndexedAccess": true,
+        "noImplicitOverride": true,
+        "noPropertyAccessFromIndexSignature": true,
+        "allowUnusedLabels": false,
+        "allowUnreachableCode": false,
+        "skipLibCheck": true
+    },
+    "include": ["src/**/*.ts", "src/**/*.json"],
+    "exclude": ["node_modules", "dist"]
+}
