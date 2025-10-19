@@ -1,0 +1,15 @@
+{
+    "key": "Invalid-Key-With-Capitals",
+    "name": "Invalid Key",
+    "category": "custom",
+    "description": "Algorithm with invalid key format",
+    "version": "1.0.0",
+    "inputs": [],
+    "outputs": [
+        {
+            "key": "result",
+            "type": "score_map",
+            "entity": "user"
+        }
+    ]
+}

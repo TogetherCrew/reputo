@@ -1,3 +1,5 @@
-export function helloWorld(name?: string): string {
-  return `Hello ${name || 'world'}!`;
+import { getAlgorithmDefinitionKeys } from '@reputo/reputation-algorithms';
+
+export function getAvailableAlgorithms(): readonly string[] {
+  return getAlgorithmDefinitionKeys();
 }

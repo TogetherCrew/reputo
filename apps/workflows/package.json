@@ -3,15 +3,18 @@
     "version": "2.0.0",
     "description": "",
     "main": "dist/index.js",
-    "private":"true",
+    "private": "true",
     "scripts": {
-        "build": "tsc -p tsconfig.json",
+        "build": "tsc",
         "dev": "tsx watch src/index.ts",
         "check": "pnpm exec biome check --write",
         "format": "pnpm exec biome format --write",
         "lint": "pnpm exec biome lint --write",
         "test": "echo \"no tests yet\"",
         "release": "semantic-release"
+    },
+    "dependencies": {
+        "@reputo/reputation-algorithms": "workspace:*"
     },
     "devDependencies": {
         "tsx": "^4.7.0"

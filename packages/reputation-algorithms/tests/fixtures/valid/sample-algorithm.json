@@ -1,0 +1,33 @@
+{
+    "key": "sample_algorithm",
+    "name": "Sample Algorithm",
+    "category": "custom",
+    "description": "A sample algorithm for testing purposes",
+    "version": "1.0.0",
+    "inputs": [
+        {
+            "key": "input_data",
+            "label": "Input Data",
+            "type": "csv",
+            "csv": {
+                "hasHeader": true,
+                "delimiter": ",",
+                "columns": [
+                    {
+                        "key": "user_id",
+                        "type": "string",
+                        "description": "User identifier"
+                    }
+                ]
+            }
+        }
+    ],
+    "outputs": [
+        {
+            "key": "result",
+            "label": "Result",
+            "type": "score_map",
+            "entity": "user"
+        }
+    ]
+}

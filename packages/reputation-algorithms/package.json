@@ -1,29 +1,67 @@
 {
     "name": "@reputo/reputation-algorithms",
-    "version": "1.0.0",
+    "version": "0.0.0",
+    "description": "Framework-agnostic TypeScript library for describing, validating, and discovering versioned algorithm definitions via a read-only registry. JSON Schema–driven, Ajv-validated, identical API in Node and the browser; no code execution.",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
-    "private": "true",
+    "private": true,
     "exports": {
         ".": {
-            "import": "./dist/index.js",
-            "require": "./dist/index.js"
+            "types": "./dist/index.d.ts",
+            "default": "./dist/index.js"
+        },
+        "./api": {
+            "types": "./dist/api/index.d.ts",
+            "default": "./dist/api/index.js"
+        },
+        "./api/registry": {
+            "types": "./dist/api/registry.d.ts",
+            "default": "./dist/api/registry.js"
         }
     },
+    "type": "module",
+    "module": "dist/index.js",
     "scripts": {
-        "build": "tsc -p tsconfig.json",
-        "dev": "tsx watch src/index.ts",
         "check": "pnpm exec biome check --write",
         "format": "pnpm exec biome format --write",
         "lint": "pnpm exec biome lint --write",
-        "test": "echo \"no tests yet\"",
-        "release": "semantic-release"
+        "registry:build": "tsx src/cli/build-registry.ts",
+        "algorithm:create": "tsx src/cli/create-algorithm.ts",
+        "registry:validate": "tsx src/cli/validate-registry.ts",
+        "test": "vitest run",
+        "test:watch": "vitest",
+        "test:coverage": "vitest run --coverage",
+        "typecheck": "tsc --noEmit",
+        "prebuild": "pnpm registry:validate && pnpm registry:build",
+        "build": "tsc",
+        "release": "semantic-release",
+        "docs": "typedoc",
+        "clean": "rm -rf coverage dist docs node_modules tsconfig.tsbuildinfo"
     },
     "devDependencies": {
-        "tsx": "^4.7.0"
+        "@types/node": "^22.17.0",
+        "ajv": "^8.17.1",
+        "ajv-formats": "^3.0.1",
+        "jiti": "^2.6.0",
+        "tsx": "^4.7.0",
+        "typedoc": "^0.28.13",
+        "typedoc-plugin-markdown": "^4.9.0",
+        "typescript": "^5.9.2",
+        "vitest": "^3.2.4"
     },
-    "keywords": [],
-    "author": "",
-    "license": "ISC",
+    "keywords": [
+        "typescript",
+        "algorithms",
+        "reputation"
+    ],
+    "files": [
+        "dist",
+        "!dist/**/*.test.*"
+    ],
+    "author": {
+        "name": "Behzad Rabiei",
+        "url": "https://github.com/Behzad-rabiei"
+    },
+    "license": "GPL-3.0",
     "packageManager": "pnpm@10.12.4"
 }

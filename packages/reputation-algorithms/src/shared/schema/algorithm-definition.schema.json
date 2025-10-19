@@ -1,0 +1,152 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "AlgorithmDefinition",
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+        "key",
+        "name",
+        "category",
+        "description",
+        "version",
+        "inputs",
+        "outputs"
+    ],
+    "properties": {
+        "key": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*$",
+            "minLength": 2
+        },
+        "name": { "type": "string", "minLength": 1 },
+        "category": {
+            "type": "string",
+            "enum": ["engagement", "quality", "activity", "custom"]
+        },
+        "description": { "type": "string", "minLength": 1 },
+        "version": {
+            "type": "string",
+            "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-[0-9A-Za-z-.]+)?(?:\\+[0-9A-Za-z-.]+)?$"
+        },
+        "inputs": {
+            "type": "array",
+            "items": { "$ref": "#/$defs/ioItem" }
+        },
+        "outputs": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "$ref": "#/$defs/ioItem" }
+        },
+        "$schemaRef": {
+            "type": "string",
+            "format": "uri",
+            "description": "Optional backpointer to the schema $id used during authoring."
+        }
+    },
+    "$defs": {
+        "ioItem": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "type"],
+            "properties": {
+                "key": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_]*$",
+                    "minLength": 2
+                },
+                "label": { "type": "string" },
+                "description": { "type": "string" },
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "csv",
+                        "number",
+                        "boolean",
+                        "array",
+                        "score_map",
+                        "string",
+                        "object"
+                    ]
+                },
+                "csv": { "$ref": "#/$defs/csvMeta" },
+                "entity": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_]*$",
+                    "description": "Entity key for score maps (e.g., 'user')."
+                }
+            },
+            "allOf": [
+                {
+                    "if": {
+                        "properties": { "type": { "const": "csv" } },
+                        "required": ["type"]
+                    },
+                    "then": { "required": ["csv"] }
+                },
+                {
+                    "if": {
+                        "properties": { "type": { "const": "score_map" } },
+                        "required": ["type"]
+                    },
+                    "then": { "required": ["entity"] }
+                }
+            ]
+        },
+        "csvMeta": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["columns"],
+            "properties": {
+                "hasHeader": { "type": "boolean", "default": true },
+                "delimiter": {
+                    "type": "string",
+                    "minLength": 1,
+                    "default": ","
+                },
+                "maxRows": { "type": "integer", "minimum": 1 },
+                "maxBytes": { "type": "integer", "minimum": 1 },
+                "columns": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": { "$ref": "#/$defs/csvColumn" }
+                }
+            }
+        },
+        "csvColumn": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "type"],
+            "properties": {
+                "key": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_]*$",
+                    "minLength": 2
+                },
+                "type": {
+                    "type": "string",
+                    "enum": ["string", "integer", "number", "date", "enum"]
+                },
+                "required": { "type": "boolean", "default": true },
+                "enum": {
+                    "type": "array",
+                    "items": { "type": ["string", "number"] },
+                    "minItems": 1
+                },
+                "aliases": {
+                    "type": "array",
+                    "items": { "type": "string", "minLength": 1 }
+                },
+                "description": { "type": "string" }
+            },
+            "allOf": [
+                {
+                    "if": {
+                        "properties": { "type": { "const": "enum" } },
+                        "required": ["type"]
+                    },
+                    "then": { "required": ["enum"] }
+                }
+            ]
+        }
+    }
+}
