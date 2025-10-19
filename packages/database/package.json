@@ -9,14 +9,6 @@
         ".": {
             "types": "./dist/index.d.ts",
             "default": "./dist/index.js"
-        },
-        "./api": {
-            "types": "./dist/api/index.d.ts",
-            "default": "./dist/api/index.js"
-        },
-        "./api/registry": {
-            "types": "./dist/api/registry.d.ts",
-            "default": "./dist/api/registry.js"
         }
     },
     "type": "module",

@@ -20,21 +20,9 @@ Mongoose-based database layer for the Reputo ecosystem. Provides type-safe model
 pnpm add @reputo/database
 ```
 
-## Database Connection Setup
-
-Before using the models, ensure you have a MongoDB connection established:
-
-```ts
-import mongoose from 'mongoose'
-
-// Connect to MongoDB
-await mongoose.connect('mongodb://localhost:27017/reputo')
-
-// Or use environment variables
-await mongoose.connect(process.env.MONGODB_URI!)
-```
-
 ## Usage
+
+See the full API reference in [docs](_media/globals.md).
 
 ### Models
 
@@ -103,86 +91,8 @@ const pendingSnapshots = await SnapshotModel.find({
 })
 ```
 
-### Schemas
-
-Access the underlying Mongoose schemas for custom operations:
-
-```ts
-import { AlgorithmPresetSchema, SnapshotSchema } from '@reputo/database'
-
-// Use schemas for validation
-const isValid = AlgorithmPresetSchema.validateSync(presetData)
-```
-
-### Interfaces
-
-Use the TypeScript interfaces for type safety:
-
-```ts
-import type {
-    AlgorithmPreset,
-    AlgorithmPresetDoc,
-    Snapshot,
-    SnapshotDoc,
-    SnapshotStatus,
-} from '@reputo/database'
-
-function processPreset(preset: AlgorithmPresetDoc): void {
-    // Type-safe access to preset properties
-    console.log(preset.spec.key, preset.inputs)
-}
-
-function updateSnapshotStatus(
-    snapshot: SnapshotDoc,
-    status: SnapshotStatus
-): void {
-    snapshot.status = status
-    snapshot.save()
-}
-```
-
-### Constants
-
-Access predefined constants:
-
-```ts
-import { MODEL_NAMES, SnapshotStatus } from '@reputo/database'
-
-// Use model names for dynamic operations
-const modelName = MODEL_NAMES.ALGORITHM_PRESET
-
-// Use status constants
-const status = SnapshotStatus.COMPLETED
-```
-
-## API Reference
-
-### Models
-
-- **AlgorithmPresetModel**: Mongoose model for algorithm presets
-- **SnapshotModel**: Mongoose model for execution snapshots
-
-### Schemas
-
-- **AlgorithmPresetSchema**: Mongoose schema for algorithm presets
-- **SnapshotSchema**: Mongoose schema for execution snapshots
-
-### Interfaces
-
-- **AlgorithmPreset**: TypeScript interface for algorithm preset documents
-- **AlgorithmPresetDoc**: Hydrated document type for algorithm presets
-- **AlgorithmPresetModel**: Mongoose model interface for algorithm presets
-- **Snapshot**: TypeScript interface for snapshot documents
-- **SnapshotDoc**: Hydrated document type for snapshots
-- **SnapshotModel**: Mongoose model interface for snapshots
-
-### Constants
-
-- **MODEL_NAMES**: Object containing model name constants
-- **SnapshotStatus**: Enum for snapshot status values
-
 ## License
 
-Released under the **GPL-3.0** license.
+Released under the **GPL-3.0** license. See [LICENSE](_media/LICENSE) file for details.
 
 This project is open source and welcomes contributions from the community.

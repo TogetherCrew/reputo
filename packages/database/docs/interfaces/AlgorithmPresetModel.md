@@ -6,7 +6,7 @@
 
 # Interface: AlgorithmPresetModel
 
-Defined in: packages/database/src/interfaces/AlgorithmPreset.interface.ts:42
+Defined in: [packages/database/src/interfaces/AlgorithmPreset.interface.ts:42](https://github.com/TogetherCrew/reputo/blob/2db3ca681973f3b7304a52cef9c0cd9457c2c540/packages/database/src/interfaces/AlgorithmPreset.interface.ts#L42)
 
 Interface extending Mongoose Model with additional methods for AlgorithmPreset.
 
@@ -20,7 +20,7 @@ Interface extending Mongoose Model with additional methods for AlgorithmPreset.
 
 > **new AlgorithmPresetModel**\<`DocType`\>(`doc?`, `fields?`, `options?`): `Document`\<`unknown`, \{ \}, [`AlgorithmPreset`](AlgorithmPreset.md), \{ \}, \{ \}\> & [`AlgorithmPreset`](AlgorithmPreset.md) & `object` & `object`
 
-Defined in: packages/database/src/interfaces/AlgorithmPreset.interface.ts:42
+Defined in: [packages/database/src/interfaces/AlgorithmPreset.interface.ts:42](https://github.com/TogetherCrew/reputo/blob/2db3ca681973f3b7304a52cef9c0cd9457c2c540/packages/database/src/interfaces/AlgorithmPreset.interface.ts#L42)
 
 #### Parameters
 
@@ -50,7 +50,7 @@ Defined in: packages/database/src/interfaces/AlgorithmPreset.interface.ts:42
 
 > **paginate**: (`filter`, `options`) => `Promise`\<`unknown`\>
 
-Defined in: packages/database/src/interfaces/AlgorithmPreset.interface.ts:44
+Defined in: [packages/database/src/interfaces/AlgorithmPreset.interface.ts:44](https://github.com/TogetherCrew/reputo/blob/2db3ca681973f3b7304a52cef9c0cd9457c2c540/packages/database/src/interfaces/AlgorithmPreset.interface.ts#L44)
 
 Pagination method for querying presets
 

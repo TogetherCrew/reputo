@@ -6,7 +6,7 @@
 
 # Interface: SnapshotModel
 
-Defined in: packages/database/src/interfaces/Snapshot.interface.ts:40
+Defined in: [packages/database/src/interfaces/Snapshot.interface.ts:40](https://github.com/TogetherCrew/reputo/blob/2db3ca681973f3b7304a52cef9c0cd9457c2c540/packages/database/src/interfaces/Snapshot.interface.ts#L40)
 
 Interface extending Mongoose Model with additional methods for Snapshot.
 
@@ -20,7 +20,7 @@ Interface extending Mongoose Model with additional methods for Snapshot.
 
 > **new SnapshotModel**\<`DocType`\>(`doc?`, `fields?`, `options?`): `Document`\<`unknown`, \{ \}, [`Snapshot`](Snapshot.md), \{ \}, \{ \}\> & [`Snapshot`](Snapshot.md) & `object` & `object`
 
-Defined in: packages/database/src/interfaces/Snapshot.interface.ts:40
+Defined in: [packages/database/src/interfaces/Snapshot.interface.ts:40](https://github.com/TogetherCrew/reputo/blob/2db3ca681973f3b7304a52cef9c0cd9457c2c540/packages/database/src/interfaces/Snapshot.interface.ts#L40)
 
 #### Parameters
 
@@ -50,7 +50,7 @@ Defined in: packages/database/src/interfaces/Snapshot.interface.ts:40
 
 > **paginate**: (`filter`, `options`) => `Promise`\<`unknown`\>
 
-Defined in: packages/database/src/interfaces/Snapshot.interface.ts:42
+Defined in: [packages/database/src/interfaces/Snapshot.interface.ts:42](https://github.com/TogetherCrew/reputo/blob/2db3ca681973f3b7304a52cef9c0cd9457c2c540/packages/database/src/interfaces/Snapshot.interface.ts#L42)
 
 Pagination method for querying snapshots
 

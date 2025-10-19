@@ -8,7 +8,7 @@
 
 > `const` **MODEL\_NAMES**: `object`
 
-Defined in: packages/database/src/constants/models.constants.ts:1
+Defined in: [packages/database/src/constants/models.constants.ts:1](https://github.com/TogetherCrew/reputo/blob/2db3ca681973f3b7304a52cef9c0cd9457c2c540/packages/database/src/constants/models.constants.ts#L1)
 
 ## Type Declaration
 
