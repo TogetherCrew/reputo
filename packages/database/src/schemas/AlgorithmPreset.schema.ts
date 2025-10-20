@@ -1,5 +1,6 @@
 import { Schema } from 'mongoose';
 import { AlgorithmPreset, AlgorithmPresetModel } from '../interfaces/index.js';
+import { paginate } from '../plugins/index.js';
 
 /**
  * Mongoose schema for AlgorithmPreset documents.
@@ -41,5 +42,7 @@ const AlgorithmPresetSchema = new Schema<AlgorithmPreset, AlgorithmPresetModel>(
     minimize: false,
   },
 );
+
+AlgorithmPresetSchema.plugin(paginate);
 
 export default AlgorithmPresetSchema as Schema<AlgorithmPreset, AlgorithmPresetModel>;

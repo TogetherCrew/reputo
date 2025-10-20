@@ -1,4 +1,5 @@
-import { HydratedDocument, Model } from 'mongoose';
+import type { FilterQuery, HydratedDocument, Model } from 'mongoose';
+import type { PaginateOptions, PaginateResult } from '../plugins/index.js';
 
 /**
  * Interface defining the structure of an AlgorithmPreset document.
@@ -41,5 +42,8 @@ export type AlgorithmPresetDoc = HydratedDocument<AlgorithmPreset>;
  */
 export interface AlgorithmPresetModel extends Model<AlgorithmPreset> {
   /** Pagination method for querying presets */
-  paginate: (filter: object, options: object) => Promise<unknown>;
+  paginate: (
+    filter: FilterQuery<AlgorithmPreset>,
+    options: PaginateOptions,
+  ) => Promise<PaginateResult<AlgorithmPresetDoc>>;
 }
