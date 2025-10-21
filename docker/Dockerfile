@@ -7,6 +7,7 @@ FROM base AS build
 # WORKDIR /usr/src/app
 # COPY package.json pnpm-workspace.yaml tsconfig.base.json ./
 # COPY apps/ ./apps/
+# copy packjson install -> copy src and build
 COPY . /usr/src/app
 WORKDIR /usr/src/app
 

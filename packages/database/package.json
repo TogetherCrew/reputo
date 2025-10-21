@@ -24,7 +24,7 @@
         "build": "tsc",
         "release": "semantic-release",
         "docs": "typedoc",
-        "clean": "rimraf coverage dist docs node_modules tsconfig.tsbuildinfo"
+        "clean": "rm -rf coverage dist docs node_modules tsconfig.tsbuildinfo"
     },
     "dependencies": {
         "mongoose": "^8.19.1"

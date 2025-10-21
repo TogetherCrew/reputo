@@ -19,7 +19,7 @@ services:
         environment:
             - MONGO_INITDB_ROOT_USERNAME=admin
             - MONGO_INITDB_ROOT_PASSWORD=preview-password
-        command: mongod --replSet rs0 --bind_ip_all
+        # command: mongod --replSet rs0 --bind_ip_all
         healthcheck:
             test: ['CMD', 'mongosh', '--eval', "db.adminCommand('ping')"]
             interval: 10s
@@ -68,8 +68,10 @@ services:
     api:
         container_name: api
         depends_on:
-            - traefik
-            - mongodb
+            - traefik:
+                  condition: service_healthy
+            - mongodb:
+                  condition: service_healthy
         build:
             context: ..
             dockerfile: docker/Dockerfile
