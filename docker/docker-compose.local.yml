@@ -2,7 +2,31 @@ networks:
     local:
         driver: bridge
 
+volumes:
+    mongodb_data:
+        driver: local
+
 services:
+    mongodb:
+        container_name: mongodb
+        image: mongo:7.0
+        restart: unless-stopped
+        ports:
+            - '27017:27017'
+        networks: [local]
+        volumes:
+            - mongodb_data:/data/db
+            - ./mongo-init.sh:/docker-entrypoint-initdb.d/mongo-init.sh:ro
+        env_file:
+            - ./mongodb.env
+        command: mongod --bind_ip_all
+        healthcheck:
+            test: ['CMD', 'mongosh', '--eval', "db.adminCommand('ping')"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+            start_period: 30s
+
     api:
         container_name: api
         build:
@@ -15,6 +39,11 @@ services:
         networks: [local]
         volumes:
             - ../apps/api/src:/prod/api/src:ro
+        depends_on:
+            mongodb:
+                condition: service_healthy
+        env_file:
+            - ./api.env
 
     ui:
         container_name: ui

@@ -21,7 +21,7 @@
         "start:temporal": "pnpm --filter @reputo/workflows dev",
         "test": "vitest",
         "ci:test": "npx vitest run --coverage",
-        "postinstall": "lefthook install"
+        "postinstall": "command -v git >/dev/null 2>&1 && lefthook install || echo 'Git not found, skipping lefthook install'"
     },
     "devDependencies": {
         "@anolilab/semantic-release-pnpm": "^2.0.2",
@@ -39,11 +39,11 @@
         "commitizen": "^4.3.1",
         "cz-conventional-changelog": "^3.3.0",
         "lefthook": "^1.11.16",
-        "semantic-release": "^23.1.1",
+        "semantic-release": "^24.2.0",
         "semantic-release-commits-lint": "^1.1.0",
-        "semantic-release-monorepo": "^8.0.2",
+        "multi-semantic-release": "^3.0.2",
         "tsconfig-paths": "^4.2.0",
-        "typescript": "^5.5.0",
+        "typescript": "5.9.2",
         "vite-tsconfig-paths": "^5.1.4",
         "vitest": "^3.2.4"
     },

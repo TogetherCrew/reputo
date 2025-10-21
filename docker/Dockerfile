@@ -1,16 +1,20 @@
-FROM node:20-slim AS base
+FROM node:22.20.0-slim AS base
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable
 
 FROM base AS build
+# WORKDIR /usr/src/app
+# COPY package.json pnpm-workspace.yaml tsconfig.base.json ./
+# COPY apps/ ./apps/
 COPY . /usr/src/app
 WORKDIR /usr/src/app
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile --ignore-scripts
+
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --no-frozen-lockfile 
 RUN pnpm run -r build
-RUN pnpm deploy --filter=api --prod --legacy --ignore-scripts /prod/api
-RUN pnpm deploy --filter=ui --prod --legacy --ignore-scripts /prod/ui
-RUN pnpm deploy --filter=workflows --prod --legacy --ignore-scripts /prod/workflows
+RUN pnpm deploy --filter=@reputo/api --prod --legacy --ignore-scripts /prod/api
+RUN pnpm deploy --filter=@reputo/ui --prod --legacy --ignore-scripts /prod/ui
+RUN pnpm deploy --filter=@reputo/workflows --prod --legacy --ignore-scripts /prod/workflows
 
 FROM base AS api
 COPY --from=build /prod/api /prod/api

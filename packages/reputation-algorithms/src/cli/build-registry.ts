@@ -1,6 +1,6 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
-import type { RegistryGeneratorConfig } from '../shared/types/registry';
+import type { RegistryGeneratorConfig } from '../shared/types/registry.js';
 import {
   generateRegistryIndexContent,
   generateRegistryStats,
@@ -8,7 +8,7 @@ import {
   resolveRegistryIndexPath,
   resolveRegistryPath,
   scanRegistryDirectory,
-} from '../shared/utils';
+} from '../shared/utils/index.js';
 
 const { dirname: __dirname } = getModuleFileAndDir(import.meta.url);
 

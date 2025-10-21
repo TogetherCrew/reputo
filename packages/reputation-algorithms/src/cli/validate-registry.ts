@@ -1,12 +1,12 @@
 import { readFileSync } from 'node:fs';
 
-import { DuplicateError, KeyMismatchError, ValidationError, VersionMismatchError } from '../shared/errors';
+import { DuplicateError, KeyMismatchError, ValidationError, VersionMismatchError } from '../shared/errors/index.js';
 import {
   createValidatorWithSchema,
   getModuleFileAndDir,
   resolveRegistryPath,
   scanRegistryDirectory,
-} from '../shared/utils';
+} from '../shared/utils/index.js';
 
 const { dirname: __dirname } = getModuleFileAndDir(import.meta.url);
 

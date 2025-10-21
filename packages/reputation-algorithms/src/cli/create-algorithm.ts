@@ -7,7 +7,7 @@ import {
   type TemplateConfig,
   validateKey,
   validateVersion,
-} from '../shared/utils';
+} from '../shared/utils/index.js';
 
 const { dirname: __dirname } = getModuleFileAndDir(import.meta.url);
 
