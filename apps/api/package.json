@@ -22,7 +22,7 @@
         "dev": "pnpm run start:dev",
         "release": "semantic-release",
         "releaseAPI": "semantic-release",
-        "clean": "rm -rf coverage dist docs node_modules tsconfig.tsbuildinfo"
+        "clean": "rimraf coverage dist docs node_modules tsconfig.tsbuildinfo"
     },
     "dependencies": {
         "@nestjs/common": "11.0.1",

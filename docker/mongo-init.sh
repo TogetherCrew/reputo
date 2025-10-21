@@ -6,9 +6,16 @@
 set -e
 
 echo "Waiting for MongoDB to be ready..."
+TIMEOUT=60  # 60 seconds timeout
+COUNTER=0
 until mongosh --host mongodb:27017 --eval "print('MongoDB is ready')" > /dev/null 2>&1; do
-  echo "MongoDB is not ready yet. Waiting..."
-  sleep 2
+  COUNTER=$((COUNTER + 1))
+  if [ $COUNTER -gt $TIMEOUT ]; then
+    echo "ERROR: MongoDB failed to start within $TIMEOUT seconds"
+    exit 1
+  fi
+  echo "MongoDB is not ready yet. Waiting... ($COUNTER/$TIMEOUT)"
+  sleep 1
 done
 
 echo "Initializing replica set..."
@@ -32,9 +39,16 @@ mongosh --host mongodb:27017 --eval "
 "
 
 echo "Waiting for replica set to be ready..."
+TIMEOUT=30  # 30 seconds timeout for replica set
+COUNTER=0
 until mongosh --host mongodb:27017 --eval "rs.status().ok" | grep -q "1"; do
-  echo "Replica set is not ready yet. Waiting..."
-  sleep 2
+  COUNTER=$((COUNTER + 1))
+  if [ $COUNTER -gt $TIMEOUT ]; then
+    echo "ERROR: Replica set failed to initialize within $TIMEOUT seconds"
+    exit 1
+  fi
+  echo "Replica set is not ready yet. Waiting... ($COUNTER/$TIMEOUT)"
+  sleep 1
 done
 
 echo "Replica set is ready!"

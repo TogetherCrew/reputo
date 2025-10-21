@@ -13,7 +13,7 @@ export default registerAs('mongoDB', () => ({
 
 export const mongoDBConfigSchema = {
   MONGODB_HOST: Joi.string().required().description('MongoDB host'),
-  MONGODB_PORT: Joi.string().required().description('MongoDB port'),
+  MONGODB_PORT: Joi.number().integer().positive().required().description('MongoDB port'),
   MONGODB_USER: Joi.string().required().description('MongoDB user'),
   MONGODB_PASSWORD: Joi.string().required().description('MongoDB password'),
   MONGODB_DB_NAME: Joi.string().required().description('MongoDB db name'),

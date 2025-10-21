@@ -4,7 +4,27 @@ import { Request, Response } from 'express';
 @Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
   private readonly logger = new Logger(HttpExceptionFilter.name);
+  private sanitizeHeaders(headers: Record<string, unknown>): Record<string, unknown> {
+    const sanitized = { ...headers };
+    const sensitiveHeaders = ['authorization', 'cookie', 'x-api-key'];
+    for (const key of sensitiveHeaders) {
+      if (sanitized[key]) {
+        sanitized[key] = '[REDACTED]';
+      }
+    }
+    return sanitized;
+  }
 
+  private sanitizeBody(body: Record<string, unknown>): Record<string, unknown> {
+    const sanitized = { ...body };
+    const sensitiveFields = ['password', 'token', 'secret', 'creditCard'];
+    for (const key of sensitiveFields) {
+      if (sanitized[key]) {
+        sanitized[key] = '[REDACTED]';
+      }
+    }
+    return sanitized;
+  }
   catch(exception: unknown, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
@@ -22,12 +42,10 @@ export class HttpExceptionFilter implements ExceptionFilter {
       request: {
         method: request.method,
         url: request.url,
-        headers: request.headers,
-        body: request.body,
+        headers: this.sanitizeHeaders(request.headers),
+        body: this.sanitizeBody(request.body),
         params: request.params,
         query: request.query,
-        remoteAddress: request.ip,
-        remotePort: request.socket.remotePort,
       },
     });
 

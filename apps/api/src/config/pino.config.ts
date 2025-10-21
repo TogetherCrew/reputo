@@ -19,7 +19,7 @@ export const pinoConfig = (configService: ConfigService) => {
           return { level: label.toUpperCase() };
         },
       },
-      timestamp: () => `,"timestamp":"${new Date(Date.now()).toISOString()}"`,
+      timestamp: true,
     },
   };
 };
