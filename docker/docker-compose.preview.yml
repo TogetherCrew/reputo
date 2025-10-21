@@ -68,10 +68,8 @@ services:
     api:
         container_name: api
         depends_on:
-            - traefik:
-                  condition: service_healthy
-            - mongodb:
-                  condition: service_healthy
+            mongodb:
+                condition: service_healthy
         build:
             context: ..
             dockerfile: docker/Dockerfile
