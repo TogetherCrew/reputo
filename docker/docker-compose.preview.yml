@@ -16,8 +16,9 @@ services:
         volumes:
             - mongodb_data:/data/db
             - ./mongo-init.sh:/docker-entrypoint-initdb.d/mongo-init.sh:ro
-        env_file:
-            - ./mongodb.env
+        environment:
+            - MONGO_INITDB_ROOT_USERNAME=admin
+            - MONGO_INITDB_ROOT_PASSWORD=preview-password
         command: mongod --replSet rs0 --bind_ip_all
         healthcheck:
             test: ['CMD', 'mongosh', '--eval', "db.adminCommand('ping')"]
@@ -84,5 +85,12 @@ services:
             - traefik.http.middlewares.api-strip.stripprefix.prefixes=/api
             - traefik.http.middlewares.api-cors.headers.accesscontrolallowmethods=GET,OPTIONS,PUT,POST,DELETE
             - traefik.http.middlewares.api-cors.headers.accesscontrolalloworiginlist=*
-        env_file:
-            - ./api.env
+        environment:
+            - NODE_ENV=development
+            - PORT=3000
+            - LOG_LEVEL=info
+            - MONGODB_HOST=mongodb
+            - MONGODB_PORT=27017
+            - MONGODB_USER=admin
+            - MONGODB_PASSWORD=preview-password
+            - MONGODB_DB_NAME=reputo_preview
