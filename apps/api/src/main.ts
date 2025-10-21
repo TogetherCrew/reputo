@@ -11,6 +11,7 @@ import { HttpExceptionFilter } from './shared/filters/http-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
+  setupSwagger(app);
   app.useLogger(app.get(Logger));
   app.useGlobalInterceptors(new LoggerErrorInterceptor());
   app.useGlobalFilters(new HttpExceptionFilter());
@@ -27,8 +28,6 @@ async function bootstrap() {
     defaultVersion: '1',
     prefix: 'api/v',
   });
-
-  setupSwagger(app);
 
   await app.listen(port, () => {
     const logger = app.get(Logger);
