@@ -88,6 +88,9 @@ function paginate<T>(schema: Schema<T>): void {
       }
     }
 
+    // biome-ignore lint/suspicious/noExplicitAny: Complex Mongoose generic type inference issue with lean()
+    docsPromise = docsPromise.lean() as any;
+
     const [totalResults, results] = await Promise.all([countPromise, docsPromise.exec()]);
     const totalPages = Math.ceil(totalResults / parsedLimit);
 

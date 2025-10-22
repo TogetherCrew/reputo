@@ -40,7 +40,8 @@ describe('AlgorithmPreset model', () => {
       const mockTotalCount = 50;
 
       const mockExec = vi.fn();
-      const mockLimit = vi.fn().mockReturnValue({ exec: mockExec });
+      const mockLean = vi.fn().mockReturnValue({ exec: mockExec });
+      const mockLimit = vi.fn().mockReturnValue({ lean: mockLean });
       const mockSkip = vi.fn().mockReturnValue({ limit: mockLimit });
       const mockSort = vi.fn().mockReturnValue({ skip: mockSkip });
       const mockFind = vi.fn().mockReturnValue({ sort: mockSort });
@@ -56,8 +57,8 @@ describe('AlgorithmPreset model', () => {
 
       expect(result.page).toBe(3);
       expect(result.limit).toBe(20);
-      expect(result.totalPages).toBe(3); // Math.ceil(50 / 20)
-      expect(mockSkip).toHaveBeenCalledWith(40); // (3 - 1) * 20
+      expect(result.totalPages).toBe(3);
+      expect(mockSkip).toHaveBeenCalledWith(40);
 
       vi.restoreAllMocks();
     });
@@ -67,7 +68,8 @@ describe('AlgorithmPreset model', () => {
       const mockTotalCount = 15;
 
       const mockExec = vi.fn();
-      const mockLimit = vi.fn().mockReturnValue({ exec: mockExec });
+      const mockLean = vi.fn().mockReturnValue({ exec: mockExec });
+      const mockLimit = vi.fn().mockReturnValue({ lean: mockLean });
       const mockSkip = vi.fn().mockReturnValue({ limit: mockLimit });
       const mockSort = vi.fn().mockReturnValue({ skip: mockSkip });
       const mockFind = vi.fn().mockReturnValue({ sort: mockSort });
@@ -83,7 +85,7 @@ describe('AlgorithmPreset model', () => {
 
       expect(result.page).toBe(2);
       expect(result.limit).toBe(5);
-      expect(mockSkip).toHaveBeenCalledWith(5); // (2 - 1) * 5
+      expect(mockSkip).toHaveBeenCalledWith(5);
 
       vi.restoreAllMocks();
     });
@@ -93,7 +95,8 @@ describe('AlgorithmPreset model', () => {
       const mockTotalCount = 0;
 
       const mockExec = vi.fn();
-      const mockLimit = vi.fn().mockReturnValue({ exec: mockExec });
+      const mockLean = vi.fn().mockReturnValue({ exec: mockExec });
+      const mockLimit = vi.fn().mockReturnValue({ lean: mockLean });
       const mockSkip = vi.fn().mockReturnValue({ limit: mockLimit });
       const mockSort = vi.fn().mockReturnValue({ skip: mockSkip });
       const mockFind = vi.fn().mockReturnValue({ sort: mockSort });
@@ -117,7 +120,8 @@ describe('AlgorithmPreset model', () => {
       const mockTotalCount = 0;
 
       const mockExec = vi.fn();
-      const mockLimit = vi.fn().mockReturnValue({ exec: mockExec });
+      const mockLean = vi.fn().mockReturnValue({ exec: mockExec });
+      const mockLimit = vi.fn().mockReturnValue({ lean: mockLean });
       const mockSkip = vi.fn().mockReturnValue({ limit: mockLimit });
       const mockSort = vi.fn().mockReturnValue({ skip: mockSkip });
       const mockFind = vi.fn().mockReturnValue({ sort: mockSort });
@@ -141,7 +145,8 @@ describe('AlgorithmPreset model', () => {
       const mockTotalCount = 0;
 
       const mockExec = vi.fn();
-      const mockLimit = vi.fn().mockReturnValue({ exec: mockExec });
+      const mockLean = vi.fn().mockReturnValue({ exec: mockExec });
+      const mockLimit = vi.fn().mockReturnValue({ lean: mockLean });
       const mockSkip = vi.fn().mockReturnValue({ limit: mockLimit });
       const mockSort = vi.fn().mockReturnValue({ skip: mockSkip });
       const mockFind = vi.fn().mockReturnValue({ sort: mockSort });
@@ -165,7 +170,8 @@ describe('AlgorithmPreset model', () => {
       const mockTotalCount = 5;
 
       const mockExec = vi.fn();
-      const mockLimit = vi.fn().mockReturnValue({ exec: mockExec });
+      const mockLean = vi.fn().mockReturnValue({ exec: mockExec });
+      const mockLimit = vi.fn().mockReturnValue({ lean: mockLean });
       const mockSkip = vi.fn().mockReturnValue({ limit: mockLimit });
       const mockSort = vi.fn().mockReturnValue({ skip: mockSkip });
       const mockFind = vi.fn().mockReturnValue({ sort: mockSort });

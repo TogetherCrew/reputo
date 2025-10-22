@@ -42,7 +42,8 @@ describe('Snapshot model', () => {
       const mockTotalCount = 100;
 
       const mockExec = vi.fn();
-      const mockLimit = vi.fn().mockReturnValue({ exec: mockExec });
+      const mockLean = vi.fn().mockReturnValue({ exec: mockExec });
+      const mockLimit = vi.fn().mockReturnValue({ lean: mockLean });
       const mockSkip = vi.fn().mockReturnValue({ limit: mockLimit });
       const mockSort = vi.fn().mockReturnValue({ skip: mockSkip });
       const mockFind = vi.fn().mockReturnValue({ sort: mockSort });
@@ -58,8 +59,8 @@ describe('Snapshot model', () => {
 
       expect(result.page).toBe(5);
       expect(result.limit).toBe(25);
-      expect(result.totalPages).toBe(4); // Math.ceil(100 / 25)
-      expect(mockSkip).toHaveBeenCalledWith(100); // (5 - 1) * 25
+      expect(result.totalPages).toBe(4);
+      expect(mockSkip).toHaveBeenCalledWith(100);
 
       vi.restoreAllMocks();
     });
@@ -69,7 +70,8 @@ describe('Snapshot model', () => {
       const mockTotalCount = 10;
 
       const mockExec = vi.fn();
-      const mockLimit = vi.fn().mockReturnValue({ exec: mockExec });
+      const mockLean = vi.fn().mockReturnValue({ exec: mockExec });
+      const mockLimit = vi.fn().mockReturnValue({ lean: mockLean });
       const mockSkip = vi.fn().mockReturnValue({ limit: mockLimit });
       const mockSort = vi.fn().mockReturnValue({ skip: mockSkip });
       const mockFind = vi.fn().mockReturnValue({ sort: mockSort });
@@ -96,7 +98,8 @@ describe('Snapshot model', () => {
       const presetId = new Types.ObjectId();
 
       const mockExec = vi.fn();
-      const mockLimit = vi.fn().mockReturnValue({ exec: mockExec });
+      const mockLean = vi.fn().mockReturnValue({ exec: mockExec });
+      const mockLimit = vi.fn().mockReturnValue({ lean: mockLean });
       const mockSkip = vi.fn().mockReturnValue({ limit: mockLimit });
       const mockSort = vi.fn().mockReturnValue({ skip: mockSkip });
       const mockFind = vi.fn().mockReturnValue({ sort: mockSort });
@@ -122,7 +125,8 @@ describe('Snapshot model', () => {
       const mockTotalCount = 0;
 
       const mockExec = vi.fn();
-      const mockLimit = vi.fn().mockReturnValue({ exec: mockExec });
+      const mockLean = vi.fn().mockReturnValue({ exec: mockExec });
+      const mockLimit = vi.fn().mockReturnValue({ lean: mockLean });
       const mockSkip = vi.fn().mockReturnValue({ limit: mockLimit });
       const mockSort = vi.fn().mockReturnValue({ skip: mockSkip });
       const mockFind = vi.fn().mockReturnValue({ sort: mockSort });
@@ -146,7 +150,8 @@ describe('Snapshot model', () => {
       const mockTotalCount = 0;
 
       const mockExec = vi.fn();
-      const mockLimit = vi.fn().mockReturnValue({ exec: mockExec });
+      const mockLean = vi.fn().mockReturnValue({ exec: mockExec });
+      const mockLimit = vi.fn().mockReturnValue({ lean: mockLean });
       const mockSkip = vi.fn().mockReturnValue({ limit: mockLimit });
       const mockSort = vi.fn().mockReturnValue({ skip: mockSkip });
       const mockFind = vi.fn().mockReturnValue({ sort: mockSort });
@@ -170,7 +175,8 @@ describe('Snapshot model', () => {
       const mockTotalCount = 0;
 
       const mockExec = vi.fn();
-      const mockPopulate = vi.fn().mockReturnValue({ exec: mockExec });
+      const mockLean = vi.fn().mockReturnValue({ exec: mockExec });
+      const mockPopulate = vi.fn().mockReturnValue({ lean: mockLean });
       const mockLimit = vi.fn().mockReturnValue({ populate: mockPopulate });
       const mockSkip = vi.fn().mockReturnValue({ limit: mockLimit });
       const mockSort = vi.fn().mockReturnValue({ skip: mockSkip });
@@ -195,7 +201,8 @@ describe('Snapshot model', () => {
       const mockTotalCount = 0;
 
       const mockExec = vi.fn();
-      const mockPopulate = vi.fn().mockReturnValue({ exec: mockExec });
+      const mockLean = vi.fn().mockReturnValue({ exec: mockExec });
+      const mockPopulate = vi.fn().mockReturnValue({ lean: mockLean });
       const mockLimit = vi.fn().mockReturnValue({ populate: mockPopulate });
       const mockSkip = vi.fn().mockReturnValue({ limit: mockLimit });
       const mockSort = vi.fn().mockReturnValue({ skip: mockSkip });
@@ -224,10 +231,11 @@ describe('Snapshot model', () => {
       const mockTotalCount = 0;
 
       const mockExec = vi.fn();
+      const mockLean = vi.fn().mockReturnValue({ exec: mockExec });
       const mockPopulate = vi.fn();
-      // Create a chain where populate returns itself to allow chaining
       const populateChain = {
         populate: mockPopulate,
+        lean: mockLean,
         exec: mockExec,
       };
       mockPopulate.mockReturnValue(populateChain);
@@ -258,7 +266,8 @@ describe('Snapshot model', () => {
       const mockTotalCount = 0;
 
       const mockExec = vi.fn();
-      const mockLimit = vi.fn().mockReturnValue({ exec: mockExec });
+      const mockLean = vi.fn().mockReturnValue({ exec: mockExec });
+      const mockLimit = vi.fn().mockReturnValue({ lean: mockLean });
       const mockSkip = vi.fn().mockReturnValue({ limit: mockLimit });
       const mockSort = vi.fn().mockReturnValue({ skip: mockSkip });
       const mockFind = vi.fn().mockReturnValue({ sort: mockSort });
