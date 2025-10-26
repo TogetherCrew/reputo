@@ -8,10 +8,9 @@ describe('AlgorithmPreset model', () => {
 
     beforeEach(() => {
       algorithmPreset = {
-        spec: {
-          key: 'test-algorithm',
-          version: '1.0.0',
-        },
+        key: 'test-algorithm',
+        version: '1.0.0',
+
         inputs: [
           {
             key: 'threshold',
