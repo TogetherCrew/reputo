@@ -1,15 +1,9 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
+import { SNAPSHOT_STATUS, SnapshotStatus } from '@reputo/database';
 import { IsEnum, IsMongoId, IsOptional, IsString } from 'class-validator';
 import { PaginationQueryDto } from '../../shared/dto';
 
-const SNAPSHOT_STATUS = ['queued', 'running', 'completed', 'failed', 'cancelled'] as const;
-type SnapshotStatus = (typeof SNAPSHOT_STATUS)[number];
-
-/**
- * Query DTO for listing snapshots with pagination and filtering.
- * Extends base pagination DTO with snapshot-specific filters.
- */
-export class QuerySnapshotDto extends PaginationQueryDto {
+export class ListSnapshotsQueryDto extends PaginationQueryDto {
   @ApiPropertyOptional({
     description: 'Filter by execution status',
     enum: SNAPSHOT_STATUS,

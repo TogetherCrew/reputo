@@ -18,23 +18,23 @@ export class AlgorithmPresetRepository {
     private readonly model: AlgorithmPresetModel,
   ) {}
 
-  create(createDto: CreateAlgorithmPresetDto): Promise<AlgorithmPresetDoc> {
+  create(createDto: CreateAlgorithmPresetDto) {
     return this.model.create(createDto);
   }
 
-  findAll(filter: FilterQuery<AlgorithmPreset>, options: PaginateOptions): Promise<PaginateResult<AlgorithmPreset>> {
+  findAll(filter: FilterQuery<AlgorithmPreset>, options: PaginateOptions) {
     return this.model.paginate(filter, options);
   }
 
-  findById(id: string): Promise<AlgorithmPreset | null> {
+  findById(id: string) {
     return this.model.findById(id).lean().exec();
   }
 
-  updateById(id: string, updateDto: UpdateAlgorithmPresetDto): Promise<AlgorithmPreset | null> {
+  updateById(id: string, updateDto: UpdateAlgorithmPresetDto) {
     return this.model.findByIdAndUpdate(id, updateDto, { new: true }).lean().exec();
   }
 
-  deleteById(id: string): Promise<AlgorithmPreset | null> {
+  deleteById(id: string) {
     return this.model.findByIdAndDelete(id).lean().exec();
   }
 }

@@ -1,8 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { SNAPSHOT_STATUS } from '@reputo/database';
 
-const SNAPSHOT_STATUS = ['queued', 'running', 'completed', 'failed', 'cancelled'] as const;
-
-class TemporalResponseDto {
+class TemporalDto {
   @ApiPropertyOptional({
     description: 'Temporal workflow ID',
     example: 'wf-voting-engagement-abc123',
@@ -22,7 +21,7 @@ class TemporalResponseDto {
   taskQueue?: string;
 }
 
-export class SnapshotResponseDto {
+export class SnapshotDto {
   @ApiProperty({
     description: 'Unique identifier',
     example: '6710be...',
@@ -38,9 +37,9 @@ export class SnapshotResponseDto {
 
   @ApiPropertyOptional({
     description: 'Temporal workflow information',
-    type: TemporalResponseDto,
+    type: TemporalDto,
   })
-  temporal?: TemporalResponseDto;
+  temporal?: TemporalDto;
 
   @ApiProperty({
     description: 'Reference to the associated AlgorithmPreset',
@@ -49,7 +48,7 @@ export class SnapshotResponseDto {
   algorithmPreset: string | unknown;
 
   @ApiPropertyOptional({
-    description: 'Algorithm execution outputs/results',
+    description: 'Algorithm execution outputs',
     example: {},
   })
   outputs?: unknown;
@@ -65,36 +64,4 @@ export class SnapshotResponseDto {
     example: '2025-10-13T19:12:44.600Z',
   })
   updatedAt: Date;
-}
-
-export class PaginatedSnapshotResponseDto {
-  @ApiProperty({
-    description: 'Results found',
-    type: [SnapshotResponseDto],
-  })
-  results: SnapshotResponseDto[];
-
-  @ApiProperty({
-    description: 'Current page',
-    example: 1,
-  })
-  page: number;
-
-  @ApiProperty({
-    description: 'Maximum number of results per page',
-    example: 10,
-  })
-  limit: number;
-
-  @ApiProperty({
-    description: 'Total number of pages',
-    example: 5,
-  })
-  totalPages: number;
-
-  @ApiProperty({
-    description: 'Total number of documents',
-    example: 47,
-  })
-  totalResults: number;
 }

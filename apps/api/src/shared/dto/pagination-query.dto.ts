@@ -2,10 +2,6 @@ import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsInt, IsOptional, IsString, Min } from 'class-validator';
 
-/**
- * Base DTO for pagination queries with sorting and population support.
- * Extend this class for entity-specific query DTOs.
- */
 export class PaginationQueryDto {
   @ApiPropertyOptional({
     description:

@@ -1,14 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import type {
-  AlgorithmPreset,
-  AlgorithmPresetModel,
-  PaginateOptions,
-  PaginateResult,
-  Snapshot,
-  SnapshotDoc,
-  SnapshotModel,
-} from '@reputo/database';
+import type { PaginateOptions, Snapshot, SnapshotModel } from '@reputo/database';
 import { MODEL_NAMES } from '@reputo/database';
 import type { FilterQuery } from 'mongoose';
 import type { CreateSnapshotDto } from './dto';
@@ -20,15 +12,15 @@ export class SnapshotRepository {
     private readonly model: SnapshotModel,
   ) {}
 
-  create(createDto: CreateSnapshotDto): Promise<SnapshotDoc> {
+  create(createDto: CreateSnapshotDto) {
     return this.model.create(createDto);
   }
 
-  findAll(filter: FilterQuery<Snapshot>, options: PaginateOptions): Promise<PaginateResult<Snapshot>> {
+  findAll(filter: FilterQuery<Snapshot>, options: PaginateOptions) {
     return this.model.paginate(filter, options);
   }
 
-  findById(id: string): Promise<Snapshot | null> {
+  findById(id: string) {
     return this.model.findById(id).lean().exec();
   }
 }

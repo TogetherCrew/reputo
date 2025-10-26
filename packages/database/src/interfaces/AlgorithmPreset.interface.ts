@@ -8,13 +8,10 @@ import type { PaginateOptions, PaginateResult } from '../plugins/index.js';
  * version and input parameters.
  */
 export interface AlgorithmPreset {
-  /** Algorithm specification containing key and version */
-  spec: {
-    /** Unique algorithm identifier (e.g., 'voting_engagement') */
-    key: string;
-    /** Algorithm version (e.g., '1.0.0') */
-    version: string;
-  };
+  /** Unique algorithm identifier (e.g., 'voting_engagement') */
+  key: string;
+  /** Algorithm version (e.g., '1.0.0') */
+  version: string;
   /** Array of input parameters for the algorithm */
   inputs: {
     /** Parameter key/name */
@@ -22,9 +19,9 @@ export interface AlgorithmPreset {
     /** Parameter value (can be any type) */
     value?: unknown;
   }[];
-  /** Optional human-readable name for the preset */
+  /** Optional human-readable name for the preset (3-100 characters) */
   name?: string;
-  /** Optional description of the preset */
+  /** Optional description of the preset (10-500 characters) */
   description?: string;
   /** Document creation timestamp */
   createdAt?: Date;

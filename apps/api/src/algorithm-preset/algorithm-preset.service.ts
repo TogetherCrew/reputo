@@ -1,65 +1,59 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
-import type { AlgorithmPreset, PaginateOptions, PaginateResult } from '@reputo/database';
+import { Injectable } from '@nestjs/common';
+import type { AlgorithmPreset } from '@reputo/database';
+import { MODEL_NAMES } from '@reputo/database';
+import { getAlgorithmDefinition } from '@reputo/reputation-algorithms';
 import type { FilterQuery } from 'mongoose';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { throwNotFoundError } from '../shared/exceptions';
+import { pick } from '../shared/utils';
 import { AlgorithmPresetRepository } from './algorithm-preset.repository';
-import type { CreateAlgorithmPresetDto, QueryAlgorithmPresetDto, UpdateAlgorithmPresetDto } from './dto';
-
+import type { CreateAlgorithmPresetDto, ListAlgorithmPresetsQueryDto, UpdateAlgorithmPresetDto } from './dto';
 @Injectable()
 export class AlgorithmPresetService {
-  constructor(private readonly repository: AlgorithmPresetRepository) {}
+  constructor(
+    private readonly repository: AlgorithmPresetRepository,
+    @InjectPinoLogger(AlgorithmPresetService.name)
+    private readonly logger: PinoLogger,
+  ) {}
 
-  create(createDto: CreateAlgorithmPresetDto): Promise<AlgorithmPreset> {
+  create(createDto: CreateAlgorithmPresetDto) {
+    // const algorithmDefinition = getAlgorithmDefinition({
+    //     key: createDto.key,
+    //     version: createDto.version,
+    // })
+    // console.log(algorithmDefinition)
     return this.repository.create(createDto);
   }
 
-  findAll(queryDto: QueryAlgorithmPresetDto): Promise<PaginateResult<AlgorithmPreset>> {
-    const filter: FilterQuery<AlgorithmPreset> = {};
+  list(queryDto: ListAlgorithmPresetsQueryDto) {
+    const filter: FilterQuery<AlgorithmPreset> = pick(queryDto, ['key', 'version']);
+    const paginateOptions = pick(queryDto, ['page', 'limit', 'sortBy']);
 
-    if (queryDto.key) {
-      filter['spec.key'] = queryDto.key;
-    }
-    if (queryDto.version) {
-      filter['spec.version'] = queryDto.version;
-    }
-
-    const options: PaginateOptions = {
-      page: queryDto.page,
-      limit: queryDto.limit,
-      sortBy: queryDto.sortBy,
-    };
-
-    return this.repository.findAll(filter, options);
+    this.logger.info({ filter, paginateOptions }, 'Listing algorithm presets');
+    return this.repository.findAll(filter, paginateOptions);
   }
 
-  async findById(id: string): Promise<AlgorithmPreset> {
-    const preset = await this.repository.findById(id);
-    if (!preset) {
-      throwNotFoundError(id, 'AlgorithmPreset');
-    }
+  async getById(id: string) {
+    const algorithmPreset = await this.repository.findById(id);
 
-    return preset;
+    if (!algorithmPreset) {
+      throwNotFoundError(id, MODEL_NAMES.ALGORITHM_PRESET);
+    }
+    return algorithmPreset;
   }
 
-  async update(id: string, updateDto: UpdateAlgorithmPresetDto): Promise<AlgorithmPreset> {
-    // Explicitly reject attempts to update immutable spec fields
-    if ('spec' in updateDto) {
-      throw new BadRequestException('Cannot update immutable spec fields (key, version)');
+  async updateById(id: string, updateDto: UpdateAlgorithmPresetDto) {
+    const updatedAlgorithmPreset = await this.repository.updateById(id, updateDto);
+    if (!updatedAlgorithmPreset) {
+      throwNotFoundError(id, MODEL_NAMES.ALGORITHM_PRESET);
     }
-
-    const updated = await this.repository.updateById(id, updateDto);
-
-    if (!updated) {
-      throwNotFoundError(id, 'AlgorithmPreset');
-    }
-
-    return updated;
+    return updatedAlgorithmPreset;
   }
 
-  async remove(id: string): Promise<void> {
+  async deleteById(id: string) {
     const result = await this.repository.deleteById(id);
     if (!result) {
-      throwNotFoundError(id, 'AlgorithmPreset');
+      throwNotFoundError(id, MODEL_NAMES.ALGORITHM_PRESET);
     }
   }
 }

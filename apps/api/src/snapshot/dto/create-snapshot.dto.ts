@@ -47,7 +47,7 @@ export class CreateSnapshotDto {
   temporal?: TemporalDto;
 
   @ApiPropertyOptional({
-    description: 'Algorithm execution outputs/results',
+    description: 'Algorithm execution outputs',
     example: {},
   })
   @IsOptional()

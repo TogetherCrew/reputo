@@ -1,15 +1,27 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
-import { ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBadRequestResponse,
+  ApiBody,
+  ApiCreatedResponse,
+  ApiExtraModels,
+  ApiNoContentResponse,
+  ApiNotFoundResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiParam,
+  ApiTags,
+} from '@nestjs/swagger';
+import { PaginationDto } from '../shared/dto';
 import { ParseObjectIdPipe } from '../shared/pipes';
 import { AlgorithmPresetService } from './algorithm-preset.service';
 import {
-  AlgorithmPresetResponseDto,
+  AlgorithmPresetDto,
   CreateAlgorithmPresetDto,
-  PaginatedAlgorithmPresetResponseDto,
-  QueryAlgorithmPresetDto,
+  ListAlgorithmPresetsQueryDto,
   UpdateAlgorithmPresetDto,
 } from './dto';
 
+@ApiExtraModels(PaginationDto, AlgorithmPresetDto)
 @ApiTags('Algorithm Presets')
 @Controller('algorithm-presets')
 export class AlgorithmPresetController {
@@ -18,17 +30,16 @@ export class AlgorithmPresetController {
   @Post()
   @ApiOperation({
     summary: 'Create a new algorithm preset',
-    description: 'Creates a new algorithm preset with specified algorithm definition, inputs, and optional metadata.',
+    description: 'Creates a new algorithm preset with key, version, inputs, and optional metadata.',
   })
   @ApiBody({ type: CreateAlgorithmPresetDto })
-  @ApiResponse({
-    status: 201,
+  @ApiCreatedResponse({
     description: 'Algorithm preset successfully created',
-    type: AlgorithmPresetResponseDto,
+    type: AlgorithmPresetDto,
   })
-  @ApiResponse({
-    status: 400,
-    description: 'Invalid request body or validation error',
+  @ApiBadRequestResponse({
+    description:
+      'Invalid request body (missing required fields, invalid data types, name must be 3-100 chars, description must be 10-500 chars, or validation error)',
   })
   create(@Body() createDto: CreateAlgorithmPresetDto) {
     return this.algorithmPresetService.create(createDto);
@@ -37,15 +48,14 @@ export class AlgorithmPresetController {
   @Get()
   @ApiOperation({
     summary: 'List all algorithm presets',
-    description: 'Retrieves a paginated list of all algorithm presets with optional sorting and population.',
+    description: 'Retrieves a paginated list of all algorithm presets with optional sorting.',
   })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
     description: 'Successfully retrieved algorithm presets',
-    type: PaginatedAlgorithmPresetResponseDto,
+    type: PaginationDto<AlgorithmPresetDto>,
   })
-  findAll(@Query() queryDto: QueryAlgorithmPresetDto) {
-    return this.algorithmPresetService.findAll(queryDto);
+  list(@Query() queryDto: ListAlgorithmPresetsQueryDto) {
+    return this.algorithmPresetService.list(queryDto);
   }
 
   @Get(':id')
@@ -58,28 +68,25 @@ export class AlgorithmPresetController {
     description: 'Algorithm preset unique identifier',
     example: '66f9c9...',
   })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
     description: 'Successfully retrieved algorithm preset',
-    type: AlgorithmPresetResponseDto,
+    type: AlgorithmPresetDto,
   })
-  @ApiResponse({
-    status: 400,
+  @ApiBadRequestResponse({
     description: 'Invalid ID format',
   })
-  @ApiResponse({
-    status: 404,
+  @ApiNotFoundResponse({
     description: 'Algorithm preset not found',
   })
-  findById(@Param('id', ParseObjectIdPipe) id: string) {
-    return this.algorithmPresetService.findById(id);
+  getById(@Param('id', ParseObjectIdPipe) id: string) {
+    return this.algorithmPresetService.getById(id);
   }
 
   @Patch(':id')
   @ApiOperation({
     summary: 'Update an algorithm preset',
     description:
-      'Updates an existing algorithm preset. Note: spec fields (key, version) are immutable and cannot be updated.',
+      'Updates an existing algorithm preset. Note: key and version fields are immutable and cannot be updated.',
   })
   @ApiParam({
     name: 'id',
@@ -87,21 +94,19 @@ export class AlgorithmPresetController {
     example: '66f9c9...',
   })
   @ApiBody({ type: UpdateAlgorithmPresetDto })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
     description: 'Algorithm preset successfully updated',
-    type: AlgorithmPresetResponseDto,
+    type: AlgorithmPresetDto,
   })
-  @ApiResponse({
-    status: 400,
-    description: 'Invalid request body or ID format',
+  @ApiBadRequestResponse({
+    description:
+      'Invalid request body, ID format, name must be 3-100 chars, description must be 10-500 chars, or validation error',
   })
-  @ApiResponse({
-    status: 404,
+  @ApiNotFoundResponse({
     description: 'Algorithm preset not found',
   })
-  update(@Param('id', ParseObjectIdPipe) id: string, @Body() updateDto: UpdateAlgorithmPresetDto) {
-    return this.algorithmPresetService.update(id, updateDto);
+  updateById(@Param('id', ParseObjectIdPipe) id: string, @Body() updateDto: UpdateAlgorithmPresetDto) {
+    return this.algorithmPresetService.updateById(id, updateDto);
   }
 
   @Delete(':id')
@@ -115,19 +120,16 @@ export class AlgorithmPresetController {
     description: 'Algorithm preset unique identifier',
     example: '66f9c9...',
   })
-  @ApiResponse({
-    status: 204,
+  @ApiNoContentResponse({
     description: 'Algorithm preset successfully deleted',
   })
-  @ApiResponse({
-    status: 400,
+  @ApiBadRequestResponse({
     description: 'Invalid ID format',
   })
-  @ApiResponse({
-    status: 404,
+  @ApiNotFoundResponse({
     description: 'Algorithm preset not found',
   })
-  remove(@Param('id', ParseObjectIdPipe) id: string) {
-    return this.algorithmPresetService.remove(id);
+  deleteById(@Param('id', ParseObjectIdPipe) id: string) {
+    return this.algorithmPresetService.deleteById(id);
   }
 }

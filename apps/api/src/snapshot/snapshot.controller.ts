@@ -1,9 +1,21 @@
 import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
-import { ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBadRequestResponse,
+  ApiBody,
+  ApiCreatedResponse,
+  ApiExtraModels,
+  ApiNotFoundResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiParam,
+  ApiTags,
+} from '@nestjs/swagger';
+import { PaginationDto } from '../shared/dto';
 import { ParseObjectIdPipe } from '../shared/pipes';
-import { CreateSnapshotDto, PaginatedSnapshotResponseDto, QuerySnapshotDto, SnapshotResponseDto } from './dto';
+import { CreateSnapshotDto, ListSnapshotsQueryDto, SnapshotDto } from './dto';
 import { SnapshotService } from './snapshot.service';
 
+@ApiExtraModels(PaginationDto, SnapshotDto)
 @ApiTags('Snapshots')
 @Controller('snapshots')
 export class SnapshotController {
@@ -12,17 +24,14 @@ export class SnapshotController {
   @Post()
   @ApiOperation({
     summary: 'Create a new snapshot',
-    description:
-      'Creates a new snapshot for an algorithm preset execution. Status defaults to "queued". Note: Status updates happen externally (not via API).',
+    description: 'Creates a new snapshot for an algorithm preset. Status defaults to "queued".',
   })
   @ApiBody({ type: CreateSnapshotDto })
-  @ApiResponse({
-    status: 201,
+  @ApiCreatedResponse({
     description: 'Snapshot successfully created',
-    type: SnapshotResponseDto,
+    type: SnapshotDto,
   })
-  @ApiResponse({
-    status: 400,
+  @ApiBadRequestResponse({
     description: 'Invalid request body or AlgorithmPreset ID format',
   })
   create(@Body() createDto: CreateSnapshotDto) {
@@ -35,43 +44,38 @@ export class SnapshotController {
     description:
       'Retrieves a paginated list of snapshots with optional filtering by status and algorithmPreset, sorting, and population.',
   })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
     description: 'Successfully retrieved snapshots',
-    type: PaginatedSnapshotResponseDto,
+    type: PaginationDto<SnapshotDto>,
   })
-  @ApiResponse({
-    status: 400,
+  @ApiBadRequestResponse({
     description: 'Invalid AlgorithmPreset ID format in filter',
   })
-  findAll(@Query() queryDto: QuerySnapshotDto) {
-    return this.snapshotService.findAll(queryDto);
+  list(@Query() queryDto: ListSnapshotsQueryDto) {
+    return this.snapshotService.list(queryDto);
   }
 
   @Get(':id')
   @ApiOperation({
     summary: 'Get a snapshot by ID',
-    description: 'Retrieves a single snapshot by its unique identifier with the associated AlgorithmPreset populated.',
+    description: 'Retrieves a single snapshot by its unique identifier.',
   })
   @ApiParam({
     name: 'id',
     description: 'Snapshot unique identifier',
     example: '6710be...',
   })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
     description: 'Successfully retrieved snapshot',
-    type: SnapshotResponseDto,
+    type: SnapshotDto,
   })
-  @ApiResponse({
-    status: 400,
+  @ApiBadRequestResponse({
     description: 'Invalid ID format',
   })
-  @ApiResponse({
-    status: 404,
+  @ApiNotFoundResponse({
     description: 'Snapshot not found',
   })
-  findById(@Param('id', ParseObjectIdPipe) id: string) {
-    return this.snapshotService.findById(id);
+  getById(@Param('id', ParseObjectIdPipe) id: string) {
+    return this.snapshotService.getById(id);
   }
 }

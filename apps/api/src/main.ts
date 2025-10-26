@@ -18,7 +18,12 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
   app.use(helmet());
   // app.use(compression())
-  app.enableCors();
+  app.enableCors({
+    origin: true, // Allow all origins in preview
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With'],
+  });
 
   const configService = app.get(ConfigService);
   const port = configService.get('app.port');

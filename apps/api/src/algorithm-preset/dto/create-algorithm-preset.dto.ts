@@ -1,8 +1,25 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsArray, IsNotEmpty, IsOptional, IsString, ValidateNested } from 'class-validator';
+import { IsArray, IsNotEmpty, IsOptional, IsString, MaxLength, MinLength, ValidateNested } from 'class-validator';
 
-class SpecDto {
+class InputDto {
+  @ApiProperty({
+    description: 'Input key',
+    example: 'votes',
+  })
+  @IsString()
+  @IsNotEmpty()
+  key: string;
+
+  @ApiProperty({
+    description: 'Input value',
+    example: 's3://tc/votes.csv',
+  })
+  @IsNotEmpty()
+  value: unknown;
+}
+
+export class CreateAlgorithmPresetDto {
   @ApiProperty({
     description: 'Unique algorithm identifier',
     example: 'voting_engagement',
@@ -18,61 +35,41 @@ class SpecDto {
   @IsString()
   @IsNotEmpty()
   version: string;
-}
-
-class InputDto {
-  @ApiProperty({
-    description: 'Parameter key/name',
-    example: 'votes',
-  })
-  @IsString()
-  @IsNotEmpty()
-  key: string;
 
   @ApiProperty({
-    description: 'Parameter value (can be any type)',
-    example: 's3://tc/votes.csv',
-    required: false,
-  })
-  @IsOptional()
-  value?: unknown;
-}
-
-export class CreateAlgorithmPresetDto {
-  @ApiProperty({
-    description: 'Algorithm specification containing key and version',
-    type: SpecDto,
-  })
-  @ValidateNested()
-  @Type(() => SpecDto)
-  @IsNotEmpty()
-  spec: SpecDto;
-
-  @ApiProperty({
-    description: 'Array of input parameters for the algorithm',
+    description: 'Array of input parameters for the algorithm preset',
     type: [InputDto],
     example: [{ key: 'votes', value: 's3://tc/votes.csv' }],
   })
   @IsArray()
+  @IsNotEmpty()
   @ValidateNested({ each: true })
   @Type(() => InputDto)
   inputs: InputDto[];
 
   @ApiProperty({
-    description: 'Optional human-readable name for the preset',
+    description: 'Optional name for the algorithm preset (3-100 characters)',
     example: 'Voting engagement v1',
     required: false,
+    minLength: 3,
+    maxLength: 100,
   })
   @IsString()
   @IsOptional()
+  @MinLength(3)
+  @MaxLength(100)
   name?: string;
 
   @ApiProperty({
-    description: 'Optional description of the preset',
+    description: 'Optional description of the algorithm preset (10-500 characters)',
     example: 'TogetherCrew test',
     required: false,
+    minLength: 10,
+    maxLength: 500,
   })
   @IsString()
   @IsOptional()
+  @MinLength(10)
+  @MaxLength(500)
   description?: string;
 }
