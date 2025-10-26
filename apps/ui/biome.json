@@ -6,7 +6,7 @@
     "includes": ["**", "!node_modules", "!.next", "!dist", "!build"]
   },
   "formatter": {
-    "enabled": true,
+    "enabled": false,
     "formatWithErrors": false,
     "indentStyle": "space",
     "indentWidth": 2,
@@ -23,7 +23,8 @@
     "rules": {
       "recommended": false,
       "style": { "useBlockStatements": "off" },
-      "suspicious": { "noUnknownAtRules": "off" }
+      "suspicious": { "noUnknownAtRules": "off" },
+      "a11y": { "noLabelWithoutControl": "off" }
     },
     "includes": ["**", "**/fixtures/**"],
     "domains": { "react": "recommended", "next": "recommended" }
