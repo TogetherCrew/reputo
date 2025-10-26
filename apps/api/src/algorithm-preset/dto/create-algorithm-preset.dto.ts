@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsArray, IsNotEmpty, IsOptional, IsString, MaxLength, MinLength, ValidateNested } from 'class-validator';
 
-class InputDto {
+class AlgorithmPresetInputDto {
   @ApiProperty({
     description: 'Input key',
     example: 'votes',
@@ -38,14 +38,14 @@ export class CreateAlgorithmPresetDto {
 
   @ApiProperty({
     description: 'Array of input parameters for the algorithm preset',
-    type: [InputDto],
+    type: [AlgorithmPresetInputDto],
     example: [{ key: 'votes', value: 's3://tc/votes.csv' }],
   })
   @IsArray()
   @IsNotEmpty()
   @ValidateNested({ each: true })
-  @Type(() => InputDto)
-  inputs: InputDto[];
+  @Type(() => AlgorithmPresetInputDto)
+  inputs: AlgorithmPresetInputDto[];
 
   @ApiProperty({
     description: 'Optional name for the algorithm preset (3-100 characters)',

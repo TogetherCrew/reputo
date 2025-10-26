@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-class InputDto {
+class AlgorithmPresetInputDto {
   @ApiProperty({
     description: 'Parameter key/name',
     example: 'votes',
@@ -36,9 +36,9 @@ export class AlgorithmPresetDto {
 
   @ApiProperty({
     description: 'Array of input parameters',
-    type: [InputDto],
+    type: [AlgorithmPresetInputDto],
   })
-  inputs: InputDto[];
+  inputs: AlgorithmPresetInputDto[];
 
   @ApiProperty({
     description: 'Human-readable name (3-100 characters)',

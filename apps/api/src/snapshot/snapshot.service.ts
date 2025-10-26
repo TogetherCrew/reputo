@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import type { Snapshot } from '@reputo/database';
+import type { AlgorithmPreset, Snapshot } from '@reputo/database';
 import type { FilterQuery } from 'mongoose';
 import { AlgorithmPresetRepository } from '../algorithm-preset/algorithm-preset.repository';
 import { throwNotFoundError } from '../shared/exceptions';
@@ -24,22 +24,18 @@ export class SnapshotService {
   }
 
   async list(queryDto: ListSnapshotsQueryDto) {
-    const filter: FilterQuery<Snapshot> = pick(queryDto, ['status', 'algorithmPreset', 'key', 'version']);
+    const filter: FilterQuery<Snapshot> = pick(queryDto, ['status', 'algorithmPreset']);
     const paginateOptions = pick(queryDto, ['page', 'limit', 'sortBy']);
 
-    const tempKey = filter.key;
-    const tempVersion = filter.version;
-    delete filter.key;
-    delete filter.version;
+    if (queryDto.key || queryDto.version) {
+      const algorithmPresetFilter: FilterQuery<AlgorithmPreset> = {};
+      if (queryDto.key) algorithmPresetFilter.key = queryDto.key;
+      if (queryDto.version) algorithmPresetFilter.version = queryDto.version;
 
-    if (tempKey || tempVersion) {
-      const algorithmPresets = await this.algorithmPresetRepository.findAll(
-        { key: tempKey, version: tempVersion },
-        {
-          page: 1,
-          limit: 1000,
-        },
-      );
+      const algorithmPresets = await this.algorithmPresetRepository.findAll(algorithmPresetFilter, {
+        page: 1,
+        limit: 1000,
+      });
 
       const algorithmPresetIds = algorithmPresets.results.map((algorithmPreset) => algorithmPreset._id);
       filter.algorithmPreset = { $in: algorithmPresetIds };

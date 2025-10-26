@@ -1,7 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { SNAPSHOT_STATUS } from '@reputo/database';
 
-class TemporalDto {
+class SnapshotTemporalDto {
   @ApiPropertyOptional({
     description: 'Temporal workflow ID',
     example: 'wf-voting-engagement-abc123',
@@ -37,9 +37,9 @@ export class SnapshotDto {
 
   @ApiPropertyOptional({
     description: 'Temporal workflow information',
-    type: TemporalDto,
+    type: SnapshotTemporalDto,
   })
-  temporal?: TemporalDto;
+  temporal?: SnapshotTemporalDto;
 
   @ApiProperty({
     description: 'Reference to the associated AlgorithmPreset',

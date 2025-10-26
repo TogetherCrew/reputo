@@ -2,7 +2,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsMongoId, IsNotEmpty, IsOptional, IsString, ValidateNested } from 'class-validator';
 
-class TemporalDto {
+class SnapshotTemporalDto {
   @ApiPropertyOptional({
     description: 'Temporal workflow ID',
     example: 'wf-voting-engagement-abc123',
@@ -39,12 +39,12 @@ export class CreateSnapshotDto {
 
   @ApiPropertyOptional({
     description: 'Optional Temporal workflow information',
-    type: TemporalDto,
+    type: SnapshotTemporalDto,
   })
   @ValidateNested()
-  @Type(() => TemporalDto)
+  @Type(() => SnapshotTemporalDto)
   @IsOptional()
-  temporal?: TemporalDto;
+  temporal?: SnapshotTemporalDto;
 
   @ApiPropertyOptional({
     description: 'Algorithm execution outputs',

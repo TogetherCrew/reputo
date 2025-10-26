@@ -17,11 +17,6 @@ export class AlgorithmPresetService {
   ) {}
 
   create(createDto: CreateAlgorithmPresetDto) {
-    // const algorithmDefinition = getAlgorithmDefinition({
-    //     key: createDto.key,
-    //     version: createDto.version,
-    // })
-    // console.log(algorithmDefinition)
     return this.repository.create(createDto);
   }
 
