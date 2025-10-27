@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import type { AlgorithmPreset } from '@reputo/database';
 import { MODEL_NAMES } from '@reputo/database';
-import { getAlgorithmDefinition } from '@reputo/reputation-algorithms';
 import type { FilterQuery } from 'mongoose';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { throwNotFoundError } from '../shared/exceptions';
@@ -10,11 +9,7 @@ import { AlgorithmPresetRepository } from './algorithm-preset.repository';
 import type { CreateAlgorithmPresetDto, ListAlgorithmPresetsQueryDto, UpdateAlgorithmPresetDto } from './dto';
 @Injectable()
 export class AlgorithmPresetService {
-  constructor(
-    private readonly repository: AlgorithmPresetRepository,
-    @InjectPinoLogger(AlgorithmPresetService.name)
-    private readonly logger: PinoLogger,
-  ) {}
+  constructor(private readonly repository: AlgorithmPresetRepository) {}
 
   create(createDto: CreateAlgorithmPresetDto) {
     return this.repository.create(createDto);
@@ -23,8 +18,6 @@ export class AlgorithmPresetService {
   list(queryDto: ListAlgorithmPresetsQueryDto) {
     const filter: FilterQuery<AlgorithmPreset> = pick(queryDto, ['key', 'version']);
     const paginateOptions = pick(queryDto, ['page', 'limit', 'sortBy']);
-
-    this.logger.info({ filter, paginateOptions }, 'Listing algorithm presets');
     return this.repository.findAll(filter, paginateOptions);
   }
 

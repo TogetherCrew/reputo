@@ -9,7 +9,7 @@ import { SnapshotService } from './snapshot.service';
 @Module({
   imports: [
     MongooseModule.forFeature([
-      { name: 'Snapshot', schema: SnapshotSchema },
+      { name: MODEL_NAMES.SNAPSHOT, schema: SnapshotSchema },
       {
         name: MODEL_NAMES.ALGORITHM_PRESET,
         schema: AlgorithmPresetSchema,
