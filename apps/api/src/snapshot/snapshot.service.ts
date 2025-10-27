@@ -25,7 +25,7 @@ export class SnapshotService {
 
   async list(queryDto: ListSnapshotsQueryDto) {
     const filter: FilterQuery<Snapshot> = pick(queryDto, ['status', 'algorithmPreset']);
-    const paginateOptions = pick(queryDto, ['page', 'limit', 'sortBy']);
+    const paginateOptions = pick(queryDto, ['page', 'limit', 'sortBy', 'populate']);
 
     if (queryDto.key || queryDto.version) {
       const algorithmPresetFilter: FilterQuery<AlgorithmPreset> = {};
