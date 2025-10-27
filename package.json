@@ -14,6 +14,7 @@
         "check": "pnpm -r --parallel check",
         "lint": "pnpm -r --parallel lint",
         "format": "pnpm -r --parallel format",
+        "docs": "pnpm -r docs",
         "cz": "cz",
         "release": "pnpm -r --workspace-concurrency=1 release",
         "start:backend": "pnpm --filter @reputo/api dev",
