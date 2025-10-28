@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import type { AlgorithmPreset, Snapshot } from '@reputo/database';
+import { MODEL_NAMES } from '@reputo/database';
 import type { FilterQuery } from 'mongoose';
 import { AlgorithmPresetRepository } from '../algorithm-preset/algorithm-preset.repository';
 import { throwNotFoundError } from '../shared/exceptions';
@@ -46,8 +47,15 @@ export class SnapshotService {
   async getById(id: string) {
     const snapshot = await this.repository.findById(id);
     if (!snapshot) {
-      throwNotFoundError(id, SnapshotService.name);
+      throwNotFoundError(id, MODEL_NAMES.SNAPSHOT);
     }
     return snapshot;
+  }
+
+  async deleteById(id: string) {
+    const result = await this.repository.deleteById(id);
+    if (!result) {
+      throwNotFoundError(id, MODEL_NAMES.SNAPSHOT);
+    }
   }
 }

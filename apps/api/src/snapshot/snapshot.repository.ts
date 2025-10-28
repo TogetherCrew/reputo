@@ -23,4 +23,8 @@ export class SnapshotRepository {
   findById(id: string) {
     return this.model.findById(id).lean().exec();
   }
+
+  deleteById(id: string) {
+    return this.model.findByIdAndDelete(id).lean().exec();
+  }
 }

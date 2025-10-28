@@ -1,9 +1,10 @@
-import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Query } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiBody,
   ApiCreatedResponse,
   ApiExtraModels,
+  ApiNoContentResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
@@ -77,5 +78,29 @@ export class SnapshotController {
   })
   getById(@Param('id', ParseObjectIdPipe) id: string) {
     return this.snapshotService.getById(id);
+  }
+
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({
+    summary: 'Delete a snapshot',
+    description: 'Permanently deletes a snapshot by its unique identifier.',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'Snapshot unique identifier',
+    example: '6710be...',
+  })
+  @ApiNoContentResponse({
+    description: 'Snapshot successfully deleted',
+  })
+  @ApiBadRequestResponse({
+    description: 'Invalid ID format',
+  })
+  @ApiNotFoundResponse({
+    description: 'Snapshot not found',
+  })
+  deleteById(@Param('id', ParseObjectIdPipe) id: string) {
+    return this.snapshotService.deleteById(id);
   }
 }

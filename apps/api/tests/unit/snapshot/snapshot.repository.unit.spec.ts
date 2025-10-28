@@ -3,7 +3,6 @@ import type { SnapshotModel } from '@reputo/database'
 import { SnapshotRepository } from '../../../src/snapshot/snapshot.repository'
 import type { CreateSnapshotDto } from '../../../src/snapshot/dto'
 
-
 describe('SnapshotRepository', () => {
     let repository: SnapshotRepository
     let mockModel: SnapshotModel
@@ -15,6 +14,11 @@ describe('SnapshotRepository', () => {
             create: vi.fn(),
             paginate: vi.fn(),
             findById: vi.fn().mockReturnValue({
+                lean: vi.fn().mockReturnValue({
+                    exec: vi.fn(),
+                }),
+            }),
+            findByIdAndDelete: vi.fn().mockReturnValue({
                 lean: vi.fn().mockReturnValue({
                     exec: vi.fn(),
                 }),
@@ -172,6 +176,39 @@ describe('SnapshotRepository', () => {
             mockModel.findById = vi.fn().mockReturnValue({ lean: mockLean })
 
             const result = await repository.findById(id)
+
+            expect(result).toBeNull()
+        })
+    })
+
+    describe('deleteById', () => {
+        it('should call model.findByIdAndDelete with id', async () => {
+            const id = '507f1f77bcf86cd799439011'
+            const mockDeletedSnapshot = { _id: id }
+
+            const mockExec = vi.fn().mockResolvedValue(mockDeletedSnapshot)
+            const mockLean = vi.fn().mockReturnValue({ exec: mockExec })
+            mockModel.findByIdAndDelete = vi
+                .fn()
+                .mockReturnValue({ lean: mockLean })
+
+            const result = await repository.deleteById(id)
+
+            expect(mockModel.findByIdAndDelete).toHaveBeenCalledOnce()
+            expect(mockModel.findByIdAndDelete).toHaveBeenCalledWith(id)
+            expect(result).toBe(mockDeletedSnapshot)
+        })
+
+        it('should return null when snapshot not found', async () => {
+            const id = '507f1f77bcf86cd799439011'
+
+            const mockExec = vi.fn().mockResolvedValue(null)
+            const mockLean = vi.fn().mockReturnValue({ exec: mockExec })
+            mockModel.findByIdAndDelete = vi
+                .fn()
+                .mockReturnValue({ lean: mockLean })
+
+            const result = await repository.deleteById(id)
 
             expect(result).toBeNull()
         })

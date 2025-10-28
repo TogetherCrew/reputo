@@ -6,7 +6,6 @@ import type {
     ListSnapshotsQueryDto,
 } from '../../../src/snapshot/dto'
 
-
 describe('SnapshotController', () => {
     let controller: SnapshotController
     let mockService: SnapshotService
@@ -18,6 +17,7 @@ describe('SnapshotController', () => {
             create: vi.fn(),
             list: vi.fn(),
             getById: vi.fn(),
+            deleteById: vi.fn(),
         } as unknown as SnapshotService
 
         controller = new SnapshotController(mockService)
@@ -175,6 +175,19 @@ describe('SnapshotController', () => {
             expect(mockService.getById).toHaveBeenCalledOnce()
             expect(mockService.getById).toHaveBeenCalledWith(id)
             expect(result).toBe(mockSnapshot)
+        })
+    })
+
+    describe('deleteById', () => {
+        it('should delegate to service.deleteById with the provided id', async () => {
+            const id = '507f1f77bcf86cd799439011'
+
+            mockService.deleteById = vi.fn().mockResolvedValue(undefined)
+
+            await controller.deleteById(id)
+
+            expect(mockService.deleteById).toHaveBeenCalledOnce()
+            expect(mockService.deleteById).toHaveBeenCalledWith(id)
         })
     })
 })

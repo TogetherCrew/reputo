@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { NotFoundException } from '@nestjs/common'
+import { MODEL_NAMES } from '@reputo/database'
 import { SnapshotService } from '../../../src/snapshot/snapshot.service'
 import { SnapshotRepository } from '../../../src/snapshot/snapshot.repository'
 import { AlgorithmPresetRepository } from '../../../src/algorithm-preset/algorithm-preset.repository'
@@ -20,6 +21,7 @@ describe('SnapshotService', () => {
             create: vi.fn(),
             findAll: vi.fn(),
             findById: vi.fn(),
+            deleteById: vi.fn(),
         } as unknown as SnapshotRepository
 
         mockAlgorithmPresetRepository = {
@@ -450,6 +452,34 @@ describe('SnapshotService', () => {
 
             await expect(promise).rejects.toBeInstanceOf(NotFoundException)
             await expect(promise).rejects.toThrow(/not found/i)
+        })
+    })
+
+    describe('deleteById', () => {
+        it('should complete successfully when snapshot is deleted', async () => {
+            const id = '507f1f77bcf86cd799439011'
+
+            mockSnapshotRepository.deleteById = vi
+                .fn()
+                .mockResolvedValue({ _id: id })
+
+            await service.deleteById(id)
+
+            expect(mockSnapshotRepository.deleteById).toHaveBeenCalledOnce()
+            expect(mockSnapshotRepository.deleteById).toHaveBeenCalledWith(id)
+        })
+
+        it('should throw NotFoundException when snapshot not found', async () => {
+            const id = '507f1f77bcf86cd799439011'
+
+            mockSnapshotRepository.deleteById = vi.fn().mockResolvedValue(null)
+
+            const promise = service.deleteById(id)
+
+            await expect(promise).rejects.toBeInstanceOf(NotFoundException)
+            await expect(promise).rejects.toThrow(
+                `${MODEL_NAMES.SNAPSHOT} with ID ${id} not found`
+            )
         })
     })
 })
