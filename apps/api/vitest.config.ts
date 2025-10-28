@@ -15,6 +15,14 @@ export default defineConfig({
     resolve: {
         alias: {
             src: resolve(__dirname, './src'),
+            '@reputo/database': resolve(
+                __dirname,
+                '../../packages/database/src/index.ts'
+            ),
+            '@reputo/reputation-algorithms': resolve(
+                __dirname,
+                '../../packages/reputation-algorithms/src/index.ts'
+            ),
         },
     },
 })
