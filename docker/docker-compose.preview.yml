@@ -58,8 +58,12 @@ services:
             context: ..
             dockerfile: docker/Dockerfile
             target: ui
+            args:
+                NEXT_PUBLIC_API_URL: http://api.${PULLPREVIEW_PUBLIC_DNS}/api/v1
         restart: unless-stopped
         networks: [web]
+        environment:
+            - NEXT_PUBLIC_API_URL=http://api.${PULLPREVIEW_PUBLIC_DNS}/api/v1
         labels:
             - traefik.enable=true
             - traefik.http.routers.ui.rule=Host(`${PULLPREVIEW_PUBLIC_DNS}`)
