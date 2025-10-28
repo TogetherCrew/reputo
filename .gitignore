@@ -36,6 +36,10 @@ changeset/
 
 # Coverage
 coverage/
+**/coverage/
+**/coverage-*/
+*.lcov
+.nyc_output
 
 
 #env

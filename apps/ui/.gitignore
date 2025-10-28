@@ -16,6 +16,10 @@ dist/
 npm-debug.log*
 pnpm-debug.log*
 
+# Test coverage
+coverage/
+*.lcov
+
 # Editor & OS
 .vscode/
 .DS_Store
