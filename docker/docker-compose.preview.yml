@@ -86,7 +86,7 @@ services:
             - traefik.http.middlewares.api-cors.headers.accessControlAllowOriginList=*
             - traefik.http.middlewares.api-cors.headers.accessControlAllowHeaders=Content-Type,Authorization,Accept,Origin,X-Requested-With
             - traefik.http.middlewares.api-cors.headers.accessControlMaxAge=3600
-            - traefik.http.middlewares.api-cors.headers.accessControlAllowCredentials=true
+            # - traefik.http.middlewares.api-cors.headers.accessControlAllowCredentials=true
         environment:
             - NODE_ENV=development
             - PORT=3000

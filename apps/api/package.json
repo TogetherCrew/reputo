@@ -5,7 +5,7 @@
     "private": true,
     "scripts": {
         "build": "nest build",
-        "start": "node dist/main.js",
+        "start": "node dist/main",
         "start:dev": "nest start",
         "start:debug": "nest start --debug --watch",
         "start:prod": "node dist/main",

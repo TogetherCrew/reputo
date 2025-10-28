@@ -45,7 +45,7 @@ export class SnapshotDto {
     description: 'Reference to the associated AlgorithmPreset',
     example: '66f9c9...',
   })
-  algorithmPreset: string | unknown;
+  algorithmPreset: string;
 
   @ApiPropertyOptional({
     description: 'Algorithm execution outputs',
