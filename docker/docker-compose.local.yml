@@ -55,6 +55,8 @@ services:
         ports:
             - '8080:8080'
         networks: [local]
+        env_file:
+            - ./ui.env
 
     workflows:
         container_name: workflows

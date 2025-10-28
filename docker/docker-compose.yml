@@ -61,6 +61,8 @@ services:
         image: ghcr.io/togethercrew/reputo/ui:${IMAGE_TAG}
         restart: unless-stopped
         networks: [web]
+        env_file:
+            - ./ui.env
         labels:
             - traefik.enable=true
             - traefik.http.routers.ui.rule=Host(`${UI_DOMAIN}`)
