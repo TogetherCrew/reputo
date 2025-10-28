@@ -37,7 +37,6 @@ describe('PATCH /api/v1/algorithm-presets/:id', () => {
 
         const originalUpdatedAt = new Date(preset.updatedAt).getTime()
 
-        // Wait to ensure timestamp difference
         await new Promise((resolve) => setTimeout(resolve, 10))
 
         const res = await api(app)
@@ -120,7 +119,6 @@ describe('PATCH /api/v1/algorithm-presets/:id', () => {
             .patch(`/algorithm-presets/${preset._id}`)
             .send({ key: 'new_key' })
 
-        // Should reject (400) or ignore and keep original key
         if (res.status === 200) {
             expect(res.body.key).toBe('original_key')
         } else {
@@ -137,7 +135,6 @@ describe('PATCH /api/v1/algorithm-presets/:id', () => {
             .patch(`/algorithm-presets/${preset._id}`)
             .send({ version: '2.0.0' })
 
-        // Should reject (400) or ignore and keep original version
         if (res.status === 200) {
             expect(res.body.version).toBe('1.0.0')
         } else {

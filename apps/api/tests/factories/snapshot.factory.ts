@@ -22,10 +22,7 @@ export function makeSnapshot(
     }
 }
 
-/**
- * Insert directly using a Mongoose Model instance.
- * Pass a model obtained via: moduleRef.get(getModelToken('Snapshot'))
- */
+
 export async function insertSnapshot<T extends Document>(
     model: Model<T>,
     algorithmPresetId: string,
@@ -36,9 +33,7 @@ export async function insertSnapshot<T extends Document>(
     return doc
 }
 
-/**
- * Convenience: generate random-but-valid optional fields (useful for variety)
- */
+
 export function randomSnapshot(algorithmPresetId: string): SnapshotCreate {
     const maybe = <T>(val: T) => (faker.datatype.boolean() ? val : undefined)
     return makeSnapshot(algorithmPresetId, {

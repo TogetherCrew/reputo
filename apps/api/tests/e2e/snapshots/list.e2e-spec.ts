@@ -9,14 +9,8 @@ import {
     insertAlgorithmPreset,
     randomAlgorithmPreset,
 } from '../../factories/algorithmPreset.factory'
-import {
-    insertSnapshot,
-    randomSnapshot,
-} from '../../factories/snapshot.factory'
-import {
-    assertPaginationStructure,
-    assertPaginationMath,
-} from '../../utils/pagination'
+import { insertSnapshot } from '../../factories/snapshot.factory'
+import { assertPaginationStructure } from '../../utils/pagination'
 
 describe('GET /api/v1/snapshots', () => {
     let app: INestApplication
@@ -53,7 +47,6 @@ describe('GET /api/v1/snapshots', () => {
             randomAlgorithmPreset()
         )
 
-        // Create 15 snapshots
         for (let i = 0; i < 15; i++) {
             const preset = i % 2 === 0 ? preset1._id : preset2._id
             await insertSnapshot(snapshotModel, preset.toString())
@@ -68,7 +61,6 @@ describe('GET /api/v1/snapshots', () => {
         expect(res.body.totalResults).toBe(15)
         expect(res.body.totalPages).toBe(2)
 
-        // Verify each result has required fields
         res.body.results.forEach((snapshot: any) => {
             expect(snapshot).toHaveProperty('_id')
             expect(snapshot).toHaveProperty('algorithmPreset')
@@ -248,7 +240,6 @@ describe('GET /api/v1/snapshots', () => {
 
         const res = await api(app).get('/snapshots').expect(200)
 
-        // Should be sorted by createdAt desc (newest first)
         expect(res.body.results[0]._id).toBe(snapshot2._id.toString())
         expect(res.body.results[1]._id).toBe(snapshot1._id.toString())
     })
@@ -277,7 +268,6 @@ describe('GET /api/v1/snapshots', () => {
             .get('/snapshots?populate=algorithmPreset')
             .expect(200)
 
-        // algorithmPreset should be populated as object
         expect(res.body.results[0].algorithmPreset).toBeInstanceOf(Object)
         expect(res.body.results[0].algorithmPreset.key).toBe('test_key')
         expect(res.body.results[0].algorithmPreset.version).toBe('1.0.0')

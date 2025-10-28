@@ -36,11 +36,9 @@ describe('DELETE /api/v1/algorithm-presets/:id', () => {
             .delete(`/algorithm-presets/${preset._id}`)
             .expect(204)
 
-        // 204 No Content should have empty body
         expect(res.body).toEqual({})
         expect(res.text).toBe('')
 
-        // Verify preset is deleted from database
         const count = await algorithmPresetModel.countDocuments({
             _id: preset._id,
         })
@@ -60,10 +58,8 @@ describe('DELETE /api/v1/algorithm-presets/:id', () => {
     it('should make subsequent GET by id return 404 after deletion', async () => {
         const preset = await insertAlgorithmPreset(algorithmPresetModel)
 
-        // Delete the preset
         await api(app).delete(`/algorithm-presets/${preset._id}`).expect(204)
 
-        // Attempting to GET should return 404
         await api(app).get(`/algorithm-presets/${preset._id}`).expect(404)
     })
 })

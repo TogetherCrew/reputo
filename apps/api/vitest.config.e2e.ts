@@ -11,8 +11,8 @@ export default defineConfig({
         },
         root: './',
         setupFiles: ['./tests/setup.ts'],
-        testTimeout: 30000, // 30s for database operations
-        hookTimeout: 60000, // 60s for global setup/teardown
+        testTimeout: 30000,
+        hookTimeout: 60000,
     },
     resolve: {
         alias: {

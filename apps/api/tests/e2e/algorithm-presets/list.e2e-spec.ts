@@ -37,7 +37,6 @@ describe('GET /api/v1/algorithm-presets', () => {
     })
 
     it('should list presets with default pagination (200) and PaginationDto shape', async () => {
-        // Create 15 presets
         for (let i = 0; i < 15; i++) {
             await insertAlgorithmPreset(
                 algorithmPresetModel,
@@ -47,20 +46,16 @@ describe('GET /api/v1/algorithm-presets', () => {
 
         const res = await api(app).get('/algorithm-presets').expect(200)
 
-        // Assert PaginationDto structure
         assertPaginationStructure(res.body)
 
-        // Assert default pagination values
         expect(res.body.page).toBe(1)
         expect(res.body.limit).toBe(10)
         expect(res.body.results).toHaveLength(10)
         expect(res.body.totalResults).toBe(15)
         expect(res.body.totalPages).toBe(2)
 
-        // Verify pagination math
         assertPaginationMath(res.body)
 
-        // Verify each result has required fields
         res.body.results.forEach((preset: any) => {
             expect(preset).toHaveProperty('_id')
             expect(preset).toHaveProperty('key')
@@ -93,7 +88,6 @@ describe('GET /api/v1/algorithm-presets', () => {
     })
 
     it('should sort by createdAt:desc (200)', async () => {
-        // Create presets with delays to ensure different timestamps
         const preset1 = await insertAlgorithmPreset(algorithmPresetModel, {
             key: 'preset_1',
         })
@@ -108,7 +102,6 @@ describe('GET /api/v1/algorithm-presets', () => {
 
         const res = await api(app).get('/algorithm-presets').expect(200)
 
-        // Should be sorted by createdAt desc (newest first)
         expect(res.body.results[0].key).toBe('preset_3')
         expect(res.body.results[1].key).toBe('preset_2')
         expect(res.body.results[2].key).toBe('preset_1')
@@ -132,7 +125,6 @@ describe('GET /api/v1/algorithm-presets', () => {
             .get('/algorithm-presets?sortBy=key:asc,version:desc')
             .expect(200)
 
-        // Should sort by key ASC first, then version DESC within same keys
         expect(res.body.results[0].version).toBe('2.0.0')
         expect(res.body.results[1].version).toBe('1.0.0')
         expect(res.body.results[2].key).toBe('z_key')

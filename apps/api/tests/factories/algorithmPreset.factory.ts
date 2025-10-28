@@ -21,10 +21,7 @@ export function makeAlgorithmPreset(overrides: AlgorithmPresetCreate = {}) {
     }
 }
 
-/**
- * Insert directly using a Mongoose Model instance.
- * Pass a model obtained via: moduleRef.get(getModelToken('AlgorithmPreset'))
- */
+
 export async function insertAlgorithmPreset<T extends Document>(
     model: Model<T>,
     overrides: AlgorithmPresetCreate = {}
@@ -34,9 +31,7 @@ export async function insertAlgorithmPreset<T extends Document>(
     return doc
 }
 
-/**
- * Convenience: generate random-but-valid optional fields (useful for variety)
- */
+
 export function randomAlgorithmPreset(): AlgorithmPresetCreate {
     const maybe = <T>(val: T) => (faker.datatype.boolean() ? val : undefined)
     return makeAlgorithmPreset({
