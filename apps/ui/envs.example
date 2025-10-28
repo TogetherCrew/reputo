@@ -1,0 +1,11 @@
+# UI Application Environment Variables
+# Copy this file to .env.local for local development
+
+# Next.js public environment variables
+# The API URL that the UI will use to make requests
+# For local development without Docker, this should point to localhost
+NEXT_PUBLIC_API_URL=http://localhost:3000/api/v1
+
+# Note: For development, create .env.local from this file
+# The .env.local file is gitignored and should not be committed
+
