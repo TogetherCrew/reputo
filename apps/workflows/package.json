@@ -6,6 +6,7 @@
     "private": "true",
     "scripts": {
         "build": "tsc",
+        "start": "node dist/index.js",
         "dev": "tsx watch src/index.ts",
         "check": "pnpm exec biome check --write",
         "format": "pnpm exec biome format --write",
@@ -13,9 +14,7 @@
         "test": "echo \"no tests yet\"",
         "release": "semantic-release"
     },
-    "dependencies": {
-        "@reputo/reputation-algorithms": "workspace:*"
-    },
+    "dependencies": {},
     "devDependencies": {
         "tsx": "^4.7.0"
     },

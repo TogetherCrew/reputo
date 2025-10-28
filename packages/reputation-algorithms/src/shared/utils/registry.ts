@@ -1,7 +1,7 @@
 import { readdirSync } from 'node:fs';
 import { join } from 'node:path';
-import type { AlgorithmVersion, RegistryIndex } from '../types/registry';
-import { compareSemVer } from './validation';
+import type { AlgorithmVersion, RegistryIndex } from '../types/registry.js';
+import { compareSemVer } from './validation.js';
 
 export function scanRegistryDirectory(registryPath: string): RegistryIndex {
   const algorithmMap = new Map<string, AlgorithmVersion[]>();

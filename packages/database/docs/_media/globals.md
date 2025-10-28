@@ -10,6 +10,8 @@
 - [AlgorithmPresetModel](interfaces/AlgorithmPresetModel.md)
 - [Snapshot](interfaces/Snapshot.md)
 - [SnapshotModel](interfaces/SnapshotModel.md)
+- [PaginateOptions](interfaces/PaginateOptions.md)
+- [PaginateResult](interfaces/PaginateResult.md)
 
 ## Type Aliases
 
