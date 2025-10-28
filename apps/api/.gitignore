@@ -17,6 +17,9 @@ logs/
 
 # Test outputs
 coverage/
+coverage-*/
+*.lcov
+.nyc_output
 jest.config.ts
 
 # Editor & OS

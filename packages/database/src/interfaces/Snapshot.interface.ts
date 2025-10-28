@@ -1,5 +1,6 @@
-import { HydratedDocument, Model, Types } from 'mongoose';
-import { SnapshotStatus } from '../constants/index.js';
+import type { FilterQuery, HydratedDocument, Model, Types } from 'mongoose';
+import type { SnapshotStatus } from '../constants/index.js';
+import type { PaginateOptions, PaginateResult } from '../plugins/index.js';
 
 /**
  * Interface defining the structure of a Snapshot document.
@@ -39,5 +40,5 @@ export type SnapshotDoc = HydratedDocument<Snapshot>;
  */
 export interface SnapshotModel extends Model<Snapshot> {
   /** Pagination method for querying snapshots */
-  paginate: (filter: object, options: object) => Promise<unknown>;
+  paginate: (filter: FilterQuery<Snapshot>, options: PaginateOptions) => Promise<PaginateResult<SnapshotDoc>>;
 }

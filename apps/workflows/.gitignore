@@ -6,5 +6,9 @@ dist/
 # TypeScript artifacts
 *.tsbuildinfo
 
+# Test coverage
+coverage/
+*.lcov
+
 # Editor files
 .vscode/

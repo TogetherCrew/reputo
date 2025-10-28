@@ -1,28 +1,24 @@
 import { Schema } from 'mongoose';
 import { AlgorithmPreset, AlgorithmPresetModel } from '../interfaces/index.js';
+import { paginate } from '../plugins/index.js';
 
 /**
  * Mongoose schema for AlgorithmPreset documents.
  */
 const AlgorithmPresetSchema = new Schema<AlgorithmPreset, AlgorithmPresetModel>(
   {
-    spec: new Schema<AlgorithmPreset['spec']>(
-      {
-        key: {
-          type: String,
-          required: true,
-          index: true,
-          immutable: true,
-        },
-        version: {
-          type: String,
-          required: true,
-          index: true,
-          immutable: true,
-        },
-      },
-      { _id: false },
-    ),
+    key: {
+      type: String,
+      required: true,
+      index: true,
+      immutable: true,
+    },
+    version: {
+      type: String,
+      required: true,
+      index: true,
+      immutable: true,
+    },
     inputs: [
       new Schema<AlgorithmPreset['inputs'][number]>(
         {
@@ -32,8 +28,8 @@ const AlgorithmPresetSchema = new Schema<AlgorithmPreset, AlgorithmPresetModel>(
         { _id: false },
       ),
     ],
-    name: { type: String },
-    description: { type: String },
+    name: { type: String, minlength: 3, maxlength: 100 },
+    description: { type: String, minlength: 10, maxlength: 500 },
   },
   {
     timestamps: true,
@@ -41,5 +37,7 @@ const AlgorithmPresetSchema = new Schema<AlgorithmPreset, AlgorithmPresetModel>(
     minimize: false,
   },
 );
+AlgorithmPresetSchema.index({ key: 1, version: 1 });
+AlgorithmPresetSchema.plugin(paginate);
 
 export default AlgorithmPresetSchema as Schema<AlgorithmPreset, AlgorithmPresetModel>;

@@ -25,6 +25,9 @@ docker-compose.override.yml
 **/.env*
 **/*.env
 
+# Docker environment files (except local dev files)
+docker/shared.env
+
 # Husky
 .husky/
 
@@ -33,6 +36,10 @@ changeset/
 
 # Coverage
 coverage/
+**/coverage/
+**/coverage-*/
+*.lcov
+.nyc_output
 
 
 #env

@@ -3,7 +3,30 @@ version: '3.9'
 networks:
     web:
 
+volumes:
+    mongodb_data:
+        driver: local
+
 services:
+    mongodb:
+        container_name: mongodb
+        image: mongo:7.0
+        restart: unless-stopped
+        networks: [web]
+        volumes:
+            - mongodb_data:/data/db
+            - ./mongo-init.sh:/docker-entrypoint-initdb.d/mongo-init.sh:ro
+        environment:
+            - MONGO_INITDB_ROOT_USERNAME=admin
+            - MONGO_INITDB_ROOT_PASSWORD=preview-password
+        # command: mongod --replSet rs0 --bind_ip_all
+        healthcheck:
+            test: ['CMD', 'mongosh', '--eval', "db.adminCommand('ping')"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+            start_period: 30s
+
     traefik:
         image: traefik:v3.4
         container_name: traefik
@@ -45,7 +68,8 @@ services:
     api:
         container_name: api
         depends_on:
-            - traefik
+            mongodb:
+                condition: service_healthy
         build:
             context: ..
             dockerfile: docker/Dockerfile
@@ -56,8 +80,19 @@ services:
             - traefik.enable=true
             - traefik.http.routers.api.rule=Host(`api.${PULLPREVIEW_PUBLIC_DNS}`)
             - traefik.http.routers.api.entrypoints=web
-            - traefik.http.routers.api.middlewares=api-strip,api-cors
+            - traefik.http.routers.api.middlewares=api-cors
             - traefik.http.services.api.loadbalancer.server.port=3000
-            - traefik.http.middlewares.api-strip.stripprefix.prefixes=/api
-            - traefik.http.middlewares.api-cors.headers.accesscontrolallowmethods=GET,OPTIONS,PUT,POST,DELETE
-            - traefik.http.middlewares.api-cors.headers.accesscontrolalloworiginlist=*
+            - traefik.http.middlewares.api-cors.headers.accessControlAllowMethods=GET,OPTIONS,PUT,POST,DELETE,PATCH
+            - traefik.http.middlewares.api-cors.headers.accessControlAllowOriginList=*
+            - traefik.http.middlewares.api-cors.headers.accessControlAllowHeaders=Content-Type,Authorization,Accept,Origin,X-Requested-With
+            - traefik.http.middlewares.api-cors.headers.accessControlMaxAge=3600
+            # - traefik.http.middlewares.api-cors.headers.accessControlAllowCredentials=true
+        environment:
+            - NODE_ENV=development
+            - PORT=3000
+            - LOG_LEVEL=info
+            - MONGODB_HOST=mongodb
+            - MONGODB_PORT=27017
+            - MONGODB_USER=admin
+            - MONGODB_PASSWORD=preview-password
+            - MONGODB_DB_NAME=reputo_preview

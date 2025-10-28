@@ -6,7 +6,7 @@
 
 # Interface: Snapshot
 
-Defined in: [packages/database/src/interfaces/Snapshot.interface.ts:10](https://github.com/TogetherCrew/reputo/blob/2db3ca681973f3b7304a52cef9c0cd9457c2c540/packages/database/src/interfaces/Snapshot.interface.ts#L10)
+Defined in: [packages/database/src/interfaces/Snapshot.interface.ts:11](https://github.com/TogetherCrew/reputo/blob/413a65312d2e71068be02885525ba8b64731b3a2/packages/database/src/interfaces/Snapshot.interface.ts#L11)
 
 Interface defining the structure of a Snapshot document.
 
@@ -19,7 +19,7 @@ of an algorithm execution with optional Temporal workflow integration.
 
 > **status**: `"queued"` \| `"running"` \| `"completed"` \| `"failed"` \| `"cancelled"`
 
-Defined in: [packages/database/src/interfaces/Snapshot.interface.ts:12](https://github.com/TogetherCrew/reputo/blob/2db3ca681973f3b7304a52cef9c0cd9457c2c540/packages/database/src/interfaces/Snapshot.interface.ts#L12)
+Defined in: [packages/database/src/interfaces/Snapshot.interface.ts:13](https://github.com/TogetherCrew/reputo/blob/413a65312d2e71068be02885525ba8b64731b3a2/packages/database/src/interfaces/Snapshot.interface.ts#L13)
 
 Current execution status
 
@@ -29,7 +29,7 @@ Current execution status
 
 > `optional` **temporal**: `object`
 
-Defined in: [packages/database/src/interfaces/Snapshot.interface.ts:14](https://github.com/TogetherCrew/reputo/blob/2db3ca681973f3b7304a52cef9c0cd9457c2c540/packages/database/src/interfaces/Snapshot.interface.ts#L14)
+Defined in: [packages/database/src/interfaces/Snapshot.interface.ts:15](https://github.com/TogetherCrew/reputo/blob/413a65312d2e71068be02885525ba8b64731b3a2/packages/database/src/interfaces/Snapshot.interface.ts#L15)
 
 Optional Temporal workflow information
 
@@ -57,7 +57,7 @@ Temporal task queue name
 
 > **algorithmPreset**: `ObjectId`
 
-Defined in: [packages/database/src/interfaces/Snapshot.interface.ts:23](https://github.com/TogetherCrew/reputo/blob/2db3ca681973f3b7304a52cef9c0cd9457c2c540/packages/database/src/interfaces/Snapshot.interface.ts#L23)
+Defined in: [packages/database/src/interfaces/Snapshot.interface.ts:24](https://github.com/TogetherCrew/reputo/blob/413a65312d2e71068be02885525ba8b64731b3a2/packages/database/src/interfaces/Snapshot.interface.ts#L24)
 
 Reference to the associated AlgorithmPreset
 
@@ -67,7 +67,7 @@ Reference to the associated AlgorithmPreset
 
 > `optional` **outputs**: `unknown`
 
-Defined in: [packages/database/src/interfaces/Snapshot.interface.ts:25](https://github.com/TogetherCrew/reputo/blob/2db3ca681973f3b7304a52cef9c0cd9457c2c540/packages/database/src/interfaces/Snapshot.interface.ts#L25)
+Defined in: [packages/database/src/interfaces/Snapshot.interface.ts:26](https://github.com/TogetherCrew/reputo/blob/413a65312d2e71068be02885525ba8b64731b3a2/packages/database/src/interfaces/Snapshot.interface.ts#L26)
 
 Algorithm execution outputs/results
 
@@ -77,7 +77,7 @@ Algorithm execution outputs/results
 
 > `optional` **createdAt**: `Date`
 
-Defined in: [packages/database/src/interfaces/Snapshot.interface.ts:27](https://github.com/TogetherCrew/reputo/blob/2db3ca681973f3b7304a52cef9c0cd9457c2c540/packages/database/src/interfaces/Snapshot.interface.ts#L27)
+Defined in: [packages/database/src/interfaces/Snapshot.interface.ts:28](https://github.com/TogetherCrew/reputo/blob/413a65312d2e71068be02885525ba8b64731b3a2/packages/database/src/interfaces/Snapshot.interface.ts#L28)
 
 Document creation timestamp
 
@@ -87,6 +87,6 @@ Document creation timestamp
 
 > `optional` **updatedAt**: `Date`
 
-Defined in: [packages/database/src/interfaces/Snapshot.interface.ts:29](https://github.com/TogetherCrew/reputo/blob/2db3ca681973f3b7304a52cef9c0cd9457c2c540/packages/database/src/interfaces/Snapshot.interface.ts#L29)
+Defined in: [packages/database/src/interfaces/Snapshot.interface.ts:30](https://github.com/TogetherCrew/reputo/blob/413a65312d2e71068be02885525ba8b64731b3a2/packages/database/src/interfaces/Snapshot.interface.ts#L30)
 
 Document last update timestamp

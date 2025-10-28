@@ -1,6 +1,7 @@
 import { Schema } from 'mongoose';
 import { SNAPSHOT_STATUS } from '../constants/index.js';
 import { Snapshot, SnapshotModel } from '../interfaces/index.js';
+import { paginate } from '../plugins/index.js';
 
 /**
  * Mongoose schema for Snapshot documents.
@@ -35,4 +36,7 @@ const SnapshotSchema = new Schema<Snapshot, SnapshotModel>(
     minimize: false,
   },
 );
+
+SnapshotSchema.plugin(paginate);
+
 export default SnapshotSchema as Schema<Snapshot, SnapshotModel>;

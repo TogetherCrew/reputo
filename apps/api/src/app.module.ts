@@ -1,10 +1,36 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { MongooseModule } from '@nestjs/mongoose';
+import { LoggerModule } from 'nestjs-pino';
+
+import { AlgorithmPresetModule } from './algorithm-preset/algorithm-preset.module';
+import { configModules, configValidationSchema } from './config';
+import { pinoConfig } from './config/pino.config';
+import { SnapshotModule } from './snapshot/snapshot.module';
 
 @Module({
-  imports: [],
-  controllers: [AppController],
-  providers: [AppService],
+  imports: [
+    ConfigModule.forRoot({
+      load: configModules,
+      validationSchema: configValidationSchema,
+      isGlobal: true,
+    }),
+    LoggerModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: pinoConfig,
+    }),
+    MongooseModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        uri: configService.get<string>('mongoDB.uri'),
+      }),
+    }),
+    AlgorithmPresetModule,
+    SnapshotModule,
+  ],
+  controllers: [],
+  providers: [],
 })
 export class AppModule {}

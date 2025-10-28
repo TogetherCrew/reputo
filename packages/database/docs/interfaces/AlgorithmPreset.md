@@ -6,7 +6,7 @@
 
 # Interface: AlgorithmPreset
 
-Defined in: [packages/database/src/interfaces/AlgorithmPreset.interface.ts:9](https://github.com/TogetherCrew/reputo/blob/2db3ca681973f3b7304a52cef9c0cd9457c2c540/packages/database/src/interfaces/AlgorithmPreset.interface.ts#L9)
+Defined in: [packages/database/src/interfaces/AlgorithmPreset.interface.ts:10](https://github.com/TogetherCrew/reputo/blob/413a65312d2e71068be02885525ba8b64731b3a2/packages/database/src/interfaces/AlgorithmPreset.interface.ts#L10)
 
 Interface defining the structure of an AlgorithmPreset document.
 
@@ -15,23 +15,21 @@ version and input parameters.
 
 ## Properties
 
-### spec
-
-> **spec**: `object`
-
-Defined in: [packages/database/src/interfaces/AlgorithmPreset.interface.ts:11](https://github.com/TogetherCrew/reputo/blob/2db3ca681973f3b7304a52cef9c0cd9457c2c540/packages/database/src/interfaces/AlgorithmPreset.interface.ts#L11)
-
-Algorithm specification containing key and version
-
-#### key
+### key
 
 > **key**: `string`
 
+Defined in: [packages/database/src/interfaces/AlgorithmPreset.interface.ts:12](https://github.com/TogetherCrew/reputo/blob/413a65312d2e71068be02885525ba8b64731b3a2/packages/database/src/interfaces/AlgorithmPreset.interface.ts#L12)
+
 Unique algorithm identifier (e.g., 'voting_engagement')
 
-#### version
+***
+
+### version
 
 > **version**: `string`
+
+Defined in: [packages/database/src/interfaces/AlgorithmPreset.interface.ts:14](https://github.com/TogetherCrew/reputo/blob/413a65312d2e71068be02885525ba8b64731b3a2/packages/database/src/interfaces/AlgorithmPreset.interface.ts#L14)
 
 Algorithm version (e.g., '1.0.0')
 
@@ -41,7 +39,7 @@ Algorithm version (e.g., '1.0.0')
 
 > **inputs**: `object`[]
 
-Defined in: [packages/database/src/interfaces/AlgorithmPreset.interface.ts:18](https://github.com/TogetherCrew/reputo/blob/2db3ca681973f3b7304a52cef9c0cd9457c2c540/packages/database/src/interfaces/AlgorithmPreset.interface.ts#L18)
+Defined in: [packages/database/src/interfaces/AlgorithmPreset.interface.ts:16](https://github.com/TogetherCrew/reputo/blob/413a65312d2e71068be02885525ba8b64731b3a2/packages/database/src/interfaces/AlgorithmPreset.interface.ts#L16)
 
 Array of input parameters for the algorithm
 
@@ -63,9 +61,9 @@ Parameter value (can be any type)
 
 > `optional` **name**: `string`
 
-Defined in: [packages/database/src/interfaces/AlgorithmPreset.interface.ts:25](https://github.com/TogetherCrew/reputo/blob/2db3ca681973f3b7304a52cef9c0cd9457c2c540/packages/database/src/interfaces/AlgorithmPreset.interface.ts#L25)
+Defined in: [packages/database/src/interfaces/AlgorithmPreset.interface.ts:23](https://github.com/TogetherCrew/reputo/blob/413a65312d2e71068be02885525ba8b64731b3a2/packages/database/src/interfaces/AlgorithmPreset.interface.ts#L23)
 
-Optional human-readable name for the preset
+Optional human-readable name for the preset (3-100 characters)
 
 ***
 
@@ -73,9 +71,9 @@ Optional human-readable name for the preset
 
 > `optional` **description**: `string`
 
-Defined in: [packages/database/src/interfaces/AlgorithmPreset.interface.ts:27](https://github.com/TogetherCrew/reputo/blob/2db3ca681973f3b7304a52cef9c0cd9457c2c540/packages/database/src/interfaces/AlgorithmPreset.interface.ts#L27)
+Defined in: [packages/database/src/interfaces/AlgorithmPreset.interface.ts:25](https://github.com/TogetherCrew/reputo/blob/413a65312d2e71068be02885525ba8b64731b3a2/packages/database/src/interfaces/AlgorithmPreset.interface.ts#L25)
 
-Optional description of the preset
+Optional description of the preset (10-500 characters)
 
 ***
 
@@ -83,7 +81,7 @@ Optional description of the preset
 
 > `optional` **createdAt**: `Date`
 
-Defined in: [packages/database/src/interfaces/AlgorithmPreset.interface.ts:29](https://github.com/TogetherCrew/reputo/blob/2db3ca681973f3b7304a52cef9c0cd9457c2c540/packages/database/src/interfaces/AlgorithmPreset.interface.ts#L29)
+Defined in: [packages/database/src/interfaces/AlgorithmPreset.interface.ts:27](https://github.com/TogetherCrew/reputo/blob/413a65312d2e71068be02885525ba8b64731b3a2/packages/database/src/interfaces/AlgorithmPreset.interface.ts#L27)
 
 Document creation timestamp
 
@@ -93,6 +91,6 @@ Document creation timestamp
 
 > `optional` **updatedAt**: `Date`
 
-Defined in: [packages/database/src/interfaces/AlgorithmPreset.interface.ts:31](https://github.com/TogetherCrew/reputo/blob/2db3ca681973f3b7304a52cef9c0cd9457c2c540/packages/database/src/interfaces/AlgorithmPreset.interface.ts#L31)
+Defined in: [packages/database/src/interfaces/AlgorithmPreset.interface.ts:29](https://github.com/TogetherCrew/reputo/blob/413a65312d2e71068be02885525ba8b64731b3a2/packages/database/src/interfaces/AlgorithmPreset.interface.ts#L29)
 
 Document last update timestamp
