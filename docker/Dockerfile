@@ -26,9 +26,8 @@ CMD [ "pnpm", "start" ]
 FROM base AS ui
 COPY --from=build /prod/ui /prod/ui
 WORKDIR /prod/ui
-RUN npm install --global --no-update-notifier http-server
 EXPOSE 8080
-CMD ["http-server", "dist", "-p", "8080"]
+CMD ["pnpm", "start", "-p", "8080"]
 
 FROM base AS workflows
 COPY --from=build /prod/workflows /prod/workflows
