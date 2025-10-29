@@ -88,8 +88,10 @@ services:
             - traefik.http.routers.api.entrypoints=websecure
             - traefik.http.routers.api.middlewares=api-cors
             - traefik.http.services.api.loadbalancer.server.port=3000
-            - traefik.http.middlewares.api-cors.headers.accessControlAllowMethods=GET,OPTIONS,PUT,POST,DELETE
+            - traefik.http.middlewares.api-cors.headers.accessControlAllowMethods=GET,OPTIONS,PUT,POST,DELETE,PATCH
             - traefik.http.middlewares.api-cors.headers.accessControlAllowOriginList=${ALLOWED_ORIGINS:-*}
+            - traefik.http.middlewares.api-cors.headers.accessControlAllowHeaders=Content-Type,Authorization,Accept,Origin,X-Requested-With
+            - traefik.http.middlewares.api-cors.headers.accessControlMaxAge=3600
             - com.centurylinklabs.watchtower.enable=true
         env_file:
             - ./api.env
