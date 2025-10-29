@@ -10,7 +10,16 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import type { Algorithm } from "@/core/algorithms";
-import { Eye, Play, Trash2, Loader2, FolderOpen, AlertCircle, Edit, BarChart3 } from "lucide-react";
+import {
+  Eye,
+  Play,
+  Trash2,
+  Loader2,
+  FolderOpen,
+  AlertCircle,
+  Edit,
+  BarChart3,
+} from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import {
@@ -20,7 +29,11 @@ import {
   useCreateSnapshot,
   useUpdateAlgorithmPreset,
 } from "@/lib/api/hooks";
-import type { CreateAlgorithmPresetDto, CreateSnapshotDto, AlgorithmPresetResponseDto } from "@/lib/api/types";
+import type {
+  CreateAlgorithmPresetDto,
+  CreateSnapshotDto,
+  AlgorithmPresetResponseDto,
+} from "@/lib/api/types";
 import {
   Empty,
   EmptyContent,
@@ -42,11 +55,17 @@ export function AlgorithmPresets({ algo }: { algo?: Algorithm }) {
   const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [presetToDelete, setPresetToDelete] = useState<string | null>(null);
-  const [presetToView, setPresetToView] = useState<AlgorithmPresetResponseDto | null>(null);
-  const [presetToEdit, setPresetToEdit] = useState<AlgorithmPresetResponseDto | null>(null);
+  const [presetToView, setPresetToView] =
+    useState<AlgorithmPresetResponseDto | null>(null);
+  const [presetToEdit, setPresetToEdit] =
+    useState<AlgorithmPresetResponseDto | null>(null);
 
   // API hooks
-  const { data: presetsData, isLoading, error } = useAlgorithmPresets({
+  const {
+    data: presetsData,
+    isLoading,
+    error,
+  } = useAlgorithmPresets({
     key: algo?.id,
     limit: 50,
   });
@@ -67,7 +86,9 @@ export function AlgorithmPresets({ algo }: { algo?: Algorithm }) {
       version: "1.0.0",
       inputs: algo.inputs.map((input) => ({
         key: input.label,
-        value: data.selectedFiles[input.label] || `placeholder_${input.label.toLowerCase().replace(/\s+/g, '_')}.csv`,
+        value:
+          data.selectedFiles[input.label] ||
+          `placeholder_${input.label.toLowerCase().replace(/\s+/g, "_")}.csv`,
       })),
       name: data.name,
       description: data.description || `Preset for ${algo.title}`,
@@ -123,7 +144,7 @@ export function AlgorithmPresets({ algo }: { algo?: Algorithm }) {
 
   const confirmDeletePreset = async () => {
     if (!presetToDelete) return;
-    
+
     try {
       await deletePresetMutation.mutateAsync(presetToDelete);
       setIsDeleteDialogOpen(false);
@@ -141,7 +162,7 @@ export function AlgorithmPresets({ algo }: { algo?: Algorithm }) {
       };
 
       await createSnapshotMutation.mutateAsync(snapshotData);
-      
+
       // Navigate to snapshots tab with the preset filter
       const params = new URLSearchParams(searchParams.toString());
       params.set("tab", "snapshots");
@@ -168,7 +189,7 @@ export function AlgorithmPresets({ algo }: { algo?: Algorithm }) {
             Manage algorithm workflows and condition dependencies
           </p>
         </div>
-        <CreatePresetDialog 
+        <CreatePresetDialog
           algo={algo}
           onCreatePreset={handleCreatePreset}
           isLoading={createPresetMutation.isPending}
@@ -212,15 +233,11 @@ export function AlgorithmPresets({ algo }: { algo?: Algorithm }) {
             </EmptyMedia>
             <EmptyTitle>No Presets Found</EmptyTitle>
             <EmptyDescription>
-              You haven't created any presets yet. Get started by creating your first preset.
+              You haven't created any presets yet. Get started by creating your
+              first preset.
             </EmptyDescription>
           </EmptyHeader>
-          <EmptyContent>
-            <Button onClick={() => window.location.reload()}>
-              <FolderOpen className="mr-2 size-4" />
-              Create Your First Preset
-            </Button>
-          </EmptyContent>
+          <EmptyContent></EmptyContent>
         </Empty>
       ) : (
         <div className="space-y-4">
@@ -239,7 +256,9 @@ export function AlgorithmPresets({ algo }: { algo?: Algorithm }) {
                 <TableRow key={preset._id}>
                   <TableCell>
                     <div className="flex flex-col">
-                      <div className="font-medium">{preset.name || `${preset.key} preset`}</div>
+                      <div className="font-medium">
+                        {preset.name || `${preset.key} preset`}
+                      </div>
                       <div className="text-muted-foreground text-xs">
                         {preset.inputs.length} inputs
                       </div>
@@ -253,15 +272,17 @@ export function AlgorithmPresets({ algo }: { algo?: Algorithm }) {
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell className="whitespace-nowrap">{preset.version}</TableCell>
+                  <TableCell className="whitespace-nowrap">
+                    {preset.version}
+                  </TableCell>
                   <TableCell className="whitespace-nowrap">
                     {new Date(preset.createdAt).toLocaleDateString()}
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
+                      <Button
+                        variant="ghost"
+                        size="icon"
                         aria-label="Run"
                         onClick={() => handleRunPreset(preset._id)}
                         disabled={createSnapshotMutation.isPending}
@@ -272,20 +293,25 @@ export function AlgorithmPresets({ algo }: { algo?: Algorithm }) {
                           <Play className="size-4" />
                         )}
                       </Button>
-                      <Button variant="ghost" size="icon" aria-label="View" onClick={() => handleViewPreset(preset)}>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        aria-label="View"
+                        onClick={() => handleViewPreset(preset)}
+                      >
                         <Eye className="size-4" />
                       </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
+                      <Button
+                        variant="ghost"
+                        size="icon"
                         aria-label="View Snapshots"
                         onClick={() => handleViewSnapshots(preset._id)}
                       >
                         <BarChart3 className="size-4" />
                       </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
+                      <Button
+                        variant="ghost"
+                        size="icon"
                         aria-label="Edit"
                         onClick={() => handleEditPreset(preset)}
                         disabled={updatePresetMutation.isPending}
@@ -296,9 +322,9 @@ export function AlgorithmPresets({ algo }: { algo?: Algorithm }) {
                           <Edit className="size-4" />
                         )}
                       </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
+                      <Button
+                        variant="ghost"
+                        size="icon"
                         aria-label="Delete"
                         onClick={() => handleDeletePreset(preset._id)}
                         disabled={deletePresetMutation.isPending}
@@ -322,13 +348,13 @@ export function AlgorithmPresets({ algo }: { algo?: Algorithm }) {
       )}
 
       {/* Dialogs */}
-      <PresetDetailsDialog 
+      <PresetDetailsDialog
         isOpen={isDetailsDialogOpen}
         onClose={() => setIsDetailsDialogOpen(false)}
         preset={presetToView}
       />
-      
-      <EditPresetDialog 
+
+      <EditPresetDialog
         isOpen={isEditDialogOpen}
         onClose={() => {
           setIsEditDialogOpen(false);
@@ -338,8 +364,8 @@ export function AlgorithmPresets({ algo }: { algo?: Algorithm }) {
         onUpdatePreset={handleUpdatePreset}
         isLoading={updatePresetMutation.isPending}
       />
-      
-      <PresetDeleteDialog 
+
+      <PresetDeleteDialog
         isOpen={isDeleteDialogOpen}
         onClose={() => {
           setIsDeleteDialogOpen(false);
