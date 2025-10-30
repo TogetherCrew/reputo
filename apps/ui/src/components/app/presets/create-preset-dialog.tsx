@@ -5,73 +5,146 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Plus, Loader2 } from "lucide-react";
-import Image from "next/image";
-import { useState } from "react";
-import { Dropzone, DropzoneEmptyState, DropzoneContent } from "../dropzone";
+import { Plus, AlertCircle } from "lucide-react";
+import { useState, useMemo } from "react";
 import type { Algorithm } from "@/core/algorithms";
+import { ReputoForm } from "@/core/reputo-form";
+import { buildSchemaFromAlgorithm } from "@/core/schema-builder";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import type { CreateAlgorithmPresetDto } from "@/lib/api/types";
 
 interface CreatePresetDialogProps {
   algo?: Algorithm;
-  onCreatePreset: (data: {
-    name: string;
-    description: string;
-    selectedFiles: Record<string, string>;
-  }) => void;
+  onCreatePreset: (data: CreateAlgorithmPresetDto) => Promise<void>;
   isLoading: boolean;
+  error?: unknown;
 }
 
-export function CreatePresetDialog({ algo, onCreatePreset, isLoading }: CreatePresetDialogProps) {
-  const [presetName, setPresetName] = useState("");
-  const [presetDescription, setPresetDescription] = useState("");
-  const [isOpen, setIsOpen] = useState(false);
-  const [selectedFiles, setSelectedFiles] = useState<Record<string, string>>({});
+interface BackendError {
+  statusCode?: number;
+  message?: {
+    message?: string[];
+    error?: string;
+    statusCode?: number;
+  } | string;
+}
 
-  const handleFileSelect = (inputKey: string, fileName: string) => {
-    setSelectedFiles(prev => ({
-      ...prev,
-      [inputKey]: fileName
-    }));
-  };
+/**
+ * Parse backend error response to extract field errors
+ */
+function parseBackendError(error: unknown): { field: string; message: string }[] {
+  const errors: { field: string; message: string }[] = [];
+  
+  if (!error || typeof error !== "object") {
+    return errors;
+  }
 
-  const handleCreatePreset = () => {
-    if (!algo || !presetName.trim()) return;
-
-    // Check if all required inputs have files selected
-    const missingFiles = algo.inputs.filter(input => !selectedFiles[input.label]);
-    if (missingFiles.length > 0) {
-      alert(`Please select files for: ${missingFiles.map(input => input.label).join(', ')}`);
-      return;
+  const backendError = error as BackendError;
+  
+  // Handle nested message structure
+  if (backendError.message) {
+    if (typeof backendError.message === "string") {
+      errors.push({ field: "_general", message: backendError.message });
+    } else if (typeof backendError.message === "object" && backendError.message.message) {
+      const messageArray = Array.isArray(backendError.message.message)
+        ? backendError.message.message
+        : [backendError.message.message];
+      
+      messageArray.forEach((msg) => {
+        if (typeof msg === "string") {
+          // Try to extract field name from error message
+          // Format: "fieldName must be..."
+          const fieldMatch = msg.match(/^(\w+)\s+/);
+          const field = fieldMatch ? fieldMatch[1] : "_general";
+          errors.push({ field, message: msg });
+        }
+      });
     }
+  }
 
-    onCreatePreset({
-      name: presetName.trim(),
-      description: presetDescription.trim(),
-      selectedFiles,
-    });
+  return errors;
+}
 
-    // Reset form
-    setPresetName("");
-    setPresetDescription("");
-    setSelectedFiles({});
-    setIsOpen(false);
+export function CreatePresetDialog({ 
+  algo, 
+  onCreatePreset, 
+  isLoading, 
+  error 
+}: CreatePresetDialogProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [formErrors, setFormErrors] = useState<{ field: string; message: string }[]>([]);
+
+  // Generate schema from algorithm
+  const schema = useMemo(() => {
+    if (!algo) return null;
+    return buildSchemaFromAlgorithm(algo, "1.0.0");
+  }, [algo]);
+
+  // Parse backend errors
+  const backendErrors = useMemo(() => {
+    if (!error) return [];
+    return parseBackendError(error);
+  }, [error]);
+
+  // Combine form errors and backend errors
+  const allErrors = [...formErrors, ...backendErrors];
+
+  const handleSubmit = async (data: Record<string, unknown>) => {
+    if (!algo) return;
+
+    setFormErrors([]);
+
+    try {
+      // Transform form data to CreateAlgorithmPresetDto format
+      const createData: CreateAlgorithmPresetDto = {
+        key: (data.key as string) || algo.id,
+        version: (data.version as string) || "1.0.0",
+        name: data.name as string | undefined,
+        description: data.description as string | undefined,
+        inputs: algo.inputs.map((input) => {
+          const inputKey = input.label.toLowerCase().replace(/\s+/g, "_");
+          const value = data[inputKey];
+          
+          // Convert File object to filename string
+          let inputValue: unknown;
+          if (value instanceof File) {
+            inputValue = value.name;
+          } else {
+            inputValue = value || `placeholder_${inputKey}.csv`;
+          }
+
+          return {
+            key: input.label,
+            value: inputValue,
+          };
+        }),
+      };
+
+      await onCreatePreset(createData);
+      
+      // Close dialog on success
+      setIsOpen(false);
+    } catch (err) {
+      // Don't close dialog on error - errors will be displayed
+      const parsedErrors = parseBackendError(err);
+      setFormErrors(parsedErrors);
+    }
   };
 
   const handleOpenChange = (open: boolean) => {
     setIsOpen(open);
     if (!open) {
-      setPresetName("");
-      setPresetDescription("");
-      setSelectedFiles({});
+      setFormErrors([]);
     }
   };
+
+  if (!algo || !schema) {
+    return null;
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
@@ -80,86 +153,40 @@ export function CreatePresetDialog({ algo, onCreatePreset, isLoading }: CreatePr
           <Plus className="mr-2 size-4" /> Create New Preset
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-xl">
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Create New Preset</DialogTitle>
           <DialogDescription>
-            Name your preset and review the required inputs for this algorithm.
+            Name your preset and configure the required inputs for {algo.title}.
           </DialogDescription>
         </DialogHeader>
-        <div className="grid gap-4">
-          <div className="grid gap-2">
-            <label htmlFor="preset-name" className="text-sm font-medium">Preset name</label>
-            <Input
-              placeholder={`e.g. ${algo?.title ?? "Preset"} Q1 2024`}
-              value={presetName}
-              onChange={(e) => setPresetName(e.target.value)}
-            />
-          </div>
-          <div className="grid gap-2">
-            <label htmlFor="preset-description" className="text-sm font-medium">Description</label>
-            <Textarea
-              placeholder={`Describe this preset for ${algo?.title ?? "the algorithm"}...`}
-              value={presetDescription}
-              onChange={(e) => setPresetDescription(e.target.value)}
-              rows={3}
-            />
-          </div>
-          <div className="grid gap-6">
-            {algo?.inputs.map((input) => (
-              <div key={input.label} className="grid gap-2">
-                <div className="flex items-center gap-2">
-                  <Image
-                    width={24}
-                    height={24}
-                    src={`/icons/${input.type}.png`}
-                    alt={input.type}
-                  />
-                  <div className="font-medium">{input.label}</div>
-                </div>
-                <div className="space-y-2">
-                  <Dropzone
-                    accept={{ "text/csv": [".csv"] }}
-                    maxFiles={1}
-                    className="justify-start"
-                    src={selectedFiles[input.label] ? [{ name: selectedFiles[input.label] } as File] : []}
-                    onDrop={(acceptedFiles) => {
-                      if (acceptedFiles.length > 0) {
-                        handleFileSelect(input.label, acceptedFiles[0].name);
-                      }
-                    }}
-                  >
-                    <DropzoneEmptyState />
-                    <DropzoneContent />
-                  </Dropzone>
-                  {selectedFiles[input.label] && (
-                    <div className="flex items-center gap-2 p-2 text-sm text-green-600 bg-green-50 rounded-md border">
-                      <div className="flex-1">{selectedFiles[input.label]}</div>
-                      <button
-                        type="button"
-                        className="text-xs text-red-600 hover:text-red-800 underline"
-                        onClick={() => handleFileSelect(input.label, "")}
-                      >
-                        Remove
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-        <DialogFooter>
-          <Button 
-            onClick={handleCreatePreset}
-            disabled={isLoading || !presetName.trim()}
-          >
-            {isLoading && (
-              <Loader2 className="mr-2 size-4 animate-spin" />
-            )}
-            Create Preset
-          </Button>
-        </DialogFooter>
+
+        {/* Display general errors */}
+        {allErrors.filter((e) => e.field === "_general").length > 0 && (
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              {allErrors
+                .filter((e) => e.field === "_general")
+                .map((e) => (
+                  <div key={e.message}>{e.message}</div>
+                ))}
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {/* Dynamic form */}
+        <ReputoForm
+          schema={schema}
+          onSubmit={handleSubmit}
+          submitLabel="Create Preset"
+          defaultValues={{
+            key: algo.id,
+            version: "1.0.0",
+          }}
+          hiddenFields={["key", "version"]}
+          className="mt-4"
+        />
       </DialogContent>
     </Dialog>
   );

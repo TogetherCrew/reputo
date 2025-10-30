@@ -31,6 +31,7 @@ import {
 } from "@/lib/api/hooks";
 import type {
   CreateAlgorithmPresetDto,
+  UpdateAlgorithmPresetDto,
   CreateSnapshotDto,
   AlgorithmPresetResponseDto,
 } from "@/lib/api/types";
@@ -74,31 +75,8 @@ export function AlgorithmPresets({ algo }: { algo?: Algorithm }) {
   const deletePresetMutation = useDeleteAlgorithmPreset();
   const createSnapshotMutation = useCreateSnapshot();
 
-  const handleCreatePreset = async (data: {
-    name: string;
-    description: string;
-    selectedFiles: Record<string, string>;
-  }) => {
-    if (!algo) return;
-
-    const createData: CreateAlgorithmPresetDto = {
-      key: algo.id,
-      version: "1.0.0",
-      inputs: algo.inputs.map((input) => ({
-        key: input.label,
-        value:
-          data.selectedFiles[input.label] ||
-          `placeholder_${input.label.toLowerCase().replace(/\s+/g, "_")}.csv`,
-      })),
-      name: data.name,
-      description: data.description || `Preset for ${algo.title}`,
-    };
-
-    try {
-      await createPresetMutation.mutateAsync(createData);
-    } catch (error) {
-      console.error("Failed to create preset:", error);
-    }
+  const handleCreatePreset = async (data: CreateAlgorithmPresetDto) => {
+    await createPresetMutation.mutateAsync(data);
   };
 
   const handleDeletePreset = async (presetId: string) => {
@@ -116,30 +94,12 @@ export function AlgorithmPresets({ algo }: { algo?: Algorithm }) {
     setIsEditDialogOpen(true);
   };
 
-  const handleUpdatePreset = async (data: {
-    name: string;
-    description: string;
-    selectedFiles: Record<string, string>;
-  }) => {
+  const handleUpdatePreset = async (data: UpdateAlgorithmPresetDto) => {
     if (!presetToEdit) return;
-
-    const updateData = {
-      name: data.name,
-      description: data.description,
-      inputs: presetToEdit.inputs.map((input) => ({
-        key: input.key,
-        value: data.selectedFiles[input.key] || input.value,
-      })),
-    };
-
-    try {
-      await updatePresetMutation.mutateAsync({
-        id: presetToEdit._id,
-        data: updateData,
-      });
-    } catch (error) {
-      console.error("Failed to update preset:", error);
-    }
+    await updatePresetMutation.mutateAsync({
+      id: presetToEdit._id,
+      data,
+    });
   };
 
   const confirmDeletePreset = async () => {
@@ -193,6 +153,7 @@ export function AlgorithmPresets({ algo }: { algo?: Algorithm }) {
           algo={algo}
           onCreatePreset={handleCreatePreset}
           isLoading={createPresetMutation.isPending}
+          error={createPresetMutation.error}
         />
       </div>
 
@@ -363,6 +324,7 @@ export function AlgorithmPresets({ algo }: { algo?: Algorithm }) {
         preset={presetToEdit}
         onUpdatePreset={handleUpdatePreset}
         isLoading={updatePresetMutation.isPending}
+        error={updatePresetMutation.error}
       />
 
       <PresetDeleteDialog

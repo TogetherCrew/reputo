@@ -1,32 +1,72 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Loader2 } from "lucide-react";
-import Image from "next/image";
-import { useState, useEffect } from "react";
-import { Dropzone, DropzoneEmptyState, DropzoneContent } from "../dropzone";
-import type { AlgorithmPresetResponseDto } from "@/lib/api/types";
+import { AlertCircle } from "lucide-react";
+import { useState, useMemo } from "react";
+import type { AlgorithmPresetResponseDto, UpdateAlgorithmPresetDto } from "@/lib/api/types";
+import { ReputoForm } from "@/core/reputo-form";
+import { buildSchemaFromAlgorithm } from "@/core/schema-builder";
+import { getAlgorithmById } from "@/core/algorithms";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface EditPresetDialogProps {
   isOpen: boolean;
   onClose: () => void;
   preset: AlgorithmPresetResponseDto | null;
-  onUpdatePreset: (data: {
-    name: string;
-    description: string;
-    selectedFiles: Record<string, string>;
-  }) => void;
+  onUpdatePreset: (data: UpdateAlgorithmPresetDto) => Promise<void>;
   isLoading: boolean;
+  error?: unknown;
+}
+
+interface BackendError {
+  statusCode?: number;
+  message?: {
+    message?: string[];
+    error?: string;
+    statusCode?: number;
+  } | string;
+}
+
+/**
+ * Parse backend error response to extract field errors
+ */
+function parseBackendError(error: unknown): { field: string; message: string }[] {
+  const errors: { field: string; message: string }[] = [];
+  
+  if (!error || typeof error !== "object") {
+    return errors;
+  }
+
+  const backendError = error as BackendError;
+  
+  // Handle nested message structure
+  if (backendError.message) {
+    if (typeof backendError.message === "string") {
+      errors.push({ field: "_general", message: backendError.message });
+    } else if (typeof backendError.message === "object" && backendError.message.message) {
+      const messageArray = Array.isArray(backendError.message.message)
+        ? backendError.message.message
+        : [backendError.message.message];
+      
+      messageArray.forEach((msg) => {
+        if (typeof msg === "string") {
+          // Try to extract field name from error message
+          // Format: "fieldName must be..."
+          const fieldMatch = msg.match(/^(\w+)\s+/);
+          const field = fieldMatch ? fieldMatch[1] : "_general";
+          errors.push({ field, message: msg });
+        }
+      });
+    }
+  }
+
+  return errors;
 }
 
 export function EditPresetDialog({ 
@@ -34,148 +74,149 @@ export function EditPresetDialog({
   onClose, 
   preset, 
   onUpdatePreset, 
-  isLoading 
+  isLoading,
+  error: backendError,
 }: EditPresetDialogProps) {
-  const [presetName, setPresetName] = useState("");
-  const [presetDescription, setPresetDescription] = useState("");
-  const [selectedFiles, setSelectedFiles] = useState<Record<string, string>>({});
+  const [formErrors, setFormErrors] = useState<{ field: string; message: string }[]>([]);
 
-  // Initialize form fields when preset changes
-  useEffect(() => {
-    if (preset) {
-      setPresetName(preset.name || "");
-      setPresetDescription(preset.description || "");
-      
-      // Initialize selectedFiles with current input values
-      const files: Record<string, string> = {};
-      preset.inputs.forEach(input => {
-        if (input.value && typeof input.value === 'string') {
-          files[input.key] = input.value;
-        }
-      });
-      setSelectedFiles(files);
-    }
+  // Get algorithm from preset
+  const algorithm = useMemo(() => {
+    if (!preset) return null;
+    return getAlgorithmById(preset.key);
   }, [preset]);
 
-  const handleFileSelect = (inputKey: string, fileName: string) => {
-    setSelectedFiles(prev => ({
-      ...prev,
-      [inputKey]: fileName
-    }));
-  };
+  // Generate schema from algorithm
+  const schema = useMemo(() => {
+    if (!algorithm) return null;
+    return buildSchemaFromAlgorithm(algorithm, preset?.version || "1.0.0");
+  }, [algorithm, preset]);
 
-  const handleUpdatePreset = () => {
-    if (!preset || !presetName.trim()) return;
+  // Build default values from preset
+  const defaultValues = useMemo(() => {
+    if (!preset || !algorithm) return {};
 
-    onUpdatePreset({
-      name: presetName.trim(),
-      description: presetDescription.trim(),
-      selectedFiles,
+    const defaults: Record<string, unknown> = {
+      key: preset.key,
+      version: preset.version,
+      name: preset.name || "",
+      description: preset.description || "",
+    };
+
+    // Map preset inputs to form field values
+    preset.inputs.forEach((presetInput) => {
+      // Try to match preset input key to algorithm input label
+      const algoInput = algorithm.inputs.find(
+        (input) => input.label === presetInput.key || input.label.toLowerCase().replace(/\s+/g, "_") === presetInput.key.toLowerCase()
+      );
+      
+      if (algoInput) {
+        const inputKey = algoInput.label.toLowerCase().replace(/\s+/g, "_");
+        // Convert string value to File-like object if it's a filename
+        if (presetInput.value && typeof presetInput.value === "string") {
+          // For CSV fields, we'll store the filename
+          defaults[inputKey] = presetInput.value;
+        } else {
+          defaults[inputKey] = presetInput.value;
+        }
+      }
     });
 
-    // Reset form
-    setPresetName("");
-    setPresetDescription("");
-    setSelectedFiles({});
-    onClose();
+    return defaults;
+  }, [preset, algorithm]);
+
+  // Parse backend errors
+  const backendErrors = useMemo(() => {
+    if (!backendError) return [];
+    return parseBackendError(backendError);
+  }, [backendError]);
+
+  // Combine form errors and backend errors
+  const allErrors = [...formErrors, ...backendErrors];
+
+  const handleSubmit = async (data: Record<string, unknown>) => {
+    if (!preset || !algorithm) return;
+
+    setFormErrors([]);
+
+    try {
+      // Transform form data to UpdateAlgorithmPresetDto format
+      // Key and version come from preset prop, not form data
+      const updateData: UpdateAlgorithmPresetDto = {
+        name: data.name as string | undefined,
+        description: data.description as string | undefined,
+        inputs: algorithm.inputs.map((input) => {
+          const inputKey = input.label.toLowerCase().replace(/\s+/g, "_");
+          const value = data[inputKey];
+          
+          // Convert File object to filename string
+          let inputValue: unknown;
+          if (value instanceof File) {
+            inputValue = value.name;
+          } else {
+            inputValue = value || "";
+          }
+
+          return {
+            key: input.label,
+            value: inputValue,
+          };
+        }),
+      };
+
+      await onUpdatePreset(updateData);
+      
+      // Close dialog on success
+      onClose();
+    } catch (err) {
+      // Don't close dialog on error - errors will be displayed
+      const parsedErrors = parseBackendError(err);
+      setFormErrors(parsedErrors);
+    }
   };
 
   const handleClose = () => {
-    setPresetName("");
-    setPresetDescription("");
-    setSelectedFiles({});
+    setFormErrors([]);
     onClose();
   };
 
-  if (!preset) return null;
+  if (!preset || !algorithm || !schema) {
+    return null;
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-xl">
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Edit Preset</DialogTitle>
           <DialogDescription>
-            Update your preset name, description, and input files.
+            Update your preset name, description, and input files for {algorithm.title}.
           </DialogDescription>
         </DialogHeader>
-        <div className="grid gap-4">
-          <div className="grid gap-2">
-            <label htmlFor="preset-name" className="text-sm font-medium">Preset name</label>
-            <Input
-              placeholder={`e.g. ${preset.key} Q1 2024`}
-              value={presetName}
-              onChange={(e) => setPresetName(e.target.value)}
-            />
-          </div>
-          <div className="grid gap-2">
-            <label htmlFor="preset-description" className="text-sm font-medium">Description</label>
-            <Textarea
-              placeholder={`Describe this preset for ${preset.key}...`}
-              value={presetDescription}
-              onChange={(e) => setPresetDescription(e.target.value)}
-              rows={3}
-            />
-          </div>
-          <div className="grid gap-6">
-            {preset.inputs.map((input) => (
-              <div key={input.key} className="grid gap-2">
-                <div className="flex items-center gap-2">
-                  <Image
-                    width={24}
-                    height={24}
-                    src={`/icons/csv.png`}
-                    alt="csv"
-                  />
-                  <div className="font-medium">{input.key}</div>
-                </div>
-                <div className="space-y-2">
-                  <Dropzone
-                    accept={{ "text/csv": [".csv"] }}
-                    maxFiles={1}
-                    className="justify-start"
-                    src={selectedFiles[input.key] ? [{ name: selectedFiles[input.key] } as File] : []}
-                    onDrop={(acceptedFiles) => {
-                      if (acceptedFiles.length > 0) {
-                        handleFileSelect(input.key, acceptedFiles[0].name);
-                      }
-                    }}
-                  >
-                    <DropzoneEmptyState />
-                    <DropzoneContent />
-                  </Dropzone>
-                  {selectedFiles[input.key] && (
-                    <div className="flex items-center gap-2 p-2 text-sm text-green-600 bg-green-50 rounded-md border">
-                      <div className="flex-1">{selectedFiles[input.key]}</div>
-                      <button
-                        type="button"
-                        className="text-xs text-red-600 hover:text-red-800 underline"
-                        onClick={() => handleFileSelect(input.key, "")}
-                      >
-                        Remove
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={handleClose}>
-            Cancel
-          </Button>
-          <Button 
-            onClick={handleUpdatePreset}
-            disabled={isLoading || !presetName.trim()}
-          >
-            {isLoading && (
-              <Loader2 className="mr-2 size-4 animate-spin" />
-            )}
-            Update Preset
-          </Button>
-        </DialogFooter>
+
+        {/* Display general errors */}
+        {allErrors.filter((e) => e.field === "_general").length > 0 && (
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              {allErrors
+                .filter((e) => e.field === "_general")
+                .map((e) => (
+                  <div key={e.message}>{e.message}</div>
+                ))}
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {/* Dynamic form */}
+        <ReputoForm
+          schema={schema}
+          onSubmit={handleSubmit}
+          submitLabel="Update Preset"
+          defaultValues={defaultValues}
+          hiddenFields={["key", "version"]}
+          className="mt-4"
+        />
       </DialogContent>
     </Dialog>
   );
 }
-
