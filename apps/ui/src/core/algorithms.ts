@@ -3,6 +3,8 @@ import {
   getAlgorithmDefinition,
   type AlgorithmDefinition,
 } from '@reputo/reputation-algorithms';
+import { reputoClient } from "./client";
+import { buildSchemaFromAlgorithm } from "./schema-builder";
 
 // Transform the AlgorithmDefinition from the package to match the UI's expected format
 export interface Algorithm {
@@ -66,3 +68,13 @@ export const algorithms: Algorithm[] = algorithmKeys.map((key: string) => {
 export function getAlgorithmById(id: string): Algorithm | undefined {
   return algorithms.find(algo => algo.id === id);
 }
+
+// Auto-register all algorithm schemas when module loads
+algorithms.forEach((algorithm) => {
+  try {
+    const schema = buildSchemaFromAlgorithm(algorithm);
+    reputoClient.registerSchema(schema);
+  } catch (error) {
+    console.error(`Failed to register schema for ${algorithm.id}:`, error);
+  }
+});

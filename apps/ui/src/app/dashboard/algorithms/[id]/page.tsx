@@ -1,8 +1,6 @@
 import { AlgorithmTabs } from "@/components/app/algorithm-tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { algorithms, getAlgorithmById } from "@/core/algorithms";
-import { ArrowLeft, Clock, Users } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -10,10 +8,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { algorithms, getAlgorithmById } from "@/core/algorithms";
+import { ArrowLeft, Clock, Users } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import { Spinner } from "@/components/ui/spinner";
 
 type PageProps = { params: Promise<{ id: string }> };
 
@@ -65,7 +64,7 @@ export default async function AlgorithmPage({ params }: PageProps) {
         </div>
       </section>
 
-      <Suspense fallback={<Spinner />}>
+      <Suspense fallback={<div></div>}>
         <AlgorithmTabs algo={algo} />
       </Suspense>
     </>
