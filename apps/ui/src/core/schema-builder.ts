@@ -104,7 +104,7 @@ function transformInputToReputoInput(
   );
 
   switch (algoInput.type) {
-    case "csv":
+    case "csv": {
       // Build CSV config from full definition or use defaults
       const csvConfig: CSVConfig = fullInput?.type === "csv" && fullInput.csv
         ? {
@@ -135,6 +135,7 @@ function transformInputToReputoInput(
         required: true,
       };
       return csvInput;
+    }
 
     case "number":
       return {
