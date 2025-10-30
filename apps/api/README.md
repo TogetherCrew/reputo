@@ -48,10 +48,20 @@ pnpm --filter @reputo/api start
 pnpm --filter @reputo/api test
 
 # Watch mode
-pnpm --filter @reputo/api test --watch
+pnpm --filter @reputo/api test:watch
 
 # Coverage reporting
 pnpm --filter @reputo/api test:cov
+```
+
+#### End-to-end (E2E) tests
+
+```bash
+# Run E2E tests
+pnpm --filter @reputo/api test:e2e
+
+# Watch mode
+pnpm --filter @reputo/api test:e2e:watch
 ```
 
 ## API Documentation
@@ -178,13 +188,18 @@ src/
 
 ## Environment Variables
 
-| Variable      | Purpose                   | Default       | Required |
-| ------------- | ------------------------- | ------------- | -------- |
-| `NODE_ENV`    | Runtime environment       | `development` | No       |
-| `PORT`        | Server port               | `3000`        | No       |
-| `MONGODB_URI` | MongoDB connection string | -             | Yes      |
+| Variable           | Purpose               | Default       | Required |
+| ------------------ | --------------------- | ------------- | -------- |
+| `NODE_ENV`         | Runtime environment   | `development` | No       |
+| `PORT`             | Server port           | `3000`        | No       |
+| `LOG_LEVEL`        | Pino log level        | `info`        | No       |
+| `MONGODB_HOST`     | MongoDB host          | -             | Yes      |
+| `MONGODB_PORT`     | MongoDB port          | -             | Yes      |
+| `MONGODB_USER`     | MongoDB user          | -             | Yes      |
+| `MONGODB_PASSWORD` | MongoDB password      | -             | Yes      |
+| `MONGODB_DB_NAME`  | MongoDB database name | -             | Yes      |
 
-See `envs.example` for template.
+See `envs.example` for a complete template and descriptions.
 
 ## License
 
