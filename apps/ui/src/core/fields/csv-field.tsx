@@ -55,26 +55,39 @@ export function CSVField({ input, control }: CSVFieldProps) {
     <FormField
       control={control}
       name={input.key}
-      render={({ field: { value, onChange } }) => (
-        <FormItem>
-          <FormLabel>
-            {input.label}
-            {input.required !== false && <span className="text-destructive ml-1">*</span>}
-          </FormLabel>
-          <FormControl>
-            <div className="space-y-2">
-              <Dropzone
-                accept={{ "text/csv": [".csv"] }}
-                maxFiles={1}
-                src={value ? [value] : undefined}
-                onDrop={(acceptedFiles) => {
-                  const file = acceptedFiles?.[0] || null;
-                  handleFileChange(file, onChange);
-                }}
-              >
-                <DropzoneEmptyState />
-                <DropzoneContent />
-              </Dropzone>
+      render={({ field: { value, onChange } }) => {
+        // Handle both File objects and string filenames (from backend)
+        const fileValue = value instanceof File ? value : null;
+        const filenameValue = typeof value === "string" ? value : null;
+        
+        return (
+          <FormItem>
+            <FormLabel>
+              {input.label}
+              {input.required !== false && <span className="text-destructive ml-1">*</span>}
+            </FormLabel>
+            <FormControl>
+              <div className="space-y-2">
+                {/* Show filename if it's a string (from backend) */}
+                {filenameValue && (
+                  <div className="flex items-center gap-2 p-2 text-sm text-muted-foreground bg-muted rounded-md border">
+                    <div className="flex-1">{filenameValue}</div>
+                    <span className="text-xs text-muted-foreground">(Upload new file to replace)</span>
+                  </div>
+                )}
+                
+                <Dropzone
+                  accept={{ "text/csv": [".csv"] }}
+                  maxFiles={1}
+                  src={fileValue ? [fileValue] : undefined}
+                  onDrop={(acceptedFiles) => {
+                    const file = acceptedFiles?.[0] || null;
+                    handleFileChange(file, onChange);
+                  }}
+                >
+                  <DropzoneEmptyState />
+                  <DropzoneContent />
+                </Dropzone>
               
               {isValidating && (
                 <div className="text-sm text-muted-foreground">
@@ -100,8 +113,8 @@ export function CSVField({ input, control }: CSVFieldProps) {
                           <div className="space-y-1">
                             <div className="font-semibold">Validation Errors:</div>
                             <ul className="list-disc list-inside space-y-1">
-                              {validationResult.errors.map((error, idx) => (
-                                <li key={idx} className="text-sm whitespace-nowrap">{error}</li>
+                              {validationResult.errors.map((error) => (
+                                <li key={error} className="text-sm whitespace-nowrap">{error}</li>
                               ))}
                             </ul>
                           </div>
@@ -111,37 +124,38 @@ export function CSVField({ input, control }: CSVFieldProps) {
                   </div>
                 </Alert>
               )}
-            </div>
-          </FormControl>
-          
-          {input.description && (
-            <FormDescription>{input.description}</FormDescription>
-          )}
-          
-          {input.csv.columns.length > 0 && (
-            <div className="space-y-2">
-              <div className="text-sm font-medium">Expected Columns:</div>
-              <div className="flex flex-wrap gap-2">
-                {input.csv.columns.map((column) => (
-                  <Badge key={column.key} variant="secondary" className="text-xs">
-                    {column.key}
-                    {column.aliases && column.aliases.length > 0 && (
-                      <span className="text-muted-foreground ml-1">
-                        (or {column.aliases.join(", ")})
-                      </span>
-                    )}
-                    {column.required !== false && (
-                      <span className="text-destructive ml-1">*</span>
-                    )}
-                  </Badge>
-                ))}
               </div>
-            </div>
-          )}
-          
-          <FormMessage />
-        </FormItem>
-      )}
+            </FormControl>
+            
+            {input.description && (
+              <FormDescription>{input.description}</FormDescription>
+            )}
+            
+            {input.csv.columns.length > 0 && (
+              <div className="space-y-2">
+                <div className="text-sm font-medium">Expected Columns:</div>
+                <div className="flex flex-wrap gap-2">
+                  {input.csv.columns.map((column) => (
+                    <Badge key={column.key} variant="secondary" className="text-xs">
+                      {column.key}
+                      {column.aliases && column.aliases.length > 0 && (
+                        <span className="text-muted-foreground ml-1">
+                          (or {column.aliases.join(", ")})
+                        </span>
+                      )}
+                      {column.required !== false && (
+                        <span className="text-destructive ml-1">*</span>
+                      )}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            <FormMessage />
+          </FormItem>
+        );
+      }}
     />
   );
 }
