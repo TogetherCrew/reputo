@@ -30,6 +30,17 @@ pnpm --filter @reputo/ui build
 pnpm --filter @reputo/ui start
 ```
 
+## Environment Variables
+
+Create `.env.local` from `envs.example` and set the public API base URL used by the UI:
+
+```bash
+# .env.local
+NEXT_PUBLIC_API_URL=http://localhost:3000/api/v1
+```
+
+See `envs.example` for details.
+
 ## Tech Stack
 
 - Next.js 15, React 19, TypeScript
