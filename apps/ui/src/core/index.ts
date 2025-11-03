@@ -2,51 +2,46 @@
  * Core exports for Reputo form builder and validation system
  */
 
+
+// Algorithms
+export { type Algorithm, algorithms, getAlgorithmById } from "./algorithms";
+// Client
+export { ReputoClientClass, reputoClient } from "./client";
+// Field Components
+export {
+  BooleanField,
+  CSVField,
+  DateField,
+  EnumField,
+  NumberField,
+  SliderField,
+  TextField,
+} from "./fields";
+// Form Component
+export { ReputoForm } from "./reputo-form";
+// Schema Builder
+export { buildSchemaFromAlgorithm } from "./schema-builder";
 // Types
 export type {
-  ReputoSchema,
-  Input,
-  TextInput,
-  NumberInput,
   BooleanInput,
+  ColumnDefinition,
+  CSVConfig,
+  CSVInput,
   DateInput,
   EnumInput,
-  CSVInput,
-  SliderInput,
-  CSVConfig,
-  ColumnDefinition,
+  Input,
+  NumberInput,
   Output,
+  ReputoSchema,
+  SliderInput,
+  TextInput,
   ValidationResult,
 } from "./types";
-
 // Validation
 export {
   buildZodSchema,
-  validatePayload,
-  validateCSVContent,
   type InferSchemaType,
+  validateCSVContent,
+  validatePayload,
 } from "./validation";
-
-// Client
-export { reputoClient, ReputoClientClass } from "./client";
-
-// Schema Builder
-export { buildSchemaFromAlgorithm } from "./schema-builder";
-
-// Form Component
-export { ReputoForm } from "./reputo-form";
-
-// Algorithms
-export { algorithms, getAlgorithmById, type Algorithm } from "./algorithms";
-
-// Field Components
-export {
-  TextField,
-  NumberField,
-  BooleanField,
-  EnumField,
-  SliderField,
-  CSVField,
-  DateField,
-} from "./fields";
 

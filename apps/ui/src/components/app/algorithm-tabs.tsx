@@ -1,10 +1,10 @@
 "use client";
 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { AlgorithmPresets } from "@/components/app/presets/algorithm-presets";
 import { AlgorithmSnapshots } from "@/components/app/snapshots/algorithm-snapshots";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Algorithm } from "@/core/algorithms";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 export function AlgorithmTabs({ algo }: { algo: Algorithm }) {
   const searchParams = useSearchParams();

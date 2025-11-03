@@ -1,20 +1,20 @@
 "use client";
 
-import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Form } from "@/components/ui/form";
+import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
-import { buildZodSchema } from "./validation";
-import type { ReputoSchema, Input } from "./types";
+import { Form } from "@/components/ui/form";
 import {
-  TextField,
-  NumberField,
   BooleanField,
-  EnumField,
-  SliderField,
   CSVField,
   DateField,
+  EnumField,
+  NumberField,
+  SliderField,
+  TextField,
 } from "./fields";
+import type { Input, ReputoSchema } from "./types";
+import { buildZodSchema } from "./validation";
 
 interface ReputoFormProps {
   schema: ReputoSchema;

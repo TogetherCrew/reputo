@@ -1,7 +1,7 @@
 import {
-  getAlgorithmDefinitionKeys,
-  getAlgorithmDefinition,
   type AlgorithmDefinition,
+  getAlgorithmDefinition,
+  getAlgorithmDefinitionKeys,
 } from '@reputo/reputation-algorithms';
 import { reputoClient } from "./client";
 import { buildSchemaFromAlgorithm } from "./schema-builder";

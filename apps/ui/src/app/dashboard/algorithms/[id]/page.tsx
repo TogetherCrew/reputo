@@ -1,3 +1,7 @@
+import { ArrowLeft, Clock, Users } from "lucide-react";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { Suspense } from "react";
 import { AlgorithmTabs } from "@/components/app/algorithm-tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -9,10 +13,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { algorithms, getAlgorithmById } from "@/core/algorithms";
-import { ArrowLeft, Clock, Users } from "lucide-react";
-import Link from "next/link";
-import { notFound } from "next/navigation";
-import { Suspense } from "react";
 
 type PageProps = { params: Promise<{ id: string }> };
 

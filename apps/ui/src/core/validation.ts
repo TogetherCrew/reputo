@@ -4,7 +4,7 @@
  */
 
 import { z } from "zod";
-import type { ReputoSchema, Input, CSVConfig, ValidationResult } from "./types";
+import type { CSVConfig, Input, ReputoSchema, ValidationResult } from "./types";
 
 /**
  * Validates data against a ReputoSchema

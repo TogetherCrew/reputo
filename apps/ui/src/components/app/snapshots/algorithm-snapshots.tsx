@@ -1,7 +1,18 @@
 "use client";
 
+import { AlertCircle, Eye, FolderOpen, Loader2, Play, Trash2 } from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
 import {
   Select,
   SelectContent,
@@ -17,22 +28,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Eye, Trash2, Loader2, AlertCircle, FolderOpen, Play } from "lucide-react";
-import { useState } from "react";
-import { useSnapshots, useAlgorithmPresets, useDeleteSnapshot } from "@/lib/api/hooks";
-import type { SnapshotResponseDto, AlgorithmPresetResponseDto } from "@/lib/api/types";
 import type { Algorithm } from "@/core/algorithms";
-import { useSearchParams } from "next/navigation";
-import {
-  Empty,
-  EmptyContent,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-} from "@/components/ui/empty";
-import { SnapshotDetailsDialog } from "./snapshot-details-dialog";
+import { useAlgorithmPresets, useDeleteSnapshot, useSnapshots } from "@/lib/api/hooks";
+import type { AlgorithmPresetResponseDto, SnapshotResponseDto } from "@/lib/api/types";
 import { SnapshotDeleteDialog } from "./snapshot-delete-dialog";
+import { SnapshotDetailsDialog } from "./snapshot-details-dialog";
 
 export function AlgorithmSnapshots({ algo }: { algo?: Algorithm }) {
   const [selectedPreset, setSelectedPreset] = useState("all");
