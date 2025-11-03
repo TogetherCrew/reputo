@@ -7,10 +7,7 @@ FROM base AS build
 ARG NEXT_PUBLIC_API_URL
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 
-# WORKDIR /usr/src/app
-# COPY package.json pnpm-workspace.yaml tsconfig.base.json ./
-# COPY apps/ ./apps/
-# copy packjson install -> copy src and build
+
 COPY . /usr/src/app
 WORKDIR /usr/src/app
 
@@ -26,7 +23,6 @@ EXPOSE 3000
 CMD [ "pnpm", "start" ]
 
 FROM base AS ui
-# Copy Next.js standalone build output and assets
 COPY --from=build /usr/src/app/apps/ui/.next/standalone /prod/ui
 COPY --from=build /usr/src/app/apps/ui/public /prod/ui/apps/ui/public
 COPY --from=build /usr/src/app/apps/ui/.next/static /prod/ui/apps/ui/.next/static
