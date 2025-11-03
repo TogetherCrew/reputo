@@ -2,6 +2,7 @@ import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiBody,
+  ApiConsumes,
   ApiCreatedResponse,
   ApiInternalServerErrorResponse,
   ApiNotFoundResponse,
@@ -10,9 +11,9 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import {
-  CreateUploadDto,
   DownloadResponseDto,
   SignDownloadDto,
+  UploadDto,
   UploadResponseDto,
   VerifyResponseDto,
   VerifyUploadDto,
@@ -27,9 +28,9 @@ export class StorageController {
   @Post('uploads')
   @ApiOperation({
     summary: 'Create presigned upload URL',
-    description: 'Generates a presigned PUT URL for direct-to-S3 file upload',
+    description: 'Generates a presigned PUT URL for direct-to-S3 file upload.',
   })
-  @ApiBody({ type: CreateUploadDto })
+  @ApiBody({ type: UploadDto })
   @ApiCreatedResponse({
     description: 'Presigned upload URL successfully created',
     type: UploadResponseDto,
@@ -40,7 +41,7 @@ export class StorageController {
   @ApiInternalServerErrorResponse({
     description: 'Failed to generate presigned URL',
   })
-  async createUpload(@Body() dto: CreateUploadDto): Promise<UploadResponseDto> {
+  async upload(@Body() dto: UploadDto): Promise<UploadResponseDto> {
     return await this.storageService.presignPut(dto.contentType);
   }
 
@@ -48,7 +49,7 @@ export class StorageController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Verify uploaded file',
-    description: 'Confirms the object exists in S3 and complies with storage policy',
+    description: 'Confirms the object exists in S3 and complies with the configured storage policy.',
   })
   @ApiBody({ type: VerifyUploadDto })
   @ApiOkResponse({
@@ -72,12 +73,15 @@ export class StorageController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Create presigned download URL',
-    description: 'Generates a short-lived presigned GET URL for downloading a file',
+    description: 'Generates a short-lived presigned GET URL for downloading a file.',
   })
   @ApiBody({ type: SignDownloadDto })
   @ApiOkResponse({
     description: 'Presigned download URL successfully created',
     type: DownloadResponseDto,
+  })
+  @ApiBadRequestResponse({
+    description: 'Invalid request body',
   })
   @ApiNotFoundResponse({
     description: 'Object not found in S3',

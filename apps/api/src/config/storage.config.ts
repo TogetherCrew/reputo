@@ -5,7 +5,7 @@ export default registerAs('storage', () => ({
   bucket: process.env.STORAGE_BUCKET,
   presignPutTtl: Number(process.env.STORAGE_PRESIGN_PUT_TTL ?? 120),
   presignGetTtl: Number(process.env.STORAGE_PRESIGN_GET_TTL ?? 300),
-  maxSizeBytes: Number(process.env.STORAGE_MAX_SIZE_BYTES ?? 52428800), // 50MB default
+  maxSizeBytes: Number(process.env.STORAGE_MAX_SIZE_BYTES ?? 52428800),
   contentTypeAllowlist: process.env.STORAGE_CONTENT_TYPE_ALLOWLIST ?? 'text/csv,text/plain',
 }));
 

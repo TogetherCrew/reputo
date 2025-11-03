@@ -1,9 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsString } from 'class-validator';
 
-export class CreateUploadDto {
+export class UploadDto {
   @ApiProperty({
-    description: 'MIME type of the file to upload',
+    description: 'content type of the file to upload',
     example: 'text/csv',
   })
   @IsString()
