@@ -3,7 +3,7 @@ import * as Joi from 'joi';
 
 export default registerAs('app', () => ({
   nodeEnv: process.env.NODE_ENV,
-  port: process.env.PORT,
+  port: Number(process.env.PORT ?? 3000),
 }));
 
 export const appConfigSchema = {
