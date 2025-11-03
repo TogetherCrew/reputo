@@ -7,6 +7,7 @@ import { AlgorithmPresetModule } from './algorithm-preset/algorithm-preset.modul
 import { configModules, configValidationSchema } from './config';
 import { pinoConfig } from './config/pino.config';
 import { SnapshotModule } from './snapshot/snapshot.module';
+import { StorageModule } from './storage/storage.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { SnapshotModule } from './snapshot/snapshot.module';
     }),
     AlgorithmPresetModule,
     SnapshotModule,
+    StorageModule,
   ],
   controllers: [],
   providers: [],
