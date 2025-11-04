@@ -3,6 +3,7 @@ import { InvalidContentTypeException } from '../exceptions';
 function getExtensionFromContentType(contentType: string): string {
   const extensionMap: Record<string, string> = {
     'text/csv': 'csv',
+    'text/plain': 'txt',
   };
 
   return extensionMap[contentType] || 'bin';
