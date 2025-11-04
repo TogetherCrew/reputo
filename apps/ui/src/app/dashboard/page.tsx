@@ -1,3 +1,13 @@
+import {
+  Clock,
+  Layers,
+  LayoutGrid,
+  List,
+  Target,
+  Users
+} from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,16 +30,6 @@ import {
 } from "@/components/ui/select";
 import type { Algorithm } from "@/core/algorithms";
 import { algorithms } from "@/core/algorithms";
-import {
-  Clock,
-  Layers,
-  LayoutGrid,
-  List,
-  Target,
-  Users
-} from "lucide-react";
-import Image from "next/image";
-import Link from "next/link";
 
 // algorithms imported from shared file
 

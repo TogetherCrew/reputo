@@ -2,12 +2,12 @@
  * Schema builder utilities for generating ReputoSchema from Algorithm objects
  */
 
-import type { Algorithm } from "./algorithms";
-import type { ReputoSchema, Input, CSVInput, CSVConfig, TextInput } from "./types";
 import {
-  getAlgorithmDefinition,
   type AlgorithmDefinition,
+  getAlgorithmDefinition,
 } from "@reputo/reputation-algorithms";
+import type { Algorithm } from "./algorithms";
+import type { CSVConfig, CSVInput, Input, ReputoSchema, TextInput } from "./types";
 
 /**
  * Builds a ReputoSchema from an Algorithm object
@@ -175,5 +175,5 @@ function transformInputToReputoInput(
 /**
  * Re-export validation functions from the core validation module
  */
-export { buildZodSchema, validateCSVContent, type InferSchemaType } from "./validation";
+export { buildZodSchema, type InferSchemaType, validateCSVContent } from "./validation";
 

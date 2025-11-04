@@ -1,6 +1,26 @@
 "use client";
 
+import {
+  AlertCircle,
+  BarChart3,
+  Edit,
+  Eye,
+  FolderOpen,
+  Loader2,
+  Play,
+  Trash2,
+} from "lucide-react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
 import {
   Table,
   TableBody,
@@ -11,42 +31,22 @@ import {
 } from "@/components/ui/table";
 import type { Algorithm } from "@/core/algorithms";
 import {
-  Eye,
-  Play,
-  Trash2,
-  Loader2,
-  FolderOpen,
-  AlertCircle,
-  Edit,
-  BarChart3,
-} from "lucide-react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
-import {
   useAlgorithmPresets,
   useCreateAlgorithmPreset,
-  useDeleteAlgorithmPreset,
   useCreateSnapshot,
+  useDeleteAlgorithmPreset,
   useUpdateAlgorithmPreset,
 } from "@/lib/api/hooks";
 import type {
-  CreateAlgorithmPresetDto,
-  UpdateAlgorithmPresetDto,
-  CreateSnapshotDto,
   AlgorithmPresetResponseDto,
+  CreateAlgorithmPresetDto,
+  CreateSnapshotDto,
+  UpdateAlgorithmPresetDto,
 } from "@/lib/api/types";
-import {
-  Empty,
-  EmptyContent,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-} from "@/components/ui/empty";
 import { CreatePresetDialog } from "./create-preset-dialog";
 import { EditPresetDialog } from "./edit-preset-dialog";
-import { PresetDetailsDialog } from "./preset-details-dialog";
 import { PresetDeleteDialog } from "./preset-delete-dialog";
+import { PresetDetailsDialog } from "./preset-details-dialog";
 
 export function AlgorithmPresets({ algo }: { algo?: Algorithm }) {
   const router = useRouter();

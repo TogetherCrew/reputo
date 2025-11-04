@@ -124,6 +124,18 @@ Manage algorithm execution snapshots with status tracking.
 - Population of related algorithm preset data
 - Pagination and sorting support
 
+### Storage
+
+Manage presigned S3 uploads and downloads with verification.
+
+**Base Path**: `/api/v1/storage`
+
+| Method | Endpoint          | Description                               |
+| ------ | ----------------- | ----------------------------------------- |
+| `POST` | `/uploads`        | Create presigned PUT URL for upload       |
+| `POST` | `/uploads/verify` | Verify uploaded object (size/type checks) |
+| `POST` | `/downloads`      | Create presigned GET URL for download     |
+
 ### Health Check
 
 **Base Path**: `/healthz`
@@ -188,16 +200,24 @@ src/
 
 ## Environment Variables
 
-| Variable           | Purpose               | Default       | Required |
-| ------------------ | --------------------- | ------------- | -------- |
-| `NODE_ENV`         | Runtime environment   | `development` | No       |
-| `PORT`             | Server port           | `3000`        | No       |
-| `LOG_LEVEL`        | Pino log level        | `info`        | No       |
-| `MONGODB_HOST`     | MongoDB host          | -             | Yes      |
-| `MONGODB_PORT`     | MongoDB port          | -             | Yes      |
-| `MONGODB_USER`     | MongoDB user          | -             | Yes      |
-| `MONGODB_PASSWORD` | MongoDB password      | -             | Yes      |
-| `MONGODB_DB_NAME`  | MongoDB database name | -             | Yes      |
+| Variable                         | Purpose                                    | Default               | Required |
+| -------------------------------- | ------------------------------------------ | --------------------- | -------- |
+| `NODE_ENV`                       | Runtime environment                        | `development`         | No       |
+| `PORT`                           | Server port                                | `3000`                | No       |
+| `LOG_LEVEL`                      | Pino log level                             | `info`                | No       |
+| `MONGODB_HOST`                   | MongoDB host                               | -                     | Yes      |
+| `MONGODB_PORT`                   | MongoDB port                               | -                     | Yes      |
+| `MONGODB_USER`                   | MongoDB user                               | -                     | Yes      |
+| `MONGODB_PASSWORD`               | MongoDB password                           | -                     | Yes      |
+| `MONGODB_DB_NAME`                | MongoDB database name                      | -                     | Yes      |
+| `AWS_REGION`                     | AWS region for S3                          | -                     | Yes      |
+| `AWS_ACCESS_KEY_ID`              | AWS access key ID                          | -                     | No       |
+| `AWS_SECRET_ACCESS_KEY`          | AWS secret access key                      | -                     | No       |
+| `STORAGE_BUCKET`                 | S3 bucket name for storage                 | -                     | Yes      |
+| `STORAGE_PRESIGN_PUT_TTL`        | Presigned PUT URL TTL (seconds)            | `120`                 | No       |
+| `STORAGE_PRESIGN_GET_TTL`        | Presigned GET URL TTL (seconds)            | `300`                 | No       |
+| `STORAGE_MAX_SIZE_BYTES`         | Maximum file size in bytes                 | `52428800` (50 MB)    | No       |
+| `STORAGE_CONTENT_TYPE_ALLOWLIST` | Comma-separated list of allowed MIME types | `text/csv,text/plain` | No       |
 
 See `envs.example` for a complete template and descriptions.
 

@@ -1,7 +1,11 @@
 "use client";
 
-import { Control, FieldValues } from "react-hook-form";
+import { AlertCircle, CheckCircle2 } from "lucide-react";
 import { useState } from "react";
+import { Control, FieldValues } from "react-hook-form";
+import { Dropzone, DropzoneContent, DropzoneEmptyState } from "@/components/app/dropzone";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
 import {
   FormControl,
   FormDescription,
@@ -10,12 +14,8 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
-import { Dropzone, DropzoneContent, DropzoneEmptyState } from "@/components/app/dropzone";
 import type { CSVInput } from "../types";
 import { validateCSVContent } from "../validation";
-import { CheckCircle2, AlertCircle } from "lucide-react";
 
 interface CSVFieldProps {
   input: CSVInput;

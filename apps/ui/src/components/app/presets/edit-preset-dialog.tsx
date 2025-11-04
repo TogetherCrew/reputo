@@ -1,5 +1,8 @@
 "use client";
 
+import { AlertCircle } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Dialog,
   DialogContent,
@@ -7,13 +10,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { AlertCircle } from "lucide-react";
-import { useState, useMemo } from "react";
-import type { AlgorithmPresetResponseDto, UpdateAlgorithmPresetDto } from "@/lib/api/types";
+import { getAlgorithmById } from "@/core/algorithms";
 import { ReputoForm } from "@/core/reputo-form";
 import { buildSchemaFromAlgorithm } from "@/core/schema-builder";
-import { getAlgorithmById } from "@/core/algorithms";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import type { AlgorithmPresetResponseDto, UpdateAlgorithmPresetDto } from "@/lib/api/types";
 
 interface EditPresetDialogProps {
   isOpen: boolean;

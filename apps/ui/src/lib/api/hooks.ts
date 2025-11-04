@@ -3,9 +3,9 @@ import { algorithmPresetsApi, snapshotsApi } from './services';
 import type {
   AlgorithmPresetQueryParams,
   CreateAlgorithmPresetDto,
-  UpdateAlgorithmPresetDto,
-  SnapshotQueryParams,
   CreateSnapshotDto,
+  SnapshotQueryParams,
+  UpdateAlgorithmPresetDto,
 } from './types';
 
 // Query keys

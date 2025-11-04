@@ -1,14 +1,14 @@
 import axios from 'axios'
 import type {
+    AlgorithmPresetQueryParams,
     AlgorithmPresetResponseDto,
     CreateAlgorithmPresetDto,
-    PaginatedAlgorithmPresetResponseDto,
-    UpdateAlgorithmPresetDto,
-    AlgorithmPresetQueryParams,
-    SnapshotResponseDto,
     CreateSnapshotDto,
+    PaginatedAlgorithmPresetResponseDto,
     PaginatedSnapshotResponseDto,
     SnapshotQueryParams,
+    SnapshotResponseDto,
+    UpdateAlgorithmPresetDto,
 } from './types'
 
 // Create axios instance with base configuration
