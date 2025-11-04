@@ -10,8 +10,8 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import {
+  DownloadDto,
   DownloadResponseDto,
-  SignDownloadDto,
   UploadDto,
   UploadResponseDto,
   VerifyResponseDto,
@@ -74,7 +74,7 @@ export class StorageController {
     summary: 'Create presigned download URL',
     description: 'Generates a short-lived presigned GET URL for downloading a file.',
   })
-  @ApiBody({ type: SignDownloadDto })
+  @ApiBody({ type: DownloadDto })
   @ApiOkResponse({
     description: 'Presigned download URL successfully created',
     type: DownloadResponseDto,
@@ -88,7 +88,7 @@ export class StorageController {
   @ApiInternalServerErrorResponse({
     description: 'Failed to generate presigned URL',
   })
-  async signDownload(@Body() dto: SignDownloadDto): Promise<DownloadResponseDto> {
+  async download(@Body() dto: DownloadDto): Promise<DownloadResponseDto> {
     return await this.storageService.presignGet(dto.key);
   }
 }
