@@ -2,7 +2,6 @@ import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiBody,
-  ApiConsumes,
   ApiCreatedResponse,
   ApiInternalServerErrorResponse,
   ApiNotFoundResponse,
@@ -42,7 +41,7 @@ export class StorageController {
     description: 'Failed to generate presigned URL',
   })
   async upload(@Body() dto: UploadDto): Promise<UploadResponseDto> {
-    return await this.storageService.presignPut(dto.contentType);
+    return await this.storageService.presignPut(dto.filename, dto.contentType);
   }
 
   @Post('uploads/verify')

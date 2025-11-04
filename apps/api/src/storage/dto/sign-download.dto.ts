@@ -4,7 +4,7 @@ import { IsNotEmpty, IsString } from 'class-validator';
 export class SignDownloadDto {
   @ApiProperty({
     description: 'S3 object key to generate download URL for',
-    example: 'uploads/2025/11/02/uuid-file.csv',
+    example: 'uploads/1699123456/votes.csv',
   })
   @IsString()
   @IsNotEmpty()
