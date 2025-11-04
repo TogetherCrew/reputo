@@ -2,7 +2,7 @@ import { GetObjectCommand, HeadObjectCommand, PutObjectCommand, S3Client } from 
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { generateDateExtKey } from '../shared';
+import { generateUploadKey, parseStorageKey } from '../shared';
 import {
   FileTooLargeException,
   HeadObjectFailedException,
@@ -36,10 +36,10 @@ export class StorageService {
     this.contentTypeAllowlist = new Set(allowlistString.split(',').map((s) => s.trim()));
   }
 
-  async presignPut(contentType: string): Promise<PresignedUpload> {
+  async presignPut(filename: string, contentType: string): Promise<PresignedUpload> {
     this.validateContentType(contentType);
 
-    const key = generateDateExtKey(contentType);
+    const key = generateUploadKey(filename, contentType);
 
     const command = new PutObjectCommand({
       Bucket: this.bucket,
@@ -63,15 +63,26 @@ export class StorageService {
     this.validateFileSize(size);
     this.validateContentType(contentType);
 
+    const { filename, ext, timestamp } = parseStorageKey(key);
+
     return {
       key,
-      size,
-      contentType,
+      metadata: {
+        filename,
+        ext,
+        size,
+        contentType,
+        timestamp,
+      },
     };
   }
 
   async presignGet(key: string): Promise<PresignedDownload> {
-    await this.getObjectMetadata(key);
+    const head = await this.getObjectMetadata(key);
+
+    const size = head.ContentLength ?? 0;
+    const contentType = head.ContentType ?? 'application/octet-stream';
+    const { filename, ext, timestamp } = parseStorageKey(key);
 
     const command = new GetObjectCommand({
       Bucket: this.bucket,
@@ -82,7 +93,17 @@ export class StorageService {
       expiresIn: this.presignGetTtl,
     });
 
-    return { url, expiresIn: this.presignGetTtl };
+    return {
+      url,
+      expiresIn: this.presignGetTtl,
+      metadata: {
+        filename,
+        ext,
+        size,
+        contentType,
+        timestamp,
+      },
+    };
   }
 
   private validateFileSize(size: number): void {

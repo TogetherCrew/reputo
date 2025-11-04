@@ -7,12 +7,24 @@ export interface PresignedUpload {
 export interface PresignedDownload {
   url: string;
   expiresIn: number;
+  metadata: {
+    filename: string;
+    ext: string;
+    size: number;
+    contentType: string;
+    timestamp: number;
+  };
 }
 
 export interface StorageMetadata {
   key: string;
-  size: number;
-  contentType: string;
+  metadata: {
+    filename: string;
+    ext: string;
+    size: number;
+    contentType: string;
+    timestamp: number;
+  };
 }
 
 export interface S3Error {

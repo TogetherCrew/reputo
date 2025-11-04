@@ -1,11 +1,17 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-export class VerifyResponseDto {
+class VerifyMetadataDto {
   @ApiProperty({
-    description: 'S3 object key that was verified',
-    example: '550e8400-e29b-41d4-a716-446655440000',
+    description: 'Original filename',
+    example: 'votes.csv',
   })
-  key: string;
+  filename: string;
+
+  @ApiProperty({
+    description: 'File extension',
+    example: 'csv',
+  })
+  ext: string;
 
   @ApiProperty({
     description: 'File size in bytes',
@@ -18,4 +24,24 @@ export class VerifyResponseDto {
     example: 'text/csv',
   })
   contentType: string;
+
+  @ApiProperty({
+    description: 'Unix timestamp when file was uploaded',
+    example: 1699123456,
+  })
+  timestamp: number;
+}
+
+export class VerifyResponseDto {
+  @ApiProperty({
+    description: 'S3 object key that was verified',
+    example: 'uploads/1699123456/votes.csv',
+  })
+  key: string;
+
+  @ApiProperty({
+    description: 'File metadata including filename, extension, size, and content type',
+    type: VerifyMetadataDto,
+  })
+  metadata: VerifyMetadataDto;
 }
