@@ -1,6 +1,12 @@
-import type { FilterQuery, HydratedDocument, Model, Types } from 'mongoose';
+import type { FilterQuery, HydratedDocument, Model } from 'mongoose';
 import type { SnapshotStatus } from '../constants/index.js';
 import type { PaginateOptions, PaginateResult } from '../plugins/index.js';
+import type { AlgorithmPresetFrozen } from './AlgorithmPresetFrozen.interface.js';
+
+export interface SnapshotOutputs {
+  csv?: string;
+  json?: string;
+}
 
 /**
  * Interface defining the structure of a Snapshot document.
@@ -20,10 +26,10 @@ export interface Snapshot {
     /** Temporal task queue name */
     taskQueue?: string;
   };
-  /** Reference to the associated AlgorithmPreset */
-  algorithmPreset: Types.ObjectId;
+  /** Frozen copy of the associated AlgorithmPreset at snapshot creation time */
+  algorithmPresetFrozen: AlgorithmPresetFrozen;
   /** Algorithm execution outputs/results */
-  outputs?: unknown;
+  outputs?: SnapshotOutputs;
   /** Document creation timestamp */
   createdAt?: Date;
   /** Document last update timestamp */

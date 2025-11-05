@@ -1,6 +1,6 @@
 **@reputo/database v0.0.0**
 
-***
+---
 
 # @reputo/database
 
@@ -35,10 +35,8 @@ import { AlgorithmPresetModel } from '@reputo/database'
 
 // Create a new algorithm preset
 const preset = new AlgorithmPresetModel({
-    spec: {
-        key: 'voting_engagement',
-        version: '1.0.0',
-    },
+    key: 'voting_engagement',
+    version: '1.0.0',
     inputs: [
         { key: 'threshold', value: 0.5 },
         { key: 'weight', value: 1.2 },
@@ -50,26 +48,35 @@ const preset = new AlgorithmPresetModel({
 await preset.save()
 
 // Find presets by algorithm key
-const presets = await AlgorithmPresetModel.find({
-    'spec.key': 'voting_engagement',
-})
+const presets = await AlgorithmPresetModel.find({ key: 'voting_engagement' })
 
 // Find specific version
 const specificPreset = await AlgorithmPresetModel.findOne({
-    'spec.key': 'voting_engagement',
-    'spec.version': '1.0.0',
+    key: 'voting_engagement',
+    version: '1.0.0',
 })
 ```
 
 #### Snapshot Model
 
 ```ts
-import { SnapshotModel, SnapshotStatus } from '@reputo/database'
+import { SnapshotModel } from '@reputo/database'
 
-// Create a new snapshot
+// Create a new snapshot with frozen preset
 const snapshot = new SnapshotModel({
-    status: SnapshotStatus.PENDING,
-    algorithmPreset: preset._id,
+    status: 'queued',
+    algorithmPresetFrozen: {
+        key: 'voting_engagement',
+        version: '1.0.0',
+        inputs: [
+            { key: 'threshold', value: 0.5 },
+            { key: 'weight', value: 1.2 },
+        ],
+        name: 'Voting Engagement Algorithm',
+        description: 'Calculates engagement based on voting patterns',
+        // Note: When created via the API, the frozen preset will include
+        // the original preset's createdAt/updatedAt timestamps.
+    },
     temporal: {
         workflowId: 'workflow-123',
         runId: 'run-456',
@@ -81,15 +88,21 @@ await snapshot.save()
 
 // Update snapshot with results
 await SnapshotModel.findByIdAndUpdate(snapshot._id, {
-    status: SnapshotStatus.COMPLETED,
-    outputs: { score: 0.85, confidence: 0.92 },
+    status: 'completed',
+    outputs: { csv: 'key', json: 'key' },
 })
 
 // Find snapshots by status
-const pendingSnapshots = await SnapshotModel.find({
-    status: SnapshotStatus.PENDING,
+const queuedSnapshots = await SnapshotModel.find({ status: 'queued' })
+
+// Query by frozen preset fields
+const snapshotsForAlgorithm = await SnapshotModel.find({
+    'algorithmPresetFrozen.key': 'voting_engagement',
+    'algorithmPresetFrozen.version': '1.0.0',
 })
 ```
+
+> The `algorithmPresetFrozen` embedded document mirrors the `AlgorithmPreset` schema and includes timestamps. It represents the point-in-time configuration at snapshot creation.
 
 ## License
 

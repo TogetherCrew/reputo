@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import type { AlgorithmPreset, Snapshot } from '@reputo/database';
+import type { AlgorithmPreset, AlgorithmPresetFrozen, Snapshot } from '@reputo/database';
 import { MODEL_NAMES } from '@reputo/database';
 import type { FilterQuery } from 'mongoose';
 import { AlgorithmPresetRepository } from '../algorithm-preset/algorithm-preset.repository';
@@ -16,31 +16,32 @@ export class SnapshotService {
   ) {}
 
   async create(createDto: CreateSnapshotDto) {
-    const algorithmPreset = await this.algorithmPresetRepository.findById(createDto.algorithmPreset);
+    const algorithmPreset = await this.algorithmPresetRepository.findById(createDto.algorithmPresetId);
     if (!algorithmPreset) {
-      throwNotFoundError(createDto.algorithmPreset, SnapshotService.name);
+      throwNotFoundError(createDto.algorithmPresetId, SnapshotService.name);
     }
+    const { algorithmPresetId: _, ...snapshotData } = createDto;
 
-    return this.repository.create(createDto);
+    const snapshot: Omit<Snapshot, 'createdAt' | 'updatedAt'> = {
+      status: 'queued',
+      ...snapshotData,
+      algorithmPresetFrozen: algorithmPreset,
+    };
+
+    return this.repository.create(snapshot);
   }
 
-  async list(queryDto: ListSnapshotsQueryDto) {
-    const filter: FilterQuery<Snapshot> = pick(queryDto, ['status', 'algorithmPreset']);
+  list(queryDto: ListSnapshotsQueryDto) {
+    const filter: FilterQuery<Snapshot> = pick(queryDto, ['status']);
     const paginateOptions = pick(queryDto, ['page', 'limit', 'sortBy', 'populate']);
 
-    if (queryDto.key || queryDto.version) {
-      const algorithmPresetFilter: FilterQuery<AlgorithmPreset> = {};
-      if (queryDto.key) algorithmPresetFilter.key = queryDto.key;
-      if (queryDto.version) algorithmPresetFilter.version = queryDto.version;
+    // Query embedded algorithmPresetFrozen fields directly
+    const presetFilters: Record<string, string> = {};
+    if (queryDto.key) presetFilters['algorithmPresetFrozen.key'] = queryDto.key;
+    if (queryDto.version) presetFilters['algorithmPresetFrozen.version'] = queryDto.version;
 
-      const algorithmPresets = await this.algorithmPresetRepository.findAll(algorithmPresetFilter, {
-        page: 1,
-        limit: 1000,
-      });
+    Object.assign(filter, presetFilters);
 
-      const algorithmPresetIds = algorithmPresets.results.map((algorithmPreset) => algorithmPreset._id);
-      filter.algorithmPreset = { $in: algorithmPresetIds };
-    }
     return this.repository.findAll(filter, paginateOptions);
   }
 

@@ -1,12 +1,12 @@
 [**@reputo/database v0.0.0**](../README.md)
 
-***
+---
 
 [@reputo/database](../globals.md) / Snapshot
 
 # Interface: Snapshot
 
-Defined in: [packages/database/src/interfaces/Snapshot.interface.ts:11](https://github.com/TogetherCrew/reputo/blob/413a65312d2e71068be02885525ba8b64731b3a2/packages/database/src/interfaces/Snapshot.interface.ts#L11)
+Defined in: [packages/database/src/interfaces/Snapshot.interface.ts:12](https://github.com/TogetherCrew/reputo/blob/d73f0d2c46f5cbd7b3793a8af7862e85fea62117/packages/database/src/interfaces/Snapshot.interface.ts#L12)
 
 Interface defining the structure of a Snapshot document.
 
@@ -19,17 +19,17 @@ of an algorithm execution with optional Temporal workflow integration.
 
 > **status**: `"queued"` \| `"running"` \| `"completed"` \| `"failed"` \| `"cancelled"`
 
-Defined in: [packages/database/src/interfaces/Snapshot.interface.ts:13](https://github.com/TogetherCrew/reputo/blob/413a65312d2e71068be02885525ba8b64731b3a2/packages/database/src/interfaces/Snapshot.interface.ts#L13)
+Defined in: [packages/database/src/interfaces/Snapshot.interface.ts:14](https://github.com/TogetherCrew/reputo/blob/d73f0d2c46f5cbd7b3793a8af7862e85fea62117/packages/database/src/interfaces/Snapshot.interface.ts#L14)
 
 Current execution status
 
-***
+---
 
 ### temporal?
 
 > `optional` **temporal**: `object`
 
-Defined in: [packages/database/src/interfaces/Snapshot.interface.ts:15](https://github.com/TogetherCrew/reputo/blob/413a65312d2e71068be02885525ba8b64731b3a2/packages/database/src/interfaces/Snapshot.interface.ts#L15)
+Defined in: [packages/database/src/interfaces/Snapshot.interface.ts:16](https://github.com/TogetherCrew/reputo/blob/d73f0d2c46f5cbd7b3793a8af7862e85fea62117/packages/database/src/interfaces/Snapshot.interface.ts#L16)
 
 Optional Temporal workflow information
 
@@ -51,42 +51,45 @@ Temporal workflow run ID
 
 Temporal task queue name
 
-***
+---
 
-### algorithmPreset
+### algorithmPresetFrozen
 
-> **algorithmPreset**: `ObjectId`
+> **algorithmPresetFrozen**: [`AlgorithmPresetFrozen`](AlgorithmPresetFrozen.md)
 
-Defined in: [packages/database/src/interfaces/Snapshot.interface.ts:24](https://github.com/TogetherCrew/reputo/blob/413a65312d2e71068be02885525ba8b64731b3a2/packages/database/src/interfaces/Snapshot.interface.ts#L24)
+Defined in: [packages/database/src/interfaces/Snapshot.interface.ts:25](https://github.com/TogetherCrew/reputo/blob/d73f0d2c46f5cbd7b3793a8af7862e85fea62117/packages/database/src/interfaces/Snapshot.interface.ts#L25)
 
-Reference to the associated AlgorithmPreset
+Frozen copy of the associated AlgorithmPreset at snapshot creation time
 
-***
+---
 
 ### outputs?
 
-> `optional` **outputs**: `unknown`
+> `optional` **outputs**: `SnapshotOutputs`
 
-Defined in: [packages/database/src/interfaces/Snapshot.interface.ts:26](https://github.com/TogetherCrew/reputo/blob/413a65312d2e71068be02885525ba8b64731b3a2/packages/database/src/interfaces/Snapshot.interface.ts#L26)
+Defined in: [packages/database/src/interfaces/Snapshot.interface.ts:27](https://github.com/TogetherCrew/reputo/blob/d73f0d2c46f5cbd7b3793a8af7862e85fea62117/packages/database/src/interfaces/Snapshot.interface.ts#L27)
 
-Algorithm execution outputs/results
+Algorithm execution outputs/results. Strict object with optional keys:
 
-***
+- `csv?: string`
+- `json?: string`
+
+---
 
 ### createdAt?
 
 > `optional` **createdAt**: `Date`
 
-Defined in: [packages/database/src/interfaces/Snapshot.interface.ts:28](https://github.com/TogetherCrew/reputo/blob/413a65312d2e71068be02885525ba8b64731b3a2/packages/database/src/interfaces/Snapshot.interface.ts#L28)
+Defined in: [packages/database/src/interfaces/Snapshot.interface.ts:29](https://github.com/TogetherCrew/reputo/blob/d73f0d2c46f5cbd7b3793a8af7862e85fea62117/packages/database/src/interfaces/Snapshot.interface.ts#L29)
 
 Document creation timestamp
 
-***
+---
 
 ### updatedAt?
 
 > `optional` **updatedAt**: `Date`
 
-Defined in: [packages/database/src/interfaces/Snapshot.interface.ts:30](https://github.com/TogetherCrew/reputo/blob/413a65312d2e71068be02885525ba8b64731b3a2/packages/database/src/interfaces/Snapshot.interface.ts#L30)
+Defined in: [packages/database/src/interfaces/Snapshot.interface.ts:31](https://github.com/TogetherCrew/reputo/blob/d73f0d2c46f5cbd7b3793a8af7862e85fea62117/packages/database/src/interfaces/Snapshot.interface.ts#L31)
 
 Document last update timestamp

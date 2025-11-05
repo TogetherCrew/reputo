@@ -2,6 +2,7 @@ import { Schema } from 'mongoose';
 import { SNAPSHOT_STATUS } from '../constants/index.js';
 import { Snapshot, SnapshotModel } from '../interfaces/index.js';
 import { paginate } from '../plugins/index.js';
+import { AlgorithmPresetFrozenSchema } from './AlgorithmPresetFrozen.schema.js';
 
 /**
  * Mongoose schema for Snapshot documents.
@@ -21,14 +22,14 @@ const SnapshotSchema = new Schema<Snapshot, SnapshotModel>(
       },
       { _id: false, versionKey: false, strict: true },
     ),
-    algorithmPreset: {
-      type: Schema.Types.ObjectId,
-      ref: 'AlgorithmPreset',
-      index: true,
-      immutable: true,
-      required: true,
-    },
-    outputs: { type: Schema.Types.Mixed },
+    algorithmPresetFrozen: AlgorithmPresetFrozenSchema,
+    outputs: new Schema<Snapshot['outputs']>(
+      {
+        csv: { type: String },
+        json: { type: String },
+      },
+      { _id: false, versionKey: false, strict: 'throw' },
+    ),
   },
   {
     timestamps: true,
@@ -38,5 +39,12 @@ const SnapshotSchema = new Schema<Snapshot, SnapshotModel>(
 );
 
 SnapshotSchema.plugin(paginate);
+
+SnapshotSchema.index({ 'algorithmPresetFrozen.key': 1 });
+SnapshotSchema.index({ 'algorithmPresetFrozen.version': 1 });
+SnapshotSchema.index({
+  'algorithmPresetFrozen.key': 1,
+  'algorithmPresetFrozen.version': 1,
+});
 
 export default SnapshotSchema as Schema<Snapshot, SnapshotModel>;

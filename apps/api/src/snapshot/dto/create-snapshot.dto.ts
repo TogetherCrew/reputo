@@ -28,14 +28,36 @@ class SnapshotTemporalDto {
   taskQueue?: string;
 }
 
+class SnapshotOutputsDto {
+  @ApiPropertyOptional({
+    description: 'S3 key or identifier for CSV output',
+    example: 's3://bucket/path/result.csv',
+  })
+  @IsString()
+  @IsOptional()
+  csv?: string;
+
+  @ApiPropertyOptional({
+    description: 'S3 key or identifier for JSON output',
+    example: 's3://bucket/path/result.json',
+  })
+  @IsString()
+  @IsOptional()
+  json?: string;
+}
+
 export class CreateSnapshotDto {
+  /**
+   * AlgorithmPreset ID that will be resolved and embedded as a frozen copy in the snapshot.
+   * The service fetches the full preset and stores it as algorithmPresetFrozen, identical to AlgorithmPreset.
+   */
   @ApiProperty({
-    description: 'Reference to the associated AlgorithmPreset',
+    description: 'AlgorithmPreset ID to embed as frozen preset in the snapshot',
     example: '66f9c9...',
   })
   @IsMongoId()
   @IsNotEmpty()
-  algorithmPreset: string;
+  algorithmPresetId: string;
 
   @ApiPropertyOptional({
     description: 'Optional Temporal workflow information',
@@ -47,9 +69,11 @@ export class CreateSnapshotDto {
   temporal?: SnapshotTemporalDto;
 
   @ApiPropertyOptional({
-    description: 'Algorithm execution outputs',
-    example: {},
+    description: 'Algorithm execution outputs with CSV and JSON keys',
+    type: SnapshotOutputsDto,
   })
+  @ValidateNested()
+  @Type(() => SnapshotOutputsDto)
   @IsOptional()
-  outputs?: unknown;
+  outputs?: SnapshotOutputsDto;
 }

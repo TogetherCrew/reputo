@@ -8,6 +8,6 @@
 
 > **IoType** = `"csv"` \| `"number"` \| `"boolean"` \| `"array"` \| `"score_map"` \| `"string"` \| `"object"` \| `string` & `object`
 
-Defined in: [shared/types/algorithm.ts:13](https://github.com/TogetherCrew/reputo/blob/413a65312d2e71068be02885525ba8b64731b3a2/packages/reputation-algorithms/src/shared/types/algorithm.ts#L13)
+Defined in: [shared/types/algorithm.ts:13](https://github.com/TogetherCrew/reputo/blob/d73f0d2c46f5cbd7b3793a8af7862e85fea62117/packages/reputation-algorithms/src/shared/types/algorithm.ts#L13)
 
 Supported input/output types for algorithm definitions.

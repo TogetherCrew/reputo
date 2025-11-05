@@ -33,17 +33,21 @@ describe('GET /api/v1/snapshots/:id', () => {
         await stopMongo()
     })
 
-    it('should get snapshot by id (200)', async () => {
-        const preset = await insertAlgorithmPreset(algorithmPresetModel)
-        const snapshot = await insertSnapshot(
-            snapshotModel,
-            preset._id.toString()
-        )
+    it('should get snapshot with frozen preset by id (200)', async () => {
+        const preset = await insertAlgorithmPreset(algorithmPresetModel, {
+            key: 'test_key',
+            version: '2.0.0',
+        })
+        const { createdAt, updatedAt, ...presetData } = preset.toObject()
+
+        const snapshot = await insertSnapshot(snapshotModel, presetData)
 
         const res = await api(app).get(`/snapshots/${snapshot._id}`).expect(200)
 
         expect(res.body._id).toBe(snapshot._id.toString())
-        expect(res.body.algorithmPreset).toBe(preset._id.toString())
+        expect(res.body.algorithmPresetFrozen).toBeInstanceOf(Object)
+        expect(res.body.algorithmPresetFrozen.key).toBe('test_key')
+        expect(res.body.algorithmPresetFrozen.version).toBe('2.0.0')
         expect(res.body.status).toBe('queued')
         expect(typeof res.body.createdAt).toBe('string')
         expect(typeof res.body.updatedAt).toBe('string')

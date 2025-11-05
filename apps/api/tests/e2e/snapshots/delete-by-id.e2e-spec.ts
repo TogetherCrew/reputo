@@ -28,10 +28,11 @@ describe('DELETE /api/v1/snapshots/:id', () => {
     })
 
     it('should delete snapshot by id (204) with no body', async () => {
-        const snapshot = await insertSnapshot(
-            snapshotModel,
-            '507f1f77bcf86cd799439011'
-        )
+        const snapshot = await insertSnapshot(snapshotModel, {
+            key: 'test_key',
+            version: '1.0.0',
+            inputs: [],
+        })
 
         const res = await api(app)
             .delete(`/snapshots/${snapshot._id}`)
@@ -57,10 +58,11 @@ describe('DELETE /api/v1/snapshots/:id', () => {
     })
 
     it('should make subsequent GET by id return 404 after deletion', async () => {
-        const snapshot = await insertSnapshot(
-            snapshotModel,
-            '507f1f77bcf86cd799439011'
-        )
+        const snapshot = await insertSnapshot(snapshotModel, {
+            key: 'test_key',
+            version: '1.0.0',
+            inputs: [],
+        })
 
         await api(app).delete(`/snapshots/${snapshot._id}`).expect(204)
 

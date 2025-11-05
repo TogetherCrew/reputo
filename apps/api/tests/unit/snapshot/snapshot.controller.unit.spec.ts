@@ -26,7 +26,7 @@ describe('SnapshotController', () => {
     describe('create', () => {
         it('should delegate to service.create with the provided DTO', async () => {
             const createDto: CreateSnapshotDto = {
-                algorithmPreset: '507f1f77bcf86cd799439011',
+                algorithmPresetId: '507f1f77bcf86cd799439011',
             }
 
             const mockSnapshot = {
@@ -46,13 +46,13 @@ describe('SnapshotController', () => {
 
         it('should pass optional temporal and outputs fields from DTO to service', async () => {
             const createDto: CreateSnapshotDto = {
-                algorithmPreset: '507f1f77bcf86cd799439011',
+                algorithmPresetId: '507f1f77bcf86cd799439011',
                 temporal: {
                     workflowId: 'wf-123',
                     runId: 'run-456',
                     taskQueue: 'algorithms',
                 },
-                outputs: { result: 'data' },
+                outputs: { csv: 'key', json: 'key' },
             }
 
             const mockSnapshot = {
@@ -73,7 +73,6 @@ describe('SnapshotController', () => {
         it('should delegate to service.list with the provided query DTO', async () => {
             const queryDto: ListSnapshotsQueryDto = {
                 status: 'queued',
-                algorithmPreset: '507f1f77bcf86cd799439011',
                 page: 1,
                 limit: 10,
             }
