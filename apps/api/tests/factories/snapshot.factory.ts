@@ -72,8 +72,8 @@ export function randomSnapshot(
             taskQueue: 'algorithms',
         }),
         outputs: maybe({
-            result: faker.number.int({ min: 0, max: 100 }),
-            timestamp: faker.date.recent().toISOString(),
+            csv: faker.string.alphanumeric(16),
+            json: faker.string.alphanumeric(16),
         }),
     })
 }

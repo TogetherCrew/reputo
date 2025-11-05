@@ -1,6 +1,6 @@
 **@reputo/database v0.0.0**
 
-***
+---
 
 # @reputo/database
 
@@ -89,7 +89,7 @@ await snapshot.save()
 // Update snapshot with results
 await SnapshotModel.findByIdAndUpdate(snapshot._id, {
     status: 'completed',
-    outputs: { score: 0.85, confidence: 0.92 },
+    outputs: { csv: 'key', json: 'key' },
 })
 
 // Find snapshots by status

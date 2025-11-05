@@ -109,7 +109,7 @@ describe('SnapshotService', () => {
             const createDto: CreateSnapshotDto = {
                 algorithmPresetId: '507f1f77bcf86cd799439011',
                 temporal: { workflowId: 'wf-123', runId: 'run-456' },
-                outputs: { result: 'data' },
+                outputs: { csv: 'key', json: 'key' },
             }
 
             const mockAlgorithmPreset = {
@@ -129,7 +129,7 @@ describe('SnapshotService', () => {
                     inputs: [],
                 },
                 temporal: { workflowId: 'wf-123', runId: 'run-456' },
-                outputs: { result: 'data' },
+                outputs: { csv: 'key', json: 'key' },
             }
 
             mockAlgorithmPresetRepository.findById = vi
@@ -147,7 +147,7 @@ describe('SnapshotService', () => {
                 workflowId: 'wf-123',
                 runId: 'run-456',
             })
-            expect(createCall.outputs).toEqual({ result: 'data' })
+            expect(createCall.outputs).toEqual({ csv: 'key', json: 'key' })
             expect(result).toBe(mockSnapshot)
         })
     })

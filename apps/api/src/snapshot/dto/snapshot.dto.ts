@@ -21,6 +21,20 @@ class SnapshotTemporalDto {
   taskQueue?: string;
 }
 
+class SnapshotOutputsDto {
+  @ApiPropertyOptional({
+    description: 'S3 key or identifier for CSV output',
+    example: 's3://bucket/path/result.csv',
+  })
+  csv?: string;
+
+  @ApiPropertyOptional({
+    description: 'S3 key or identifier for JSON output',
+    example: 's3://bucket/path/result.json',
+  })
+  json?: string;
+}
+
 export class SnapshotDto {
   @ApiProperty({
     description: 'Unique identifier',
@@ -48,10 +62,10 @@ export class SnapshotDto {
   algorithmPreset: string;
 
   @ApiPropertyOptional({
-    description: 'Algorithm execution outputs',
-    example: {},
+    description: 'Algorithm execution outputs with CSV and JSON keys',
+    type: SnapshotOutputsDto,
   })
-  outputs?: unknown;
+  outputs?: SnapshotOutputsDto;
 
   @ApiProperty({
     description: 'Creation timestamp',

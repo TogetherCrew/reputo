@@ -1,6 +1,6 @@
 [**@reputo/database v0.0.0**](../README.md)
 
-***
+---
 
 [@reputo/database](../globals.md) / Snapshot
 
@@ -23,7 +23,7 @@ Defined in: [packages/database/src/interfaces/Snapshot.interface.ts:14](https://
 
 Current execution status
 
-***
+---
 
 ### temporal?
 
@@ -51,7 +51,7 @@ Temporal workflow run ID
 
 Temporal task queue name
 
-***
+---
 
 ### algorithmPresetFrozen
 
@@ -61,17 +61,20 @@ Defined in: [packages/database/src/interfaces/Snapshot.interface.ts:25](https://
 
 Frozen copy of the associated AlgorithmPreset at snapshot creation time
 
-***
+---
 
 ### outputs?
 
-> `optional` **outputs**: `unknown`
+> `optional` **outputs**: `SnapshotOutputs`
 
 Defined in: [packages/database/src/interfaces/Snapshot.interface.ts:27](https://github.com/TogetherCrew/reputo/blob/d73f0d2c46f5cbd7b3793a8af7862e85fea62117/packages/database/src/interfaces/Snapshot.interface.ts#L27)
 
-Algorithm execution outputs/results
+Algorithm execution outputs/results. Strict object with optional keys:
 
-***
+- `csv?: string`
+- `json?: string`
+
+---
 
 ### createdAt?
 
@@ -81,7 +84,7 @@ Defined in: [packages/database/src/interfaces/Snapshot.interface.ts:29](https://
 
 Document creation timestamp
 
-***
+---
 
 ### updatedAt?
 

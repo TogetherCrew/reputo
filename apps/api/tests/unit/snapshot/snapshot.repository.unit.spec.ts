@@ -1,7 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import type { SnapshotModel } from '@reputo/database'
+import type { Snapshot, SnapshotModel } from '@reputo/database'
 import { SnapshotRepository } from '../../../src/snapshot/snapshot.repository'
-import type { CreateSnapshotDto } from '../../../src/snapshot/dto'
 
 describe('SnapshotRepository', () => {
     let repository: SnapshotRepository
@@ -29,58 +28,71 @@ describe('SnapshotRepository', () => {
     })
 
     describe('create', () => {
-        it('should call model.create with the provided DTO', async () => {
-            const createDto: CreateSnapshotDto = {
-                algorithmPreset: '507f1f77bcf86cd799439011',
+        it('should call model.create with the provided data', async () => {
+            const createData: Omit<Snapshot, 'createdAt' | 'updatedAt'> = {
+                status: 'queued',
+                algorithmPresetFrozen: {
+                    key: 'test_key',
+                    version: '1.0.0',
+                    inputs: [],
+                },
             }
 
             const mockCreatedSnapshot = {
                 _id: '507f1f77bcf86cd799439012',
-                ...createDto,
-                status: 'queued',
+                ...createData,
             }
             mockModel.create = vi.fn().mockResolvedValue(mockCreatedSnapshot)
 
-            const result = await repository.create(createDto)
+            const result = await repository.create(createData)
 
             expect(mockModel.create).toHaveBeenCalledOnce()
-            expect(mockModel.create).toHaveBeenCalledWith(createDto)
+            expect(mockModel.create).toHaveBeenCalledWith(createData)
             expect(result).toBe(mockCreatedSnapshot)
         })
 
         it('should handle optional temporal and outputs fields', async () => {
-            const createDto: CreateSnapshotDto = {
-                algorithmPreset: '507f1f77bcf86cd799439011',
+            const createData: Omit<Snapshot, 'createdAt' | 'updatedAt'> = {
+                status: 'queued',
+                algorithmPresetFrozen: {
+                    key: 'test_key',
+                    version: '1.0.0',
+                    inputs: [],
+                },
                 temporal: {
                     workflowId: 'wf-123',
                     runId: 'run-456',
                     taskQueue: 'algorithms',
                 },
-                outputs: { result: 'data' },
+                outputs: { csv: 'key', json: 'key' },
             }
 
             const mockCreatedSnapshot = {
                 _id: '507f1f77bcf86cd799439012',
-                ...createDto,
-                status: 'queued',
+                ...createData,
             }
             mockModel.create = vi.fn().mockResolvedValue(mockCreatedSnapshot)
 
-            const result = await repository.create(createDto)
+            const result = await repository.create(createData)
 
-            expect(mockModel.create).toHaveBeenCalledWith(createDto)
+            expect(mockModel.create).toHaveBeenCalledWith(createData)
             expect(result).toBe(mockCreatedSnapshot)
         })
 
         it('should handle create errors', async () => {
-            const createDto: CreateSnapshotDto = {
-                algorithmPreset: '507f1f77bcf86cd799439011',
+            const createData: Omit<Snapshot, 'createdAt' | 'updatedAt'> = {
+                status: 'queued',
+                algorithmPresetFrozen: {
+                    key: 'test_key',
+                    version: '1.0.0',
+                    inputs: [],
+                },
             }
 
             const mockError = new Error('Database error')
             mockModel.create = vi.fn().mockRejectedValue(mockError)
 
-            await expect(repository.create(createDto)).rejects.toThrow(
+            await expect(repository.create(createData)).rejects.toThrow(
                 'Database error'
             )
         })

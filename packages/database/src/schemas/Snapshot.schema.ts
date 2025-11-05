@@ -23,7 +23,13 @@ const SnapshotSchema = new Schema<Snapshot, SnapshotModel>(
       { _id: false, versionKey: false, strict: true },
     ),
     algorithmPresetFrozen: AlgorithmPresetFrozenSchema,
-    outputs: { type: Schema.Types.Mixed },
+    outputs: new Schema<Snapshot['outputs']>(
+      {
+        csv: { type: String },
+        json: { type: String },
+      },
+      { _id: false, versionKey: false, strict: 'throw' },
+    ),
   },
   {
     timestamps: true,

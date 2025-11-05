@@ -25,8 +25,8 @@ describe('Snapshot model', () => {
           taskQueue: 'snapshot-queue',
         },
         outputs: {
-          result: 'success',
-          data: [1, 2, 3],
+          csv: 's3://bucket/path/to/result.csv',
+          json: 's3://bucket/path/to/result.json',
         },
       };
     });
