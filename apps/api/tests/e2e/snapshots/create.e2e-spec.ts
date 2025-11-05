@@ -6,7 +6,7 @@ import { startMongo, stopMongo } from '../../utils/mongo-memory-server'
 import { createTestApp } from '../../utils/app-test.module'
 import { api } from '../../utils/request'
 import { insertAlgorithmPreset } from '../../factories/algorithmPreset.factory'
-import { makeSnapshot } from '../../factories/snapshot.factory'
+import { makeSnapshotDto } from '../../factories/snapshot.factory'
 
 describe('POST /api/v1/snapshots', () => {
     let app: INestApplication
@@ -33,32 +33,40 @@ describe('POST /api/v1/snapshots', () => {
         await stopMongo()
     })
 
-    it('should create snapshot (201) with status defaulting to "queued"', async () => {
-        const preset = await insertAlgorithmPreset(algorithmPresetModel)
-        const dto = makeSnapshot(preset._id.toString())
+    it('should create snapshot (201) with frozen preset and status defaulting to "queued"', async () => {
+        const preset = await insertAlgorithmPreset(algorithmPresetModel, {
+            key: 'test_algo',
+            version: '1.0.0',
+        })
+        const dto = makeSnapshotDto(preset._id.toString())
 
         const res = await api(app).post('/snapshots').send(dto).expect(201)
 
         expect(res.body).toHaveProperty('_id')
-        expect(res.body.algorithmPreset).toBe(preset._id.toString())
+        expect(res.body.algorithmPresetFrozen).toBeInstanceOf(Object)
+        expect(res.body.algorithmPresetFrozen.key).toBe('test_algo')
+        expect(res.body.algorithmPresetFrozen.version).toBe('1.0.0')
+        // Verify timestamps are preserved in frozen preset
+        expect(typeof res.body.algorithmPresetFrozen.createdAt).toBe('string')
+        expect(typeof res.body.algorithmPresetFrozen.updatedAt).toBe('string')
         expect(res.body.status).toBe('queued')
         expect(typeof res.body.createdAt).toBe('string')
         expect(typeof res.body.updatedAt).toBe('string')
     })
 
-    it('should reject when algorithmPreset is missing (400)', async () => {
+    it('should reject when algorithmPresetId is missing (400)', async () => {
         await api(app).post('/snapshots').send({ outputs: {} }).expect(400)
     })
 
-    it('should reject when algorithmPreset id format is invalid (400)', async () => {
-        const dto = makeSnapshot('invalid-id')
+    it('should reject when algorithmPresetId format is invalid (400)', async () => {
+        const dto = makeSnapshotDto('invalid-id')
 
         await api(app).post('/snapshots').send(dto).expect(400)
     })
 
-    it('should reject when algorithmPreset does not exist (404)', async () => {
+    it('should reject when algorithmPresetId does not exist (404)', async () => {
         const nonExistentId = '507f1f77bcf86cd799439011'
-        const dto = makeSnapshot(nonExistentId)
+        const dto = makeSnapshotDto(nonExistentId)
 
         await api(app).post('/snapshots').send(dto).expect(404)
     })

@@ -3,7 +3,6 @@ import { InjectModel } from '@nestjs/mongoose';
 import type { PaginateOptions, Snapshot, SnapshotModel } from '@reputo/database';
 import { MODEL_NAMES } from '@reputo/database';
 import type { FilterQuery } from 'mongoose';
-import type { CreateSnapshotDto } from './dto';
 
 @Injectable()
 export class SnapshotRepository {
@@ -12,8 +11,8 @@ export class SnapshotRepository {
     private readonly model: SnapshotModel,
   ) {}
 
-  create(createDto: CreateSnapshotDto) {
-    return this.model.create(createDto);
+  create(createData: Omit<Snapshot, 'createdAt' | 'updatedAt'>) {
+    return this.model.create(createData);
   }
 
   findAll(filter: FilterQuery<Snapshot>, options: PaginateOptions) {

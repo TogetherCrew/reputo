@@ -107,7 +107,7 @@ Manage algorithm configuration presets with CRUD operations.
 
 ### Snapshots
 
-Manage algorithm execution snapshots with status tracking.
+Manage algorithm execution snapshots with status tracking and embedded algorithm preset data.
 
 **Base Path**: `/api/v1/snapshots`
 
@@ -120,8 +120,9 @@ Manage algorithm execution snapshots with status tracking.
 **Features:**
 
 - Status filtering (`status` query param)
-- Algorithm preset filtering (`algorithmPreset` query param)
-- Population of related algorithm preset data
+- Algorithm key filtering (`key` query param on embedded preset)
+- Algorithm version filtering (`version` query param on embedded preset)
+- Embedded algorithm preset data (frozen copy mirrors AlgorithmPreset and includes timestamps)
 - Pagination and sorting support
 
 ### Storage

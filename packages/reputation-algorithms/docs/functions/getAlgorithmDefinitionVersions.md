@@ -8,7 +8,7 @@
 
 > **getAlgorithmDefinitionVersions**(`key`): readonly `string`[]
 
-Defined in: [api/registry.ts:61](https://github.com/TogetherCrew/reputo/blob/413a65312d2e71068be02885525ba8b64731b3a2/packages/reputation-algorithms/src/api/registry.ts#L61)
+Defined in: [api/registry.ts:61](https://github.com/TogetherCrew/reputo/blob/d73f0d2c46f5cbd7b3793a8af7862e85fea62117/packages/reputation-algorithms/src/api/registry.ts#L61)
 
 Retrieves all available versions for a specific algorithm definition.
 

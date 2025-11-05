@@ -29,13 +29,17 @@ class SnapshotTemporalDto {
 }
 
 export class CreateSnapshotDto {
+  /**
+   * AlgorithmPreset ID that will be resolved and embedded as a frozen copy in the snapshot.
+   * The service fetches the full preset and stores it as algorithmPresetFrozen, identical to AlgorithmPreset.
+   */
   @ApiProperty({
-    description: 'Reference to the associated AlgorithmPreset',
+    description: 'AlgorithmPreset ID to embed as frozen preset in the snapshot',
     example: '66f9c9...',
   })
   @IsMongoId()
   @IsNotEmpty()
-  algorithmPreset: string;
+  algorithmPresetId: string;
 
   @ApiPropertyOptional({
     description: 'Optional Temporal workflow information',

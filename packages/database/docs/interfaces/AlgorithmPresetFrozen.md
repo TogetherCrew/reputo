@@ -1,0 +1,95 @@
+[**@reputo/database v0.0.0**](../README.md)
+
+***
+
+[@reputo/database](../globals.md) / AlgorithmPresetFrozen
+
+# Interface: AlgorithmPresetFrozen
+
+Defined in: packages/database/src/interfaces/AlgorithmPresetFrozen.interface.ts:6
+
+Interface representing a frozen snapshot of an AlgorithmPreset.
+
+This immutable copy mirrors the AlgorithmPreset shape and is embedded within a Snapshot document.
+
+## Properties
+
+### key
+
+> **key**: `string`
+
+Defined in: packages/database/src/interfaces/AlgorithmPresetFrozen.interface.ts:8
+
+Unique algorithm identifier (e.g., 'voting_engagement')
+
+***
+
+### version
+
+> **version**: `string`
+
+Defined in: packages/database/src/interfaces/AlgorithmPresetFrozen.interface.ts:10
+
+Algorithm version (e.g., '1.0.0')
+
+***
+
+### inputs
+
+> **inputs**: `object`[]
+
+Defined in: packages/database/src/interfaces/AlgorithmPresetFrozen.interface.ts:12
+
+Array of input parameters for the algorithm
+
+#### key
+
+> **key**: `string`
+
+Parameter key/name
+
+#### value?
+
+> `optional` **value**: `unknown`
+
+Parameter value (can be any type)
+
+***
+
+### name?
+
+> `optional` **name**: `string`
+
+Defined in: packages/database/src/interfaces/AlgorithmPresetFrozen.interface.ts:19
+
+Optional human-readable name for the preset (3-100 characters)
+
+***
+
+### description?
+
+> `optional` **description**: `string`
+
+Defined in: packages/database/src/interfaces/AlgorithmPresetFrozen.interface.ts:21
+
+Optional description of the preset (10-500 characters)
+
+***
+
+### createdAt?
+
+> `optional` **createdAt**: `Date`
+
+Defined in: packages/database/src/interfaces/AlgorithmPresetFrozen.interface.ts:23
+
+Document creation timestamp
+
+***
+
+### updatedAt?
+
+> `optional` **updatedAt**: `Date`
+
+Defined in: packages/database/src/interfaces/AlgorithmPresetFrozen.interface.ts:25
+
+Document last update timestamp

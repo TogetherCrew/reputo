@@ -4,7 +4,7 @@ import { StorageService } from '../../../src/storage/storage.service'
 import type {
     UploadDto,
     VerifyUploadDto,
-    SignDownloadDto,
+    DownloadDto,
 } from '../../../src/storage/dto'
 
 describe('StorageController', () => {
@@ -131,7 +131,7 @@ describe('StorageController', () => {
 
     describe('signDownload', () => {
         it('should delegate to service.presignGet with the provided DTO', async () => {
-            const downloadDto: SignDownloadDto = {
+            const downloadDto: DownloadDto = {
                 key: 'uploads/1699123456/votes.csv',
             }
 
@@ -151,7 +151,7 @@ describe('StorageController', () => {
                 .fn()
                 .mockResolvedValue(mockPresignedDownload)
 
-            const result = await controller.signDownload(downloadDto)
+            const result = await controller.download(downloadDto)
 
             expect(mockService.presignGet).toHaveBeenCalledOnce()
             expect(mockService.presignGet).toHaveBeenCalledWith(downloadDto.key)
@@ -159,7 +159,7 @@ describe('StorageController', () => {
         })
 
         it('should handle different file keys', async () => {
-            const downloadDto: SignDownloadDto = {
+            const downloadDto: DownloadDto = {
                 key: 'uploads/1699123458/archived-file.csv',
             }
 
@@ -179,7 +179,7 @@ describe('StorageController', () => {
                 .fn()
                 .mockResolvedValue(mockPresignedDownload)
 
-            const result = await controller.signDownload(downloadDto)
+            const result = await controller.download(downloadDto)
 
             expect(mockService.presignGet).toHaveBeenCalledWith(
                 'uploads/1699123458/archived-file.csv'

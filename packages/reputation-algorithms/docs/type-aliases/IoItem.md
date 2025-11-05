@@ -8,6 +8,6 @@
 
 > **IoItem** = [`CsvIoItem`](../interfaces/CsvIoItem.md)
 
-Defined in: [shared/types/algorithm.ts:80](https://github.com/TogetherCrew/reputo/blob/413a65312d2e71068be02885525ba8b64731b3a2/packages/reputation-algorithms/src/shared/types/algorithm.ts#L80)
+Defined in: [shared/types/algorithm.ts:80](https://github.com/TogetherCrew/reputo/blob/d73f0d2c46f5cbd7b3793a8af7862e85fea62117/packages/reputation-algorithms/src/shared/types/algorithm.ts#L80)
 
 Union type for all supported input/output item types.

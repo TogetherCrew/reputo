@@ -1,4 +1,3 @@
-import { Types } from 'mongoose';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 import type { Snapshot } from '../../../src/interfaces/index.js';
 import SnapshotModel from '../../../src/models/Snapshot.model.js';
@@ -6,13 +5,20 @@ import SnapshotModel from '../../../src/models/Snapshot.model.js';
 describe('Snapshot model', () => {
   describe('Snapshot validation', () => {
     let snapshot: Snapshot;
-    let algorithmPresetId: Types.ObjectId;
 
     beforeEach(() => {
-      algorithmPresetId = new Types.ObjectId();
       snapshot = {
         status: 'queued',
-        algorithmPreset: algorithmPresetId,
+        algorithmPresetFrozen: {
+          key: 'voting_engagement',
+          version: '1.0.0',
+          inputs: [
+            { key: 'threshold', value: 0.5 },
+            { key: 'minVotes', value: 10 },
+          ],
+          name: 'Voting Engagement Algorithm',
+          description: 'Calculates engagement based on voting patterns',
+        },
         temporal: {
           workflowId: 'workflow-123',
           runId: 'run-456',
@@ -38,7 +44,16 @@ describe('Snapshot model', () => {
     });
 
     test('should paginate with custom page and limit', async () => {
-      const mockResults = [{ status: 'failed', algorithmPreset: new Types.ObjectId() }];
+      const mockResults = [
+        {
+          status: 'failed',
+          algorithmPresetFrozen: {
+            key: 'test_key',
+            version: '1.0.0',
+            inputs: [],
+          },
+        },
+      ];
       const mockTotalCount = 100;
 
       const mockExec = vi.fn();
@@ -92,10 +107,9 @@ describe('Snapshot model', () => {
       vi.restoreAllMocks();
     });
 
-    test('should filter by algorithmPreset reference', async () => {
+    test('should filter by algorithmPresetFrozen.key', async () => {
       const mockResults = [];
       const mockTotalCount = 5;
-      const presetId = new Types.ObjectId();
 
       const mockExec = vi.fn();
       const mockLean = vi.fn().mockReturnValue({ exec: mockExec });
@@ -111,7 +125,34 @@ describe('Snapshot model', () => {
       vi.spyOn(SnapshotModel, 'find').mockImplementation(mockFind);
       vi.spyOn(SnapshotModel, 'countDocuments').mockImplementation(mockCountDocuments);
 
-      const filter = { algorithmPreset: presetId };
+      const filter = { 'algorithmPresetFrozen.key': 'voting_engagement' };
+      await SnapshotModel.paginate(filter, {});
+
+      expect(mockFind).toHaveBeenCalledWith(filter);
+      expect(mockCountDocuments).toHaveBeenCalledWith(filter);
+
+      vi.restoreAllMocks();
+    });
+
+    test('should filter by algorithmPresetFrozen.version', async () => {
+      const mockResults = [];
+      const mockTotalCount = 3;
+
+      const mockExec = vi.fn();
+      const mockLean = vi.fn().mockReturnValue({ exec: mockExec });
+      const mockLimit = vi.fn().mockReturnValue({ lean: mockLean });
+      const mockSkip = vi.fn().mockReturnValue({ limit: mockLimit });
+      const mockSort = vi.fn().mockReturnValue({ skip: mockSkip });
+      const mockFind = vi.fn().mockReturnValue({ sort: mockSort });
+      const mockCountExec = vi.fn().mockResolvedValue(mockTotalCount);
+      const mockCountDocuments = vi.fn().mockReturnValue({ exec: mockCountExec });
+
+      mockExec.mockResolvedValue(mockResults);
+
+      vi.spyOn(SnapshotModel, 'find').mockImplementation(mockFind);
+      vi.spyOn(SnapshotModel, 'countDocuments').mockImplementation(mockCountDocuments);
+
+      const filter = { 'algorithmPresetFrozen.version': '1.0.0' };
       await SnapshotModel.paginate(filter, {});
 
       expect(mockFind).toHaveBeenCalledWith(filter);
@@ -166,97 +207,6 @@ describe('Snapshot model', () => {
       await SnapshotModel.paginate({}, { sortBy: 'createdAt:desc' });
 
       expect(mockSort).toHaveBeenCalledWith('-createdAt');
-
-      vi.restoreAllMocks();
-    });
-
-    test('should handle populate option with string', async () => {
-      const mockResults = [];
-      const mockTotalCount = 0;
-
-      const mockExec = vi.fn();
-      const mockLean = vi.fn().mockReturnValue({ exec: mockExec });
-      const mockPopulate = vi.fn().mockReturnValue({ lean: mockLean });
-      const mockLimit = vi.fn().mockReturnValue({ populate: mockPopulate });
-      const mockSkip = vi.fn().mockReturnValue({ limit: mockLimit });
-      const mockSort = vi.fn().mockReturnValue({ skip: mockSkip });
-      const mockFind = vi.fn().mockReturnValue({ sort: mockSort });
-      const mockCountExec = vi.fn().mockResolvedValue(mockTotalCount);
-      const mockCountDocuments = vi.fn().mockReturnValue({ exec: mockCountExec });
-
-      mockExec.mockResolvedValue(mockResults);
-
-      vi.spyOn(SnapshotModel, 'find').mockImplementation(mockFind);
-      vi.spyOn(SnapshotModel, 'countDocuments').mockImplementation(mockCountDocuments);
-
-      await SnapshotModel.paginate({}, { populate: 'algorithmPreset' });
-
-      expect(mockPopulate).toHaveBeenCalledWith('algorithmPreset');
-
-      vi.restoreAllMocks();
-    });
-
-    test('should handle populate option with object', async () => {
-      const mockResults = [];
-      const mockTotalCount = 0;
-
-      const mockExec = vi.fn();
-      const mockLean = vi.fn().mockReturnValue({ exec: mockExec });
-      const mockPopulate = vi.fn().mockReturnValue({ lean: mockLean });
-      const mockLimit = vi.fn().mockReturnValue({ populate: mockPopulate });
-      const mockSkip = vi.fn().mockReturnValue({ limit: mockLimit });
-      const mockSort = vi.fn().mockReturnValue({ skip: mockSkip });
-      const mockFind = vi.fn().mockReturnValue({ sort: mockSort });
-      const mockCountExec = vi.fn().mockResolvedValue(mockTotalCount);
-      const mockCountDocuments = vi.fn().mockReturnValue({ exec: mockCountExec });
-
-      mockExec.mockResolvedValue(mockResults);
-
-      vi.spyOn(SnapshotModel, 'find').mockImplementation(mockFind);
-      vi.spyOn(SnapshotModel, 'countDocuments').mockImplementation(mockCountDocuments);
-
-      const populateOptions = {
-        path: 'algorithmPreset',
-        select: 'name spec',
-      };
-      await SnapshotModel.paginate({}, { populate: populateOptions });
-
-      expect(mockPopulate).toHaveBeenCalledWith(populateOptions);
-
-      vi.restoreAllMocks();
-    });
-
-    test('should handle populate option with array', async () => {
-      const mockResults = [];
-      const mockTotalCount = 0;
-
-      const mockExec = vi.fn();
-      const mockLean = vi.fn().mockReturnValue({ exec: mockExec });
-      const mockPopulate = vi.fn();
-      const populateChain = {
-        populate: mockPopulate,
-        lean: mockLean,
-        exec: mockExec,
-      };
-      mockPopulate.mockReturnValue(populateChain);
-
-      const mockLimit = vi.fn().mockReturnValue(populateChain);
-      const mockSkip = vi.fn().mockReturnValue({ limit: mockLimit });
-      const mockSort = vi.fn().mockReturnValue({ skip: mockSkip });
-      const mockFind = vi.fn().mockReturnValue({ sort: mockSort });
-      const mockCountExec = vi.fn().mockResolvedValue(mockTotalCount);
-      const mockCountDocuments = vi.fn().mockReturnValue({ exec: mockCountExec });
-
-      mockExec.mockResolvedValue(mockResults);
-
-      vi.spyOn(SnapshotModel, 'find').mockImplementation(mockFind);
-      vi.spyOn(SnapshotModel, 'countDocuments').mockImplementation(mockCountDocuments);
-
-      await SnapshotModel.paginate({}, { populate: ['algorithmPreset', 'temporal'] });
-
-      expect(mockPopulate).toHaveBeenCalledTimes(2);
-      expect(mockPopulate).toHaveBeenCalledWith('algorithmPreset');
-      expect(mockPopulate).toHaveBeenCalledWith('temporal');
 
       vi.restoreAllMocks();
     });

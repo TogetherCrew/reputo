@@ -100,8 +100,8 @@ services:
             - MONGODB_USER=admin
             - MONGODB_PASSWORD=preview-password
             - MONGODB_DB_NAME=reputo_preview
-            - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
-            - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+            - AWS_ACCESS_KEY_ID=key
+            - AWS_SECRET_ACCESS_KEY=secret
             - AWS_REGION=eu-central-1
             - STORAGE_BUCKET=reputo-staging
             - STORAGE_PRESIGN_PUT_TTL=120
