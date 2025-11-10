@@ -18,14 +18,14 @@ export class SnapshotService {
   async create(createDto: CreateSnapshotDto) {
     const algorithmPreset = await this.algorithmPresetRepository.findById(createDto.algorithmPresetId);
     if (!algorithmPreset) {
-      throwNotFoundError(createDto.algorithmPresetId, SnapshotService.name);
+      throwNotFoundError(createDto.algorithmPresetId, MODEL_NAMES.ALGORITHM_PRESET);
     }
     const { algorithmPresetId: _, ...snapshotData } = createDto;
 
     const snapshot: Omit<Snapshot, 'createdAt' | 'updatedAt'> = {
       status: 'queued',
       ...snapshotData,
-      algorithmPresetFrozen: algorithmPreset,
+      algorithmPresetFrozen: algorithmPreset as AlgorithmPresetFrozen,
     };
 
     return this.repository.create(snapshot);
@@ -35,7 +35,6 @@ export class SnapshotService {
     const filter: FilterQuery<Snapshot> = pick(queryDto, ['status']);
     const paginateOptions = pick(queryDto, ['page', 'limit', 'sortBy', 'populate']);
 
-    // Query embedded algorithmPresetFrozen fields directly
     const presetFilters: Record<string, string> = {};
     if (queryDto.key) presetFilters['algorithmPresetFrozen.key'] = queryDto.key;
     if (queryDto.version) presetFilters['algorithmPresetFrozen.version'] = queryDto.version;

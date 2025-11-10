@@ -16,7 +16,7 @@ function resolveVersion(key: string, version: string | 'latest'): string {
   const resolved = version === 'latest' ? versions[versions.length - 1] : version;
 
   if (!resolved) {
-    throw new NotFoundError('VERSION_NOT_FOUND', key, 'latest');
+    throw new NotFoundError('VERSION_NOT_FOUND', key, version);
   }
 
   if (!versions.includes(resolved)) {
@@ -61,26 +61,6 @@ export function getAlgorithmDefinitionKeys(): readonly string[] {
 export function getAlgorithmDefinitionVersions(key: string): readonly string[] {
   return getVersionsOrThrow(key);
 }
-
-/**
- * Retrieves a complete algorithm definition by key and version.
- *
- * @param filters - Object containing the algorithm key and optional version
- * @param filters.key - The algorithm key to retrieve
- * @param filters.version - The version to retrieve (defaults to 'latest')
- * @returns A deep copy of the algorithm definition object
- * @throws {NotFoundError} When the algorithm key or version is not found
- *
- * @example
- * ```ts
- * const definition = getAlgorithmDefinition({ key: 'voting-engagement' })
- *
- * const specific = getAlgorithmDefinition({
- *   key: 'voting-engagement',
- *   version: '1.0.0'
- * })
- * ```
- */
 
 /**
  * Retrieves a complete algorithm definition by key and version.
