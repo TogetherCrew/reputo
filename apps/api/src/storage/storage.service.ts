@@ -15,7 +15,6 @@ import { S3_CLIENT } from './providers';
 
 @Injectable()
 export class StorageService {
-  private readonly s3Client: S3Client;
   private readonly bucket: string;
   private readonly presignPutTtl: number;
   private readonly presignGetTtl: number;
@@ -23,10 +22,9 @@ export class StorageService {
   private readonly contentTypeAllowlist: Set<string>;
 
   constructor(
-    @Inject(S3_CLIENT) s3Client: S3Client,
+    @Inject(S3_CLIENT) private readonly s3Client: S3Client,
     private readonly configService: ConfigService,
   ) {
-    this.s3Client = s3Client;
     this.bucket = this.configService.get<string>('storage.bucket') as string;
     this.presignPutTtl = this.configService.get<number>('storage.presignPutTtl') as number;
     this.presignGetTtl = this.configService.get<number>('storage.presignGetTtl') as number;

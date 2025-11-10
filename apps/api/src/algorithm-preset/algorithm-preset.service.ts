@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import type { AlgorithmPreset } from '@reputo/database';
 import { MODEL_NAMES } from '@reputo/database';
 import type { FilterQuery } from 'mongoose';
-import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { throwNotFoundError } from '../shared/exceptions';
 import { pick } from '../shared/utils';
 import { AlgorithmPresetRepository } from './algorithm-preset.repository';
