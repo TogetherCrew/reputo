@@ -64,7 +64,7 @@ describe('SnapshotRepository', () => {
                     runId: 'run-456',
                     taskQueue: 'algorithms',
                 },
-                outputs: { csv: 'key', json: 'key' },
+                outputs: { csv: 'key' },
             }
 
             const mockCreatedSnapshot = {

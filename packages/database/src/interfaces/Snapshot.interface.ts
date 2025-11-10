@@ -5,7 +5,6 @@ import type { AlgorithmPresetFrozen } from './AlgorithmPresetFrozen.interface.js
 
 export interface SnapshotOutputs {
   csv?: string;
-  json?: string;
 }
 
 /**
