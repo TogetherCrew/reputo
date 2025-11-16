@@ -74,6 +74,10 @@ describe('Build: Schema Validation', () => {
         version: '1.0.0',
         inputs: [],
         outputs: [{ key: 'result', type: 'score_map', entity: 'user' }],
+        runtime: {
+          taskQueue: 'typescript-worker',
+          activity: 'test_algo',
+        },
       };
 
       const result = validator.validate(invalid);
@@ -89,6 +93,10 @@ describe('Build: Schema Validation', () => {
         version: 'v1.0',
         inputs: [],
         outputs: [{ key: 'result', type: 'score_map', entity: 'user' }],
+        runtime: {
+          taskQueue: 'typescript-worker',
+          activity: 'test_algo',
+        },
       };
 
       const result = validator.validate(invalid);
@@ -104,6 +112,10 @@ describe('Build: Schema Validation', () => {
         version: '1.0.0',
         inputs: [],
         outputs: [],
+        runtime: {
+          taskQueue: 'typescript-worker',
+          activity: 'test_algo',
+        },
       };
 
       const result = validator.validate(invalid);
@@ -124,6 +136,10 @@ describe('Build: Schema Validation', () => {
           },
         ],
         outputs: [{ key: 'result', type: 'score_map', entity: 'user' }],
+        runtime: {
+          taskQueue: 'typescript-worker',
+          activity: 'test_algo',
+        },
       };
 
       const result = validator.validate(invalid);
@@ -144,6 +160,10 @@ describe('Build: Schema Validation', () => {
             type: 'score_map',
           },
         ],
+        runtime: {
+          taskQueue: 'typescript-worker',
+          activity: 'test_algo',
+        },
       };
 
       const result = validator.validate(invalid);
@@ -162,6 +182,10 @@ describe('Build: Schema Validation', () => {
           version: '1.0.0',
           inputs: [],
           outputs: [{ key: 'result', type: 'score_map', entity: 'user' }],
+          runtime: {
+            taskQueue: 'typescript-worker',
+            activity: 'test_algo',
+          },
         };
 
         const result = validator.validate(valid);
@@ -191,8 +215,8 @@ describe('Build: Schema Validation', () => {
       expect(result.errors).toEqual([]);
     });
 
-    it('should accept algorithm without runtime metadata (optional)', () => {
-      const valid = {
+    it('should reject algorithm without runtime metadata (required)', () => {
+      const invalid = {
         key: 'test_algo',
         name: 'Test',
         category: 'custom',
@@ -202,9 +226,9 @@ describe('Build: Schema Validation', () => {
         outputs: [{ key: 'result', type: 'score_map', entity: 'user' }],
       };
 
-      const result = validator.validate(valid);
-      expect(result.isValid).toBe(true);
-      expect(result.errors).toEqual([]);
+      const result = validator.validate(invalid);
+      expect(result.isValid).toBe(false);
+      expect(result.errors.some((e) => e.instancePath === '' && e.keyword === 'required')).toBe(true);
     });
 
     it('should reject runtime metadata with missing taskQueue', () => {

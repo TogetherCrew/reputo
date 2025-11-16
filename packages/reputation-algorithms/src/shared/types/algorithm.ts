@@ -107,6 +107,6 @@ export interface AlgorithmDefinition {
   inputs: IoItem[];
   /** Array of output data specifications */
   outputs: IoItem[];
-  /** Optional runtime execution metadata for orchestration layers */
-  runtime?: AlgorithmRuntimeMetadata;
+  /** Runtime execution metadata for orchestration layers */
+  runtime: AlgorithmRuntimeMetadata;
 }

@@ -10,7 +10,8 @@
         "description",
         "version",
         "inputs",
-        "outputs"
+        "outputs",
+        "runtime"
     ],
     "properties": {
         "key": {

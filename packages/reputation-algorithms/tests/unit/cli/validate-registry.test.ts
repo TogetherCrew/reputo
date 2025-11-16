@@ -62,6 +62,10 @@ describe('CLI: validateRegistry', () => {
             entity: 'user',
           },
         ],
+        runtime: {
+          taskQueue: 'typescript-worker',
+          activity: 'test_algorithm',
+        },
       };
 
       const filePath = join(algoDir, '1.0.0.json');
@@ -103,6 +107,10 @@ describe('CLI: validateRegistry', () => {
                 entity: 'user',
               },
             ],
+            runtime: {
+              taskQueue: 'typescript-worker',
+              activity: algo.key,
+            },
           };
 
           writeFileSync(join(algoDir, `${version}.json`), JSON.stringify(algorithmDef));
@@ -138,6 +146,10 @@ describe('CLI: validateRegistry', () => {
           version: '1.0.0',
           inputs: [],
           outputs: [{ key: 'result', type: 'score_map', entity: 'user' }],
+          runtime: {
+            taskQueue: 'typescript-worker',
+            activity: 'test_algorithm',
+          },
         },
       };
 
@@ -337,6 +349,10 @@ describe('CLI: validateRegistry', () => {
             entity: 'user',
           },
         ],
+        runtime: {
+          taskQueue: 'typescript-worker',
+          activity: 'test_algorithm',
+        },
       };
 
       writeFileSync(join(algoDir, '1.0.0.json'), JSON.stringify(algorithmDef));
@@ -409,6 +425,10 @@ describe('CLI: validateRegistry', () => {
         version: '1.0.0',
         inputs: [],
         outputs: [{ key: 'result', type: 'score_map', entity: 'user' }],
+        runtime: {
+          taskQueue: 'typescript-worker',
+          activity: 'test_algorithm',
+        },
       };
 
       writeFileSync(join(algoDir1, '1.0.0.json'), JSON.stringify(algorithmDef));
@@ -437,6 +457,10 @@ describe('CLI: validateRegistry', () => {
           version: algo.version,
           inputs: [],
           outputs: [{ key: 'result', type: 'score_map', entity: 'user' }],
+          runtime: {
+            taskQueue: 'typescript-worker',
+            activity: algo.key,
+          },
         };
 
         writeFileSync(join(algoDir, `${algo.version}.json`), JSON.stringify(algorithmDef));
