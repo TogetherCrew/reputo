@@ -26,7 +26,6 @@ describe('Snapshot model', () => {
         },
         outputs: {
           csv: 's3://bucket/path/to/result.csv',
-          json: 's3://bucket/path/to/result.json',
         },
       };
     });

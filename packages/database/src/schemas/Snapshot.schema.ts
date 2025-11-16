@@ -26,7 +26,6 @@ const SnapshotSchema = new Schema<Snapshot, SnapshotModel>(
     outputs: new Schema<Snapshot['outputs']>(
       {
         csv: { type: String },
-        json: { type: String },
       },
       { _id: false, versionKey: false, strict: 'throw' },
     ),

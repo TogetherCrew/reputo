@@ -36,14 +36,6 @@ class SnapshotOutputsDto {
   @IsString()
   @IsOptional()
   csv?: string;
-
-  @ApiPropertyOptional({
-    description: 'S3 key or identifier for JSON output',
-    example: 's3://bucket/path/result.json',
-  })
-  @IsString()
-  @IsOptional()
-  json?: string;
 }
 
 export class CreateSnapshotDto {
@@ -69,7 +61,7 @@ export class CreateSnapshotDto {
   temporal?: SnapshotTemporalDto;
 
   @ApiPropertyOptional({
-    description: 'Algorithm execution outputs with CSV and JSON keys',
+    description: 'Algorithm execution outputs with CSV key',
     type: SnapshotOutputsDto,
   })
   @ValidateNested()

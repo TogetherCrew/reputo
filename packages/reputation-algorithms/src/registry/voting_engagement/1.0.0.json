@@ -56,9 +56,25 @@
         {
             "key": "voting_engagement",
             "label": "Voting Engagement by User",
-            "type": "score_map",
-            "entity": "user",
-            "description": "Ve(i) in [0,1]"
+            "description": "Ve(i) in [0,1]",
+            "type": "csv",
+            "csv": {
+                "hasHeader": true,
+                "delimiter": ",",
+                "columns": [
+                    {
+                        "key": "collection_id",
+                        "type": "string",
+                        "aliases": ["voter_id", "user_id"],
+                        "description": "Unique user identifier"
+                    },
+                    {
+                        "key": "voting_engagement",
+                        "type": "number",
+                        "description": "Voting engagement score Ve(i) in [0,1]"
+                    }
+                ]
+            }
         }
     ]
 }

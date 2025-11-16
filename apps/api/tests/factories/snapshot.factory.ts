@@ -73,7 +73,6 @@ export function randomSnapshot(
         }),
         outputs: maybe({
             csv: faker.string.alphanumeric(16),
-            json: faker.string.alphanumeric(16),
         }),
     })
 }
