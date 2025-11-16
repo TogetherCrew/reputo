@@ -41,6 +41,9 @@
             "type": "string",
             "format": "uri",
             "description": "Optional backpointer to the schema $id used during authoring."
+        },
+        "runtime": {
+            "$ref": "#/$defs/runtime"
         }
     },
     "$defs": {
@@ -147,6 +150,23 @@
                     "then": { "required": ["enum"] }
                 }
             ]
+        },
+        "runtime": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["taskQueue", "activity"],
+            "properties": {
+                "taskQueue": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Task queue name for executing this reputation algorithm version."
+                },
+                "activity": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Activity name used by the runtime to execute this reputation algorithm."
+                }
+            }
         }
     }
 }
