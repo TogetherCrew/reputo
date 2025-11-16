@@ -1,1 +1,1 @@
-export * from './storage.interfaces';
+// Storage interfaces are now exported from @reputo/storage package

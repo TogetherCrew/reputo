@@ -107,6 +107,9 @@ importers:
       '@reputo/reputation-algorithms':
         specifier: workspace:*
         version: link:../../packages/reputation-algorithms
+      '@reputo/storage':
+        specifier: workspace:*
+        version: link:../../packages/storage
       '@scalar/nestjs-api-reference':
         specifier: ^1.0.5
         version: 1.0.5
