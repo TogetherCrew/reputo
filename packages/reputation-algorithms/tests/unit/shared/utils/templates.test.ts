@@ -66,6 +66,10 @@ describe('Template Utils', () => {
             description: 'TODO: Describe output',
           },
         ],
+        runtime: {
+          taskQueue: 'typescript-worker',
+          activity: 'test_algorithm',
+        },
       });
     });
 
@@ -79,6 +83,10 @@ describe('Template Utils', () => {
         name: 'Voting Power',
         category: 'engagement',
         version: '2.1.0',
+        runtime: {
+          taskQueue: 'typescript-worker',
+          activity: 'voting_power',
+        },
       });
     });
 
@@ -127,6 +135,10 @@ describe('Template Utils', () => {
         version: '1.0.0',
         inputs: [],
         outputs: [],
+        runtime: {
+          taskQueue: 'typescript-worker',
+          activity: 'minimal_algo',
+        },
       });
     });
 
@@ -154,6 +166,10 @@ describe('Template Utils', () => {
             description: 'TODO: Describe output',
           },
         ],
+        runtime: {
+          taskQueue: 'typescript-worker',
+          activity: 'custom_algo',
+        },
       });
     });
 
@@ -177,6 +193,7 @@ describe('Template Utils', () => {
       expect(template).toHaveProperty('version');
       expect(template).toHaveProperty('inputs');
       expect(template).toHaveProperty('outputs');
+      expect(template).toHaveProperty('runtime');
 
       expect(typeof template.key).toBe('string');
       expect(typeof template.name).toBe('string');
@@ -185,6 +202,26 @@ describe('Template Utils', () => {
       expect(typeof template.version).toBe('string');
       expect(Array.isArray(template.inputs)).toBe(true);
       expect(Array.isArray(template.outputs)).toBe(true);
+      expect(typeof template.runtime).toBe('object');
+    });
+
+    it('should include runtime metadata with default taskQueue', () => {
+      const template = createAlgorithmTemplate('user_activity', '1.0.0');
+
+      expect(template).toHaveProperty('runtime');
+      expect(template.runtime).toEqual({
+        taskQueue: 'typescript-worker',
+        activity: 'user_activity',
+      });
+    });
+
+    it('should use algorithm key as activity name', () => {
+      const keys = ['voting_power', 'content_quality', 'user_engagement'];
+
+      for (const key of keys) {
+        const template = createAlgorithmTemplate(key, '1.0.0');
+        expect(template.runtime.activity).toBe(key);
+      }
     });
   });
 });

@@ -169,4 +169,164 @@ describe('Build: Schema Validation', () => {
       }
     });
   });
+
+  describe('Runtime Metadata', () => {
+    it('should accept valid runtime metadata', () => {
+      const valid = {
+        key: 'test_algo',
+        name: 'Test',
+        category: 'custom',
+        description: 'Test',
+        version: '1.0.0',
+        inputs: [],
+        outputs: [{ key: 'result', type: 'score_map', entity: 'user' }],
+        runtime: {
+          taskQueue: 'typescript-worker',
+          activity: 'test_algo',
+        },
+      };
+
+      const result = validator.validate(valid);
+      expect(result.isValid).toBe(true);
+      expect(result.errors).toEqual([]);
+    });
+
+    it('should accept algorithm without runtime metadata (optional)', () => {
+      const valid = {
+        key: 'test_algo',
+        name: 'Test',
+        category: 'custom',
+        description: 'Test',
+        version: '1.0.0',
+        inputs: [],
+        outputs: [{ key: 'result', type: 'score_map', entity: 'user' }],
+      };
+
+      const result = validator.validate(valid);
+      expect(result.isValid).toBe(true);
+      expect(result.errors).toEqual([]);
+    });
+
+    it('should reject runtime metadata with missing taskQueue', () => {
+      const invalid = {
+        key: 'test_algo',
+        name: 'Test',
+        category: 'custom',
+        description: 'Test',
+        version: '1.0.0',
+        inputs: [],
+        outputs: [{ key: 'result', type: 'score_map', entity: 'user' }],
+        runtime: {
+          activity: 'test_algo',
+        },
+      };
+
+      const result = validator.validate(invalid);
+      expect(result.isValid).toBe(false);
+      expect(result.errors.some((e) => e.instancePath === '/runtime')).toBe(true);
+    });
+
+    it('should reject runtime metadata with missing activity', () => {
+      const invalid = {
+        key: 'test_algo',
+        name: 'Test',
+        category: 'custom',
+        description: 'Test',
+        version: '1.0.0',
+        inputs: [],
+        outputs: [{ key: 'result', type: 'score_map', entity: 'user' }],
+        runtime: {
+          taskQueue: 'typescript-worker',
+        },
+      };
+
+      const result = validator.validate(invalid);
+      expect(result.isValid).toBe(false);
+      expect(result.errors.some((e) => e.instancePath === '/runtime')).toBe(true);
+    });
+
+    it('should reject runtime metadata with empty taskQueue', () => {
+      const invalid = {
+        key: 'test_algo',
+        name: 'Test',
+        category: 'custom',
+        description: 'Test',
+        version: '1.0.0',
+        inputs: [],
+        outputs: [{ key: 'result', type: 'score_map', entity: 'user' }],
+        runtime: {
+          taskQueue: '',
+          activity: 'test_algo',
+        },
+      };
+
+      const result = validator.validate(invalid);
+      expect(result.isValid).toBe(false);
+      expect(result.errors.some((e) => e.instancePath === '/runtime/taskQueue')).toBe(true);
+    });
+
+    it('should reject runtime metadata with empty activity', () => {
+      const invalid = {
+        key: 'test_algo',
+        name: 'Test',
+        category: 'custom',
+        description: 'Test',
+        version: '1.0.0',
+        inputs: [],
+        outputs: [{ key: 'result', type: 'score_map', entity: 'user' }],
+        runtime: {
+          taskQueue: 'typescript-worker',
+          activity: '',
+        },
+      };
+
+      const result = validator.validate(invalid);
+      expect(result.isValid).toBe(false);
+      expect(result.errors.some((e) => e.instancePath === '/runtime/activity')).toBe(true);
+    });
+
+    it('should reject runtime metadata with additional properties', () => {
+      const invalid = {
+        key: 'test_algo',
+        name: 'Test',
+        category: 'custom',
+        description: 'Test',
+        version: '1.0.0',
+        inputs: [],
+        outputs: [{ key: 'result', type: 'score_map', entity: 'user' }],
+        runtime: {
+          taskQueue: 'typescript-worker',
+          activity: 'test_algo',
+          extraProperty: 'not allowed',
+        },
+      };
+
+      const result = validator.validate(invalid);
+      expect(result.isValid).toBe(false);
+      expect(result.errors.some((e) => e.keyword === 'additionalProperties')).toBe(true);
+    });
+
+    it('should accept different taskQueue values', () => {
+      const taskQueues = ['typescript-worker', 'python-worker', 'reputation-algorithms-heavy', 'custom-queue'];
+
+      for (const taskQueue of taskQueues) {
+        const valid = {
+          key: 'test_algo',
+          name: 'Test',
+          category: 'custom',
+          description: 'Test',
+          version: '1.0.0',
+          inputs: [],
+          outputs: [{ key: 'result', type: 'score_map', entity: 'user' }],
+          runtime: {
+            taskQueue,
+            activity: 'test_algo',
+          },
+        };
+
+        const result = validator.validate(valid);
+        expect(result.isValid).toBe(true);
+      }
+    });
+  });
 });
