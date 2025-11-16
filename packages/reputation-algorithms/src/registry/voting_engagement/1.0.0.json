@@ -76,5 +76,9 @@
                 ]
             }
         }
-    ]
+    ],
+    "runtime": {
+        "taskQueue": "typescript-worker",
+        "activity": "voting_engagement"
+    }
 }
