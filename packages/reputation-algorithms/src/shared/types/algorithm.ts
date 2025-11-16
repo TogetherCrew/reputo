@@ -80,6 +80,16 @@ export interface CsvIoItem extends BaseIoItem {
 export type IoItem = CsvIoItem;
 
 /**
+ * Runtime metadata for algorithm execution by orchestration layers.
+ */
+export interface AlgorithmRuntimeMetadata {
+  /** Task queue name where this reputation algorithm should be executed */
+  taskQueue: string;
+  /** Activity name used by the worker to execute this reputation algorithm */
+  activity: string;
+}
+
+/**
  * Complete algorithm definition structure.
  */
 export interface AlgorithmDefinition {
@@ -97,4 +107,6 @@ export interface AlgorithmDefinition {
   inputs: IoItem[];
   /** Array of output data specifications */
   outputs: IoItem[];
+  /** Optional runtime execution metadata for orchestration layers */
+  runtime?: AlgorithmRuntimeMetadata;
 }
