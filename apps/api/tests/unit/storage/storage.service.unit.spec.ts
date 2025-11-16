@@ -8,7 +8,6 @@ import {
     InvalidContentTypeException,
     ObjectNotFoundException,
 } from '../../../src/shared/exceptions'
-import type { S3Error } from '../../../src/shared/interfaces'
 
 vi.mock('@aws-sdk/client-s3', () => ({
     S3Client: vi.fn(),
@@ -179,12 +178,15 @@ describe('StorageService', () => {
 
         it('should throw ObjectNotFoundException when object does not exist (404)', async () => {
             const key = 'uploads/1699123458/non-existent.csv'
-            const mockError: S3Error = {
+            const mockError = {
                 name: 'NotFound',
                 message: 'Not Found',
                 $metadata: {
                     httpStatusCode: 404,
                 },
+            } as Error & {
+                name?: string
+                $metadata?: { httpStatusCode?: number }
             }
 
             mockS3Client.send = vi.fn().mockRejectedValue(mockError)
@@ -199,10 +201,10 @@ describe('StorageService', () => {
 
         it('should throw ObjectNotFoundException when error name is NotFound', async () => {
             const key = 'uploads/1699123459/missing.csv'
-            const mockError: S3Error = {
+            const mockError = {
                 name: 'NotFound',
                 message: 'The specified key does not exist',
-            }
+            } as Error & { name?: string }
 
             mockS3Client.send = vi.fn().mockRejectedValue(mockError)
 
@@ -359,12 +361,15 @@ describe('StorageService', () => {
 
         it('should throw ObjectNotFoundException when object does not exist (404)', async () => {
             const key = 'uploads/1699123467/missing-file.csv'
-            const mockError: S3Error = {
+            const mockError = {
                 name: 'NotFound',
                 message: 'Not Found',
                 $metadata: {
                     httpStatusCode: 404,
                 },
+            } as Error & {
+                name?: string
+                $metadata?: { httpStatusCode?: number }
             }
 
             mockS3Client.send = vi.fn().mockRejectedValue(mockError)
@@ -379,9 +384,9 @@ describe('StorageService', () => {
 
         it('should throw ObjectNotFoundException when error name is NotFound', async () => {
             const key = 'uploads/1699123468/not-found.csv'
-            const mockError: S3Error = {
+            const mockError = {
                 name: 'NotFound',
-            }
+            } as Error & { name?: string }
 
             mockS3Client.send = vi.fn().mockRejectedValue(mockError)
 

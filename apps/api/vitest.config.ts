@@ -23,6 +23,10 @@ export default defineConfig({
                 __dirname,
                 '../../packages/reputation-algorithms/src/index.ts'
             ),
+            '@reputo/storage': resolve(
+                __dirname,
+                '../../packages/storage/src/index.ts'
+            ),
         },
     },
 })
