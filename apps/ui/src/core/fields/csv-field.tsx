@@ -2,7 +2,7 @@
 
 import { AlertCircle, CheckCircle2 } from "lucide-react";
 import { useState } from "react";
-import { Control, FieldValues } from "react-hook-form";
+import type { Control, FieldValues } from "react-hook-form";
 import { Dropzone, DropzoneContent, DropzoneEmptyState } from "@/components/app/dropzone";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -83,6 +83,9 @@ export function CSVField({ input, control }: CSVFieldProps) {
                   onDrop={(acceptedFiles) => {
                     const file = acceptedFiles?.[0] || null;
                     handleFileChange(file, onChange);
+                  }}
+                  onUploadKey={(key) => {
+                    onChange(key);
                   }}
                 >
                   <DropzoneEmptyState />

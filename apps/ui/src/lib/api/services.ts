@@ -88,5 +88,14 @@ export const snapshotsApi = {
     },
 }
 
+// Storage API
+export const storageApi = {
+    // Create presigned upload URL
+    createUpload: async (data: { filename: string; contentType: string }): Promise<{ key: string; url: string; expiresIn: number }> => {
+        const response = await api.post('/storage/uploads', data)
+        return response.data
+    },
+}
+
 // Export the axios instance for custom requests if needed
 export { api }
