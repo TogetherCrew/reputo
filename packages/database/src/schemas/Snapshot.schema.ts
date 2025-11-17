@@ -1,5 +1,5 @@
 import { Schema } from 'mongoose';
-import { SNAPSHOT_STATUS } from '../constants/index.js';
+import { MODEL_NAMES, SNAPSHOT_STATUS } from '../constants/index.js';
 import { Snapshot, SnapshotModel } from '../interfaces/index.js';
 import { paginate } from '../plugins/index.js';
 import { AlgorithmPresetFrozenSchema } from './AlgorithmPresetFrozen.schema.js';
@@ -22,6 +22,11 @@ const SnapshotSchema = new Schema<Snapshot, SnapshotModel>(
       },
       { _id: false, versionKey: false, strict: true },
     ),
+    algorithmPreset: {
+      type: Schema.Types.ObjectId,
+      ref: MODEL_NAMES.ALGORITHM_PRESET,
+      required: true,
+    },
     algorithmPresetFrozen: AlgorithmPresetFrozenSchema,
     outputs: new Schema<Snapshot['outputs']>(
       {
@@ -39,6 +44,7 @@ const SnapshotSchema = new Schema<Snapshot, SnapshotModel>(
 
 SnapshotSchema.plugin(paginate);
 
+SnapshotSchema.index({ algorithmPreset: 1 });
 SnapshotSchema.index({ 'algorithmPresetFrozen.key': 1 });
 SnapshotSchema.index({ 'algorithmPresetFrozen.version': 1 });
 SnapshotSchema.index({

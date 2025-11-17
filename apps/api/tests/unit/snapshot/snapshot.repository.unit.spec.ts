@@ -31,6 +31,7 @@ describe('SnapshotRepository', () => {
         it('should call model.create with the provided data', async () => {
             const createData: Omit<Snapshot, 'createdAt' | 'updatedAt'> = {
                 status: 'queued',
+                algorithmPreset: '507f1f77bcf86cd799439011',
                 algorithmPresetFrozen: {
                     key: 'test_key',
                     version: '1.0.0',
@@ -54,6 +55,7 @@ describe('SnapshotRepository', () => {
         it('should handle optional temporal and outputs fields', async () => {
             const createData: Omit<Snapshot, 'createdAt' | 'updatedAt'> = {
                 status: 'queued',
+                algorithmPreset: '507f1f77bcf86cd799439011',
                 algorithmPresetFrozen: {
                     key: 'test_key',
                     version: '1.0.0',
@@ -82,6 +84,7 @@ describe('SnapshotRepository', () => {
         it('should handle create errors', async () => {
             const createData: Omit<Snapshot, 'createdAt' | 'updatedAt'> = {
                 status: 'queued',
+                algorithmPreset: '507f1f77bcf86cd799439011',
                 algorithmPresetFrozen: {
                     key: 'test_key',
                     version: '1.0.0',
