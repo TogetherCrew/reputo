@@ -40,7 +40,7 @@ describe('GET /api/v1/snapshots/:id', () => {
         })
         const { createdAt, updatedAt, ...presetData } = preset.toObject()
 
-        const snapshot = await insertSnapshot(snapshotModel, presetData)
+        const snapshot = await insertSnapshot(snapshotModel, preset._id.toString(), presetData)
 
         const res = await api(app).get(`/snapshots/${snapshot._id}`).expect(200)
 

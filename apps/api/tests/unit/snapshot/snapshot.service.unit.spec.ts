@@ -54,6 +54,7 @@ describe('SnapshotService', () => {
 
             const mockSnapshot = {
                 _id: '507f1f77bcf86cd799439012',
+                algorithmPreset: '507f1f77bcf86cd799439011',
                 algorithmPresetFrozen: {
                     key: 'test_key',
                     version: '1.0.0',
@@ -84,6 +85,7 @@ describe('SnapshotService', () => {
             // Verify that the preset is frozen and embedded as-is (no field stripping)
             const createCall = (mockSnapshotRepository.create as any).mock
                 .calls[0][0]
+            expect(createCall.algorithmPreset).toBe(createDto.algorithmPresetId)
             expect(createCall.algorithmPresetFrozen).toEqual(
                 mockAlgorithmPreset
             )
@@ -123,6 +125,7 @@ describe('SnapshotService', () => {
 
             const mockSnapshot = {
                 _id: '507f1f77bcf86cd799439012',
+                algorithmPreset: '507f1f77bcf86cd799439011',
                 algorithmPresetFrozen: {
                     key: 'test_key',
                     version: '1.0.0',

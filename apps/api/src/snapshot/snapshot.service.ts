@@ -25,6 +25,7 @@ export class SnapshotService {
     const snapshot: Omit<Snapshot, 'createdAt' | 'updatedAt'> = {
       status: 'queued',
       ...snapshotData,
+      algorithmPreset: createDto.algorithmPresetId,
       algorithmPresetFrozen: algorithmPreset as AlgorithmPresetFrozen,
     };
 
