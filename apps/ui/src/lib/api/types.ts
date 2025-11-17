@@ -60,7 +60,7 @@ export interface TemporalDto {
 }
 
 export interface CreateSnapshotDto {
-  algorithmPreset: string;
+  algorithmPresetId: string;
   temporal?: TemporalDto;
   outputs?: Record<string, unknown>;
 }
@@ -105,7 +105,6 @@ export interface SnapshotQueryParams {
   limit?: number;
   page?: number;
   status?: 'queued' | 'running' | 'completed' | 'failed' | 'cancelled';
-  algorithmPreset?: string;
   key?: string;
   version?: string;
 }

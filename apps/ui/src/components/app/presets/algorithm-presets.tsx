@@ -117,7 +117,7 @@ export function AlgorithmPresets({ algo }: { algo?: Algorithm }) {
   const handleRunPreset = async (presetId: string) => {
     try {
       const snapshotData: CreateSnapshotDto = {
-        algorithmPreset: presetId,
+        algorithmPresetId: presetId,
         outputs: {},
       };
 

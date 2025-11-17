@@ -11,6 +11,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import type { AlgorithmPresetResponseDto } from "@/lib/api/types";
+import { useState } from "react";
+import { CSVViewerDialog } from "@/components/app/csv/csv-viewer-dialog";
 
 interface PresetDetailsDialogProps {
   isOpen: boolean;
@@ -19,6 +21,9 @@ interface PresetDetailsDialogProps {
 }
 
 export function PresetDetailsDialog({ isOpen, onClose, preset }: PresetDetailsDialogProps) {
+  const [csvViewerOpen, setCsvViewerOpen] = useState(false);
+  const [csvHref, setCsvHref] = useState<string | null>(null);
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-2xl">
@@ -64,27 +69,48 @@ export function PresetDetailsDialog({ isOpen, onClose, preset }: PresetDetailsDi
                   <div key={input.key} className="flex items-center justify-between p-3 border rounded-lg">
                     <div>
                       <div className="font-medium">{input.key}</div>
-                      <div className="text-sm text-muted-foreground">
-                        Value: {String(input.value) || 'Not set'}
-                      </div>
                     </div>
-                    {typeof input.value === "string" && input.value && (input.value.includes("/") || input.value.startsWith("uploads/")) && (
-                      <Button
-                        size="sm"
-                        onClick={async () => {
-                          try {
-                            const { url } = await storageApi.createDownload({ key: input.value as string });
-                            window.open(url, "_blank", "noopener,noreferrer");
-                          } catch (e) {
-                            // Fallback simple error surface
-                            console.error(e);
-                            alert("Failed to create download link");
-                          }
-                        }}
-                      >
-                        Download
-                      </Button>
-                    )}
+                    <div className="flex items-center gap-2">
+                      {typeof input.value === "string" && input.value && (input.value.includes("/") || input.value.startsWith("uploads/")) && (
+                        <Button
+                          size="sm"
+                          onClick={async () => {
+                            try {
+                              const { url } = await storageApi.createDownload({ key: input.value as string });
+                              window.open(url, "_blank", "noopener,noreferrer");
+                            } catch (e) {
+                              console.error(e);
+                              alert("Failed to create download link");
+                            }
+                          }}
+                        >
+                          Download
+                        </Button>
+                      )}
+                      {typeof input.value === "string" && input.value && input.value.toLowerCase().includes(".csv") && (
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={async () => {
+                            try {
+                              const val = input.value as string;
+                              let url = val;
+                              if (!/^https?:\/\//i.test(val)) {
+                                const res = await storageApi.createDownload({ key: val });
+                                url = res.url;
+                              }
+                              setCsvHref(url);
+                              setCsvViewerOpen(true);
+                            } catch (e) {
+                              console.error(e);
+                              alert("Unable to open CSV viewer");
+                            }
+                          }}
+                        >
+                          View
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -97,6 +123,12 @@ export function PresetDetailsDialog({ isOpen, onClose, preset }: PresetDetailsDi
           </Button>
         </DialogFooter>
       </DialogContent>
+      <CSVViewerDialog
+        isOpen={csvViewerOpen}
+        onClose={() => setCsvViewerOpen(false)}
+        href={csvHref}
+        title="CSV Input Preview"
+      />
     </Dialog>
   );
 }

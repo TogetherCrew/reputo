@@ -29,7 +29,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import type { Algorithm } from "@/core/algorithms";
-import { useAlgorithmPresets, useDeleteSnapshot, useSnapshots } from "@/lib/api/hooks";
+import { useAlgorithmPreset, useAlgorithmPresets, useDeleteSnapshot, useSnapshots } from "@/lib/api/hooks";
 import type { AlgorithmPresetResponseDto, SnapshotResponseDto } from "@/lib/api/types";
 import { SnapshotDeleteDialog } from "./snapshot-delete-dialog";
 import { SnapshotDetailsDialog } from "./snapshot-details-dialog";
@@ -46,9 +46,13 @@ export function AlgorithmSnapshots({ algo }: { algo?: Algorithm }) {
   // Get preset filter from URL params
   const presetFilter = searchParams.get("preset");
   
-  // API hooks
+  // Fetch the preset if filtering by preset ID
+  const { data: presetData } = useAlgorithmPreset(presetFilter || "");
+  
+  // API hooks - filter by preset's key and version if preset is selected
   const { data: snapshotsData, isLoading, error } = useSnapshots({
-    algorithmPreset: presetFilter || undefined,
+    key: presetData?.key,
+    version: presetData?.version,
     status: selectedStatus !== "all" ? selectedStatus as 'queued' | 'running' | 'completed' | 'failed' | 'cancelled' : undefined,
     limit: 50,
     populate: "algorithmPreset",

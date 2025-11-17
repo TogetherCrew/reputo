@@ -11,6 +11,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import type { SnapshotResponseDto } from "@/lib/api/types";
+import { useState } from "react";
+import { CSVViewerDialog } from "@/components/app/csv/csv-viewer-dialog";
+import { storageApi } from "@/lib/api/services";
 
 interface SnapshotDetailsDialogProps {
   isOpen: boolean;
@@ -19,6 +22,9 @@ interface SnapshotDetailsDialogProps {
 }
 
 export function SnapshotDetailsDialog({ isOpen, onClose, snapshot }: SnapshotDetailsDialogProps) {
+  const [csvViewerOpen, setCsvViewerOpen] = useState(false);
+  const [csvHref, setCsvHref] = useState<string | null>(null);
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "running":
@@ -120,14 +126,42 @@ export function SnapshotDetailsDialog({ isOpen, onClose, snapshot }: SnapshotDet
               <div>
                 <h3 className="text-sm font-medium text-muted-foreground mb-3">Outputs</h3>
                 <div className="space-y-2">
-                  {Object.entries(snapshot.outputs).map(([key, value]) => (
-                    <div key={key} className="p-3 border rounded-lg">
-                      <div className="font-medium">{key}</div>
-                      <div className="text-sm text-muted-foreground">
-                        {typeof value === 'object' ? JSON.stringify(value, null, 2) : String(value)}
+                  {Object.entries(snapshot.outputs).map(([key, value]) => {
+                    const isCsv = key === "csv" && typeof value === "string";
+                    return (
+                      <div key={key} className="p-3 border rounded-lg">
+                        <div className="font-medium">{key}</div>
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="text-sm text-muted-foreground break-all">
+                            {typeof value === 'object' ? JSON.stringify(value, null, 2) : String(value)}
+                          </div>
+                          {isCsv && (
+                            <Button
+                              size="sm"
+                              variant="secondary"
+                              onClick={async () => {
+                                try {
+                                  const val = value as string;
+                                  let url = val;
+                                  if (!/^https?:\/\//i.test(val)) {
+                                    const res = await storageApi.createDownload({ key: val });
+                                    url = res.url;
+                                  }
+                                  setCsvHref(url);
+                                  setCsvViewerOpen(true);
+                                } catch (e) {
+                                  console.error(e);
+                                  alert("Unable to open CSV viewer");
+                                }
+                              }}
+                            >
+                              View CSV
+                            </Button>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -139,6 +173,12 @@ export function SnapshotDetailsDialog({ isOpen, onClose, snapshot }: SnapshotDet
           </Button>
         </DialogFooter>
       </DialogContent>
+      <CSVViewerDialog
+        isOpen={csvViewerOpen}
+        onClose={() => setCsvViewerOpen(false)}
+        href={csvHref}
+        title="CSV Output Preview"
+      />
     </Dialog>
   );
 }
