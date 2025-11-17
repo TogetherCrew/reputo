@@ -95,7 +95,10 @@ export const storageApi = {
         const response = await api.post('/storage/uploads', data)
         return response.data
     },
+    createDownload: async (data: { key: string }): Promise<{ url: string; expiresIn: number }> => {
+        const response = await api.post('/storage/downloads', data)
+        return response.data
+    },
 }
 
-// Export the axios instance for custom requests if needed
 export { api }

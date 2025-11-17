@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { storageApi } from "@/lib/api/services";
 import {
   Dialog,
   DialogContent,
@@ -67,6 +68,23 @@ export function PresetDetailsDialog({ isOpen, onClose, preset }: PresetDetailsDi
                         Value: {String(input.value) || 'Not set'}
                       </div>
                     </div>
+                    {typeof input.value === "string" && input.value && (input.value.includes("/") || input.value.startsWith("uploads/")) && (
+                      <Button
+                        size="sm"
+                        onClick={async () => {
+                          try {
+                            const { url } = await storageApi.createDownload({ key: input.value as string });
+                            window.open(url, "_blank", "noopener,noreferrer");
+                          } catch (e) {
+                            // Fallback simple error surface
+                            console.error(e);
+                            alert("Failed to create download link");
+                          }
+                        }}
+                      >
+                        Download
+                      </Button>
+                    )}
                   </div>
                 ))}
               </div>

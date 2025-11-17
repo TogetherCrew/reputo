@@ -12,7 +12,7 @@ import type { CSVConfig, Input, ReputoSchema, ValidationResult } from "./types";
  */
 export function validatePayload(
   schema: ReputoSchema,
-  payload: any
+  payload: unknown
 ): ValidationResult {
   try {
     const zodSchema = buildZodSchema(schema);
@@ -111,10 +111,12 @@ function buildFieldSchema(input: Input): z.ZodTypeAny {
       break;
 
     case "date":
-      schema = z.string().refine(
-        (val) => !isNaN(Date.parse(val)),
-        `${input.label} must be a valid date`
-      );
+      schema = z
+        .string()
+        .refine(
+          (val) => !Number.isNaN(Date.parse(val)),
+          `${input.label} must be a valid date`
+        );
       if (input.minDate) {
         const minDate = new Date(input.minDate);
         schema = schema.refine(
@@ -142,8 +144,11 @@ function buildFieldSchema(input: Input): z.ZodTypeAny {
         // Server-side: validate as string
         schema = z.string().min(1, `${input.label} is required`);
       } else {
-        // Client-side: validate as File
-        schema = buildCSVSchema(input.csv, input.label);
+        // Client-side: accept either a File (for local validation) OR a string storage key (after upload)
+        schema = z.union([
+          buildCSVSchema(input.csv, input.label),
+          z.string().min(1, `${input.label} is required`),
+        ]);
       }
       break;
 
@@ -191,10 +196,31 @@ export async function validateCSVContent(
   csvConfig: CSVConfig
 ): Promise<{ valid: boolean; errors: string[] }> {
   const errors: string[] = [];
+  const normalizeKey = (s: string) =>
+    s
+      .toLowerCase()
+      .replace(/^\uFEFF/, '')
+      .replace(/\u00a0/g, ' ') // NBSP to space
+      .trim()
+      .replace(/^["']+|["']+$/g, '') // strip wrapping quotes
+      .replace(/[\s\-\u2011\u2013\u2014]+/g, '_') // spaces and dashes → underscore
+      .replace(/_+/g, '_') // collapse
+      .replace(/^_+|_+$/g, ''); // trim underscores
 
   try {
-    const text = typeof file === "string" ? file : await file.text();
-    const lines = text.split("\n").filter((line) => line.trim());
+    // Read file text (or raw string), normalize BOM and line endings
+    const isStringInput = typeof file === "string";
+    const fileInfo =
+      isStringInput
+        ? { kind: "string" }
+        : { kind: "file", name: (file as File).name, type: (file as File).type, size: (file as File).size };
+
+    let text = isStringInput ? (file as string) : await (file as File).text();
+    const hadBom = text.startsWith("\uFEFF");
+    text = text.replace(/^\uFEFF/, ""); // strip UTF-8 BOM if present
+    text = text.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+    const rawLines = text.split("\n");
+    const lines = rawLines.filter((line) => line.trim().length > 0);
 
     // Check max rows
     const dataLines = csvConfig.hasHeader ? lines.slice(1) : lines;
@@ -211,9 +237,52 @@ export async function validateCSVContent(
       return { valid: false, errors };
     }
 
-    const headers = headerLine
-      ? headerLine.split(csvConfig.delimiter).map((h) => h.trim())
-      : [];
+    // Detect delimiter (prefer configured, but fall back if header doesn't split)
+    const candidateDelimiters = [
+      csvConfig.delimiter,
+      ",",
+      ";",
+      "\t",
+      "|",
+    ].filter((d, idx, arr) => arr.indexOf(d) === idx);
+    let delimiter = csvConfig.delimiter;
+    if (headerLine) {
+      let bestSplit = headerLine.split(delimiter);
+      if (bestSplit.length <= 1) {
+        for (const cand of candidateDelimiters) {
+          const split = headerLine.split(cand);
+          if (split.length > bestSplit.length) {
+            bestSplit = split;
+            delimiter = cand;
+          }
+        }
+      }
+    }
+
+    const headers = headerLine ? headerLine.split(delimiter).map((h) => h) : [];
+    const headersSanitized = headers.map((h) =>
+      h.replace(/^\uFEFF/, '').replace(/\u00a0/g, ' ').trim().replace(/^["']+|["']+$/g, '')
+    );
+    const headersLower = headersSanitized.map((h) => h.toLowerCase());
+    const headersNormalized = headersSanitized.map((h) => normalizeKey(h));
+
+    // Debug logs
+    try {
+      // Use groupCollapsed to avoid noisy console
+      console.groupCollapsed?.("[CSV Validation] Debug");
+      console.log?.("Input", fileInfo);
+      console.log?.("Had BOM", hadBom);
+      console.log?.("Configured delimiter", csvConfig.delimiter);
+      console.log?.("Chosen delimiter", delimiter);
+      console.log?.("Candidate delimiters", candidateDelimiters);
+      console.log?.("Lines count (raw/non-empty)", rawLines.length, "/", lines.length);
+      console.log?.("Header line (first 200 chars)", headerLine?.slice(0, 200));
+      console.log?.("Headers (raw)", headers);
+      console.log?.("Headers (sanitized)", headersSanitized);
+      console.log?.("Headers (lower)", headersLower);
+      console.log?.("Headers (normalized)", headersNormalized);
+      console.log?.("Required columns", csvConfig.columns.filter((c) => c.required !== false));
+    } catch {}
 
     // Validate required columns
     const requiredColumns = csvConfig.columns.filter(
@@ -221,8 +290,26 @@ export async function validateCSVContent(
     );
 
     for (const column of requiredColumns) {
-      const columnKeys = [column.key, ...(column.aliases || [])];
-      const found = columnKeys.some((key) => headers.includes(key));
+      const candidateKeys = [column.key, ...(column.aliases || [])];
+      const candidateLower = candidateKeys.map((k) => k.toLowerCase());
+      const candidateNormalized = candidateKeys.map((k) => normalizeKey(k));
+      const found =
+        candidateLower.some((k) => headersLower.includes(k)) ||
+        candidateNormalized.some((k) => headersNormalized.includes(k));
+
+      // Debug each required column resolution
+      try {
+        console.log?.(
+          "[CSV Validation] Column check",
+          {
+            column: column.key,
+            aliases: column.aliases,
+            searchedLower: candidateLower,
+            searchedNormalized: candidateNormalized,
+            found,
+          }
+        );
+      } catch {}
 
       if (!found) {
         errors.push(
@@ -243,7 +330,7 @@ export async function validateCSVContent(
     // Sample validate first few rows
     const sampleSize = Math.min(5, dataLines.length);
     for (let i = 0; i < sampleSize; i++) {
-      const values = dataLines[i].split(csvConfig.delimiter);
+      const values = dataLines[i].split(delimiter);
 
       if (values.length !== headers.length) {
         errors.push(
@@ -257,8 +344,10 @@ export async function validateCSVContent(
       csvConfig.columns
         .filter((col) => col.type === "enum")
         .forEach((col) => {
-          const colIndex = headers.findIndex((h) =>
-            [col.key, ...(col.aliases || [])].includes(h)
+          const colIndex = headersLower.findIndex((h) =>
+            [col.key, ...(col.aliases || [])]
+              .map((k) => k.toLowerCase())
+              .includes(h)
           );
           if (colIndex >= 0) {
             const value = values[colIndex]?.trim();
@@ -272,6 +361,35 @@ export async function validateCSVContent(
           }
         });
     }
+
+    // Emit a single easy-to-copy summary object as well
+    try {
+      const missing = errors.filter((e) => e.startsWith("Missing required column:"));
+      const proposalIdx =
+        headersNormalized.findIndex((h) =>
+          ["proposal_id", "proposalid", "proposal", "question"].includes(h)
+        );
+      const voteIdx =
+        headersNormalized.findIndex((h) =>
+          ["vote", "votes"].includes(h)
+        );
+      console.info("[CSV Validation] Summary", {
+        delimiter,
+        headerLine,
+        headersRaw: headers,
+        headersSanitized,
+        headersNormalized,
+        missing,
+        sampleRow0: dataLines[0],
+        proposalColumnIndex: proposalIdx,
+        voteColumnIndex: voteIdx,
+      });
+    } catch {}
+
+    try {
+      console.log?.("[CSV Validation] Errors", errors);
+      console.groupEnd?.();
+    } catch {}
   } catch (error) {
     errors.push(
       `Failed to parse CSV: ${
@@ -289,7 +407,5 @@ export async function validateCSVContent(
 /**
  * Type inference helper
  */
-export type InferSchemaType<T extends ReputoSchema> = z.infer<
-  ReturnType<typeof buildZodSchema>
->;
+export type InferSchemaType = z.infer<ReturnType<typeof buildZodSchema>>;
 
