@@ -1,6 +1,57 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { SNAPSHOT_STATUS } from '@reputo/database';
 
+class AlgorithmPresetFrozenDto {
+  @ApiProperty({
+    description: 'Unique algorithm identifier',
+    example: 'voting_engagement',
+  })
+  key: string;
+
+  @ApiProperty({
+    description: 'Algorithm version',
+    example: '1.0.0',
+  })
+  version: string;
+
+  @ApiProperty({
+    description: 'Array of input parameters',
+    type: 'array',
+    items: {
+      type: 'object',
+      properties: {
+        key: { type: 'string' },
+        value: {},
+      },
+    },
+  })
+  inputs: Array<{ key: string; value?: unknown }>;
+
+  @ApiPropertyOptional({
+    description: 'Human-readable name',
+    example: 'Voting engagement v1',
+  })
+  name?: string;
+
+  @ApiPropertyOptional({
+    description: 'Description of the preset',
+    example: 'TogetherCrew test',
+  })
+  description?: string;
+
+  @ApiPropertyOptional({
+    description: 'Creation timestamp',
+    example: '2025-10-13T18:22:47.100Z',
+  })
+  createdAt?: Date;
+
+  @ApiPropertyOptional({
+    description: 'Last update timestamp',
+    example: '2025-10-13T18:22:47.100Z',
+  })
+  updatedAt?: Date;
+}
+
 class SnapshotTemporalDto {
   @ApiPropertyOptional({
     description: 'Temporal workflow ID',
@@ -54,6 +105,12 @@ export class SnapshotDto {
     example: '66f9c9...',
   })
   algorithmPreset: string;
+
+  @ApiProperty({
+    description: 'Frozen copy of the associated AlgorithmPreset at snapshot creation time',
+    type: AlgorithmPresetFrozenDto,
+  })
+  algorithmPresetFrozen: AlgorithmPresetFrozenDto;
 
   @ApiPropertyOptional({
     description: 'Algorithm execution outputs with CSV key',

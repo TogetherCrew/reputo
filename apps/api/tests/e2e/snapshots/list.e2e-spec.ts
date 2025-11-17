@@ -59,8 +59,9 @@ describe('GET /api/v1/snapshots', () => {
         } = preset2.toObject()
 
         for (let i = 0; i < 15; i++) {
+            const preset = i % 2 === 0 ? preset1 : preset2
             const presetData = i % 2 === 0 ? preset1Data : preset2Data
-            await insertSnapshot(snapshotModel, presetData)
+            await insertSnapshot(snapshotModel, preset._id.toString(), presetData)
         }
 
         const res = await api(app).get('/snapshots').expect(200)
@@ -87,12 +88,12 @@ describe('GET /api/v1/snapshots', () => {
         const preset = await insertAlgorithmPreset(algorithmPresetModel)
         const { createdAt, updatedAt, ...presetData } = preset.toObject()
 
-        const snapshot1 = await insertSnapshot(snapshotModel, presetData)
+        const snapshot1 = await insertSnapshot(snapshotModel, preset._id.toString(), presetData)
         await snapshotModel.updateOne(
             { _id: snapshot1._id },
             { status: 'queued' }
         )
-        const snapshot2 = await insertSnapshot(snapshotModel, presetData)
+        const snapshot2 = await insertSnapshot(snapshotModel, preset._id.toString(), presetData)
         await snapshotModel.updateOne(
             { _id: snapshot2._id },
             { status: 'running' }
@@ -108,8 +109,8 @@ describe('GET /api/v1/snapshots', () => {
         const preset = await insertAlgorithmPreset(algorithmPresetModel)
         const { createdAt, updatedAt, ...presetData } = preset.toObject()
 
-        await insertSnapshot(snapshotModel, presetData)
-        const snapshot2 = await insertSnapshot(snapshotModel, presetData)
+        await insertSnapshot(snapshotModel, preset._id.toString(), presetData)
+        const snapshot2 = await insertSnapshot(snapshotModel, preset._id.toString(), presetData)
         await snapshotModel.updateOne(
             { _id: snapshot2._id },
             { status: 'running' }
@@ -125,8 +126,8 @@ describe('GET /api/v1/snapshots', () => {
         const preset = await insertAlgorithmPreset(algorithmPresetModel)
         const { createdAt, updatedAt, ...presetData } = preset.toObject()
 
-        await insertSnapshot(snapshotModel, presetData)
-        const snapshot2 = await insertSnapshot(snapshotModel, presetData)
+        await insertSnapshot(snapshotModel, preset._id.toString(), presetData)
+        const snapshot2 = await insertSnapshot(snapshotModel, preset._id.toString(), presetData)
         await snapshotModel.updateOne(
             { _id: snapshot2._id },
             { status: 'completed' }
@@ -144,8 +145,8 @@ describe('GET /api/v1/snapshots', () => {
         const preset = await insertAlgorithmPreset(algorithmPresetModel)
         const { createdAt, updatedAt, ...presetData } = preset.toObject()
 
-        await insertSnapshot(snapshotModel, presetData)
-        const snapshot2 = await insertSnapshot(snapshotModel, presetData)
+        await insertSnapshot(snapshotModel, preset._id.toString(), presetData)
+        const snapshot2 = await insertSnapshot(snapshotModel, preset._id.toString(), presetData)
         await snapshotModel.updateOne(
             { _id: snapshot2._id },
             { status: 'failed' }
@@ -161,8 +162,8 @@ describe('GET /api/v1/snapshots', () => {
         const preset = await insertAlgorithmPreset(algorithmPresetModel)
         const { createdAt, updatedAt, ...presetData } = preset.toObject()
 
-        await insertSnapshot(snapshotModel, presetData)
-        const snapshot2 = await insertSnapshot(snapshotModel, presetData)
+        await insertSnapshot(snapshotModel, preset._id.toString(), presetData)
+        const snapshot2 = await insertSnapshot(snapshotModel, preset._id.toString(), presetData)
         await snapshotModel.updateOne(
             { _id: snapshot2._id },
             { status: 'cancelled' }
@@ -195,8 +196,8 @@ describe('GET /api/v1/snapshots', () => {
             ...preset2Data
         } = preset2.toObject()
 
-        await insertSnapshot(snapshotModel, preset1Data)
-        await insertSnapshot(snapshotModel, preset2Data)
+        await insertSnapshot(snapshotModel, preset1._id.toString(), preset1Data)
+        await insertSnapshot(snapshotModel, preset2._id.toString(), preset2Data)
 
         const res = await api(app).get('/snapshots?key=target_key').expect(200)
 
@@ -223,8 +224,8 @@ describe('GET /api/v1/snapshots', () => {
             ...preset2Data
         } = preset2.toObject()
 
-        await insertSnapshot(snapshotModel, preset1Data)
-        await insertSnapshot(snapshotModel, preset2Data)
+        await insertSnapshot(snapshotModel, preset1._id.toString(), preset1Data)
+        await insertSnapshot(snapshotModel, preset2._id.toString(), preset2Data)
 
         const res = await api(app).get('/snapshots?version=2.0.0').expect(200)
 
@@ -236,9 +237,9 @@ describe('GET /api/v1/snapshots', () => {
         const preset = await insertAlgorithmPreset(algorithmPresetModel)
         const { createdAt, updatedAt, ...presetData } = preset.toObject()
 
-        const snapshot1 = await insertSnapshot(snapshotModel, presetData)
+        const snapshot1 = await insertSnapshot(snapshotModel, preset._id.toString(), presetData)
         await new Promise((resolve) => setTimeout(resolve, 10))
-        const snapshot2 = await insertSnapshot(snapshotModel, presetData)
+        const snapshot2 = await insertSnapshot(snapshotModel, preset._id.toString(), presetData)
 
         const res = await api(app).get('/snapshots').expect(200)
 
@@ -250,7 +251,7 @@ describe('GET /api/v1/snapshots', () => {
         const preset = await insertAlgorithmPreset(algorithmPresetModel)
         const { createdAt, updatedAt, ...presetData } = preset.toObject()
 
-        await insertSnapshot(snapshotModel, presetData)
+        await insertSnapshot(snapshotModel, preset._id.toString(), presetData)
 
         const res = await api(app)
             .get('/snapshots?status=completed')
@@ -268,7 +269,7 @@ describe('GET /api/v1/snapshots', () => {
         })
         const { createdAt, updatedAt, ...presetData } = preset.toObject()
 
-        await insertSnapshot(snapshotModel, presetData)
+        await insertSnapshot(snapshotModel, preset._id.toString(), presetData)
 
         const res = await api(app).get('/snapshots').expect(200)
 
