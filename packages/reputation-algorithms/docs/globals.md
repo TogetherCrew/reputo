@@ -7,6 +7,7 @@
 ## Interfaces
 
 - [CsvIoItem](interfaces/CsvIoItem.md)
+- [AlgorithmRuntimeMetadata](interfaces/AlgorithmRuntimeMetadata.md)
 - [AlgorithmDefinition](interfaces/AlgorithmDefinition.md)
 
 ## Type Aliases

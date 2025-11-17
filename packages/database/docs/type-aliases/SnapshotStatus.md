@@ -8,4 +8,4 @@
 
 > **SnapshotStatus** = *typeof* [`SNAPSHOT_STATUS`](../variables/SNAPSHOT_STATUS.md)\[`number`\]
 
-Defined in: [packages/database/src/constants/snapshot.constants.ts:3](https://github.com/TogetherCrew/reputo/blob/d73f0d2c46f5cbd7b3793a8af7862e85fea62117/packages/database/src/constants/snapshot.constants.ts#L3)
+Defined in: [packages/database/src/constants/snapshot.constants.ts:3](https://github.com/TogetherCrew/reputo/blob/668913f3bddad795ee168fc5c009e413c85374c5/packages/database/src/constants/snapshot.constants.ts#L3)

@@ -9,6 +9,7 @@
 - [AlgorithmPreset](interfaces/AlgorithmPreset.md)
 - [AlgorithmPresetModel](interfaces/AlgorithmPresetModel.md)
 - [AlgorithmPresetFrozen](interfaces/AlgorithmPresetFrozen.md)
+- [SnapshotOutputs](interfaces/SnapshotOutputs.md)
 - [Snapshot](interfaces/Snapshot.md)
 - [SnapshotModel](interfaces/SnapshotModel.md)
 - [PaginateOptions](interfaces/PaginateOptions.md)
