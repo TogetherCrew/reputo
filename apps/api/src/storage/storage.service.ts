@@ -64,10 +64,13 @@ export class StorageService {
 
   private handleStorageError(error: unknown): never {
     if (error instanceof FileTooLargeError) {
-      throw new FileTooLargeException(error.maxSizeBytes);
+      throw new FileTooLargeException((error as FileTooLargeError).maxSizeBytes);
     }
     if (error instanceof InvalidContentTypeError) {
-      throw new InvalidContentTypeException(error.contentType, error.allowedTypes);
+      throw new InvalidContentTypeException(
+        (error as InvalidContentTypeError).contentType,
+        (error as InvalidContentTypeError).allowedTypes,
+      );
     }
     if (error instanceof ObjectNotFoundError) {
       throw new ObjectNotFoundException();
