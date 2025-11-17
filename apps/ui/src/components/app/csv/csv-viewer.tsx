@@ -277,11 +277,6 @@ export function CSVViewer({ href, className, hasHeader = true, delimiter = ",", 
                 })
               )}
             </TableBody>
-            {!loading && !error && csv.headers.length > 0 && (
-              <TableCaption className="px-2 break-all">
-                Source: <span className="font-mono break-all">{href}</span>
-              </TableCaption>
-            )}
           </Table>
         </div>
       </div>
