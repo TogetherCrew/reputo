@@ -43,14 +43,14 @@ export class SnapshotController {
   @ApiOperation({
     summary: 'List all snapshots',
     description:
-      'Retrieves a paginated list of snapshots with optional filtering by status and algorithmPreset, sorting, and population.',
+      'Retrieves a paginated list of snapshots with optional filtering by status, algorithmPreset ID, algorithm key, and version, sorting, and population.',
   })
   @ApiOkResponse({
     description: 'Successfully retrieved snapshots',
     type: PaginationDto<SnapshotDto>,
   })
   @ApiBadRequestResponse({
-    description: 'Invalid AlgorithmPreset ID format in filter',
+    description: 'Invalid AlgorithmPreset ID format in filter or invalid query parameters',
   })
   list(@Query() queryDto: ListSnapshotsQueryDto) {
     return this.snapshotService.list(queryDto);
