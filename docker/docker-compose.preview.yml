@@ -102,8 +102,8 @@ services:
             - MONGODB_DB_NAME=reputo_preview
             - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
             - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-            - AWS_REGION=${AWS_REGION}
-            - STORAGE_BUCKET=${STORAGE_BUCKET}
+            - AWS_REGION=eu-central-1
+            - STORAGE_BUCKET=reputo-pullpreview
             - STORAGE_PRESIGN_PUT_TTL=120
             - STORAGE_PRESIGN_GET_TTL=300
             - STORAGE_MAX_SIZE_BYTES=52428800

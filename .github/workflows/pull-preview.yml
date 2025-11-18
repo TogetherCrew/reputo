@@ -26,13 +26,8 @@ jobs:
                   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
                   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
               run: |
-                  # core AWS creds
                   echo "AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID" >> .env
                   echo "AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY" >> .env
-                  echo "AWS_REGION=eu-central-1" >> .env
-
-                  # app-specific stuff (optional, if you used vars above)
-                  echo "STORAGE_BUCKET=reputo-pullpreview" >> .env
 
             - uses: pullpreview/action@v5
               with:
