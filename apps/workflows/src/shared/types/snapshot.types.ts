@@ -7,4 +7,3 @@ export interface RunSnapshotWorkflowInput {
   /** MongoDB ObjectId of the snapshot to execute */
   snapshotId: string;
 }
-

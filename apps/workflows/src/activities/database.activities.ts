@@ -7,8 +7,8 @@
 
 import type { Snapshot, SnapshotModel } from '@reputo/database';
 import { MODEL_NAMES } from '@reputo/database';
-import type { Model } from 'mongoose';
 import { Context } from '@temporalio/activity';
+import type { Model } from 'mongoose';
 
 /**
  * Input for getSnapshot activity.
@@ -61,9 +61,7 @@ export interface DatabaseActivities {
  * @param snapshotModel - Mongoose model for Snapshot documents
  * @returns Database activities object
  */
-export function createDatabaseActivities(
-  snapshotModel: Model<Snapshot>,
-): DatabaseActivities {
+export function createDatabaseActivities(snapshotModel: Model<Snapshot>): DatabaseActivities {
   return {
     /**
      * Retrieves a snapshot document by ID.
@@ -81,15 +79,10 @@ export function createDatabaseActivities(
       const logger = Context.current().log;
       logger.info('Fetching snapshot', { snapshotId: input.snapshotId });
 
-      const snapshot = await snapshotModel
-        .findById(input.snapshotId)
-        .lean()
-        .exec();
+      const snapshot = await snapshotModel.findById(input.snapshotId).lean().exec();
 
       if (!snapshot) {
-        const error = new Error(
-          `Snapshot not found: ${input.snapshotId}`,
-        );
+        const error = new Error(`Snapshot not found: ${input.snapshotId}`);
         logger.error('Snapshot not found', {
           snapshotId: input.snapshotId,
           error: error.message,
@@ -160,18 +153,12 @@ export function createDatabaseActivities(
       // but can be added if needed for error tracking
 
       const result = await snapshotModel
-        .findByIdAndUpdate(
-          input.snapshotId,
-          { $set: updateData },
-          { new: true },
-        )
+        .findByIdAndUpdate(input.snapshotId, { $set: updateData }, { new: true })
         .lean()
         .exec();
 
       if (!result) {
-        const error = new Error(
-          `Failed to update snapshot: ${input.snapshotId}`,
-        );
+        const error = new Error(`Failed to update snapshot: ${input.snapshotId}`);
         logger.error('Snapshot update failed', {
           snapshotId: input.snapshotId,
           error: error.message,
@@ -186,4 +173,3 @@ export function createDatabaseActivities(
     },
   };
 }
-

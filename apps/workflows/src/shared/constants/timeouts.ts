@@ -24,4 +24,3 @@ export const ALGORITHM_EXECUTION_TIMEOUT = '30 minutes';
  * Default task queue name for workflow orchestration.
  */
 export const WORKFLOWS_TASK_QUEUE = 'workflows';
-

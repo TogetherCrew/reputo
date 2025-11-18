@@ -13,7 +13,7 @@ export interface WorkflowAlgorithmPayload {
   algorithmKey: string;
   /** Algorithm version (e.g., '1.0.0') */
   algorithmVersion: string;
-  /** 
+  /**
    * Input data locations indexed by input key.
    * Each value is typically an S3 key or other storage location reference.
    * The structure matches the algorithm's input definitions.
@@ -27,7 +27,7 @@ export interface WorkflowAlgorithmPayload {
  * Contains output data locations that will be stored in the snapshot document.
  */
 export interface WorkflowAlgorithmResult {
-  /** 
+  /**
    * Output data locations indexed by output key.
    * Each value is typically an S3 key or other storage location reference.
    * The structure matches the algorithm's output definitions.
@@ -41,7 +41,4 @@ export interface WorkflowAlgorithmResult {
  * All algorithm workers must implement activities with this signature.
  * The activity name and task queue are specified in the AlgorithmDefinition.runtime.
  */
-export type WorkflowAlgorithmActivity = (
-  payload: WorkflowAlgorithmPayload,
-) => Promise<WorkflowAlgorithmResult>;
-
+export type WorkflowAlgorithmActivity = (payload: WorkflowAlgorithmPayload) => Promise<WorkflowAlgorithmResult>;

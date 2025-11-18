@@ -31,9 +31,7 @@ export interface GetAlgorithmDefinitionOutput {
  * Algorithm library activities registry.
  */
 export interface AlgorithmLibraryActivities {
-  getAlgorithmDefinition: (
-    input: GetAlgorithmDefinitionInput,
-  ) => Promise<GetAlgorithmDefinitionOutput>;
+  getAlgorithmDefinition: (input: GetAlgorithmDefinitionInput) => Promise<GetAlgorithmDefinitionOutput>;
 }
 
 /**
@@ -58,9 +56,7 @@ export function createAlgorithmLibraryActivities(): AlgorithmLibraryActivities {
      * })
      * ```
      */
-    async getAlgorithmDefinition(
-      input: GetAlgorithmDefinitionInput,
-    ): Promise<GetAlgorithmDefinitionOutput> {
+    async getAlgorithmDefinition(input: GetAlgorithmDefinitionInput): Promise<GetAlgorithmDefinitionOutput> {
       const logger = Context.current().log;
       const version = input.version ?? 'latest';
 
@@ -92,11 +88,8 @@ export function createAlgorithmLibraryActivities(): AlgorithmLibraryActivities {
           version,
           error: err.message,
         });
-        throw new Error(
-          `Algorithm definition not found: ${input.key}@${version}`,
-        );
+        throw new Error(`Algorithm definition not found: ${input.key}@${version}`);
       }
     },
   };
 }
-

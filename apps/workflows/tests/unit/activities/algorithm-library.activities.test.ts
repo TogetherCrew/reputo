@@ -2,7 +2,7 @@
  * Unit tests for algorithm library activities.
  */
 
-import { describe, it, expect, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { createAlgorithmLibraryActivities } from '../../../src/activities/algorithm-library.activities.js';
 
 // Mock the reputation-algorithms package
@@ -111,4 +111,3 @@ describe('Algorithm Library Activities', () => {
     });
   });
 });
-

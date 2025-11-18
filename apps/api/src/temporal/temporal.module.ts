@@ -8,4 +8,3 @@ import { TemporalService } from './temporal.service';
   exports: [TemporalService],
 })
 export class TemporalModule {}
-

@@ -3,12 +3,8 @@
  */
 
 export type {
-  RunSnapshotWorkflowInput,
-} from './snapshot.types.js';
-
-export type {
   WorkflowAlgorithmActivity,
   WorkflowAlgorithmPayload,
   WorkflowAlgorithmResult,
 } from './algorithm.types.js';
-
+export type { RunSnapshotWorkflowInput } from './snapshot.types.js';

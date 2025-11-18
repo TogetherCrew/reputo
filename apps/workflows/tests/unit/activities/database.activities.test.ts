@@ -2,9 +2,9 @@
  * Unit tests for database activities.
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import type { Model } from 'mongoose';
 import type { Snapshot } from '@reputo/database';
+import type { Model } from 'mongoose';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createDatabaseActivities } from '../../../src/activities/database.activities.js';
 
 describe('Database Activities', () => {
@@ -17,9 +17,7 @@ describe('Database Activities', () => {
         algorithmPresetFrozen: {
           key: 'voting_engagement',
           version: '1.0.0',
-          inputs: [
-            { key: 'votes', value: 's3://bucket/votes.csv' },
-          ],
+          inputs: [{ key: 'votes', value: 's3://bucket/votes.csv' }],
         },
       };
 
@@ -84,9 +82,9 @@ describe('Database Activities', () => {
       }));
 
       // Execute activity and expect error
-      await expect(
-        activities.getSnapshot({ snapshotId: 'nonexistent' }),
-      ).rejects.toThrow('Snapshot not found: nonexistent');
+      await expect(activities.getSnapshot({ snapshotId: 'nonexistent' })).rejects.toThrow(
+        'Snapshot not found: nonexistent',
+      );
     });
   });
 
@@ -152,4 +150,3 @@ describe('Database Activities', () => {
     });
   });
 });
-

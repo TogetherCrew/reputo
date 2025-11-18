@@ -4,9 +4,9 @@
  * Handles MongoDB connection via Mongoose.
  */
 
-import mongoose from 'mongoose';
-import { SnapshotSchema, MODEL_NAMES } from '@reputo/database';
 import type { Snapshot, SnapshotModel } from '@reputo/database';
+import { MODEL_NAMES, SnapshotSchema } from '@reputo/database';
+import mongoose from 'mongoose';
 import type { Logger } from 'pino';
 import type { MongoDBConfig } from './environment.config.js';
 
@@ -17,22 +17,13 @@ import type { MongoDBConfig } from './environment.config.js';
  * @param logger - Pino logger instance
  * @returns Promise that resolves when connected
  */
-export async function connectDatabase(
-  config: MongoDBConfig,
-  logger: Logger,
-): Promise<void> {
+export async function connectDatabase(config: MongoDBConfig, logger: Logger): Promise<void> {
   try {
-    logger.info(
-      { dbName: config.dbName },
-      'Connecting to MongoDB...',
-    );
+    logger.info({ dbName: config.dbName }, 'Connecting to MongoDB...');
 
     await mongoose.connect(config.uri);
 
-    logger.info(
-      { dbName: config.dbName },
-      'Connected to MongoDB successfully',
-    );
+    logger.info({ dbName: config.dbName }, 'Connected to MongoDB successfully');
 
     // Handle connection events
     mongoose.connection.on('error', (error) => {
@@ -79,9 +70,5 @@ export function getSnapshotModel(): SnapshotModel {
     return mongoose.models[MODEL_NAMES.SNAPSHOT] as SnapshotModel;
   }
 
-  return mongoose.model<Snapshot, SnapshotModel>(
-    MODEL_NAMES.SNAPSHOT,
-    SnapshotSchema,
-  );
+  return mongoose.model<Snapshot, SnapshotModel>(MODEL_NAMES.SNAPSHOT, SnapshotSchema);
 }
-

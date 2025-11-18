@@ -1,4 +1,4 @@
-import { Injectable, OnModuleInit, OnModuleDestroy, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Client, Connection } from '@temporalio/client';
 
@@ -96,17 +96,12 @@ export class TemporalService implements OnModuleInit, OnModuleDestroy {
       });
     } catch (error) {
       const err = error as Error;
-      this.logger.error(
-        `Failed to start RunSnapshotWorkflow for snapshot ${snapshotId}: ${err.message}`,
-        err.stack,
-        {
-          workflowId,
-          taskQueue,
-          snapshotId,
-        },
-      );
+      this.logger.error(`Failed to start RunSnapshotWorkflow for snapshot ${snapshotId}: ${err.message}`, err.stack, {
+        workflowId,
+        taskQueue,
+        snapshotId,
+      });
       throw error;
     }
   }
 }
-
