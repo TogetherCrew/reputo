@@ -1,14 +1,30 @@
-# Root‐inherited
+# Dependencies
 node_modules/
-dist/
-*.log
 
-# TypeScript artifacts
+# Build outputs
+dist/
 *.tsbuildinfo
 
-# Test coverage
-coverage/
-*.lcov
+# Environment variables
+.env
+.env.local
+.env.*.local
 
-# Editor files
+# Logs
+*.log
+logs/
+
+# Coverage
+coverage/
+.nyc_output/
+
+# IDE
 .vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db

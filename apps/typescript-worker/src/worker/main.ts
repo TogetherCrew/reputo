@@ -1,27 +1,30 @@
 /**
- * Worker bootstrap for Temporal workflows.
+ * Worker bootstrap for TypeScript algorithm execution.
  *
  * This module initializes and runs a Temporal Worker that:
- * - Registers the RunSnapshotWorkflow
- * - Registers database and algorithm library activities
- * - Connects to MongoDB
- * - Listens on the configured task queue
+ * - Registers algorithm activities (one per algorithm key)
+ * - Connects to Temporal server
+ * - Listens for tasks on the configured task queue
  */
 
 // Load environment variables from .env file
-import { resolve } from 'path'
+import { resolve, dirname } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { createRequire } from 'node:module'
 
-// Use require for dotenv (CommonJS module)
-// biome-ignore lint/style/useNodejsImportProtocol: dotenv is a CommonJS module
-// @ts-ignore - require is available at runtime in CommonJS output
+const require = createRequire(import.meta.url)
 const dotenv = require('dotenv')
 
-// Load .env file from the workflows directory
+// Get __dirname equivalent for ES modules
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
+
+// Load .env file from the typescript-worker directory
 // Try multiple possible locations
 const envPaths = [
     resolve(process.cwd(), '.env'), // Current working directory
-    resolve(process.cwd(), 'apps/workflows/.env'), // From monorepo root
-    resolve(__dirname || process.cwd(), '.env'), // From compiled dist directory
+    resolve(process.cwd(), 'apps/typescript-worker/.env'), // From monorepo root
+    resolve(__dirname, '.env'), // From compiled dist directory
 ]
 
 // Try to load .env from the first available location
@@ -32,15 +35,10 @@ for (const envPath of envPaths) {
     }
 }
 
-import { Worker, NativeConnection } from '@temporalio/worker'
-import { createWorkflowActivities } from './activities/index.js'
-import {
-    loadConfig,
-    createLogger,
-    connectDatabase,
-    disconnectDatabase,
-    getSnapshotModel,
-} from './config/index.js'
+import { NativeConnection, Worker } from '@temporalio/worker'
+import { loadConfig, createLogger } from '../config/index.js'
+import { createS3Client, createStorage } from '../storage.js'
+import * as activities from '../activities/index.js'
 
 /**
  * Main worker initialization and execution function.
@@ -58,35 +56,32 @@ async function run(): Promise<void> {
             taskQueue: config.temporal.taskQueue,
             namespace: config.temporal.namespace,
             address: config.temporal.address,
+            storageBucket: config.storage.bucket,
         },
-        'Starting Temporal Worker for Reputo Workflows'
+        'Starting TypeScript Algorithm Worker for Reputo'
     )
 
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    // Stage 2: Connect to MongoDB
+    // Stage 2: Initialize storage
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-    await connectDatabase(config.mongodb, logger)
+    const s3Client = createS3Client(config)
+    const storage = createStorage(config, s3Client)
 
-    // Get Mongoose models
-    const snapshotModel = getSnapshotModel()
-
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    // Stage 3: Create activities with injected dependencies
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-    const activities = createWorkflowActivities(snapshotModel)
+    // Store storage instance globally so activities can access it
+    // biome-ignore lint/suspicious/noExplicitAny: storage needs to be accessible to activities
+    ;(global as any).storage = storage
 
     logger.info(
         {
-            activityCount: Object.keys(activities).length,
-            activities: Object.keys(activities),
+            bucket: config.storage.bucket,
+            region: config.storage.awsRegion,
         },
-        'Activities initialized'
+        'Storage initialized'
     )
 
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    // Stage 4: Connect to Temporal server
+    // Stage 3: Connect to Temporal server
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
     const connection = await NativeConnection.connect({
@@ -99,18 +94,16 @@ async function run(): Promise<void> {
     )
 
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    // Stage 5: Create and run Temporal Worker
+    // Stage 4: Create and run Temporal Worker
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-    // Resolve workflows path - use require.resolve for CommonJS compatibility
-    // This will resolve to the compiled JavaScript file in dist/
-    const workflowsPath = require.resolve('./workflows/index.js')
 
     const worker = await Worker.create({
         connection,
         namespace: config.temporal.namespace,
         taskQueue: config.temporal.taskQueue,
-        workflowsPath,
+        // Register child workflows for executing algorithm activities
+        // Resolve to compiled JS in dist/workflows/index.js at runtime
+        workflowsPath: require.resolve('../workflows/index.js'),
         activities,
         // Enable verbose logging for development
         enableSDKTracing: config.app.nodeEnv === 'development',
@@ -118,6 +111,8 @@ async function run(): Promise<void> {
 
     logger.info(
         {
+            activityCount: Object.keys(activities).length,
+            activities: Object.keys(activities),
             taskQueue: config.temporal.taskQueue,
             namespace: config.temporal.namespace,
         },
@@ -125,7 +120,7 @@ async function run(): Promise<void> {
     )
 
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    // Stage 6: Set up graceful shutdown
+    // Stage 5: Set up graceful shutdown
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
     const shutdown = async () => {
@@ -135,9 +130,6 @@ async function run(): Promise<void> {
             // Stop accepting new work
             worker.shutdown()
             logger.info('Worker shutdown initiated')
-
-            // Close database connection
-            await disconnectDatabase(logger)
 
             // Close Temporal connection
             await connection.close()
@@ -157,7 +149,7 @@ async function run(): Promise<void> {
     process.on('SIGTERM', shutdown)
 
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    // Stage 7: Run the worker (blocks until shutdown)
+    // Stage 6: Run the worker (blocks until shutdown)
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
     logger.info(
