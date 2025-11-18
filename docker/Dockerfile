@@ -1,3 +1,4 @@
+FROM node:22.20.0-slim AS base
 ENV PNPM_HOME="/pnpm" \
     PATH="$PNPM_HOME:$PATH" \
     COREPACK_ENABLE_DOWNLOAD_PROMPT=1
