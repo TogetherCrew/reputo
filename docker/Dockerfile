@@ -1,7 +1,7 @@
 FROM node:22.20.0-slim AS base
-ENV PNPM_HOME="/pnpm" \
-    PATH="$PNPM_HOME:$PATH" \
-    COREPACK_ENABLE_DOWNLOAD_PROMPT=1
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=1
 RUN corepack enable pnpm
 
 FROM base AS build
@@ -16,7 +16,6 @@ COPY apps/ui/package.json apps/ui/
 COPY apps/workflows/package.json apps/workflows/
 COPY packages/database/package.json packages/database/
 COPY packages/reputation-algorithms/package.json packages/reputation-algorithms/
-COPY packages/storage/package.json packages/storage/
 
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
     pnpm install --frozen-lockfile
