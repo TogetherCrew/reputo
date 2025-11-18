@@ -32,7 +32,7 @@ jobs:
                   echo "AWS_REGION=eu-central-1" >> .env
 
                   # app-specific stuff (optional, if you used vars above)
-                  echo "STORAGE_BUCKET=reputo-staging" >> .env
+                  echo "STORAGE_BUCKET=reputo-pullpreview" >> .env
 
             - uses: pullpreview/action@v5
               with:
