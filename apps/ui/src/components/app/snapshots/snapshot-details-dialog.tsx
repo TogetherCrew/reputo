@@ -60,15 +60,15 @@ export function SnapshotDetailsDialog({ isOpen, onClose, snapshot }: SnapshotDet
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-2xl">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] flex flex-col">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle>Snapshot Details</DialogTitle>
           <DialogDescription>
             View detailed information about this snapshot execution
           </DialogDescription>
         </DialogHeader>
         {snapshot && (
-          <div className="space-y-6">
+          <div className="space-y-6 overflow-y-auto flex-1 min-h-0 pr-1">
             <div className="grid gap-4">
               <div>
                 <h3 className="text-sm font-medium text-muted-foreground">Snapshot ID</h3>
@@ -167,7 +167,7 @@ export function SnapshotDetailsDialog({ isOpen, onClose, snapshot }: SnapshotDet
             )}
           </div>
         )}
-        <DialogFooter>
+        <DialogFooter className="flex-shrink-0">
           <Button variant="outline" onClick={onClose}>
             Close
           </Button>
