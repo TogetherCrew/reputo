@@ -2,15 +2,15 @@ import type { S3Client } from '@aws-sdk/client-s3';
 import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
+  type DownloadUrlResult,
   FileTooLargeError,
   HeadObjectFailedError,
   InvalidContentTypeError,
+  type ObjectMetadata,
   ObjectNotFoundError,
-  type PresignedDownload,
-  type PresignedUpload,
   Storage,
   type StorageConfig,
-  type StorageMetadata,
+  type UploadUrlResult,
 } from '@reputo/storage';
 import {
   FileTooLargeException,
@@ -38,7 +38,7 @@ export class StorageService {
     this.storage = new Storage(config, s3Client);
   }
 
-  async presignPut(filename: string, contentType: string): Promise<PresignedUpload> {
+  async presignPut(filename: string, contentType: string): Promise<UploadUrlResult> {
     try {
       return await this.storage.presignPut(filename, contentType);
     } catch (error) {
@@ -46,7 +46,7 @@ export class StorageService {
     }
   }
 
-  async verifyUpload(key: string): Promise<{ key: string; metadata: StorageMetadata }> {
+  async verifyUpload(key: string): Promise<{ key: string; metadata: ObjectMetadata }> {
     try {
       return await this.storage.verifyUpload(key);
     } catch (error) {
@@ -54,7 +54,7 @@ export class StorageService {
     }
   }
 
-  async presignGet(key: string): Promise<PresignedDownload> {
+  async presignGet(key: string): Promise<DownloadUrlResult> {
     try {
       return await this.storage.presignGet(key);
     } catch (error) {
@@ -64,13 +64,10 @@ export class StorageService {
 
   private handleStorageError(error: unknown): never {
     if (error instanceof FileTooLargeError) {
-      throw new FileTooLargeException((error as FileTooLargeError).maxSizeBytes);
+      throw new FileTooLargeException(error.maxSizeBytes);
     }
     if (error instanceof InvalidContentTypeError) {
-      throw new InvalidContentTypeException(
-        (error as InvalidContentTypeError).contentType,
-        (error as InvalidContentTypeError).allowedTypes,
-      );
+      throw new InvalidContentTypeException(error.contentType, error.allowedTypes);
     }
     if (error instanceof ObjectNotFoundError) {
       throw new ObjectNotFoundException();

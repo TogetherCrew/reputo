@@ -6,12 +6,24 @@
 
 # Class: FileTooLargeError
 
-Defined in: [shared/errors/errors.ts:33](https://github.com/TogetherCrew/reputo/blob/f32aed14599aa4d8441b75f566584e7d9454f5b4/packages/storage/src/shared/errors/errors.ts#L33)
+Defined in: shared/errors/validation.error.ts:27
 
 Error thrown when a file exceeds the maximum allowed size.
 
-Applications should catch this and return an appropriate HTTP 400 response
-or handle it according to their error handling strategy.
+This error should be caught by consuming applications and treated
+as a user-facing validation error (e.g., 400 Bad Request in HTTP APIs).
+
+## Example
+
+```typescript
+try {
+  await storage.verifyUpload(key);
+} catch (error) {
+  if (error instanceof FileTooLargeError) {
+    console.log(`File too large. Max: ${error.maxSizeBytes} bytes`);
+  }
+}
+```
 
 ## Extends
 
@@ -23,7 +35,7 @@ or handle it according to their error handling strategy.
 
 > **new FileTooLargeError**(`maxSizeBytes`): `FileTooLargeError`
 
-Defined in: [shared/errors/errors.ts:44](https://github.com/TogetherCrew/reputo/blob/f32aed14599aa4d8441b75f566584e7d9454f5b4/packages/storage/src/shared/errors/errors.ts#L44)
+Defined in: shared/errors/validation.error.ts:38
 
 Creates a new FileTooLargeError instance.
 
@@ -49,6 +61,6 @@ The maximum allowed file size in bytes
 
 > `readonly` **maxSizeBytes**: `number`
 
-Defined in: [shared/errors/errors.ts:37](https://github.com/TogetherCrew/reputo/blob/f32aed14599aa4d8441b75f566584e7d9454f5b4/packages/storage/src/shared/errors/errors.ts#L37)
+Defined in: shared/errors/validation.error.ts:31
 
 Maximum allowed file size in bytes.

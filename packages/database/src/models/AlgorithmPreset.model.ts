@@ -1,7 +1,7 @@
 import { model } from 'mongoose';
-import { MODEL_NAMES } from '../constants/index.js';
-import { type AlgorithmPreset, type AlgorithmPresetModel } from '../interfaces/index.js';
 import { AlgorithmPresetSchema } from '../schemas/index.js';
+import { MODEL_NAMES } from '../shared/constants/index.js';
+import { type AlgorithmPreset, type AlgorithmPresetModel } from '../shared/types/index.js';
 
 /**
  * Mongoose model for AlgorithmPreset documents.

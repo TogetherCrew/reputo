@@ -6,10 +6,25 @@
 
 # Interface: StorageMetadata
 
-Defined in: [shared/types/types.ts:72](https://github.com/TogetherCrew/reputo/blob/f32aed14599aa4d8441b75f566584e7d9454f5b4/packages/storage/src/shared/types/types.ts#L72)
+Defined in: shared/types/metadata.types.ts:64
 
 Complete metadata about a stored object.
 Includes both parsed key information and S3 object metadata.
+
+This interface combines information from the storage key structure
+with actual object metadata retrieved from S3.
+
+## Example
+
+```typescript
+const metadata: StorageMetadata = {
+  filename: 'votes.csv',
+  ext: 'csv',
+  size: 1024,
+  contentType: 'text/csv',
+  timestamp: 1732147200,
+};
+```
 
 ## Properties
 
@@ -17,7 +32,7 @@ Includes both parsed key information and S3 object metadata.
 
 > **filename**: `string`
 
-Defined in: [shared/types/types.ts:76](https://github.com/TogetherCrew/reputo/blob/f32aed14599aa4d8441b75f566584e7d9454f5b4/packages/storage/src/shared/types/types.ts#L76)
+Defined in: shared/types/metadata.types.ts:68
 
 Full filename including extension.
 
@@ -27,7 +42,7 @@ Full filename including extension.
 
 > **ext**: `string`
 
-Defined in: [shared/types/types.ts:81](https://github.com/TogetherCrew/reputo/blob/f32aed14599aa4d8441b75f566584e7d9454f5b4/packages/storage/src/shared/types/types.ts#L81)
+Defined in: shared/types/metadata.types.ts:73
 
 File extension without the dot.
 
@@ -37,7 +52,7 @@ File extension without the dot.
 
 > **size**: `number`
 
-Defined in: [shared/types/types.ts:86](https://github.com/TogetherCrew/reputo/blob/f32aed14599aa4d8441b75f566584e7d9454f5b4/packages/storage/src/shared/types/types.ts#L86)
+Defined in: shared/types/metadata.types.ts:78
 
 Object size in bytes.
 
@@ -47,9 +62,15 @@ Object size in bytes.
 
 > **contentType**: `string`
 
-Defined in: [shared/types/types.ts:91](https://github.com/TogetherCrew/reputo/blob/f32aed14599aa4d8441b75f566584e7d9454f5b4/packages/storage/src/shared/types/types.ts#L91)
+Defined in: shared/types/metadata.types.ts:85
 
 Content type (MIME type) of the object.
+
+#### Example
+
+```ts
+'text/csv'
+```
 
 ***
 
@@ -57,6 +78,6 @@ Content type (MIME type) of the object.
 
 > **timestamp**: `number`
 
-Defined in: [shared/types/types.ts:96](https://github.com/TogetherCrew/reputo/blob/f32aed14599aa4d8441b75f566584e7d9454f5b4/packages/storage/src/shared/types/types.ts#L96)
+Defined in: shared/types/metadata.types.ts:90
 
 Unix timestamp (seconds since epoch) when the key was generated.

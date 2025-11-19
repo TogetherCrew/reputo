@@ -6,10 +6,13 @@
 
 # Class: StorageError
 
-Defined in: [shared/errors/errors.ts:13](https://github.com/TogetherCrew/reputo/blob/f32aed14599aa4d8441b75f566584e7d9454f5b4/packages/storage/src/shared/errors/errors.ts#L13)
+Defined in: shared/errors/base.error.ts:14
 
 Base error class for all storage-related errors.
 Extends the standard Error class with proper name and stack trace.
+
+All storage-specific errors should extend this class to maintain
+a consistent error hierarchy that consumers can catch and handle.
 
 ## Extends
 
@@ -17,10 +20,10 @@ Extends the standard Error class with proper name and stack trace.
 
 ## Extended by
 
-- [`FileTooLargeError`](FileTooLargeError.md)
-- [`InvalidContentTypeError`](InvalidContentTypeError.md)
 - [`ObjectNotFoundError`](ObjectNotFoundError.md)
 - [`HeadObjectFailedError`](HeadObjectFailedError.md)
+- [`FileTooLargeError`](FileTooLargeError.md)
+- [`InvalidContentTypeError`](InvalidContentTypeError.md)
 - [`InvalidStorageKeyError`](InvalidStorageKeyError.md)
 
 ## Constructors
@@ -29,7 +32,7 @@ Extends the standard Error class with proper name and stack trace.
 
 > **new StorageError**(`message`): `StorageError`
 
-Defined in: [shared/errors/errors.ts:19](https://github.com/TogetherCrew/reputo/blob/f32aed14599aa4d8441b75f566584e7d9454f5b4/packages/storage/src/shared/errors/errors.ts#L19)
+Defined in: shared/errors/base.error.ts:20
 
 Creates a new StorageError instance.
 

@@ -4,27 +4,22 @@
  * Framework-agnostic S3 storage abstraction.
  */
 
-import { GetObjectCommand, HeadObjectCommand, PutObjectCommand, type S3Client } from '@aws-sdk/client-s3';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import {
-  FileTooLargeError,
-  HeadObjectFailedError,
-  InvalidContentTypeError,
-  ObjectNotFoundError,
-} from './shared/errors/index.js';
-import type { PresignedDownload, PresignedUpload, StorageConfig, StorageMetadata } from './shared/types/index.js';
-import { generateUploadKey, parseStorageKey } from './shared/utils/keys.js';
+import type { S3Client } from '@aws-sdk/client-s3';
+import { createIOConfig, createVerificationConfig, type StorageConfig } from './config/index.js';
+import { S3Provider } from './providers/index.js';
+import type { DownloadUrlResult, UploadUrlResult, VerificationResult } from './services/index.js';
+import { StorageIOService, VerificationService } from './services/index.js';
 
 /**
- * Main storage class that wraps an S3Client instance.
+ * Main storage class that provides a high-level API for storage operations.
  *
- * Provides a high-level API for:
- * - Generating presigned URLs for uploads and downloads
- * - Verifying uploaded files against size and content-type policies
- * - Reading and writing objects directly
+ * This class serves as a facade over the provider and service layers.
+ * It maintains backward compatibility while using the new modular architecture.
  *
- * The Storage instance does NOT create its own S3Client.
- * Applications must inject a configured S3Client instance.
+ * The Storage instance:
+ * - Creates an S3Provider from the injected S3Client
+ * - Initializes StorageIOService and VerificationService
+ * - Delegates all operations to these services
  *
  * @example
  * ```typescript
@@ -54,27 +49,31 @@ import { generateUploadKey, parseStorageKey } from './shared/utils/keys.js';
  * ```
  */
 export class Storage {
-  private readonly bucket: string;
-  private readonly presignPutTtl: number;
-  private readonly presignGetTtl: number;
-  private readonly maxSizeBytes: number;
-  private readonly contentTypeAllowlist: Set<string>;
+  private readonly ioService: StorageIOService;
+  private readonly verificationService: VerificationService;
 
   /**
    * Creates a new Storage instance.
    *
+   * Internally creates an S3Provider and initializes services.
+   *
    * @param config - Storage configuration options
    * @param s3Client - Configured S3Client instance to use for all operations
    */
-  constructor(
-    config: StorageConfig,
-    private readonly s3Client: S3Client,
-  ) {
-    this.bucket = config.bucket;
-    this.presignPutTtl = config.presignPutTtl;
-    this.presignGetTtl = config.presignGetTtl;
-    this.maxSizeBytes = config.maxSizeBytes;
-    this.contentTypeAllowlist = new Set(config.contentTypeAllowlist);
+  constructor(config: StorageConfig, s3Client: S3Client) {
+    // Create S3 provider
+    const provider = new S3Provider({
+      client: s3Client,
+      bucket: config.bucket,
+    });
+
+    // Create service configs
+    const ioConfig = createIOConfig(config);
+    const verificationConfig = createVerificationConfig(config);
+
+    // Initialize services
+    this.ioService = new StorageIOService(provider, ioConfig);
+    this.verificationService = new VerificationService(provider, verificationConfig);
   }
 
   /**
@@ -96,26 +95,8 @@ export class Storage {
    * // result.expiresIn: 3600
    * ```
    */
-  async presignPut(filename: string, contentType: string): Promise<PresignedUpload> {
-    this.validateContentType(contentType);
-
-    const key = generateUploadKey(filename, contentType);
-
-    const command = new PutObjectCommand({
-      Bucket: this.bucket,
-      Key: key,
-      ContentType: contentType,
-    });
-
-    const url = await getSignedUrl(this.s3Client, command, {
-      expiresIn: this.presignPutTtl,
-    });
-
-    return {
-      key,
-      url,
-      expiresIn: this.presignPutTtl,
-    };
+  async presignPut(filename: string, contentType: string): Promise<UploadUrlResult> {
+    return this.ioService.generateUploadUrl(filename, contentType);
   }
 
   /**
@@ -144,27 +125,8 @@ export class Storage {
    * // }
    * ```
    */
-  async verifyUpload(key: string): Promise<{ key: string; metadata: StorageMetadata }> {
-    const head = await this.getObjectMetadata(key);
-
-    const size = head.ContentLength ?? 0;
-    const contentType = head.ContentType ?? 'application/octet-stream';
-
-    this.validateFileSize(size);
-    this.validateContentType(contentType);
-
-    const { filename, ext, timestamp } = parseStorageKey(key);
-
-    return {
-      key,
-      metadata: {
-        filename,
-        ext,
-        size,
-        contentType,
-        timestamp,
-      },
-    };
+  async verifyUpload(key: string): Promise<VerificationResult> {
+    return this.verificationService.verifyUpload(key);
   }
 
   /**
@@ -186,33 +148,8 @@ export class Storage {
    * // result.metadata: { filename: 'votes.csv', ... }
    * ```
    */
-  async presignGet(key: string): Promise<PresignedDownload> {
-    const head = await this.getObjectMetadata(key);
-
-    const size = head.ContentLength ?? 0;
-    const contentType = head.ContentType ?? 'application/octet-stream';
-    const { filename, ext, timestamp } = parseStorageKey(key);
-
-    const command = new GetObjectCommand({
-      Bucket: this.bucket,
-      Key: key,
-    });
-
-    const url = await getSignedUrl(this.s3Client, command, {
-      expiresIn: this.presignGetTtl,
-    });
-
-    return {
-      url,
-      expiresIn: this.presignGetTtl,
-      metadata: {
-        filename,
-        ext,
-        size,
-        contentType,
-        timestamp,
-      },
-    };
+  async presignGet(key: string): Promise<DownloadUrlResult> {
+    return this.ioService.generateDownloadUrl(key);
   }
 
   /**
@@ -233,33 +170,7 @@ export class Storage {
    * ```
    */
   async getObject(key: string): Promise<Buffer> {
-    try {
-      const result = await this.s3Client.send(
-        new GetObjectCommand({
-          Bucket: this.bucket,
-          Key: key,
-        }),
-      );
-
-      const chunks: Buffer[] = [];
-      // @ts-expect-error - Body type varies by runtime (Node.js vs browser)
-      for await (const chunk of result.Body) {
-        chunks.push(Buffer.from(chunk as Buffer));
-      }
-
-      return Buffer.concat(chunks);
-    } catch (error: unknown) {
-      const err = error as {
-        name?: string;
-        $metadata?: { httpStatusCode?: number };
-      };
-
-      if (err.name === 'NoSuchKey' || err.$metadata?.httpStatusCode === 404) {
-        throw new ObjectNotFoundError(key);
-      }
-
-      throw error;
-    }
+    return this.ioService.readObject(key);
   }
 
   /**
@@ -282,79 +193,6 @@ export class Storage {
    * ```
    */
   async putObject(key: string, body: Buffer | Uint8Array | string, contentType?: string): Promise<string> {
-    if (contentType) {
-      this.validateContentType(contentType);
-    }
-
-    await this.s3Client.send(
-      new PutObjectCommand({
-        Bucket: this.bucket,
-        Key: key,
-        Body: body,
-        ContentType: contentType,
-      }),
-    );
-
-    return key;
-  }
-
-  /**
-   * Validates that a file size is within the allowed maximum.
-   *
-   * @param size - File size in bytes
-   * @throws {FileTooLargeError} If size exceeds maxSizeBytes
-   *
-   * @private
-   */
-  private validateFileSize(size: number): void {
-    if (size > this.maxSizeBytes) {
-      throw new FileTooLargeError(this.maxSizeBytes);
-    }
-  }
-
-  /**
-   * Validates that a content type is in the allowlist.
-   *
-   * @param contentType - MIME type to validate
-   * @throws {InvalidContentTypeError} If content type is not allowed
-   *
-   * @private
-   */
-  private validateContentType(contentType: string): void {
-    if (!this.contentTypeAllowlist.has(contentType)) {
-      throw new InvalidContentTypeError(contentType, [...this.contentTypeAllowlist]);
-    }
-  }
-
-  /**
-   * Retrieves object metadata using a HEAD request.
-   *
-   * @param key - S3 key of the object
-   * @returns S3 HeadObject response
-   * @throws {ObjectNotFoundError} If object doesn't exist
-   * @throws {HeadObjectFailedError} If metadata retrieval fails
-   *
-   * @private
-   */
-  private async getObjectMetadata(key: string) {
-    try {
-      return await this.s3Client.send(
-        new HeadObjectCommand({
-          Bucket: this.bucket,
-          Key: key,
-        }),
-      );
-    } catch (error: unknown) {
-      const err = error as {
-        name?: string;
-        $metadata?: { httpStatusCode?: number };
-      };
-
-      if (err.name === 'NotFound' || err.$metadata?.httpStatusCode === 404) {
-        throw new ObjectNotFoundError(key);
-      }
-
-      throw new HeadObjectFailedError(key);
-    }
+    return this.ioService.writeObject(key, body, contentType);
   }
 }

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest';
-import type { AlgorithmPreset } from '../../../src/interfaces/index.js';
 import AlgorithmPresetModel from '../../../src/models/AlgorithmPreset.model.js';
+import type { AlgorithmPreset } from '../../../src/shared/types/index.js';
 
 describe('AlgorithmPreset model', () => {
   describe('AlgorithmPreset validation', () => {

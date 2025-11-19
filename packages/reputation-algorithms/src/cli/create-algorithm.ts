@@ -27,7 +27,7 @@ export function createAlgorithm(key: string, version: string, config: CreateAlgo
       console.error(`  ${error}`);
     }
     console.error('');
-    console.error('Examples: user_activity, voting_power, content_quality');
+    console.error('Examples: voting_engagement, proposal_engagement, contribution_engagement');
     process.exit(1);
   }
 
@@ -68,9 +68,9 @@ function printUsage(): void {
   console.log('  version  Semantic version (e.g., 1.0.0)');
   console.log('');
   console.log('Examples:');
-  console.log('  pnpm algorithm:create user_activity 1.0.0');
-  console.log('  pnpm algorithm:create voting_power 2.1.0');
-  console.log('  pnpm algorithm:create content_quality 1.0.0-beta');
+  console.log('  pnpm algorithm:create voting_engagement 1.0.0');
+  console.log('  pnpm algorithm:create proposal_engagement 2.1.0');
+  console.log('  pnpm algorithm:create contribution_engagement 1.0.0-beta');
   console.log('');
 }
 

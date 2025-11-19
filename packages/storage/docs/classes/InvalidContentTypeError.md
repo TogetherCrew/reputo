@@ -6,12 +6,25 @@
 
 # Class: InvalidContentTypeError
 
-Defined in: [shared/errors/errors.ts:57](https://github.com/TogetherCrew/reputo/blob/f32aed14599aa4d8441b75f566584e7d9454f5b4/packages/storage/src/shared/errors/errors.ts#L57)
+Defined in: shared/errors/validation.error.ts:63
 
 Error thrown when a file's content type is not in the allowlist.
 
-Applications should catch this and return an appropriate HTTP 400 response
-or handle it according to their error handling strategy.
+This error should be caught by consuming applications and treated
+as a user-facing validation error (e.g., 400 Bad Request in HTTP APIs).
+
+## Example
+
+```typescript
+try {
+  await storage.presignPut('file.exe', 'application/x-msdownload');
+} catch (error) {
+  if (error instanceof InvalidContentTypeError) {
+    console.log(`Invalid type: ${error.contentType}`);
+    console.log(`Allowed: ${error.allowedTypes.join(', ')}`);
+  }
+}
+```
 
 ## Extends
 
@@ -23,7 +36,7 @@ or handle it according to their error handling strategy.
 
 > **new InvalidContentTypeError**(`contentType`, `allowedTypes`): `InvalidContentTypeError`
 
-Defined in: [shared/errors/errors.ts:74](https://github.com/TogetherCrew/reputo/blob/f32aed14599aa4d8441b75f566584e7d9454f5b4/packages/storage/src/shared/errors/errors.ts#L74)
+Defined in: shared/errors/validation.error.ts:80
 
 Creates a new InvalidContentTypeError instance.
 
@@ -55,7 +68,7 @@ List of allowed content types
 
 > `readonly` **contentType**: `string`
 
-Defined in: [shared/errors/errors.ts:61](https://github.com/TogetherCrew/reputo/blob/f32aed14599aa4d8441b75f566584e7d9454f5b4/packages/storage/src/shared/errors/errors.ts#L61)
+Defined in: shared/errors/validation.error.ts:67
 
 The content type that was rejected.
 
@@ -63,8 +76,8 @@ The content type that was rejected.
 
 ### allowedTypes
 
-> `readonly` **allowedTypes**: `string`[]
+> `readonly` **allowedTypes**: readonly `string`[]
 
-Defined in: [shared/errors/errors.ts:66](https://github.com/TogetherCrew/reputo/blob/f32aed14599aa4d8441b75f566584e7d9454f5b4/packages/storage/src/shared/errors/errors.ts#L66)
+Defined in: shared/errors/validation.error.ts:72
 
 List of allowed content types.

@@ -6,13 +6,26 @@
 
 # Class: HeadObjectFailedError
 
-Defined in: [shared/errors/errors.ts:109](https://github.com/TogetherCrew/reputo/blob/f32aed14599aa4d8441b75f566584e7d9454f5b4/packages/storage/src/shared/errors/errors.ts#L109)
+Defined in: shared/errors/operation.error.ts:66
 
 Error thrown when a HEAD request to S3 fails for reasons other than 404.
 
 This typically indicates a transient S3 error or permission issue.
-Applications should catch this and return an appropriate HTTP 500 response
-or handle it according to their error handling strategy.
+Consuming applications should catch this and map it to an appropriate
+internal error, retry mechanism, or failure state for their environment.
+
+## Example
+
+```typescript
+try {
+  await storage.presignGet(key);
+} catch (error) {
+  if (error instanceof HeadObjectFailedError) {
+    console.log('Failed to retrieve object metadata');
+    // Implement retry logic or error reporting
+  }
+}
+```
 
 ## Extends
 
@@ -24,7 +37,7 @@ or handle it according to their error handling strategy.
 
 > **new HeadObjectFailedError**(`key?`): `HeadObjectFailedError`
 
-Defined in: [shared/errors/errors.ts:115](https://github.com/TogetherCrew/reputo/blob/f32aed14599aa4d8441b75f566584e7d9454f5b4/packages/storage/src/shared/errors/errors.ts#L115)
+Defined in: shared/errors/operation.error.ts:77
 
 Creates a new HeadObjectFailedError instance.
 
@@ -43,3 +56,13 @@ Optional S3 key for which the HEAD request failed
 #### Overrides
 
 [`StorageError`](StorageError.md).[`constructor`](StorageError.md#constructor)
+
+## Properties
+
+### key
+
+> `readonly` **key**: `string` \| `undefined`
+
+Defined in: shared/errors/operation.error.ts:70
+
+The S3 key for which the HEAD request failed.

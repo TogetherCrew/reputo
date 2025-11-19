@@ -8,13 +8,16 @@ Framework-agnostic S3 storage layer for the Reputo ecosystem. Provides a reusabl
 
 ## Features
 
-- **Framework-agnostic**: Works with any Node.js application (NestJS, Express, Temporal, etc.)
-- **Type-safe**: Full TypeScript support with comprehensive type definitions
-- **Class-based API**: Clean, object-oriented interface wrapping S3Client
-- **Presigned URLs**: Generate secure upload and download URLs with configurable TTLs
-- **Validation**: Enforce file size limits and content type constraints
-- **Key management**: Automatic key generation and parsing utilities
-- **Direct operations**: Read and write objects directly when needed
+-   **Framework-agnostic**: Works with any Node.js application (NestJS, Express, Temporal, etc.)
+-   **Type-safe**: Full TypeScript support with comprehensive type definitions
+-   **Modular architecture**: Clean separation of concerns with focused modules
+-   **Class-based API**: Clean, object-oriented interface wrapping S3Client
+-   **Presigned URLs**: Generate secure upload and download URLs with configurable TTLs
+-   **Validation utilities**: Standalone validator functions for file size and content type
+-   **Metadata utilities**: Independent utilities for retrieving S3 object metadata
+-   **Key management**: Automatic key generation and parsing utilities
+-   **Direct operations**: Read and write objects directly when needed
+-   **Comprehensive errors**: Well-structured error hierarchy for precise error handling
 
 ## Installation
 
@@ -261,8 +264,8 @@ Creates a new Storage instance.
 
 **Parameters:**
 
-- `config`: Storage configuration options
-- `s3Client`: Configured S3Client instance
+-   `config`: Storage configuration options
+-   `s3Client`: Configured S3Client instance
 
 #### Methods
 
@@ -272,7 +275,7 @@ Generates a presigned URL for uploading a file.
 
 **Throws:**
 
-- `InvalidContentTypeError` - If content type is not in allowlist
+-   `InvalidContentTypeError` - If content type is not in allowlist
 
 ##### `verifyUpload(key: string): Promise<{ key: string; metadata: StorageMetadata }>`
 
@@ -280,10 +283,10 @@ Verifies that an uploaded file meets size and content-type requirements.
 
 **Throws:**
 
-- `ObjectNotFoundError` - If the object doesn't exist
-- `HeadObjectFailedError` - If metadata retrieval fails
-- `FileTooLargeError` - If file exceeds max size
-- `InvalidContentTypeError` - If content type is not allowed
+-   `ObjectNotFoundError` - If the object doesn't exist
+-   `HeadObjectFailedError` - If metadata retrieval fails
+-   `FileTooLargeError` - If file exceeds max size
+-   `InvalidContentTypeError` - If content type is not allowed
 
 ##### `presignGet(key: string): Promise<PresignedDownload>`
 
@@ -291,8 +294,8 @@ Generates a presigned URL for downloading a file.
 
 **Throws:**
 
-- `ObjectNotFoundError` - If the object doesn't exist
-- `HeadObjectFailedError` - If metadata retrieval fails
+-   `ObjectNotFoundError` - If the object doesn't exist
+-   `HeadObjectFailedError` - If metadata retrieval fails
 
 ##### `getObject(key: string): Promise<Buffer>`
 
@@ -300,7 +303,7 @@ Reads an object from S3 and returns its contents as a Buffer.
 
 **Throws:**
 
-- `ObjectNotFoundError` - If the object doesn't exist
+-   `ObjectNotFoundError` - If the object doesn't exist
 
 ##### `putObject(key: string, body: Buffer | Uint8Array | string, contentType?: string): Promise<string>`
 
@@ -308,29 +311,152 @@ Writes an object to S3.
 
 **Throws:**
 
-- `InvalidContentTypeError` - If content type is provided and not allowed
+-   `InvalidContentTypeError` - If content type is provided and not allowed
 
 ### Utility Functions
 
-#### `generateUploadKey(filename: string, contentType: string, now?: Date): string`
+The storage package exports several utility functions that can be used independently:
+
+#### Key Management
+
+##### `generateUploadKey(filename: string, contentType: string, now?: Date): string`
 
 Generates an S3 key for uploading a file. Keys follow the pattern: `uploads/{timestamp}/{sanitized-filename}.{ext}`
 
-#### `parseStorageKey(key: string): ParsedStorageKey`
+##### `parseStorageKey(key: string): ParsedStorageKey`
 
 Parses a storage key into its component parts.
 
 **Throws:**
 
-- `InvalidStorageKeyError` - If the key format is invalid
+-   `InvalidStorageKeyError` - If the key format is invalid
+
+#### Validation
+
+##### `validateFileSize(size: number, maxSizeBytes: number): void`
+
+Validates that a file size is within the allowed maximum. Pure function that can be used independently.
+
+**Example:**
+
+```typescript
+import { validateFileSize, FileTooLargeError } from '@reputo/storage'
+
+try {
+    validateFileSize(1048576, 1000000) // 1MB file, 1MB limit
+} catch (error) {
+    if (error instanceof FileTooLargeError) {
+        console.log('File too large!')
+    }
+}
+```
+
+**Throws:**
+
+-   `FileTooLargeError` - If size exceeds maxSizeBytes
+
+##### `validateContentType(contentType: string, allowlist: Set<string> | readonly string[]): void`
+
+Validates that a content type is in the allowlist. Pure function that can be used independently.
+
+**Example:**
+
+```typescript
+import { validateContentType, InvalidContentTypeError } from '@reputo/storage'
+
+const allowedTypes = new Set(['text/csv', 'application/json'])
+try {
+    validateContentType('text/csv', allowedTypes) // OK
+    validateContentType('image/png', allowedTypes) // throws
+} catch (error) {
+    if (error instanceof InvalidContentTypeError) {
+        console.log('Invalid content type!')
+    }
+}
+```
+
+**Throws:**
+
+-   `InvalidContentTypeError` - If content type is not allowed
+
+#### Metadata
+
+##### `getObjectMetadata(s3Client: S3Client, bucket: string, key: string): Promise<HeadObjectCommandOutput>`
+
+Retrieves object metadata using a HEAD request to S3. Pure utility function that can be used independently.
+
+**Example:**
+
+```typescript
+import { S3Client } from '@aws-sdk/client-s3'
+import { getObjectMetadata } from '@reputo/storage'
+
+const s3Client = new S3Client({ region: 'us-east-1' })
+const metadata = await getObjectMetadata(
+    s3Client,
+    'my-bucket',
+    'uploads/123/file.csv'
+)
+console.log(metadata.ContentLength, metadata.ContentType)
+```
+
+**Throws:**
+
+-   `ObjectNotFoundError` - If object doesn't exist (404)
+-   `HeadObjectFailedError` - If metadata retrieval fails for other reasons
 
 ### Types
 
-See the full API reference in [docs](docs/globals.md).
+See the full API reference in [docs](_media/globals.md).
+
+## Package Structure
+
+The storage package is organized into focused modules for better maintainability:
+
+```
+src/
+├── storage.ts                     # Main Storage class
+├── validators.ts                  # Validation utility functions
+├── metadata.ts                    # Metadata retrieval utilities
+├── shared/
+│   ├── errors/                    # Error classes
+│   │   ├── base.error.ts         # Base StorageError
+│   │   ├── validation.error.ts   # Validation-related errors
+│   │   └── operation.error.ts    # S3 operation errors
+│   ├── types/                     # Type definitions
+│   │   ├── config.types.ts       # StorageConfig interface
+│   │   ├── metadata.types.ts     # Metadata-related types
+│   │   └── presigned.types.ts    # Presigned URL types
+│   └── utils/                     # Utility functions
+│       └── keys.ts                # Key generation and parsing
+└── index.ts                       # Main package entry point
+```
 
 ## Error Handling
 
-All errors extend the base `StorageError` class. Applications can catch these errors and handle them according to their framework:
+All errors extend the base `StorageError` class, organized into logical categories:
+
+### Error Hierarchy
+
+-   **Base Error**: `StorageError`
+    -   **Validation Errors**: Input and configuration validation failures
+        -   `FileTooLargeError` - File exceeds maximum size
+        -   `InvalidContentTypeError` - Content type not in allowlist
+        -   `InvalidStorageKeyError` - Storage key format is invalid
+    -   **Operation Errors**: S3 operation failures
+        -   `ObjectNotFoundError` - Object doesn't exist in S3 (404)
+        -   `HeadObjectFailedError` - Metadata retrieval failed
+
+### Error Philosophy
+
+The storage library itself **never logs, formats HTTP responses, or applies any framework-specific behavior**:
+
+-   **Library layer (`@reputo/storage`)**: validates inputs, talks to S3, and throws typed errors only.
+-   **Application layer (e.g. NestJS API, Temporal worker)**: decides how to map those errors to HTTP status codes, workflow failure states, logging, retries, and so on.
+
+### Error Handling Example
+
+Below is an example of handling storage errors in an HTTP API layer:
 
 ```typescript
 import {
@@ -345,15 +471,15 @@ try {
     await storage.verifyUpload(key)
 } catch (error) {
     if (error instanceof FileTooLargeError) {
-        // Return HTTP 400 with max size info
+        // Example (HTTP API): map to 400 with max size info
         console.log(`Max size: ${error.maxSizeBytes} bytes`)
     } else if (error instanceof InvalidContentTypeError) {
-        // Return HTTP 400 with allowed types
+        // Example (HTTP API): map to 400 with allowed content types
         console.log(`Allowed: ${error.allowedTypes.join(', ')}`)
     } else if (error instanceof ObjectNotFoundError) {
-        // Return HTTP 404
+        // Example (HTTP API): map to 404
     } else if (error instanceof HeadObjectFailedError) {
-        // Return HTTP 500
+        // Example (HTTP API): map to 500 or a retryable error
     }
     throw error
 }

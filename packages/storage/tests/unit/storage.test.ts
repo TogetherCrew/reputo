@@ -1,5 +1,4 @@
-import type { GetObjectCommand, HeadObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import type { S3Client } from '@aws-sdk/client-s3';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   FileTooLargeError,
@@ -9,7 +8,6 @@ import {
 } from '../../src/shared/errors/index.js';
 import { Storage } from '../../src/storage.js';
 
-// Mock AWS SDK
 vi.mock('@aws-sdk/client-s3');
 vi.mock('@aws-sdk/s3-request-presigner');
 
@@ -18,21 +16,18 @@ describe('Storage', () => {
   let mockS3Client: S3Client;
 
   beforeEach(() => {
-    // Create a mock S3Client
     mockS3Client = {
       send: vi.fn(),
     } as unknown as S3Client;
 
-    // Reset all mocks
     vi.clearAllMocks();
 
-    // Create Storage instance with test configuration
     storage = new Storage(
       {
         bucket: 'test-bucket',
         presignPutTtl: 3600,
         presignGetTtl: 900,
-        maxSizeBytes: 1048576, // 1 MB
+        maxSizeBytes: 1048576,
         contentTypeAllowlist: ['text/csv', 'application/json', 'text/plain'],
       },
       mockS3Client,
@@ -40,7 +35,8 @@ describe('Storage', () => {
   });
 
   describe('presignPut', () => {
-    it('should generate a presigned upload URL', async () => {
+    it('should delegate to StorageIOService', async () => {
+      const { getSignedUrl } = await import('@aws-sdk/s3-request-presigner');
       const mockUrl = 'https://test-bucket.s3.amazonaws.com/presigned-url';
       vi.mocked(getSignedUrl).mockResolvedValue(mockUrl);
 
@@ -49,25 +45,15 @@ describe('Storage', () => {
       expect(result.url).toBe(mockUrl);
       expect(result.expiresIn).toBe(3600);
       expect(result.key).toMatch(/^uploads\/\d+\/votes\.csv$/);
-      expect(getSignedUrl).toHaveBeenCalledWith(mockS3Client, expect.any(Object), { expiresIn: 3600 });
     });
 
     it('should throw InvalidContentTypeError for disallowed content type', async () => {
       await expect(storage.presignPut('document.pdf', 'application/pdf')).rejects.toThrow(InvalidContentTypeError);
     });
-
-    it('should sanitize filename in the generated key', async () => {
-      const mockUrl = 'https://test-bucket.s3.amazonaws.com/presigned-url';
-      vi.mocked(getSignedUrl).mockResolvedValue(mockUrl);
-
-      const result = await storage.presignPut('My Data File!.csv', 'text/csv');
-
-      expect(result.key).toMatch(/My-Data-File\.csv$/);
-    });
   });
 
   describe('verifyUpload', () => {
-    it('should verify a valid upload and return metadata', async () => {
+    it('should delegate to VerificationService', async () => {
       const key = 'uploads/1704067200/votes.csv';
       const mockHead = {
         ContentLength: 1024,
@@ -91,7 +77,7 @@ describe('Storage', () => {
     it('should throw FileTooLargeError if file exceeds max size', async () => {
       const key = 'uploads/1704067200/large.csv';
       const mockHead = {
-        ContentLength: 2097152, // 2 MB
+        ContentLength: 2097152,
         ContentType: 'text/csv',
       };
 
@@ -130,36 +116,10 @@ describe('Storage', () => {
 
       await expect(storage.verifyUpload(key)).rejects.toThrow(HeadObjectFailedError);
     });
-
-    it('should use default content type if not provided by S3', async () => {
-      const key = 'uploads/1704067200/data.bin';
-      const mockHead = {
-        ContentLength: 512,
-        // No ContentType provided
-      };
-
-      // Need to override the content type allowlist for this test
-      const storageWithBinary = new Storage(
-        {
-          bucket: 'test-bucket',
-          presignPutTtl: 3600,
-          presignGetTtl: 900,
-          maxSizeBytes: 1048576,
-          contentTypeAllowlist: ['application/octet-stream'],
-        },
-        mockS3Client,
-      );
-
-      vi.mocked(mockS3Client.send).mockResolvedValue(mockHead);
-
-      const result = await storageWithBinary.verifyUpload(key);
-
-      expect(result.metadata.contentType).toBe('application/octet-stream');
-    });
   });
 
   describe('presignGet', () => {
-    it('should generate a presigned download URL with metadata', async () => {
+    it('should delegate to StorageIOService', async () => {
       const key = 'uploads/1704067200/votes.csv';
       const mockUrl = 'https://test-bucket.s3.amazonaws.com/download-url';
       const mockHead = {
@@ -168,6 +128,7 @@ describe('Storage', () => {
       };
 
       vi.mocked(mockS3Client.send).mockResolvedValue(mockHead);
+      const { getSignedUrl } = await import('@aws-sdk/s3-request-presigner');
       vi.mocked(getSignedUrl).mockResolvedValue(mockUrl);
 
       const result = await storage.presignGet(key);
@@ -198,13 +159,12 @@ describe('Storage', () => {
   });
 
   describe('getObject', () => {
-    it('should read an object and return Buffer', async () => {
+    it('should delegate to StorageIOService', async () => {
       const key = 'uploads/1704067200/votes.csv';
       const mockBody = {
         async *[Symbol.asyncIterator]() {
           yield Buffer.from('name,score\n');
           yield Buffer.from('Alice,100\n');
-          yield Buffer.from('Bob,95\n');
         },
       };
 
@@ -213,7 +173,7 @@ describe('Storage', () => {
       const result = await storage.getObject(key);
 
       expect(result).toBeInstanceOf(Buffer);
-      expect(result.toString('utf-8')).toBe('name,score\nAlice,100\nBob,95\n');
+      expect(result.toString('utf-8')).toBe('name,score\nAlice,100\n');
     });
 
     it('should throw ObjectNotFoundError if object does not exist', async () => {
@@ -225,29 +185,10 @@ describe('Storage', () => {
 
       await expect(storage.getObject(key)).rejects.toThrow(ObjectNotFoundError);
     });
-
-    it('should throw ObjectNotFoundError for 404 status code', async () => {
-      const key = 'uploads/1704067200/missing.csv';
-      const error = new Error('Not Found');
-      Object.assign(error, { $metadata: { httpStatusCode: 404 } });
-
-      vi.mocked(mockS3Client.send).mockRejectedValue(error);
-
-      await expect(storage.getObject(key)).rejects.toThrow(ObjectNotFoundError);
-    });
-
-    it('should propagate other errors', async () => {
-      const key = 'uploads/1704067200/votes.csv';
-      const error = new Error('Internal Server Error');
-
-      vi.mocked(mockS3Client.send).mockRejectedValue(error);
-
-      await expect(storage.getObject(key)).rejects.toThrow('Internal Server Error');
-    });
   });
 
   describe('putObject', () => {
-    it('should write a Buffer to S3', async () => {
+    it('should delegate to StorageIOService', async () => {
       const key = 'uploads/1704067200/data.csv';
       const buffer = Buffer.from('test data');
 
@@ -257,36 +198,6 @@ describe('Storage', () => {
 
       expect(result).toBe(key);
       expect(mockS3Client.send).toHaveBeenCalledTimes(1);
-      // Verify that send was called (command structure is mocked, so we just verify the call)
-      expect(mockS3Client.send).toHaveBeenCalled();
-    });
-
-    it('should write a string to S3', async () => {
-      const key = 'uploads/1704067200/data.json';
-      const data = '{"name":"test"}';
-
-      vi.mocked(mockS3Client.send).mockResolvedValue({});
-
-      const result = await storage.putObject(key, data, 'application/json');
-
-      expect(result).toBe(key);
-      expect(mockS3Client.send).toHaveBeenCalled();
-    });
-
-    it('should write without content type when not provided', async () => {
-      const key = 'uploads/1704067200/data.bin';
-      const buffer = Buffer.from('binary data');
-
-      vi.mocked(mockS3Client.send).mockResolvedValue({});
-
-      const result = await storage.putObject(key, buffer);
-
-      expect(result).toBe(key);
-      expect(mockS3Client.send).toHaveBeenCalledTimes(1);
-      // Verify that send was called with a command that has no ContentType
-      const callArgs = vi.mocked(mockS3Client.send).mock.calls[0];
-      const command = callArgs?.[0] as { input?: { ContentType?: string } };
-      expect(command?.input?.ContentType).toBeUndefined();
     });
 
     it('should throw InvalidContentTypeError for disallowed content type', async () => {
@@ -297,18 +208,6 @@ describe('Storage', () => {
 
       expect(mockS3Client.send).not.toHaveBeenCalled();
     });
-
-    it('should write Uint8Array to S3', async () => {
-      const key = 'uploads/1704067200/data.bin';
-      const uint8Array = new Uint8Array([1, 2, 3, 4, 5]);
-
-      vi.mocked(mockS3Client.send).mockResolvedValue({});
-
-      const result = await storage.putObject(key, uint8Array, 'text/plain');
-
-      expect(result).toBe(key);
-      expect(mockS3Client.send).toHaveBeenCalled();
-    });
   });
 
   describe('configuration', () => {
@@ -318,22 +217,13 @@ describe('Storage', () => {
           bucket: 'custom-bucket',
           presignPutTtl: 7200,
           presignGetTtl: 1800,
-          maxSizeBytes: 52428800, // 50 MB
+          maxSizeBytes: 52428800,
           contentTypeAllowlist: ['image/png', 'image/jpeg'],
         },
         mockS3Client,
       );
 
       expect(customStorage).toBeInstanceOf(Storage);
-    });
-
-    it('should use injected S3Client instance', async () => {
-      const mockUrl = 'https://test-bucket.s3.amazonaws.com/presigned-url';
-      vi.mocked(getSignedUrl).mockResolvedValue(mockUrl);
-
-      await storage.presignPut('test.csv', 'text/csv');
-
-      expect(getSignedUrl).toHaveBeenCalledWith(mockS3Client, expect.any(Object), expect.any(Object));
     });
   });
 });

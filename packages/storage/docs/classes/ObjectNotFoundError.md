@@ -6,13 +6,25 @@
 
 # Class: ObjectNotFoundError
 
-Defined in: [shared/errors/errors.ts:89](https://github.com/TogetherCrew/reputo/blob/f32aed14599aa4d8441b75f566584e7d9454f5b4/packages/storage/src/shared/errors/errors.ts#L89)
+Defined in: shared/errors/operation.error.ts:28
 
 Error thrown when an object is not found in S3.
 
 This typically indicates a 404 response from S3.
-Applications should catch this and return an appropriate HTTP 404 response
-or handle it according to their error handling strategy.
+Consuming applications should catch this and decide how to represent
+the missing object (e.g., as a 404 HTTP response or a failed workflow step).
+
+## Example
+
+```typescript
+try {
+  await storage.getObject('non-existent-key');
+} catch (error) {
+  if (error instanceof ObjectNotFoundError) {
+    console.log('Object not found in S3');
+  }
+}
+```
 
 ## Extends
 
@@ -24,7 +36,7 @@ or handle it according to their error handling strategy.
 
 > **new ObjectNotFoundError**(`key?`): `ObjectNotFoundError`
 
-Defined in: [shared/errors/errors.ts:95](https://github.com/TogetherCrew/reputo/blob/f32aed14599aa4d8441b75f566584e7d9454f5b4/packages/storage/src/shared/errors/errors.ts#L95)
+Defined in: shared/errors/operation.error.ts:39
 
 Creates a new ObjectNotFoundError instance.
 
@@ -43,3 +55,13 @@ Optional S3 key that was not found
 #### Overrides
 
 [`StorageError`](StorageError.md).[`constructor`](StorageError.md#constructor)
+
+## Properties
+
+### key
+
+> `readonly` **key**: `string` \| `undefined`
+
+Defined in: shared/errors/operation.error.ts:32
+
+The S3 key that was not found.

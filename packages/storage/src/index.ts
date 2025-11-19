@@ -6,8 +6,8 @@
  * presigned URLs, and configurable constraints.
  */
 
-// Export shared utilities
+export * from './config/index.js';
+export * from './providers/index.js';
+export * from './services/index.js';
 export * from './shared/index.js';
-
-// Export main Storage class
 export { Storage } from './storage.js';

@@ -6,10 +6,23 @@
 
 # Interface: ParsedStorageKey
 
-Defined in: [shared/types/types.ts:47](https://github.com/TogetherCrew/reputo/blob/f32aed14599aa4d8441b75f566584e7d9454f5b4/packages/storage/src/shared/types/types.ts#L47)
+Defined in: shared/types/metadata.types.ts:23
 
 Parsed components of a storage key.
 Extracted from the key path structure.
+
+Storage keys follow the convention: `uploads/{timestamp}/{filename}.{ext}`
+This interface represents the parsed components of such a key.
+
+## Example
+
+```typescript
+const parsed: ParsedStorageKey = {
+  filename: 'data.csv',
+  ext: 'csv',
+  timestamp: 1732147200,
+};
+```
 
 ## Properties
 
@@ -17,7 +30,7 @@ Extracted from the key path structure.
 
 > **filename**: `string`
 
-Defined in: [shared/types/types.ts:53](https://github.com/TogetherCrew/reputo/blob/f32aed14599aa4d8441b75f566584e7d9454f5b4/packages/storage/src/shared/types/types.ts#L53)
+Defined in: shared/types/metadata.types.ts:29
 
 Full filename including extension.
 
@@ -33,7 +46,7 @@ Full filename including extension.
 
 > **ext**: `string`
 
-Defined in: [shared/types/types.ts:60](https://github.com/TogetherCrew/reputo/blob/f32aed14599aa4d8441b75f566584e7d9454f5b4/packages/storage/src/shared/types/types.ts#L60)
+Defined in: shared/types/metadata.types.ts:36
 
 File extension without the dot.
 
@@ -49,6 +62,12 @@ File extension without the dot.
 
 > **timestamp**: `number`
 
-Defined in: [shared/types/types.ts:65](https://github.com/TogetherCrew/reputo/blob/f32aed14599aa4d8441b75f566584e7d9454f5b4/packages/storage/src/shared/types/types.ts#L65)
+Defined in: shared/types/metadata.types.ts:43
 
 Unix timestamp (seconds since epoch) when the key was generated.
+
+#### Example
+
+```ts
+1732147200
+```

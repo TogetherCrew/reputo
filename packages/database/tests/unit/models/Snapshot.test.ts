@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest';
-import type { Snapshot } from '../../../src/interfaces/index.js';
 import SnapshotModel from '../../../src/models/Snapshot.model.js';
+import type { Snapshot } from '../../../src/shared/types/index.js';
 
 describe('Snapshot model', () => {
   describe('Snapshot validation', () => {
