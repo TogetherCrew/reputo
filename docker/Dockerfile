@@ -35,3 +35,23 @@ FROM base AS workflows
 COPY --from=build /prod/workflows /prod/workflows
 WORKDIR /prod/workflows
 CMD [ "pnpm", "start" ]
+
+ 19-s3-upload-service
+  24-feature-packagesreputation-algorithms---runtime-metadata
+  25-feature-packagesstorage-shared-storage-package
+  26-feature-appsworkflows---snapshot-execution-workflows-app
+  4-implement-reputation-algorithm-library
+  6-algorithmpreset-snapshot-schemas-crud
+  9-ui-implementation
+  ci/optimize
+  docker/expose-mongodb
+  feat/add-filter-by-algorithmpreset
+  feat/algorithm-preset-frozen
+  fix/snapshot-schema
+  hotfix-ui-api-env
+* main
+  pullpreview/s3
+  refactor
+  update-readme
+  update/readme
+  update/snapshot-output-type

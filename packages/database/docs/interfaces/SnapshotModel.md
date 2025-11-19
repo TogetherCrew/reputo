@@ -6,7 +6,7 @@
 
 # Interface: SnapshotModel
 
-Defined in: [packages/database/src/interfaces/Snapshot.interface.ts:46](https://github.com/TogetherCrew/reputo/blob/668913f3bddad795ee168fc5c009e413c85374c5/packages/database/src/interfaces/Snapshot.interface.ts#L46)
+Defined in: [packages/database/src/interfaces/Snapshot.interface.ts:54](https://github.com/TogetherCrew/reputo/blob/f32aed14599aa4d8441b75f566584e7d9454f5b4/packages/database/src/interfaces/Snapshot.interface.ts#L54)
 
 Interface extending Mongoose Model with additional methods for Snapshot.
 
@@ -20,7 +20,7 @@ Interface extending Mongoose Model with additional methods for Snapshot.
 
 > **new SnapshotModel**\<`DocType`\>(`doc?`, `fields?`, `options?`): `Document`\<`unknown`, \{ \}, [`Snapshot`](Snapshot.md), \{ \}, \{ \}\> & [`Snapshot`](Snapshot.md) & `object` & `object`
 
-Defined in: [packages/database/src/interfaces/Snapshot.interface.ts:46](https://github.com/TogetherCrew/reputo/blob/668913f3bddad795ee168fc5c009e413c85374c5/packages/database/src/interfaces/Snapshot.interface.ts#L46)
+Defined in: [packages/database/src/interfaces/Snapshot.interface.ts:54](https://github.com/TogetherCrew/reputo/blob/f32aed14599aa4d8441b75f566584e7d9454f5b4/packages/database/src/interfaces/Snapshot.interface.ts#L54)
 
 #### Parameters
 
@@ -50,7 +50,7 @@ Defined in: [packages/database/src/interfaces/Snapshot.interface.ts:46](https://
 
 > **paginate**: (`filter`, `options`) => `Promise`\<[`PaginateResult`](PaginateResult.md)\<`Document`\<`unknown`, \{ \}, [`Snapshot`](Snapshot.md), \{ \}, \{ \}\> & [`Snapshot`](Snapshot.md) & `object` & `object`\>\>
 
-Defined in: [packages/database/src/interfaces/Snapshot.interface.ts:48](https://github.com/TogetherCrew/reputo/blob/668913f3bddad795ee168fc5c009e413c85374c5/packages/database/src/interfaces/Snapshot.interface.ts#L48)
+Defined in: [packages/database/src/interfaces/Snapshot.interface.ts:56](https://github.com/TogetherCrew/reputo/blob/f32aed14599aa4d8441b75f566584e7d9454f5b4/packages/database/src/interfaces/Snapshot.interface.ts#L56)
 
 Pagination method for querying snapshots
 

@@ -6,7 +6,7 @@
 
 # Class: ObjectNotFoundError
 
-Defined in: [shared/errors/errors.ts:89](https://github.com/TogetherCrew/reputo/blob/668913f3bddad795ee168fc5c009e413c85374c5/packages/storage/src/shared/errors/errors.ts#L89)
+Defined in: [shared/errors/errors.ts:89](https://github.com/TogetherCrew/reputo/blob/f32aed14599aa4d8441b75f566584e7d9454f5b4/packages/storage/src/shared/errors/errors.ts#L89)
 
 Error thrown when an object is not found in S3.
 
@@ -24,7 +24,7 @@ or handle it according to their error handling strategy.
 
 > **new ObjectNotFoundError**(`key?`): `ObjectNotFoundError`
 
-Defined in: [shared/errors/errors.ts:95](https://github.com/TogetherCrew/reputo/blob/668913f3bddad795ee168fc5c009e413c85374c5/packages/storage/src/shared/errors/errors.ts#L95)
+Defined in: [shared/errors/errors.ts:95](https://github.com/TogetherCrew/reputo/blob/f32aed14599aa4d8441b75f566584e7d9454f5b4/packages/storage/src/shared/errors/errors.ts#L95)
 
 Creates a new ObjectNotFoundError instance.
 

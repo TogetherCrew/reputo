@@ -6,7 +6,7 @@
 
 # Class: InvalidContentTypeError
 
-Defined in: [shared/errors/errors.ts:57](https://github.com/TogetherCrew/reputo/blob/668913f3bddad795ee168fc5c009e413c85374c5/packages/storage/src/shared/errors/errors.ts#L57)
+Defined in: [shared/errors/errors.ts:57](https://github.com/TogetherCrew/reputo/blob/f32aed14599aa4d8441b75f566584e7d9454f5b4/packages/storage/src/shared/errors/errors.ts#L57)
 
 Error thrown when a file's content type is not in the allowlist.
 
@@ -23,7 +23,7 @@ or handle it according to their error handling strategy.
 
 > **new InvalidContentTypeError**(`contentType`, `allowedTypes`): `InvalidContentTypeError`
 
-Defined in: [shared/errors/errors.ts:74](https://github.com/TogetherCrew/reputo/blob/668913f3bddad795ee168fc5c009e413c85374c5/packages/storage/src/shared/errors/errors.ts#L74)
+Defined in: [shared/errors/errors.ts:74](https://github.com/TogetherCrew/reputo/blob/f32aed14599aa4d8441b75f566584e7d9454f5b4/packages/storage/src/shared/errors/errors.ts#L74)
 
 Creates a new InvalidContentTypeError instance.
 
@@ -55,7 +55,7 @@ List of allowed content types
 
 > `readonly` **contentType**: `string`
 
-Defined in: [shared/errors/errors.ts:61](https://github.com/TogetherCrew/reputo/blob/668913f3bddad795ee168fc5c009e413c85374c5/packages/storage/src/shared/errors/errors.ts#L61)
+Defined in: [shared/errors/errors.ts:61](https://github.com/TogetherCrew/reputo/blob/f32aed14599aa4d8441b75f566584e7d9454f5b4/packages/storage/src/shared/errors/errors.ts#L61)
 
 The content type that was rejected.
 
@@ -65,6 +65,6 @@ The content type that was rejected.
 
 > `readonly` **allowedTypes**: `string`[]
 
-Defined in: [shared/errors/errors.ts:66](https://github.com/TogetherCrew/reputo/blob/668913f3bddad795ee168fc5c009e413c85374c5/packages/storage/src/shared/errors/errors.ts#L66)
+Defined in: [shared/errors/errors.ts:66](https://github.com/TogetherCrew/reputo/blob/f32aed14599aa4d8441b75f566584e7d9454f5b4/packages/storage/src/shared/errors/errors.ts#L66)
 
 List of allowed content types.

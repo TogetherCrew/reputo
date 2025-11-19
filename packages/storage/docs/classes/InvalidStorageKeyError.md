@@ -6,7 +6,7 @@
 
 # Class: InvalidStorageKeyError
 
-Defined in: [shared/errors/errors.ts:128](https://github.com/TogetherCrew/reputo/blob/668913f3bddad795ee168fc5c009e413c85374c5/packages/storage/src/shared/errors/errors.ts#L128)
+Defined in: [shared/errors/errors.ts:128](https://github.com/TogetherCrew/reputo/blob/f32aed14599aa4d8441b75f566584e7d9454f5b4/packages/storage/src/shared/errors/errors.ts#L128)
 
 Error thrown when a storage key has an invalid format.
 
@@ -23,7 +23,7 @@ This indicates the key doesn't match the expected structure
 
 > **new InvalidStorageKeyError**(`key`, `reason?`): `InvalidStorageKeyError`
 
-Defined in: [shared/errors/errors.ts:140](https://github.com/TogetherCrew/reputo/blob/668913f3bddad795ee168fc5c009e413c85374c5/packages/storage/src/shared/errors/errors.ts#L140)
+Defined in: [shared/errors/errors.ts:140](https://github.com/TogetherCrew/reputo/blob/f32aed14599aa4d8441b75f566584e7d9454f5b4/packages/storage/src/shared/errors/errors.ts#L140)
 
 Creates a new InvalidStorageKeyError instance.
 
@@ -55,6 +55,6 @@ Optional reason why the key is invalid
 
 > `readonly` **key**: `string`
 
-Defined in: [shared/errors/errors.ts:132](https://github.com/TogetherCrew/reputo/blob/668913f3bddad795ee168fc5c009e413c85374c5/packages/storage/src/shared/errors/errors.ts#L132)
+Defined in: [shared/errors/errors.ts:132](https://github.com/TogetherCrew/reputo/blob/f32aed14599aa4d8441b75f566584e7d9454f5b4/packages/storage/src/shared/errors/errors.ts#L132)
 
 The invalid key that was provided.

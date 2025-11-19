@@ -6,12 +6,13 @@
 
 # Interface: SnapshotOutputs
 
-Defined in: [packages/database/src/interfaces/Snapshot.interface.ts:6](https://github.com/TogetherCrew/reputo/blob/668913f3bddad795ee168fc5c009e413c85374c5/packages/database/src/interfaces/Snapshot.interface.ts#L6)
+Defined in: [packages/database/src/interfaces/Snapshot.interface.ts:12](https://github.com/TogetherCrew/reputo/blob/f32aed14599aa4d8441b75f566584e7d9454f5b4/packages/database/src/interfaces/Snapshot.interface.ts#L12)
 
-## Properties
+Algorithm execution outputs/results.
 
-### csv?
+Keys are algorithm-specific (e.g., 'voting_engagement', 'csv').
+Values are typically file paths or storage location references.
 
-> `optional` **csv**: `string`
+## Indexable
 
-Defined in: [packages/database/src/interfaces/Snapshot.interface.ts:7](https://github.com/TogetherCrew/reputo/blob/668913f3bddad795ee168fc5c009e413c85374c5/packages/database/src/interfaces/Snapshot.interface.ts#L7)
+\[`key`: `string`\]: `string` \| `undefined`

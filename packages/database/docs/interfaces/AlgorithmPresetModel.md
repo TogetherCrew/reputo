@@ -6,7 +6,7 @@
 
 # Interface: AlgorithmPresetModel
 
-Defined in: [packages/database/src/interfaces/AlgorithmPreset.interface.ts:40](https://github.com/TogetherCrew/reputo/blob/668913f3bddad795ee168fc5c009e413c85374c5/packages/database/src/interfaces/AlgorithmPreset.interface.ts#L40)
+Defined in: [packages/database/src/interfaces/AlgorithmPreset.interface.ts:40](https://github.com/TogetherCrew/reputo/blob/f32aed14599aa4d8441b75f566584e7d9454f5b4/packages/database/src/interfaces/AlgorithmPreset.interface.ts#L40)
 
 Interface extending Mongoose Model with additional methods for AlgorithmPreset.
 
@@ -20,7 +20,7 @@ Interface extending Mongoose Model with additional methods for AlgorithmPreset.
 
 > **new AlgorithmPresetModel**\<`DocType`\>(`doc?`, `fields?`, `options?`): `Document`\<`unknown`, \{ \}, [`AlgorithmPreset`](AlgorithmPreset.md), \{ \}, \{ \}\> & [`AlgorithmPreset`](AlgorithmPreset.md) & `object` & `object`
 
-Defined in: [packages/database/src/interfaces/AlgorithmPreset.interface.ts:40](https://github.com/TogetherCrew/reputo/blob/668913f3bddad795ee168fc5c009e413c85374c5/packages/database/src/interfaces/AlgorithmPreset.interface.ts#L40)
+Defined in: [packages/database/src/interfaces/AlgorithmPreset.interface.ts:40](https://github.com/TogetherCrew/reputo/blob/f32aed14599aa4d8441b75f566584e7d9454f5b4/packages/database/src/interfaces/AlgorithmPreset.interface.ts#L40)
 
 #### Parameters
 
@@ -50,7 +50,7 @@ Defined in: [packages/database/src/interfaces/AlgorithmPreset.interface.ts:40](h
 
 > **paginate**: (`filter`, `options`) => `Promise`\<[`PaginateResult`](PaginateResult.md)\<`Document`\<`unknown`, \{ \}, [`AlgorithmPreset`](AlgorithmPreset.md), \{ \}, \{ \}\> & [`AlgorithmPreset`](AlgorithmPreset.md) & `object` & `object`\>\>
 
-Defined in: [packages/database/src/interfaces/AlgorithmPreset.interface.ts:42](https://github.com/TogetherCrew/reputo/blob/668913f3bddad795ee168fc5c009e413c85374c5/packages/database/src/interfaces/AlgorithmPreset.interface.ts#L42)
+Defined in: [packages/database/src/interfaces/AlgorithmPreset.interface.ts:42](https://github.com/TogetherCrew/reputo/blob/f32aed14599aa4d8441b75f566584e7d9454f5b4/packages/database/src/interfaces/AlgorithmPreset.interface.ts#L42)
 
 Pagination method for querying presets
 
