@@ -27,7 +27,7 @@ RUN pnpm deploy --filter=@reputo/api --prod --ignore-scripts /prod/api
 RUN pnpm deploy --filter=@reputo/workflows --prod --ignore-scripts /prod/workflows
 
 FROM base AS api
-ENV NODE_ENV=productiondc
+ENV NODE_ENV=production
 WORKDIR /prod/api
 COPY --from=build /prod/api ./
 EXPOSE 3000
