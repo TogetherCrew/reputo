@@ -1,8 +1,4 @@
-/**
- * Global type declarations for the TypeScript worker.
- */
-
-import type { Storage } from '@reputo/storage';
+import type { Storage } from './storage.js';
 
 declare global {
   // eslint-disable-next-line no-var
@@ -10,4 +6,3 @@ declare global {
 }
 
 export {};
-

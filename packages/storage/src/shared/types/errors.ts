@@ -1,0 +1,7 @@
+export type StorageErrorCode =
+  | 'OBJECT_NOT_FOUND'
+  | 'HEAD_OBJECT_FAILED'
+  | 'FILE_TOO_LARGE'
+  | 'INVALID_CONTENT_TYPE'
+  | 'INVALID_STORAGE_KEY';
+

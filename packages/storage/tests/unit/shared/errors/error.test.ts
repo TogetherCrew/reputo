@@ -6,7 +6,7 @@ import {
   InvalidStorageKeyError,
   ObjectNotFoundError,
   StorageError,
-} from '../../../src/shared/errors/index.js';
+} from '../../../../src/shared/errors/index.js';
 
 describe('StorageError', () => {
   it('should create an error with correct name and message', () => {

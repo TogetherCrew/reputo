@@ -1,9 +1,3 @@
-/**
- * @reputo/storage/shared/utils/keys
- *
- * Utilities for generating and parsing storage keys.
- */
-
 import { InvalidStorageKeyError } from '../errors/index.js';
 import type { ParsedStorageKey } from '../types/index.js';
 
@@ -24,14 +18,6 @@ function sanitizeFilename(filename: string): string {
   return sanitized.slice(0, 200) || 'file';
 }
 
-/**
- * Generates a storage key for uploading a file.
- *
- * @param filename - Original filename
- * @param contentType - MIME type
- * @param now - Optional Date object for timestamp generation
- * @returns Storage key path
- */
 export function generateUploadKey(filename: string, contentType: string, now: Date = new Date()): string {
   const timestamp = Math.floor(now.getTime() / 1000);
   const ext = getExtensionFromContentType(contentType);
@@ -40,13 +26,6 @@ export function generateUploadKey(filename: string, contentType: string, now: Da
   return `uploads/${timestamp}/${sanitized}.${ext}`;
 }
 
-/**
- * Parses a storage key into its component parts.
- *
- * @param key - Storage key to parse
- * @returns Parsed key components
- * @throws {InvalidStorageKeyError} If the key format is invalid
- */
 export function parseStorageKey(key: string): ParsedStorageKey {
   const parts = key.split('/');
 

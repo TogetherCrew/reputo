@@ -1,7 +1,7 @@
 /**
- * @reputo/storage/services/storage-io.types
+ * @reputo/storage/shared/types/storage
  *
- * Type definitions for storage I/O operations.
+ * Type definitions for storage operations.
  */
 
 /**
@@ -15,7 +15,7 @@ export interface UploadUrlResult {
 
   /**
    * Presigned URL for uploading the file.
-   * Valid for the duration specified in config.
+   * Valid for the duration specified in options.
    */
   url: string;
 
@@ -61,7 +61,7 @@ export interface ObjectMetadata {
 export interface DownloadUrlResult {
   /**
    * Presigned URL for downloading the file.
-   * Valid for the duration specified in config.
+   * Valid for the duration specified in options.
    */
   url: string;
 
@@ -75,3 +75,42 @@ export interface DownloadUrlResult {
    */
   metadata: ObjectMetadata;
 }
+
+/**
+ * Result from verifying an uploaded file.
+ */
+export interface VerificationResult {
+  /**
+   * Storage key of the verified object.
+   */
+  key: string;
+
+  /**
+   * Complete metadata about the verified object.
+   */
+  metadata: ObjectMetadata;
+}
+
+/**
+ * Parsed components of a storage key.
+ * Extracted from the key path structure.
+ *
+ * Storage keys follow the convention: `uploads/{timestamp}/{filename}.{ext}`
+ */
+export interface ParsedStorageKey {
+  /**
+   * Full filename including extension.
+   */
+  filename: string;
+
+  /**
+   * File extension without the dot.
+   */
+  ext: string;
+
+  /**
+   * Unix timestamp (seconds since epoch) when the key was generated.
+   */
+  timestamp: number;
+}
+
