@@ -5,21 +5,27 @@ import type { Model } from 'mongoose'
 import { startMongo, stopMongo } from '../../utils/mongo-memory-server'
 import { createTestApp } from '../../utils/app-test.module'
 import { api } from '../../utils/request'
+import { insertAlgorithmPreset } from '../../factories/algorithmPreset.factory'
 import { insertSnapshot } from '../../factories/snapshot.factory'
 
 describe('DELETE /api/v1/snapshots/:id', () => {
     let app: INestApplication
+    let algorithmPresetModel: Model<any>
     let snapshotModel: Model<any>
 
     beforeAll(async () => {
         const uri = await startMongo()
         const boot = await createTestApp({ mongoUri: uri })
         app = boot.app
+        algorithmPresetModel = boot.moduleRef.get(
+            getModelToken('AlgorithmPreset')
+        )
         snapshotModel = boot.moduleRef.get(getModelToken('Snapshot'))
     })
 
     afterEach(async () => {
         await snapshotModel.deleteMany({})
+        await algorithmPresetModel.deleteMany({})
     })
 
     afterAll(async () => {
@@ -28,11 +34,13 @@ describe('DELETE /api/v1/snapshots/:id', () => {
     })
 
     it('should delete snapshot by id (204) with no body', async () => {
-        const snapshot = await insertSnapshot(snapshotModel, {
+        const preset = await insertAlgorithmPreset(algorithmPresetModel, {
             key: 'test_key',
             version: '1.0.0',
             inputs: [],
         })
+        const { createdAt, updatedAt, ...presetData } = preset.toObject()
+        const snapshot = await insertSnapshot(snapshotModel, preset._id.toString(), presetData)
 
         const res = await api(app)
             .delete(`/snapshots/${snapshot._id}`)
@@ -58,11 +66,13 @@ describe('DELETE /api/v1/snapshots/:id', () => {
     })
 
     it('should make subsequent GET by id return 404 after deletion', async () => {
-        const snapshot = await insertSnapshot(snapshotModel, {
+        const preset = await insertAlgorithmPreset(algorithmPresetModel, {
             key: 'test_key',
             version: '1.0.0',
             inputs: [],
         })
+        const { createdAt, updatedAt, ...presetData } = preset.toObject()
+        const snapshot = await insertSnapshot(snapshotModel, preset._id.toString(), presetData)
 
         await api(app).delete(`/snapshots/${snapshot._id}`).expect(204)
 

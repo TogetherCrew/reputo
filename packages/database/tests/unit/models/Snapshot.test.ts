@@ -9,6 +9,7 @@ describe('Snapshot model', () => {
     beforeEach(() => {
       snapshot = {
         status: 'queued',
+        algorithmPreset: '507f1f77bcf86cd799439011',
         algorithmPresetFrozen: {
           key: 'voting_engagement',
           version: '1.0.0',

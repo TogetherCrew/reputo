@@ -25,6 +25,7 @@ export class SnapshotService {
     const snapshot: Omit<Snapshot, 'createdAt' | 'updatedAt'> = {
       status: 'queued',
       ...snapshotData,
+      algorithmPreset: createDto.algorithmPresetId,
       algorithmPresetFrozen: algorithmPreset as AlgorithmPresetFrozen,
     };
 
@@ -32,7 +33,7 @@ export class SnapshotService {
   }
 
   list(queryDto: ListSnapshotsQueryDto) {
-    const filter: FilterQuery<Snapshot> = pick(queryDto, ['status']);
+    const filter: FilterQuery<Snapshot> = pick(queryDto, ['status', 'algorithmPreset']);
     const paginateOptions = pick(queryDto, ['page', 'limit', 'sortBy', 'populate']);
 
     const presetFilters: Record<string, string> = {};

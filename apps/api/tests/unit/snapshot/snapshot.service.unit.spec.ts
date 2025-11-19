@@ -54,6 +54,7 @@ describe('SnapshotService', () => {
 
             const mockSnapshot = {
                 _id: '507f1f77bcf86cd799439012',
+                algorithmPreset: '507f1f77bcf86cd799439011',
                 algorithmPresetFrozen: {
                     key: 'test_key',
                     version: '1.0.0',
@@ -84,6 +85,7 @@ describe('SnapshotService', () => {
             // Verify that the preset is frozen and embedded as-is (no field stripping)
             const createCall = (mockSnapshotRepository.create as any).mock
                 .calls[0][0]
+            expect(createCall.algorithmPreset).toBe(createDto.algorithmPresetId)
             expect(createCall.algorithmPresetFrozen).toEqual(
                 mockAlgorithmPreset
             )
@@ -123,6 +125,7 @@ describe('SnapshotService', () => {
 
             const mockSnapshot = {
                 _id: '507f1f77bcf86cd799439012',
+                algorithmPreset: '507f1f77bcf86cd799439011',
                 algorithmPresetFrozen: {
                     key: 'test_key',
                     version: '1.0.0',
@@ -179,6 +182,40 @@ describe('SnapshotService', () => {
                 .mock.calls[0]
             expect(filter).toEqual({
                 status: 'queued',
+            })
+            expect(options).toMatchObject({
+                page: 1,
+                limit: 10,
+            })
+            expect(result).toBe(mockPaginatedResult)
+        })
+
+        it('should filter by algorithmPreset from queryDto', async () => {
+            const queryDto: ListSnapshotsQueryDto = {
+                algorithmPreset: '507f1f77bcf86cd799439011',
+                page: 1,
+                limit: 10,
+            }
+
+            const mockPaginatedResult = {
+                results: [],
+                totalResults: 3,
+                page: 1,
+                limit: 10,
+                totalPages: 1,
+            }
+
+            mockSnapshotRepository.findAll = vi
+                .fn()
+                .mockResolvedValue(mockPaginatedResult)
+
+            const result = await service.list(queryDto)
+
+            expect(mockSnapshotRepository.findAll).toHaveBeenCalledOnce()
+            const [filter, options] = (mockSnapshotRepository.findAll as any)
+                .mock.calls[0]
+            expect(filter).toEqual({
+                algorithmPreset: '507f1f77bcf86cd799439011',
             })
             expect(options).toMatchObject({
                 page: 1,
@@ -277,6 +314,38 @@ describe('SnapshotService', () => {
             expect(filter['algorithmPresetFrozen.key']).toBe('test_key')
             expect(filter['algorithmPresetFrozen.version']).toBe('1.0.0')
             expect(result).toBe(mockPaginatedSnapshots)
+        })
+
+        it('should filter by algorithmPreset combined with status', async () => {
+            const queryDto: ListSnapshotsQueryDto = {
+                algorithmPreset: '507f1f77bcf86cd799439011',
+                status: 'completed',
+                page: 1,
+                limit: 10,
+            }
+
+            const mockPaginatedResult = {
+                results: [],
+                totalResults: 1,
+                page: 1,
+                limit: 10,
+                totalPages: 1,
+            }
+
+            mockSnapshotRepository.findAll = vi
+                .fn()
+                .mockResolvedValue(mockPaginatedResult)
+
+            const result = await service.list(queryDto)
+
+            expect(mockSnapshotRepository.findAll).toHaveBeenCalledOnce()
+            const [filter] = (mockSnapshotRepository.findAll as any).mock
+                .calls[0]
+            expect(filter).toEqual({
+                algorithmPreset: '507f1f77bcf86cd799439011',
+                status: 'completed',
+            })
+            expect(result).toBe(mockPaginatedResult)
         })
 
         it('should handle empty query parameters without filters', async () => {
