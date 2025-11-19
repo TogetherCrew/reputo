@@ -54,11 +54,23 @@ export function PresetDetailsDialog({ isOpen, onClose, preset }: PresetDetailsDi
               </div>
               <div>
                 <h3 className="text-sm font-medium text-muted-foreground">Created</h3>
-                <p className="text-sm">{new Date(preset.createdAt).toLocaleString()}</p>
+                <p className="text-sm">{new Date(preset.createdAt).toLocaleString('en-US', { 
+                  year: 'numeric', 
+                  month: 'short', 
+                  day: 'numeric', 
+                  hour: '2-digit', 
+                  minute: '2-digit' 
+                })}</p>
               </div>
               <div>
                 <h3 className="text-sm font-medium text-muted-foreground">Last Updated</h3>
-                <p className="text-sm">{new Date(preset.updatedAt).toLocaleString()}</p>
+                <p className="text-sm">{new Date(preset.updatedAt).toLocaleString('en-US', { 
+                  year: 'numeric', 
+                  month: 'short', 
+                  day: 'numeric', 
+                  hour: '2-digit', 
+                  minute: '2-digit' 
+                })}</p>
               </div>
             </div>
             

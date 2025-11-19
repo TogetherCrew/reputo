@@ -60,6 +60,7 @@ export function AlgorithmPresets({ algo }: { algo?: Algorithm }) {
     useState<AlgorithmPresetResponseDto | null>(null);
   const [presetToEdit, setPresetToEdit] =
     useState<AlgorithmPresetResponseDto | null>(null);
+  const [runningPresetId, setRunningPresetId] = useState<string | null>(null);
 
   // API hooks
   const {
@@ -116,6 +117,7 @@ export function AlgorithmPresets({ algo }: { algo?: Algorithm }) {
 
   const handleRunPreset = async (presetId: string) => {
     try {
+      setRunningPresetId(presetId);
       const snapshotData: CreateSnapshotDto = {
         algorithmPresetId: presetId,
         outputs: {},
@@ -130,6 +132,8 @@ export function AlgorithmPresets({ algo }: { algo?: Algorithm }) {
       router.push(`${pathname}?${params.toString()}`);
     } catch (error) {
       console.error("Failed to create snapshot:", error);
+    } finally {
+      setRunningPresetId(null);
     }
   };
 
@@ -237,7 +241,11 @@ export function AlgorithmPresets({ algo }: { algo?: Algorithm }) {
                     {preset.version}
                   </TableCell>
                   <TableCell className="whitespace-nowrap">
-                    {new Date(preset.createdAt).toLocaleDateString()}
+                    {new Date(preset.createdAt).toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'short',
+                      day: 'numeric'
+                    })}
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
@@ -246,9 +254,9 @@ export function AlgorithmPresets({ algo }: { algo?: Algorithm }) {
                         size="icon"
                         aria-label="Run"
                         onClick={() => handleRunPreset(preset._id)}
-                        disabled={createSnapshotMutation.isPending}
+                        disabled={runningPresetId === preset._id}
                       >
-                        {createSnapshotMutation.isPending ? (
+                        {runningPresetId === preset._id ? (
                           <Loader2 className="size-4 animate-spin" />
                         ) : (
                           <Play className="size-4" />

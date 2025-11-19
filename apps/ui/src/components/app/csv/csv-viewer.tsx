@@ -191,7 +191,11 @@ export function CSVViewer({ href, className, hasHeader = true, delimiter = ",", 
         />
         <div className="text-xs text-muted-foreground">
           Showing {sortedRows.length} of {csv.rows.length} rows
-          {lastRefreshedAt ? ` • Updated ${new Date(lastRefreshedAt).toLocaleTimeString()}` : ""}
+          {lastRefreshedAt ? ` • Updated ${new Date(lastRefreshedAt).toLocaleTimeString('en-US', { 
+            hour: '2-digit', 
+            minute: '2-digit', 
+            second: '2-digit' 
+          })}` : ""}
         </div>
         <div className="flex-1" />
         <Button variant="outline" size="sm" onClick={() => void load()} disabled={loading}>
