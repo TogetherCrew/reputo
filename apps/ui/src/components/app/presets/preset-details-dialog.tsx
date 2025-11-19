@@ -86,6 +86,7 @@ export function PresetDetailsDialog({ isOpen, onClose, preset }: PresetDetailsDi
                       {typeof input.value === "string" && input.value && (input.value.includes("/") || input.value.startsWith("uploads/")) && (
                         <Button
                           size="sm"
+                          variant="outline"
                           onClick={async () => {
                             try {
                               const { url } = await storageApi.createDownload({ key: input.value as string });
@@ -102,7 +103,7 @@ export function PresetDetailsDialog({ isOpen, onClose, preset }: PresetDetailsDi
                       {typeof input.value === "string" && input.value && input.value.toLowerCase().includes(".csv") && (
                         <Button
                           size="sm"
-                          variant="secondary"
+                          variant="outline"
                           onClick={async () => {
                             try {
                               const val = input.value as string;
