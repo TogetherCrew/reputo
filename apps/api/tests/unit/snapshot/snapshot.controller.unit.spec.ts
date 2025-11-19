@@ -94,6 +94,30 @@ describe('SnapshotController', () => {
             expect(result).toBe(mockPaginatedResult)
         })
 
+        it('should handle query with algorithmPreset filter', async () => {
+            const queryDto: ListSnapshotsQueryDto = {
+                algorithmPreset: '507f1f77bcf86cd799439011',
+                page: 1,
+                limit: 10,
+            }
+
+            const mockPaginatedResult = {
+                results: [],
+                totalResults: 3,
+                page: 1,
+                limit: 10,
+                totalPages: 1,
+            }
+
+            mockService.list = vi.fn().mockResolvedValue(mockPaginatedResult)
+
+            const result = await controller.list(queryDto)
+
+            expect(mockService.list).toHaveBeenCalledOnce()
+            expect(mockService.list).toHaveBeenCalledWith(queryDto)
+            expect(result).toBe(mockPaginatedResult)
+        })
+
         it('should handle query with key and version filters', async () => {
             const queryDto: ListSnapshotsQueryDto = {
                 key: 'test_key',

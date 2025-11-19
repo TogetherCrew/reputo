@@ -61,7 +61,11 @@ describe('GET /api/v1/snapshots', () => {
         for (let i = 0; i < 15; i++) {
             const preset = i % 2 === 0 ? preset1 : preset2
             const presetData = i % 2 === 0 ? preset1Data : preset2Data
-            await insertSnapshot(snapshotModel, preset._id.toString(), presetData)
+            await insertSnapshot(
+                snapshotModel,
+                preset._id.toString(),
+                presetData
+            )
         }
 
         const res = await api(app).get('/snapshots').expect(200)
@@ -88,12 +92,20 @@ describe('GET /api/v1/snapshots', () => {
         const preset = await insertAlgorithmPreset(algorithmPresetModel)
         const { createdAt, updatedAt, ...presetData } = preset.toObject()
 
-        const snapshot1 = await insertSnapshot(snapshotModel, preset._id.toString(), presetData)
+        const snapshot1 = await insertSnapshot(
+            snapshotModel,
+            preset._id.toString(),
+            presetData
+        )
         await snapshotModel.updateOne(
             { _id: snapshot1._id },
             { status: 'queued' }
         )
-        const snapshot2 = await insertSnapshot(snapshotModel, preset._id.toString(), presetData)
+        const snapshot2 = await insertSnapshot(
+            snapshotModel,
+            preset._id.toString(),
+            presetData
+        )
         await snapshotModel.updateOne(
             { _id: snapshot2._id },
             { status: 'running' }
@@ -110,7 +122,11 @@ describe('GET /api/v1/snapshots', () => {
         const { createdAt, updatedAt, ...presetData } = preset.toObject()
 
         await insertSnapshot(snapshotModel, preset._id.toString(), presetData)
-        const snapshot2 = await insertSnapshot(snapshotModel, preset._id.toString(), presetData)
+        const snapshot2 = await insertSnapshot(
+            snapshotModel,
+            preset._id.toString(),
+            presetData
+        )
         await snapshotModel.updateOne(
             { _id: snapshot2._id },
             { status: 'running' }
@@ -127,7 +143,11 @@ describe('GET /api/v1/snapshots', () => {
         const { createdAt, updatedAt, ...presetData } = preset.toObject()
 
         await insertSnapshot(snapshotModel, preset._id.toString(), presetData)
-        const snapshot2 = await insertSnapshot(snapshotModel, preset._id.toString(), presetData)
+        const snapshot2 = await insertSnapshot(
+            snapshotModel,
+            preset._id.toString(),
+            presetData
+        )
         await snapshotModel.updateOne(
             { _id: snapshot2._id },
             { status: 'completed' }
@@ -146,7 +166,11 @@ describe('GET /api/v1/snapshots', () => {
         const { createdAt, updatedAt, ...presetData } = preset.toObject()
 
         await insertSnapshot(snapshotModel, preset._id.toString(), presetData)
-        const snapshot2 = await insertSnapshot(snapshotModel, preset._id.toString(), presetData)
+        const snapshot2 = await insertSnapshot(
+            snapshotModel,
+            preset._id.toString(),
+            presetData
+        )
         await snapshotModel.updateOne(
             { _id: snapshot2._id },
             { status: 'failed' }
@@ -163,7 +187,11 @@ describe('GET /api/v1/snapshots', () => {
         const { createdAt, updatedAt, ...presetData } = preset.toObject()
 
         await insertSnapshot(snapshotModel, preset._id.toString(), presetData)
-        const snapshot2 = await insertSnapshot(snapshotModel, preset._id.toString(), presetData)
+        const snapshot2 = await insertSnapshot(
+            snapshotModel,
+            preset._id.toString(),
+            presetData
+        )
         await snapshotModel.updateOne(
             { _id: snapshot2._id },
             { status: 'cancelled' }
@@ -233,13 +261,89 @@ describe('GET /api/v1/snapshots', () => {
         expect(res.body.results[0].algorithmPresetFrozen.version).toBe('2.0.0')
     })
 
+    it('should filter by algorithmPreset (200)', async () => {
+        const preset1 = await insertAlgorithmPreset(algorithmPresetModel)
+        const preset2 = await insertAlgorithmPreset(algorithmPresetModel)
+
+        const {
+            createdAt: c1,
+            updatedAt: u1,
+            ...preset1Data
+        } = preset1.toObject()
+        const {
+            createdAt: c2,
+            updatedAt: u2,
+            ...preset2Data
+        } = preset2.toObject()
+
+        await insertSnapshot(snapshotModel, preset1._id.toString(), preset1Data)
+        await insertSnapshot(snapshotModel, preset2._id.toString(), preset2Data)
+
+        const res = await api(app)
+            .get(`/snapshots?algorithmPreset=${preset1._id.toString()}`)
+            .expect(200)
+
+        expect(res.body.totalResults).toBe(1)
+        expect(res.body.results[0].algorithmPreset).toBe(preset1._id.toString())
+    })
+
+    it('should filter by algorithmPreset combined with status (200)', async () => {
+        const preset1 = await insertAlgorithmPreset(algorithmPresetModel)
+        const preset2 = await insertAlgorithmPreset(algorithmPresetModel)
+
+        const {
+            createdAt: c1,
+            updatedAt: u1,
+            ...preset1Data
+        } = preset1.toObject()
+        const {
+            createdAt: c2,
+            updatedAt: u2,
+            ...preset2Data
+        } = preset2.toObject()
+
+        const snapshot1 = await insertSnapshot(
+            snapshotModel,
+            preset1._id.toString(),
+            preset1Data
+        )
+        await snapshotModel.updateOne(
+            { _id: snapshot1._id },
+            { status: 'completed' }
+        )
+        await insertSnapshot(snapshotModel, preset1._id.toString(), preset1Data)
+        await insertSnapshot(snapshotModel, preset2._id.toString(), preset2Data)
+
+        const res = await api(app)
+            .get(
+                `/snapshots?algorithmPreset=${preset1._id.toString()}&status=completed`
+            )
+            .expect(200)
+
+        expect(res.body.totalResults).toBe(1)
+        expect(res.body.results[0].algorithmPreset).toBe(preset1._id.toString())
+        expect(res.body.results[0].status).toBe('completed')
+    })
+
+    it('should return 400 for invalid algorithmPreset ID format', async () => {
+        await api(app).get('/snapshots?algorithmPreset=invalid-id').expect(400)
+    })
+
     it('should sort by createdAt:desc (200)', async () => {
         const preset = await insertAlgorithmPreset(algorithmPresetModel)
         const { createdAt, updatedAt, ...presetData } = preset.toObject()
 
-        const snapshot1 = await insertSnapshot(snapshotModel, preset._id.toString(), presetData)
+        const snapshot1 = await insertSnapshot(
+            snapshotModel,
+            preset._id.toString(),
+            presetData
+        )
         await new Promise((resolve) => setTimeout(resolve, 10))
-        const snapshot2 = await insertSnapshot(snapshotModel, preset._id.toString(), presetData)
+        const snapshot2 = await insertSnapshot(
+            snapshotModel,
+            preset._id.toString(),
+            presetData
+        )
 
         const res = await api(app).get('/snapshots').expect(200)
 
