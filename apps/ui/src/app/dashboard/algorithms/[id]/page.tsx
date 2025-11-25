@@ -31,7 +31,8 @@ export default async function AlgorithmPage({ params }: PageProps) {
           </Link>
         </Button>
         <Badge variant="outline">{algo.category}</Badge>
-        <div className="ml-auto">
+        {/* Version selector */}
+        {/* <div className="ml-auto">
           <Select defaultValue="v1.0.0">
             <SelectTrigger className="w-40">
               <SelectValue placeholder="Version" />
@@ -43,7 +44,7 @@ export default async function AlgorithmPage({ params }: PageProps) {
               <SelectItem value="v1.0.0-rc.1">v1.0.0-rc.1</SelectItem>
             </SelectContent>
           </Select>
-        </div>
+        </div> */}
       </div>
 
       <section className="grid gap-4">

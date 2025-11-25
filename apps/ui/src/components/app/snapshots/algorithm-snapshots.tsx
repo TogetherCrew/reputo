@@ -2,7 +2,7 @@
 
 import { AlertCircle, Eye, FolderOpen, Loader2, Play, Trash2 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -41,14 +41,19 @@ export function AlgorithmSnapshots({ algo }: { algo?: Algorithm }) {
   const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
   const [snapshotToDelete, setSnapshotToDelete] = useState<string | null>(null);
   const [snapshotToView, setSnapshotToView] = useState<SnapshotResponseDto | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
   const searchParams = useSearchParams();
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
   
   // Get preset filter from URL params
   const presetFilter = searchParams.get("preset");
   
-  // API hooks
+  // API hooks - filter by algorithmPreset ID if preset is selected
   const { data: snapshotsData, isLoading, error } = useSnapshots({
-    algorithmPreset: presetFilter || undefined,
+    algorithmPreset: presetFilter ?? undefined,
     status: selectedStatus !== "all" ? selectedStatus as 'queued' | 'running' | 'completed' | 'failed' | 'cancelled' : undefined,
     limit: 50,
     populate: "algorithmPreset",
@@ -118,6 +123,10 @@ export function AlgorithmSnapshots({ algo }: { algo?: Algorithm }) {
   };
 
   const formatTimeAgo = (dateString: string) => {
+    if (!isMounted) {
+      // Return a stable value during SSR to avoid hydration mismatch
+      return "—";
+    }
     const date = new Date(dateString);
     const now = new Date();
     const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));

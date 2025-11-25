@@ -6,6 +6,7 @@ import type { DropEvent, DropzoneOptions, FileRejection } from 'react-dropzone';
 import { useDropzone } from 'react-dropzone';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { storageApi } from '@/lib/api/services';
 
 type DropzoneContextType = {
   src?: File[];
@@ -35,6 +36,7 @@ export type DropzoneProps = Omit<DropzoneOptions, 'onDrop'> & {
     fileRejections: FileRejection[],
     event: DropEvent
   ) => void;
+  onUploadKey?: (key: string) => void;
   children?: ReactNode;
 };
 export const Dropzone = ({
@@ -45,6 +47,7 @@ export const Dropzone = ({
   onDrop,
   onError,
   disabled,
+  onUploadKey,
   src,
   className,
   children,
@@ -57,13 +60,34 @@ export const Dropzone = ({
     minSize,
     onError,
     disabled,
-    onDrop: (acceptedFiles, fileRejections, event) => {
+    onDrop: async (acceptedFiles, fileRejections, event) => {
       if (fileRejections.length > 0) {
         const message = fileRejections.at(0)?.errors.at(0)?.message;
         onError?.(new Error(message));
         return;
       }
       onDrop?.(acceptedFiles, fileRejections, event);
+      const file = acceptedFiles.at(0);
+      if (!file || !onUploadKey) return;
+      try {
+        const contentType = file.type || 'text/csv';
+        const { key, url } = await storageApi.createUpload({
+          filename: file.name,
+          contentType,
+        });
+        const putResponse = await fetch(url, {
+          method: 'PUT',
+          headers: { 'Content-Type': contentType },
+          body: file,
+        });
+        if (putResponse.status < 200 || putResponse.status >= 300) {
+          throw new Error(`Upload failed with status ${putResponse.status}`);
+        }
+        onUploadKey(key);
+      } catch (e) {
+        const err = e instanceof Error ? e : new Error('Upload failed');
+        onError?.(err);
+      }
     },
     ...props,
   });

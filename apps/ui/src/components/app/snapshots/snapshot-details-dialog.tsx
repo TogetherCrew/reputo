@@ -11,6 +11,10 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import type { SnapshotResponseDto } from "@/lib/api/types";
+import { useState, useMemo } from "react";
+import { CSVViewerDialog } from "@/components/app/csv/csv-viewer-dialog";
+import { storageApi } from "@/lib/api/services";
+import { Download, Eye } from "lucide-react";
 
 interface SnapshotDetailsDialogProps {
   isOpen: boolean;
@@ -19,6 +23,18 @@ interface SnapshotDetailsDialogProps {
 }
 
 export function SnapshotDetailsDialog({ isOpen, onClose, snapshot }: SnapshotDetailsDialogProps) {
+  const [csvViewerOpen, setCsvViewerOpen] = useState(false);
+  const [csvHref, setCsvHref] = useState<string | null>(null);
+
+  // Extend snapshot outputs with CSV URL to sample file
+  const extendedOutputs = useMemo(() => {
+    if (!snapshot?.outputs) return null;
+    return {
+      ...snapshot.outputs,
+      csv: "/sample-output.csv",
+    };
+  }, [snapshot?.outputs]);
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "running":
@@ -54,15 +70,15 @@ export function SnapshotDetailsDialog({ isOpen, onClose, snapshot }: SnapshotDet
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-2xl">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] flex flex-col">
+        <DialogHeader className="shrink-0">
           <DialogTitle>Snapshot Details</DialogTitle>
           <DialogDescription>
             View detailed information about this snapshot execution
           </DialogDescription>
         </DialogHeader>
         {snapshot && (
-          <div className="space-y-6">
+          <div className="space-y-6 overflow-y-auto flex-1 min-h-0 pr-1">
             <div className="grid gap-4">
               <div>
                 <h3 className="text-sm font-medium text-muted-foreground">Snapshot ID</h3>
@@ -116,29 +132,111 @@ export function SnapshotDetailsDialog({ isOpen, onClose, snapshot }: SnapshotDet
               </div>
             )}
             
-            {snapshot.outputs && Object.keys(snapshot.outputs).length > 0 && (
+            {extendedOutputs && Object.keys(extendedOutputs).length > 0 && (
               <div>
                 <h3 className="text-sm font-medium text-muted-foreground mb-3">Outputs</h3>
                 <div className="space-y-2">
-                  {Object.entries(snapshot.outputs).map(([key, value]) => (
-                    <div key={key} className="p-3 border rounded-lg">
-                      <div className="font-medium">{key}</div>
-                      <div className="text-sm text-muted-foreground">
-                        {typeof value === 'object' ? JSON.stringify(value, null, 2) : String(value)}
+                  {Object.entries(extendedOutputs).map(([key, value]) => {
+                    const isStringValue = typeof value === "string";
+                    // Check if it's a public file (starts with / or is a filename like sample-output.csv)
+                    const isPublicFile = isStringValue && (
+                      value.startsWith("/") || 
+                      value.startsWith("sample-") ||
+                      /^[^\/]+\.(csv|json|txt|pdf)$/i.test(value)
+                    );
+                    const isCsvFile = isStringValue && (
+                      value.toLowerCase().endsWith(".csv") || 
+                      key.toLowerCase() === "csv"
+                    );
+                    // Construct file path for public folder
+                    const filePath = isPublicFile 
+                      ? (value.startsWith("/") ? value : `/${value}`)
+                      : null;
+                    
+                    return (
+                      <div key={key} className="p-3 border rounded-lg">
+                        <div className="font-medium mb-2">{key}</div>
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="text-sm text-muted-foreground break-all flex-1">
+                            {typeof value === 'object' ? JSON.stringify(value, null, 2) : String(value)}
+                          </div>
+                          <div className="flex items-center gap-2 shrink-0">
+                            {filePath && (
+                              <>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => {
+                                    window.open(filePath, "_blank", "noopener,noreferrer");
+                                  }}
+                                  className="gap-2"
+                                >
+                                  <Download className="size-3" />
+                                  Download
+                                </Button>
+                                {isCsvFile && (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => {
+                                      setCsvHref(filePath);
+                                      setCsvViewerOpen(true);
+                                    }}
+                                    className="gap-2"
+                                  >
+                                    <Eye className="size-3" />
+                                    View
+                                  </Button>
+                                )}
+                              </>
+                            )}
+                            {!filePath && isStringValue && !/^https?:\/\//i.test(value) && (
+                              <Button
+                                size="sm"
+                                variant="secondary"
+                                onClick={async () => {
+                                  try {
+                                    const val = value as string;
+                                    let url = val;
+                                    if (!/^https?:\/\//i.test(val)) {
+                                      const res = await storageApi.createDownload({ key: val });
+                                      url = res.url;
+                                    }
+                                    setCsvHref(url);
+                                    setCsvViewerOpen(true);
+                                  } catch (e) {
+                                    console.error(e);
+                                    alert("Unable to open CSV viewer");
+                                  }
+                                }}
+                                className="gap-2"
+                              >
+                                <Eye className="size-3" />
+                                View CSV
+                              </Button>
+                            )}
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             )}
           </div>
         )}
-        <DialogFooter>
+        <DialogFooter className="shrink-0">
           <Button variant="outline" onClick={onClose}>
             Close
           </Button>
         </DialogFooter>
       </DialogContent>
+      <CSVViewerDialog
+        isOpen={csvViewerOpen}
+        onClose={() => setCsvViewerOpen(false)}
+        href={csvHref}
+        title="CSV Output Preview"
+      />
     </Dialog>
   );
 }

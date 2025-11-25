@@ -39,5 +39,7 @@ yarn-error.log*
 **/*.test.*
 **/*.spec.*
 
+*.md
+**/*.md
 
 !packages/**

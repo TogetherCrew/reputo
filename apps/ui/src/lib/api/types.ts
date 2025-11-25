@@ -60,7 +60,7 @@ export interface TemporalDto {
 }
 
 export interface CreateSnapshotDto {
-  algorithmPreset: string;
+  algorithmPresetId: string;
   temporal?: TemporalDto;
   outputs?: Record<string, unknown>;
 }

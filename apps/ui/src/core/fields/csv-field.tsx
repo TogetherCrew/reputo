@@ -2,7 +2,8 @@
 
 import { AlertCircle, CheckCircle2 } from "lucide-react";
 import { useState } from "react";
-import { Control, FieldValues } from "react-hook-form";
+import type { Control, FieldValues } from "react-hook-form";
+import { useFormContext } from "react-hook-form";
 import { Dropzone, DropzoneContent, DropzoneEmptyState } from "@/components/app/dropzone";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -12,10 +13,11 @@ import {
   FormField,
   FormItem,
   FormLabel,
-  FormMessage,
 } from "@/components/ui/form";
+import { Spinner } from "@/components/ui/spinner";
 import type { CSVInput } from "../types";
 import { validateCSVContent } from "../validation";
+import { storageApi } from "@/lib/api/services";
 
 interface CSVFieldProps {
   input: CSVInput;
@@ -23,29 +25,89 @@ interface CSVFieldProps {
 }
 
 export function CSVField({ input, control }: CSVFieldProps) {
+  const { setError, clearErrors } = useFormContext<FieldValues>();
   const [validationResult, setValidationResult] = useState<{
     valid: boolean;
     errors: string[];
   } | null>(null);
   const [isValidating, setIsValidating] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
 
-  const handleFileChange = async (file: File | null, onChange: (file: File | null) => void) => {
-    onChange(file);
+  const handleFileChange = async (file: File | null, onChange: (value: File | string | null) => void) => {
+    // Clear previous validation state
+    setValidationResult(null);
+    setIsUploading(false);
+    clearErrors(input.key);
     
     if (!file) {
-      setValidationResult(null);
+      onChange(null);
       return;
     }
+
+    // Set file value first for UI feedback
+    onChange(file);
 
     setIsValidating(true);
     try {
       const result = await validateCSVContent(file, input.csv);
       setValidationResult(result);
+      
+      if (result.valid) {
+        // Clear any previous errors
+        clearErrors(input.key);
+        // Upload file after validation passes
+        setIsUploading(true);
+        try {
+          const contentType = file.type || 'text/csv';
+          const { key, url } = await storageApi.createUpload({
+            filename: file.name,
+            contentType,
+          });
+          const putResponse = await fetch(url, {
+            method: 'PUT',
+            headers: { 'Content-Type': contentType },
+            body: file,
+          });
+          if (putResponse.status < 200 || putResponse.status >= 300) {
+            throw new Error(`Upload failed with status ${putResponse.status}`);
+          }
+          // Set the storage key as the field value
+          onChange(key);
+        } catch (uploadError) {
+          const errorMessage = `Upload failed: ${uploadError instanceof Error ? uploadError.message : "Unknown error"}`;
+          setValidationResult({
+            valid: false,
+            errors: [errorMessage],
+          });
+          setError(input.key, {
+            type: "manual",
+            message: errorMessage,
+          });
+          onChange(null);
+        } finally {
+          setIsUploading(false);
+        }
+      } else {
+        // Set form error to prevent submission
+        const errorMessage = result.errors.join("; ");
+        setError(input.key, {
+          type: "manual",
+          message: errorMessage,
+        });
+        // Clear the file value so form won't submit with invalid file
+        onChange(null);
+      }
     } catch (error) {
+      const errorMessage = `Validation failed: ${error instanceof Error ? error.message : "Unknown error"}`;
       setValidationResult({
         valid: false,
-        errors: [`Validation failed: ${error instanceof Error ? error.message : "Unknown error"}`],
+        errors: [errorMessage],
       });
+      setError(input.key, {
+        type: "manual",
+        message: errorMessage,
+      });
+      onChange(null);
     } finally {
       setIsValidating(false);
     }
@@ -90,12 +152,20 @@ export function CSVField({ input, control }: CSVFieldProps) {
                 </Dropzone>
               
               {isValidating && (
-                <div className="text-sm text-muted-foreground">
-                  Validating CSV content...
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Spinner />
+                  <span>Validating CSV content...</span>
                 </div>
               )}
               
-              {validationResult && !isValidating && (
+              {isUploading && (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Spinner />
+                  <span>Uploading file...</span>
+                </div>
+              )}
+              
+              {validationResult && !isValidating && !isUploading && (
                 <Alert variant={validationResult.valid ? "default" : "destructive"}>
                   <div className="flex items-start gap-2">
                     {validationResult.valid ? (
@@ -152,7 +222,6 @@ export function CSVField({ input, control }: CSVFieldProps) {
               </div>
             )}
             
-            <FormMessage />
           </FormItem>
         );
       }}
