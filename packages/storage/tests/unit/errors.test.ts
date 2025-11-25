@@ -6,7 +6,7 @@ import {
   InvalidStorageKeyError,
   ObjectNotFoundError,
   StorageError,
-} from '../../../../src/shared/errors/index.js';
+} from '../../src/shared/errors/index.js';
 
 describe('StorageError', () => {
   it('should create an error with correct name and message', () => {
@@ -27,7 +27,7 @@ describe('StorageError', () => {
 
 describe('FileTooLargeError', () => {
   it('should create an error with correct properties', () => {
-    const maxSize = 10485760;
+    const maxSize = 10485760; // 10 MB
     const error = new FileTooLargeError(maxSize);
 
     expect(error).toBeInstanceOf(StorageError);

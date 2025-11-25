@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { InvalidStorageKeyError } from '../../../../src/shared/errors/index.js';
-import { generateUploadKey, parseStorageKey } from '../../../../src/shared/utils/keys.js';
+import { InvalidStorageKeyError } from '../../src/shared/errors/index.js';
+import { generateUploadKey, parseStorageKey } from '../../src/shared/utils/keys.js';
 
 describe('generateUploadKey', () => {
   it('should generate a valid key with timestamp, sanitized filename, and extension', () => {
