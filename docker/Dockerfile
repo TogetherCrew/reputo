@@ -15,6 +15,7 @@ RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --no-frozen-lockf
 RUN pnpm run -r build
 RUN pnpm deploy --filter=@reputo/api --prod --legacy --ignore-scripts /prod/api
 RUN pnpm deploy --filter=@reputo/workflows --prod --legacy --ignore-scripts /prod/workflows
+RUN pnpm deploy --filter=@reputo/typescript-worker --prod --legacy --ignore-scripts /prod/typescript-worker
 
 FROM base AS api
 COPY --from=build /prod/api /prod/api
@@ -36,22 +37,7 @@ COPY --from=build /prod/workflows /prod/workflows
 WORKDIR /prod/workflows
 CMD [ "pnpm", "start" ]
 
- 19-s3-upload-service
-  24-feature-packagesreputation-algorithms---runtime-metadata
-  25-feature-packagesstorage-shared-storage-package
-  26-feature-appsworkflows---snapshot-execution-workflows-app
-  4-implement-reputation-algorithm-library
-  6-algorithmpreset-snapshot-schemas-crud
-  9-ui-implementation
-  ci/optimize
-  docker/expose-mongodb
-  feat/add-filter-by-algorithmpreset
-  feat/algorithm-preset-frozen
-  fix/snapshot-schema
-  hotfix-ui-api-env
-* main
-  pullpreview/s3
-  refactor
-  update-readme
-  update/readme
-  update/snapshot-output-type
+FROM base AS typescript-worker
+COPY --from=build /prod/typescript-worker /prod/typescript-worker
+WORKDIR /prod/typescript-worker
+CMD [ "pnpm", "start" ]

@@ -6,6 +6,10 @@ networks:
 volumes:
     mongodb_data:
         driver: local
+    temporal_elasticsearch_data:
+        driver: local
+    temporal_postgresql_data:
+        driver: local
 
 services:
     mongodb:
@@ -108,3 +112,131 @@ services:
             - STORAGE_PRESIGN_GET_TTL=300
             - STORAGE_MAX_SIZE_BYTES=52428800
             - STORAGE_CONTENT_TYPE_ALLOWLIST=text/csv,text/plain
+
+    temporal:
+        container_name: temporal
+        image: temporalio/auto-setup:1.26.3.0
+        restart: unless-stopped
+        depends_on:
+            - temporal-postgresql
+            - temporal-elasticsearch
+        volumes:
+            - ./temporal-dynamicconfig:/etc/temporal/config/dynamicconfig:ro
+        networks:
+            - web
+        environment:
+            - DB=postgres12
+            - DB_PORT=5432
+            - POSTGRES_USER=temporal
+            - POSTGRES_PWD=temporal
+            - POSTGRES_SEEDS=temporal-postgresql
+            - ENABLE_ES=false
+            - ES_SEEDS=temporal-elasticsearch
+            - ES_VERSION=v8
+            - DYNAMIC_CONFIG_FILE_PATH=config/dynamicconfig/development-sql.yaml
+        healthcheck:
+            test:
+                [
+                    'CMD',
+                    'tctl',
+                    '--address',
+                    'temporal:7233',
+                    'workflow',
+                    'list',
+                ]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+            start_period: 90s
+
+    temporal-ui:
+        container_name: temporal-ui
+        image: temporalio/ui:2.32.0
+        restart: unless-stopped
+        depends_on:
+            - temporal
+        networks:
+            - web
+        ports:
+            - '8088:8080'
+        environment:
+            - TEMPORAL_ADDRESS=temporal:7233
+            - TEMPORAL_CORS_ORIGINS=*
+
+    temporal-elasticsearch:
+        container_name: temporal-elasticsearch
+        restart: unless-stopped
+        image: elasticsearch:8.16.0
+        environment:
+            - cluster.routing.allocation.disk.threshold_enabled=true
+            - cluster.routing.allocation.disk.watermark.low=512mb
+            - cluster.routing.allocation.disk.watermark.high=256mb
+            - cluster.routing.allocation.disk.watermark.flood_stage=128mb
+            - discovery.type=single-node
+            - ES_JAVA_OPTS=-Xms256m -Xmx256m
+            - xpack.security.enabled=false
+        volumes:
+            - temporal_elasticsearch_data:/var/lib/elasticsearch/data
+        networks:
+            - web
+
+    temporal-postgresql:
+        container_name: temporal-postgresql
+        image: postgres:12.22
+        restart: unless-stopped
+        networks:
+            - web
+        volumes:
+            - temporal_postgresql_data:/var/lib/postgresql/data
+        environment:
+            - POSTGRES_USER=temporal
+            - POSTGRES_PASSWORD=temporal
+
+    typescript-worker:
+        container_name: typescript-worker
+        depends_on:
+            temporal:
+                condition: service_healthy
+        build:
+            context: ..
+            dockerfile: docker/Dockerfile
+            target: typescript-worker
+        restart: unless-stopped
+        networks: [web]
+        environment:
+            - NODE_ENV=development
+            - LOG_LEVEL=info
+            - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+            - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+            - AWS_REGION=${AWS_REGION}
+            - STORAGE_BUCKET=${STORAGE_BUCKET}
+            - STORAGE_MAX_SIZE_BYTES=104857600
+            - STORAGE_CONTENT_TYPE_ALLOWLIST=text/csv,application/json
+            - TEMPORAL_ADDRESS=temporal:7233
+            - TEMPORAL_NAMESPACE=default
+            - TEMPORAL_TASK_QUEUE=typescript-worker
+
+    workflows:
+        container_name: workflows
+        depends_on:
+            mongodb:
+                condition: service_healthy
+            temporal:
+                condition: service_healthy
+        build:
+            context: ..
+            dockerfile: docker/Dockerfile
+            target: workflows
+        restart: unless-stopped
+        networks: [web]
+        environment:
+            - NODE_ENV=development
+            - LOG_LEVEL=info
+            - TEMPORAL_ADDRESS=temporal:7233
+            - TEMPORAL_NAMESPACE=default
+            - TEMPORAL_TASK_QUEUE=workflows
+            - MONGODB_HOST=mongodb
+            - MONGODB_PORT=27017
+            - MONGODB_USER=admin
+            - MONGODB_PASSWORD=preview-password
+            - MONGODB_DB_NAME=reputo_preview

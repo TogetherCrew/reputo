@@ -5,6 +5,10 @@ networks:
 volumes:
     mongodb_data:
         driver: local
+    temporal_elasticsearch_data:
+        driver: local
+    temporal_postgresql_data:
+        driver: local
 
 services:
     mongodb:
@@ -114,3 +118,102 @@ services:
         labels:
             - com.centurylinklabs.watchtower.enable=false
         networks: [web]
+
+    temporal:
+        container_name: temporal
+        image: temporalio/auto-setup:1.26.3.0
+        restart: unless-stopped
+        depends_on:
+            - temporal-postgresql
+            # - temporal-elasticsearch
+        env_file: ./temporal.env
+        volumes:
+            - ./temporal-dynamicconfig:/etc/temporal/config/dynamicconfig:ro
+        networks:
+            - web
+        healthcheck:
+            test:
+                [
+                    'CMD',
+                    'tctl',
+                    '--address',
+                    'temporal:7233',
+                    'workflow',
+                    'list',
+                ]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+            start_period: 90s
+
+    temporal-ui:
+        container_name: temporal-ui
+        image: temporalio/ui:2.32.0
+        restart: unless-stopped
+        env_file: ./temporal-ui.env
+        depends_on:
+            - temporal
+        networks:
+            - web
+        labels:
+            - traefik.enable=true
+            - traefik.http.routers.temporal-ui.rule=Host(`${TEMPORAL_UI_DOMAIN}`)
+            - traefik.http.routers.temporal-ui.tls=true
+            - traefik.http.routers.temporal-ui.tls.certresolver=cloudflare
+            - traefik.http.routers.temporal-ui.entrypoints=websecure
+            - traefik.http.services.temporal-ui.loadbalancer.server.port=8080
+
+    temporal-elasticsearch:
+        container_name: temporal-elasticsearch
+        restart: unless-stopped
+        image: elasticsearch:8.16.0
+        environment:
+            - cluster.routing.allocation.disk.threshold_enabled=true
+            - cluster.routing.allocation.disk.watermark.low=512mb
+            - cluster.routing.allocation.disk.watermark.high=256mb
+            - cluster.routing.allocation.disk.watermark.flood_stage=128mb
+            - discovery.type=single-node
+            - ES_JAVA_OPTS=-Xms256m -Xmx256m
+            - xpack.security.enabled=false
+        volumes:
+            - temporal_elasticsearch_data:/var/lib/elasticsearch/data
+        networks:
+            - web
+
+    temporal-postgresql:
+        container_name: temporal-postgresql
+        image: postgres:12.22
+        restart: unless-stopped
+        env_file: ./temporal-postgresql.env
+        networks:
+            - web
+        volumes:
+            - temporal_postgresql_data:/var/lib/postgresql/data
+
+    typescript-worker:
+        container_name: typescript-worker
+        image: ghcr.io/togethercrew/reputo/typescript-worker:${IMAGE_TAG}
+        restart: unless-stopped
+        networks: [web]
+        depends_on:
+            temporal:
+                condition: service_healthy
+        env_file:
+            - ./typescript-worker.env
+        labels:
+            - com.centurylinklabs.watchtower.enable=true
+
+    workflows:
+        container_name: workflows
+        image: ghcr.io/togethercrew/reputo/workflows:${IMAGE_TAG}
+        restart: unless-stopped
+        networks: [web]
+        depends_on:
+            mongodb:
+                condition: service_healthy
+            temporal:
+                condition: service_healthy
+        env_file:
+            - ./workflows.env
+        labels:
+            - com.centurylinklabs.watchtower.enable=true

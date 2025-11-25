@@ -1,0 +1,6 @@
+# Minimal Temporal dynamic configuration for local/preview/production.
+# This file is intentionally empty; all values fall back to server defaults.
+# Override keys here if you need to tune Temporal behavior.
+{}
+
+
