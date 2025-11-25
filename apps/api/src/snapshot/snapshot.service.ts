@@ -24,13 +24,14 @@ export class SnapshotService {
     if (!algorithmPreset) {
       throwNotFoundError(createDto.algorithmPresetId, MODEL_NAMES.ALGORITHM_PRESET);
     }
-    const { algorithmPresetId: _, ...snapshotData } = createDto;
+    const { algorithmPresetId: _, outputs, ...snapshotData } = createDto;
 
     const snapshot: Omit<Snapshot, 'createdAt' | 'updatedAt'> = {
       status: 'queued',
       ...snapshotData,
       algorithmPreset: createDto.algorithmPresetId,
       algorithmPresetFrozen: algorithmPreset as AlgorithmPresetFrozen,
+      outputs: outputs as Record<string, string | undefined> | undefined,
     };
 
     const createdSnapshot = await this.repository.create(snapshot);

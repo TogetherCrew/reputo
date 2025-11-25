@@ -1,1 +1,1 @@
-export { ExecuteAlgorithmWorkflow } from './execute-algorithm.workflow.js'
+export { ExecuteAlgorithmWorkflow } from './execute-algorithm.workflow.js';

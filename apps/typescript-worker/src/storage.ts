@@ -1,5 +1,5 @@
 import { S3Client } from '@aws-sdk/client-s3';
-import { getObject, putObject } from '@reputo/storage';
+import { Storage } from '@reputo/storage';
 import type { Config } from './config/index.js';
 
 export function createS3Client(config: Config): S3Client {
@@ -7,11 +7,7 @@ export function createS3Client(config: Config): S3Client {
     region: config.storage.awsRegion,
   };
 
-  if (
-    config.app.nodeEnv !== 'production' &&
-    config.storage.awsAccessKeyId &&
-    config.storage.awsSecretAccessKey
-  ) {
+  if (config.app.nodeEnv !== 'production' && config.storage.awsAccessKeyId && config.storage.awsSecretAccessKey) {
     s3ClientConfig.credentials = {
       accessKeyId: config.storage.awsAccessKeyId,
       secretAccessKey: config.storage.awsSecretAccessKey,
@@ -21,27 +17,15 @@ export function createS3Client(config: Config): S3Client {
   return new S3Client(s3ClientConfig);
 }
 
-export interface Storage {
-  getObject(key: string): Promise<Buffer>;
-  putObject(key: string, body: Buffer | Uint8Array | string, contentType?: string): Promise<string>;
-}
-
 export function createStorage(config: Config, s3Client: S3Client): Storage {
-  return {
-    async getObject(key: string): Promise<Buffer> {
-      return getObject(s3Client, {
-        bucket: config.storage.bucket,
-        key,
-      });
+  return new Storage(
+    {
+      bucket: config.storage.bucket,
+      presignPutTtl: 3600,
+      presignGetTtl: 900,
+      maxSizeBytes: config.storage.maxSizeBytes,
+      contentTypeAllowlist: config.storage.contentTypeAllowlist,
     },
-    async putObject(key: string, body: Buffer | Uint8Array | string, contentType?: string): Promise<string> {
-      return putObject(s3Client, {
-        bucket: config.storage.bucket,
-        key,
-        body,
-        contentType,
-        allowedTypes: config.storage.contentTypeAllowlist,
-      });
-    },
-  };
+    s3Client,
+  );
 }

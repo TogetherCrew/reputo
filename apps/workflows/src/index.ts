@@ -9,24 +9,25 @@
  */
 
 // Load environment variables from .env file
-import { resolve } from 'path';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { config as dotenvConfig } from 'dotenv';
 
-// Use require for dotenv (CommonJS module)
-// biome-ignore lint/style/useNodejsImportProtocol: dotenv is a CommonJS module
-// @ts-ignore - require is available at runtime in CommonJS output
-const dotenv = require('dotenv');
+// Get __dirname equivalent in ESM
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 // Load .env file from the workflows directory
 // Try multiple possible locations
 const envPaths = [
   resolve(process.cwd(), '.env'), // Current working directory
   resolve(process.cwd(), 'apps/workflows/.env'), // From monorepo root
-  resolve(__dirname || process.cwd(), '.env'), // From compiled dist directory
+  resolve(__dirname, '.env'), // From compiled dist directory
 ];
 
 // Try to load .env from the first available location
 for (const envPath of envPaths) {
-  const result = dotenv.config({ path: envPath });
+  const result = dotenvConfig({ path: envPath });
   if (!result.error) {
     break;
   }
@@ -93,9 +94,9 @@ async function run(): Promise<void> {
   // Stage 5: Create and run Temporal Worker
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  // Resolve workflows path - use require.resolve for CommonJS compatibility
+  // Resolve workflows path relative to the current module
   // This will resolve to the compiled JavaScript file in dist/
-  const workflowsPath = require.resolve('./workflows/index.js');
+  const workflowsPath = fileURLToPath(new URL('./workflows/index.js', import.meta.url));
 
   const worker = await Worker.create({
     connection,

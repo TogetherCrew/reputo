@@ -4,5 +4,3 @@ declare global {
   // eslint-disable-next-line no-var
   var storage: Storage;
 }
-
-export {};

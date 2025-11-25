@@ -1,8 +1,5 @@
 import * as wf from '@temporalio/workflow';
-import type {
-  WorkerAlgorithmPayload,
-  WorkerAlgorithmResult,
-} from '../types/algorithm.js';
+import type { WorkerAlgorithmPayload, WorkerAlgorithmResult } from '../types/algorithm.js';
 
 // Payload and result shape expected by the parent workflows app
 interface WorkflowAlgorithmPayload {
@@ -17,9 +14,7 @@ interface WorkflowAlgorithmResult {
 }
 
 type AlgorithmActivities = {
-  voting_engagement: (
-    payload: WorkerAlgorithmPayload,
-  ) => Promise<WorkerAlgorithmResult>;
+  voting_engagement: (payload: WorkerAlgorithmPayload) => Promise<WorkerAlgorithmResult>;
 };
 
 // Proxy activities that run on the same task queue as this child workflow
@@ -34,9 +29,7 @@ const { voting_engagement } = wf.proxyActivities<AlgorithmActivities>({
  * This workflow is invoked as a child workflow from the orchestrator (apps/workflows),
  * enabling activity execution on a separate task queue managed by this worker.
  */
-export async function ExecuteAlgorithmWorkflow(
-  payload: WorkflowAlgorithmPayload,
-): Promise<WorkflowAlgorithmResult> {
+export async function ExecuteAlgorithmWorkflow(payload: WorkflowAlgorithmPayload): Promise<WorkflowAlgorithmResult> {
   wf.log.info('ExecuteAlgorithmWorkflow received payload', {
     snapshotId: payload.snapshotId,
     algorithmKey: payload.algorithmKey,
@@ -72,5 +65,3 @@ export async function ExecuteAlgorithmWorkflow(
     }
   }
 }
-
-

@@ -6,10 +6,7 @@
  * @returns The storage key (string) for the requested input
  * @throws Error if the input key is missing or has an invalid value type
  */
-export function getInputLocation(
-  inputLocations: Array<{ key: string; value: unknown }>,
-  inputKey: string,
-): string {
+export function getInputLocation(inputLocations: Array<{ key: string; value: unknown }>, inputKey: string): string {
   const entry = inputLocations.find((i) => i.key === inputKey);
   if (!entry) {
     throw new Error(`Missing input "${inputKey}"`);
@@ -19,4 +16,3 @@ export function getInputLocation(
   }
   return entry.value;
 }
-

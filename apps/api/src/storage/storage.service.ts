@@ -2,18 +2,14 @@ import type { S3Client } from '@aws-sdk/client-s3';
 import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
-  type DownloadUrlResult,
   FileTooLargeError,
-  getObject,
   HeadObjectFailedError,
   InvalidContentTypeError,
-  type ObjectMetadata,
   ObjectNotFoundError,
-  presignGet,
-  presignPut,
-  putObject,
-  type UploadUrlResult,
-  verifyUpload,
+  type PresignedDownload,
+  type PresignedUpload,
+  Storage,
+  type StorageMetadata,
 } from '@reputo/storage';
 import {
   FileTooLargeException,
@@ -25,58 +21,42 @@ import { S3_CLIENT } from './providers';
 
 @Injectable()
 export class StorageService {
-  private readonly s3Client: S3Client;
-  private readonly bucket: string;
-  private readonly uploadTtl: number;
-  private readonly downloadTtl: number;
-  private readonly maxSize: number;
-  private readonly allowedTypes: string[];
+  private readonly storage: Storage;
 
   constructor(@Inject(S3_CLIENT) s3Client: S3Client, configService: ConfigService) {
-    this.s3Client = s3Client;
-    this.bucket = configService.get<string>('storage.bucket') as string;
-    this.uploadTtl = configService.get<number>('storage.presignPutTtl') as number;
-    this.downloadTtl = configService.get<number>('storage.presignGetTtl') as number;
-    this.maxSize = configService.get<number>('storage.maxSizeBytes') as number;
-    this.allowedTypes = (configService.get<string>('storage.contentTypeAllowlist') as string)
-      .split(',')
-      .map((s) => s.trim());
+    this.storage = new Storage(
+      {
+        bucket: configService.get<string>('storage.bucket') as string,
+        presignPutTtl: configService.get<number>('storage.presignPutTtl') as number,
+        presignGetTtl: configService.get<number>('storage.presignGetTtl') as number,
+        maxSizeBytes: configService.get<number>('storage.maxSizeBytes') as number,
+        contentTypeAllowlist: (configService.get<string>('storage.contentTypeAllowlist') as string)
+          .split(',')
+          .map((s) => s.trim()),
+      },
+      s3Client,
+    );
   }
 
-  async presignPut(filename: string, contentType: string): Promise<UploadUrlResult> {
+  async presignPut(filename: string, contentType: string): Promise<PresignedUpload> {
     try {
-      return await presignPut(this.s3Client, {
-        bucket: this.bucket,
-        filename,
-        contentType,
-        ttl: this.uploadTtl,
-        allowedTypes: this.allowedTypes,
-      });
+      return await this.storage.presignPut(filename, contentType);
     } catch (error) {
       this.handleStorageError(error);
     }
   }
 
-  async verifyUpload(key: string): Promise<{ key: string; metadata: ObjectMetadata }> {
+  async verifyUpload(key: string): Promise<{ key: string; metadata: StorageMetadata }> {
     try {
-      return await verifyUpload(this.s3Client, {
-        bucket: this.bucket,
-        key,
-        maxSize: this.maxSize,
-        allowedTypes: this.allowedTypes,
-      });
+      return await this.storage.verifyUpload(key);
     } catch (error) {
       this.handleStorageError(error);
     }
   }
 
-  async presignGet(key: string): Promise<DownloadUrlResult> {
+  async presignGet(key: string): Promise<PresignedDownload> {
     try {
-      return await presignGet(this.s3Client, {
-        bucket: this.bucket,
-        key,
-        ttl: this.downloadTtl,
-      });
+      return await this.storage.presignGet(key);
     } catch (error) {
       this.handleStorageError(error);
     }

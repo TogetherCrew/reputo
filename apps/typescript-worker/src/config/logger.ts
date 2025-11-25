@@ -33,4 +33,3 @@ export function createLogger(config: AppConfig) {
     timestamp: pino.stdTimeFunctions.isoTime,
   });
 }
-

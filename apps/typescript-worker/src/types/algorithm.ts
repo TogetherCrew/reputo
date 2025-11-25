@@ -39,4 +39,3 @@ export interface WorkerAlgorithmResult {
    */
   outputs: Record<string, unknown>;
 }
-

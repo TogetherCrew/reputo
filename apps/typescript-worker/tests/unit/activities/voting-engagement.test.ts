@@ -1,9 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { voting_engagement } from '../../../src/activities/voting-engagement.activity.js';
-import type {
-  WorkerAlgorithmPayload,
-  WorkerAlgorithmResult,
-} from '../../../src/types/algorithm.js';
+import type { WorkerAlgorithmPayload, WorkerAlgorithmResult } from '../../../src/types/algorithm.js';
 
 // Mock the storage module
 vi.mock('../../../src/storage.js', () => ({
@@ -45,17 +42,13 @@ col2,voter3,2024-01-01T03:00:00Z`;
       snapshotId: 'test-snapshot-123',
       algorithmKey: 'voting_engagement',
       algorithmVersion: '1.0.0',
-      inputLocations: [
-        { key: 'votes', value: 'snapshots/123/inputs/votes.csv' },
-      ],
+      inputLocations: [{ key: 'votes', value: 'snapshots/123/inputs/votes.csv' }],
     };
 
     const result: WorkerAlgorithmResult = await voting_engagement(payload);
 
     // Verify storage operations
-    expect(storage.getObject).toHaveBeenCalledWith(
-      'snapshots/123/inputs/votes.csv',
-    );
+    expect(storage.getObject).toHaveBeenCalledWith('snapshots/123/inputs/votes.csv');
     expect(storage.putObject).toHaveBeenCalledWith(
       'snapshots/test-snapshot-123/outputs/voting_engagement.csv',
       expect.stringContaining('collection_id,voting_engagement'),
@@ -65,8 +58,7 @@ col2,voter3,2024-01-01T03:00:00Z`;
     // Verify result structure
     expect(result).toEqual({
       outputs: {
-        voting_engagement:
-          'snapshots/test-snapshot-123/outputs/voting_engagement.csv',
+        voting_engagement: 'snapshots/test-snapshot-123/outputs/voting_engagement.csv',
       },
     });
 
@@ -85,28 +77,19 @@ col2,voter3,2024-01-01T03:00:00Z`;
       inputLocations: [],
     };
 
-    await expect(voting_engagement(payload)).rejects.toThrow(
-      'Missing input "votes"',
-    );
+    await expect(voting_engagement(payload)).rejects.toThrow('Missing input "votes"');
   });
 
   it('should handle storage errors gracefully', async () => {
-    vi.mocked(storage.getObject).mockRejectedValue(
-      new Error('S3 connection failed'),
-    );
+    vi.mocked(storage.getObject).mockRejectedValue(new Error('S3 connection failed'));
 
     const payload: WorkerAlgorithmPayload = {
       snapshotId: 'test-snapshot-123',
       algorithmKey: 'voting_engagement',
       algorithmVersion: '1.0.0',
-      inputLocations: [
-        { key: 'votes', value: 'snapshots/123/inputs/votes.csv' },
-      ],
+      inputLocations: [{ key: 'votes', value: 'snapshots/123/inputs/votes.csv' }],
     };
 
-    await expect(voting_engagement(payload)).rejects.toThrow(
-      'S3 connection failed',
-    );
+    await expect(voting_engagement(payload)).rejects.toThrow('S3 connection failed');
   });
 });
-
