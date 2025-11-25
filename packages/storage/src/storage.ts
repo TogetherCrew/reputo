@@ -168,10 +168,12 @@ export class Storage {
   }
 
   /**
-   * Generates a presigned URL for downloading a file.
+   * Generates a presigned URL for downloading a file created via the upload
+   * pipeline.
    *
-   * The URL is valid for the duration specified in presignGetTtl.
-   * Also returns metadata about the object.
+   * Expects keys in the standard `uploads/{timestamp}/{filename}.{ext}` format.
+   * For non-standard keys (e.g. internal snapshot outputs), use
+   * {@link presignGetForKey}.
    *
    * @param key - S3 key of the object to download
    * @returns Download information including presigned URL and metadata
@@ -211,6 +213,56 @@ export class Storage {
         size,
         contentType,
         timestamp,
+      },
+    };
+  }
+
+  /**
+   * Generates a presigned URL for downloading a file with an arbitrary key.
+   *
+   * This is intended for internal objects that do not follow the standard
+   * `uploads/{timestamp}/{filename}.{ext}` pattern, such as snapshot outputs:
+   * `snapshots/{snapshotId}/outputs/{algorithmKey}.csv`.
+   *
+   * Metadata is derived from the key's last path segment and object headers.
+   * The `timestamp` field is populated with the current Unix timestamp, since
+   * it cannot be inferred from the key structure.
+   *
+   * @param key - S3 key of the object to download
+   * @returns Download information including presigned URL and metadata
+   * @throws {ObjectNotFoundError} If the object doesn't exist
+   * @throws {HeadObjectFailedError} If metadata retrieval fails
+   */
+  async presignGetForKey(key: string): Promise<PresignedDownload> {
+    const head = await this.getObjectMetadata(key);
+
+    const size = head.ContentLength ?? 0;
+    const contentType = head.ContentType ?? 'application/octet-stream';
+
+    const filenameSegment = key.split('/').filter(Boolean).pop() ?? 'file';
+    const lastDotIndex = filenameSegment.lastIndexOf('.');
+
+    const filename = lastDotIndex === -1 ? filenameSegment : filenameSegment.substring(0, lastDotIndex);
+    const ext = lastDotIndex === -1 ? '' : filenameSegment.substring(lastDotIndex + 1);
+
+    const command = new GetObjectCommand({
+      Bucket: this.bucket,
+      Key: key,
+    });
+
+    const url = await getSignedUrl(this.s3Client, command, {
+      expiresIn: this.presignGetTtl,
+    });
+
+    return {
+      url,
+      expiresIn: this.presignGetTtl,
+      metadata: {
+        filename,
+        ext,
+        size,
+        contentType,
+        timestamp: Math.floor(Date.now() / 1000),
       },
     };
   }

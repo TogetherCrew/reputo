@@ -56,7 +56,16 @@ export class StorageService {
 
   async presignGet(key: string): Promise<PresignedDownload> {
     try {
-      return await this.storage.presignGet(key);
+      // Keys generated via the public upload pipeline follow the
+      // `uploads/{timestamp}/{filename}.{ext}` convention and are validated
+      // by Storage.presignGet(). Internal keys (e.g. snapshot outputs) may
+      // use different prefixes such as `snapshots/` and should bypass the
+      // upload-key parser while still going through a HEAD + presign flow.
+      if (key.startsWith('uploads/')) {
+        return await this.storage.presignGet(key);
+      }
+
+      return await this.storage.presignGetForKey(key);
     } catch (error) {
       this.handleStorageError(error);
     }

@@ -8,6 +8,7 @@
  * - Listens on the configured task queue
  */
 
+import { createRequire } from 'node:module';
 // Load environment variables from .env file
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -16,6 +17,9 @@ import { config as dotenvConfig } from 'dotenv';
 // Get __dirname equivalent in ESM
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+
+// Create CommonJS require for resolving workflow entrypoint
+const require = createRequire(import.meta.url);
 
 // Load .env file from the workflows directory
 // Try multiple possible locations
@@ -94,9 +98,10 @@ async function run(): Promise<void> {
   // Stage 5: Create and run Temporal Worker
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  // Resolve workflows path relative to the current module
-  // This will resolve to the compiled JavaScript file in dist/
-  const workflowsPath = fileURLToPath(new URL('./workflows/index.js', import.meta.url));
+  // Resolve workflows path using Node resolution.
+  // In dev (tsx), this maps to the TypeScript source.
+  // In prod (node dist/index.js), this resolves to dist/workflows/index.js.
+  const workflowsPath = require.resolve('./workflows/index.js');
 
   const worker = await Worker.create({
     connection,

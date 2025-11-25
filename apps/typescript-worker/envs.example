@@ -19,5 +19,5 @@ STORAGE_CONTENT_TYPE_ALLOWLIST=text/csv,application/json
 # Temporal Configuration
 TEMPORAL_ADDRESS=localhost:7233
 TEMPORAL_NAMESPACE=default
-TEMPORAL_TASK_QUEUE=reputation-algorithms-typescript
+TEMPORAL_TASK_QUEUE=typescript-worker
 
