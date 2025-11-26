@@ -5,6 +5,7 @@
         "moduleResolution": "NodeNext",
         "rootDir": "src",
         "outDir": "dist",
+
         "declaration": true,
         "declarationMap": true,
         "esModuleInterop": true,
@@ -14,7 +15,12 @@
         "isolatedModules": true,
         "strict": true,
         "forceConsistentCasingInFileNames": true,
-        "lib": ["ES2022"]
+        "lib": ["ES2022"],
+
+        "baseUrl": ".",
+        "paths": {
+            "@reputo/storage": ["../../packages/storage/src/index.ts"]
+        }
     },
     "include": ["src"],
     "exclude": ["node_modules", "dist"],
