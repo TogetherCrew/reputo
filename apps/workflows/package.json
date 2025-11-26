@@ -8,6 +8,7 @@
     "scripts": {
         "build": "tsc",
         "start": "node dist/index.js",
+        "clean": "rm -rf dist",
         "dev": "tsx watch src/index.ts",
         "check": "pnpm exec biome check --write",
         "format": "pnpm exec biome format --write",

@@ -51,11 +51,15 @@ export class SnapshotService {
    */
   private async startWorkflowAsync(snapshotId: string): Promise<void> {
     try {
+      this.logger.log(`Attempting to start workflow for snapshot ${snapshotId}`);
       await this.temporalService.startRunSnapshotWorkflow(snapshotId);
+      this.logger.log(`Successfully initiated workflow start for snapshot ${snapshotId}`);
     } catch (error) {
       const err = error as Error;
       this.logger.error(`Failed to start workflow for snapshot ${snapshotId}: ${err.message}`, err.stack, {
         snapshotId,
+        errorName: err.name,
+        errorMessage: err.message,
       });
       // Don't throw - snapshot creation should succeed even if workflow start fails
     }
