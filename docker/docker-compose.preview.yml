@@ -59,7 +59,7 @@ services:
         depends_on:
             - traefik
         build:
-            context: ..
+            context: ..  
             dockerfile: docker/Dockerfile
             target: ui
             args:

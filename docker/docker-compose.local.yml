@@ -57,6 +57,8 @@ services:
             context: ..
             dockerfile: docker/Dockerfile
             target: ui
+            args:
+                NEXT_PUBLIC_API_URL: http://localhost:3000/api/v1
         restart: unless-stopped
         ports:
             - '8080:8080'
