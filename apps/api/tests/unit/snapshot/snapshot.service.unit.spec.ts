@@ -13,6 +13,9 @@ describe('SnapshotService', () => {
     let service: SnapshotService
     let mockSnapshotRepository: SnapshotRepository
     let mockAlgorithmPresetRepository: AlgorithmPresetRepository
+    let mockTemporalService: {
+        startRunSnapshotWorkflow: ReturnType<typeof vi.fn>
+    }
 
     beforeEach(() => {
         vi.clearAllMocks()
@@ -29,9 +32,14 @@ describe('SnapshotService', () => {
             findAll: vi.fn(),
         } as unknown as AlgorithmPresetRepository
 
+        mockTemporalService = {
+            startRunSnapshotWorkflow: vi.fn().mockResolvedValue(undefined),
+        }
+
         service = new SnapshotService(
             mockSnapshotRepository,
-            mockAlgorithmPresetRepository
+            mockAlgorithmPresetRepository,
+            mockTemporalService as any
         )
     })
 
