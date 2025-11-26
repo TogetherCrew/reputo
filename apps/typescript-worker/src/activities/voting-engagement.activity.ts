@@ -1,11 +1,18 @@
 import { parse } from 'csv-parse/sync'
 import { stringify } from 'csv-stringify/sync'
 import pino from 'pino'
+import type { Storage } from '@reputo/storage'
 import type {
     WorkerAlgorithmPayload,
     WorkerAlgorithmResult,
 } from '../types/algorithm.js'
 import { getInputLocation } from './utils.js'
+
+// Extend global type to include storage
+declare global {
+    // eslint-disable-next-line no-var
+    var storage: Storage | undefined
+}
 
 // Create activity-specific logger
 const logger = pino().child({ activity: 'voting-engagement' })
@@ -13,13 +20,20 @@ const logger = pino().child({ activity: 'voting-engagement' })
 /**
  * Input record for voting_engagement algorithm.
  * Note: collection_id in the input represents the voter/user identifier.
+ * Required fields: question_id, collection_id, answer.
+ * Only primary column names from the schema are used (no aliases).
  */
 interface VoteRecord {
-    collection_id: string // voter
-    question_id: string // proposal
-    answer: string // "skip" or "1".."10"
-    timestamp?: string // could map from created_on if needed
-    round?: string
+    id?: number // Row identifier
+    event_id?: number // Voting event identifier
+    answer: string // "skip" or "1".."10" (required)
+    created_on?: string // Creation timestamp
+    updated_on?: string // Last update timestamp
+    question_id: string // Unique proposal/question identifier (required)
+    balance?: number // Balance at time of vote
+    stake?: number // Stake associated with the vote
+    collection_id: string // Unique voter identifier (required)
+    vote_id?: number // Vote identifier
 }
 
 /**
@@ -58,7 +72,7 @@ export async function voting_engagement(
 
     try {
         // Get storage instance from global (initialized in worker/main.ts)
-        const storage = (global as any).storage
+        const storage = global.storage
         if (!storage) {
             throw new Error(
                 'Storage instance not initialized. Ensure worker is properly started.'
@@ -75,8 +89,9 @@ export async function voting_engagement(
 
         const rows = parse(csvText, {
             columns: true,
-            // skip_empty_lines: true,
-            // trim: true,
+            skip_empty_lines: true,
+            trim: true,
+            relax_column_count: true,
         }) as VoteRecord[]
 
         logger.info({ rowCount: rows.length }, 'Parsed input votes')
@@ -160,29 +175,39 @@ function computeVotingEngagement(
     let invalidVotesCount = 0
 
     for (const vote of votes) {
-        const voterId = vote.collection_id
-
-        // Prefer generic "vote" if you ever use another schema,
-        // but fall back to "answer" for this current CSV.
-        const rawVote = (vote as any).vote ?? (vote as any).answer
-
-        const voteValue =
-            rawVote !== null && rawVote !== undefined
-                ? String(rawVote).trim().toLowerCase()
+        // Validate required fields: collection_id, question_id, answer
+        // Handle cases where CSV parser might return undefined or empty strings
+        const voterId =
+            vote.collection_id !== null &&
+            vote.collection_id !== undefined &&
+            typeof vote.collection_id === 'string'
+                ? vote.collection_id.trim()
                 : null
-        // Validate vote value
+
+        const questionId =
+            vote.question_id !== null &&
+            vote.question_id !== undefined &&
+            typeof vote.question_id === 'string'
+                ? vote.question_id.trim()
+                : null
+
+        const rawVote =
+            vote.answer !== null && vote.answer !== undefined
+                ? String(vote.answer)
+                : null
+
+        // Skip votes with missing or empty required fields
+        if (!voterId || !questionId || !rawVote) {
+            invalidVotesCount++
+            continue
+        }
+
+        // Normalize and validate vote value
+        const voteValue = rawVote.trim().toLowerCase()
+
+        // Validate vote value against allowed enum values
         if (!voteValue || !VALID_VOTES.includes(voteValue)) {
             invalidVotesCount++
-            // logger.warn(
-            //     {
-            //         voterId,
-            //         rawVote,
-            //         voteValue,
-            //         proposalId: vote.proposal_id,
-            //         voteType: typeof rawVote,
-            //     },
-            //     'Skipping invalid vote value'
-            // )
             continue
         }
 
