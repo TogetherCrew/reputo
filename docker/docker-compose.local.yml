@@ -45,7 +45,9 @@ services:
             - ../apps/api/src:/prod/api/src:ro
         depends_on:
             mongodb:
-                condition: service_healthy
+                condition: service_started
+            temporal:
+                condition: service_started
         env_file:
             - ./api.env
 
@@ -68,11 +70,10 @@ services:
         restart: unless-stopped
         depends_on:
             - temporal-postgresql
+            - temporal-elasticsearch
         ports:
             - '7233:7233'
         env_file: ./temporal.env
-        volumes:
-            - ./temporal-dynamicconfig:/etc/temporal/config/dynamicconfig:ro
         networks:
             - local
         healthcheck:
@@ -105,7 +106,7 @@ services:
     temporal-elasticsearch:
         container_name: temporal-elasticsearch
         restart: unless-stopped
-        image: elasticsearch:8.16.0
+        image: elasticsearch:7.17.23
         environment:
             - cluster.routing.allocation.disk.threshold_enabled=true
             - cluster.routing.allocation.disk.watermark.low=512mb
@@ -141,7 +142,7 @@ services:
             - ../apps/typescript-worker/src:/prod/typescript-worker/src:ro
         depends_on:
             temporal:
-                condition: service_healthy
+                condition: service_started
         env_file:
             - ./typescript-worker.env
 
@@ -157,8 +158,8 @@ services:
             - ../apps/workflows/src:/prod/workflows/src:ro
         depends_on:
             mongodb:
-                condition: service_healthy
+                condition: service_started
             temporal:
-                condition: service_healthy
+                condition: service_started
         env_file:
             - ./workflows.env
