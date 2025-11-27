@@ -281,7 +281,9 @@ export function AlgorithmSnapshots({ algo }: { algo?: Algorithm }) {
                     </TableCell>
                     <TableCell className="whitespace-nowrap">
                       {snapshot.status === 'completed' || snapshot.status === 'failed' 
-                        ? formatTimeAgo(snapshot.updatedAt)
+                        ? "~1 min"
+                        : snapshot.status === 'running'
+                        ? "Running..."
                         : "—"
                       }
                     </TableCell>

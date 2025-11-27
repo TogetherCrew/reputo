@@ -90,12 +90,13 @@ export function SnapshotDetailsDialog({
                                     Preset
                                 </h3>
                                 <p className="text-sm">
-                                    {typeof snapshot.algorithmPreset ===
-                                    'string'
-                                        ? `Preset ${snapshot.algorithmPreset.slice(
-                                              -8
-                                          )}`
-                                        : 'Unknown Preset'}
+                                    {snapshot.algorithmPresetFrozen?.name ||
+                                        (typeof snapshot.algorithmPreset ===
+                                        'string'
+                                            ? `Preset ${snapshot.algorithmPreset.slice(
+                                                  -8
+                                              )}`
+                                            : 'Unknown Preset')}
                                 </p>
                             </div>
                             <div>

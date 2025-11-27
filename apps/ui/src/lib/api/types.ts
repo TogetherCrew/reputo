@@ -71,11 +71,23 @@ export interface TemporalResponseDto {
   taskQueue?: string;
 }
 
+export interface AlgorithmPresetFrozenDto {
+  key: string;
+  version: string;
+  inputs: InputResponseDto[];
+  name?: string;
+  description?: string;
+  _id: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface SnapshotResponseDto {
   _id: string;
   status: 'queued' | 'running' | 'completed' | 'failed' | 'cancelled';
   temporal?: TemporalResponseDto;
   algorithmPreset: string;
+  algorithmPresetFrozen?: AlgorithmPresetFrozenDto;
   outputs?: Record<string, unknown>;
   createdAt: string;
   updatedAt: string;

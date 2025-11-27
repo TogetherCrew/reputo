@@ -151,13 +151,6 @@ export function CSVField({ input, control }: CSVFieldProps) {
                   <DropzoneContent />
                 </Dropzone>
               
-              {isValidating && (
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Spinner />
-                  <span>Validating CSV content...</span>
-                </div>
-              )}
-              
               {isUploading && (
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Spinner />
