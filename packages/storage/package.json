@@ -2,8 +2,8 @@
     "name": "@reputo/storage",
     "version": "0.0.0",
     "description": "Framework-agnostic S3 storage layer for the Reputo ecosystem.",
-    "main": "dist/index.js",
-    "types": "dist/index.d.ts",
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
     "private": true,
     "exports": {
         ".": {
