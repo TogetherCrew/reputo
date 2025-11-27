@@ -6,9 +6,8 @@
         "target": "ES2022",
         "lib": ["ES2022"],
 
-        "module": "ESNext",
-        "moduleResolution": "bundler",
-        "moduleDetection": "force",
+        "module": "nodenext",
+        "moduleResolution": "nodenext",
         "types": ["node"],
 
         "rootDir": "./src",
