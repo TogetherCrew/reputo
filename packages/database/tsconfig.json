@@ -18,7 +18,6 @@
 
         "resolveJsonModule": true,
         "isolatedModules": true,
-        "isolatedDeclarations": true,
         "forceConsistentCasingInFileNames": true,
         "esModuleInterop": true,
         "allowSyntheticDefaultImports": true,
