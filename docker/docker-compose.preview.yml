@@ -206,15 +206,18 @@ services:
         restart: unless-stopped
         networks: [web]
         environment:
+            - NODE_ENV=development
+            - LOG_LEVEL=info
             - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
             - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
             - AWS_REGION=${AWS_REGION}
-            - STORAGE_BUCKET=${STORAGE_BUCKET}
-            - STORAGE_MAX_SIZE_BYTES=104857600
-            - STORAGE_CONTENT_TYPE_ALLOWLIST=text/csv,application/json
+            - STORAGE_PRESIGN_PUT_TTL=120
+            - STORAGE_PRESIGN_GET_TTL=300
+            - STORAGE_MAX_SIZE_BYTES=52428800
+            - STORAGE_CONTENT_TYPE_ALLOWLIST=text/csv,text/plain
             - TEMPORAL_ADDRESS=temporal:7233
             - TEMPORAL_NAMESPACE=default
-            - TEMPORAL_TASK_QUEUE=reputation-algorithms-typescript
+            - TEMPORAL_TASK_QUEUE=typescript-worker
 
     workflows:
         container_name: workflows
