@@ -120,8 +120,8 @@ services:
         depends_on:
             - temporal-postgresql
             - temporal-elasticsearch
-        volumes:
-            - ./temporal-dynamicconfig:/etc/temporal/config/dynamicconfig:ro
+        ports:
+            - '7233:7233'
         networks:
             - web
         environment:
@@ -133,8 +133,6 @@ services:
             - ENABLE_ES=true
             - ES_SEEDS=temporal-elasticsearch
             - ES_VERSION=v7
-            # For preview we keep dynamic config explicit and local
-            - DYNAMIC_CONFIG_FILE_PATH=config/dynamicconfig/development-sql.yaml
         healthcheck:
             test:
                 [
