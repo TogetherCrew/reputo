@@ -1,10 +1,10 @@
 {
     "compilerOptions": {
-        "module": "NodeNext",
+        "module": "nodenext",
         "target": "ES2022",
-        "moduleResolution": "NodeNext",
-        "rootDir": "src",
-        "outDir": "dist",
+        "moduleResolution": "nodenext",
+        "rootDir": "./src",
+        "outDir": "./dist",
         "declaration": true,
         "declarationMap": true,
         "esModuleInterop": true,
@@ -16,6 +16,6 @@
         "forceConsistentCasingInFileNames": true,
         "lib": ["ES2022"]
     },
-    "include": ["src"],
-    "exclude": ["node_modules", "dist"]
+    "exclude": ["node_modules", "tests", "dist", "**/*spec.ts"],
+    "include": ["src/**/*"]
 }
