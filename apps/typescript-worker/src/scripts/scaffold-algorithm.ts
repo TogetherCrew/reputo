@@ -111,7 +111,6 @@ export async function ${functionName}(
  * Add export statement to activities index file.
  */
 function addExportToIndex(algorithmKey: string): void {
-  const fileName = `${algorithmKey}.activity.js`;
   const exportLine = `export * from './${algorithmKey}.activity.js';`;
 
   if (!existsSync(ACTIVITIES_INDEX)) {

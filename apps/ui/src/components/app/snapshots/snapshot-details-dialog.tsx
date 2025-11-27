@@ -1,5 +1,8 @@
 'use client'
 
+import { Download, Eye } from 'lucide-react'
+import { useState } from 'react'
+import { CSVViewerDialog } from '@/components/app/csv/csv-viewer-dialog'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -10,11 +13,8 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog'
-import type { SnapshotResponseDto } from '@/lib/api/types'
-import { useState } from 'react'
-import { CSVViewerDialog } from '@/components/app/csv/csv-viewer-dialog'
 import { storageApi } from '@/lib/api/services'
-import { Download, Eye } from 'lucide-react'
+import type { SnapshotResponseDto } from '@/lib/api/types'
 
 interface SnapshotDetailsDialogProps {
     isOpen: boolean

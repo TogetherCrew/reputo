@@ -1,5 +1,6 @@
 "use client";
 
+import { type AlgorithmDefinition, getAlgorithmDefinition } from "@reputo/reputation-algorithms";
 import { AlertCircle, Plus } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -16,7 +17,6 @@ import type { Algorithm } from "@/core/algorithms";
 import { ReputoForm } from "@/core/reputo-form";
 import { buildSchemaFromAlgorithm } from "@/core/schema-builder";
 import type { CreateAlgorithmPresetDto } from "@/lib/api/types";
-import { getAlgorithmDefinition, type AlgorithmDefinition } from "@reputo/reputation-algorithms";
 
 interface CreatePresetDialogProps {
   algo?: Algorithm;

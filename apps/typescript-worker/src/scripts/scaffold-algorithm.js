@@ -1,6 +1,7 @@
 #!/usr/bin/env tsx
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+
 /**
  * Scaffold script for creating new algorithm activities.
  *
@@ -16,8 +17,8 @@ const ACTIVITIES_INDEX = join(ACTIVITIES_DIR, 'index.ts');
  * Generate the scaffold content for a new algorithm activity.
  */
 function generateActivityScaffold(algorithmKey) {
-    const functionName = algorithmKey.replace(/-/g, '_');
-    return `import pino from 'pino';
+  const functionName = algorithmKey.replace(/-/g, '_');
+  return `import pino from 'pino';
 import '../storage.d.js';
 import type {
   WorkerAlgorithmPayload,
@@ -105,68 +106,69 @@ export async function ${functionName}(
  * Add export statement to activities index file.
  */
 function addExportToIndex(algorithmKey) {
-    const fileName = `${algorithmKey}.activity.js`;
-    const exportLine = `export * from './${algorithmKey}.activity.js';`;
-    if (!existsSync(ACTIVITIES_INDEX)) {
-        // Create new index file
-        const content = `/**
+  const exportLine = `export * from './${algorithmKey}.activity.js';`;
+  if (!existsSync(ACTIVITIES_INDEX)) {
+    // Create new index file
+    const content = `/**
  * Export all algorithm activities.
  *
  * Each exported function should match an AlgorithmDefinition.runtime.activity value.
  */
 ${exportLine}
 `;
-        writeFileSync(ACTIVITIES_INDEX, content, 'utf8');
-        console.log(`✓ Created ${ACTIVITIES_INDEX}`);
-        return;
-    }
-    // Check if export already exists
-    const indexContent = readFileSync(ACTIVITIES_INDEX, 'utf8');
-    if (indexContent.includes(exportLine)) {
-        console.log('✓ Export already exists in index.ts');
-        return;
-    }
-    // Append export to existing index
-    const updatedContent = `${indexContent.trimEnd()}\n${exportLine}\n`;
-    writeFileSync(ACTIVITIES_INDEX, updatedContent, 'utf8');
-    console.log(`✓ Added export to ${ACTIVITIES_INDEX}`);
+    writeFileSync(ACTIVITIES_INDEX, content, 'utf8');
+    console.log(`✓ Created ${ACTIVITIES_INDEX}`);
+    return;
+  }
+  // Check if export already exists
+  const indexContent = readFileSync(ACTIVITIES_INDEX, 'utf8');
+  if (indexContent.includes(exportLine)) {
+    console.log('✓ Export already exists in index.ts');
+    return;
+  }
+  // Append export to existing index
+  const updatedContent = `${indexContent.trimEnd()}\n${exportLine}\n`;
+  writeFileSync(ACTIVITIES_INDEX, updatedContent, 'utf8');
+  console.log(`✓ Added export to ${ACTIVITIES_INDEX}`);
 }
 /**
  * Main scaffold function.
  */
 function main() {
-    const args = process.argv.slice(2);
-    if (args.length === 0) {
-        console.error('❌ Error: Please provide an algorithm key');
-        console.error('Usage: pnpm algorithm:new <algorithm_key>');
-        console.error('Example: pnpm algorithm:new voting_engagement');
-        process.exit(1);
-    }
-    const algorithmKey = args[0];
-    // Validate algorithm key format
-    if (!/^[a-z][a-z0-9_-]*$/.test(algorithmKey)) {
-        console.error('❌ Error: Algorithm key must start with a lowercase letter and contain only lowercase letters, numbers, hyphens, and underscores');
-        process.exit(1);
-    }
-    const activityFile = join(ACTIVITIES_DIR, `${algorithmKey}.activity.ts`);
-    // Check if activity file already exists
-    if (existsSync(activityFile)) {
-        console.error(`❌ Error: Activity file already exists: ${activityFile}`);
-        process.exit(1);
-    }
-    // Generate and write activity scaffold
-    const scaffold = generateActivityScaffold(algorithmKey);
-    writeFileSync(activityFile, scaffold, 'utf8');
-    console.log(`✓ Created ${activityFile}`);
-    // Add export to index
-    addExportToIndex(algorithmKey);
-    // Print success message and next steps
-    console.log('\n✅ Algorithm activity scaffolded successfully!');
-    console.log('\nNext steps:');
-    console.log(`  1. Implement the algorithm logic in ${activityFile}`);
-    console.log(`  2. Set runtime.taskQueue = "reputation-algorithms-typescript" in the algorithm definition`);
-    console.log(`  3. Set runtime.activity = "${algorithmKey.replace(/-/g, '_')}" in the algorithm definition`);
-    console.log('  4. Adjust input parsing and output serialization as needed');
-    console.log(`  5. Update content type if not using CSV (e.g., 'application/json')`);
+  const args = process.argv.slice(2);
+  if (args.length === 0) {
+    console.error('❌ Error: Please provide an algorithm key');
+    console.error('Usage: pnpm algorithm:new <algorithm_key>');
+    console.error('Example: pnpm algorithm:new voting_engagement');
+    process.exit(1);
+  }
+  const algorithmKey = args[0];
+  // Validate algorithm key format
+  if (!/^[a-z][a-z0-9_-]*$/.test(algorithmKey)) {
+    console.error(
+      '❌ Error: Algorithm key must start with a lowercase letter and contain only lowercase letters, numbers, hyphens, and underscores',
+    );
+    process.exit(1);
+  }
+  const activityFile = join(ACTIVITIES_DIR, `${algorithmKey}.activity.ts`);
+  // Check if activity file already exists
+  if (existsSync(activityFile)) {
+    console.error(`❌ Error: Activity file already exists: ${activityFile}`);
+    process.exit(1);
+  }
+  // Generate and write activity scaffold
+  const scaffold = generateActivityScaffold(algorithmKey);
+  writeFileSync(activityFile, scaffold, 'utf8');
+  console.log(`✓ Created ${activityFile}`);
+  // Add export to index
+  addExportToIndex(algorithmKey);
+  // Print success message and next steps
+  console.log('\n✅ Algorithm activity scaffolded successfully!');
+  console.log('\nNext steps:');
+  console.log(`  1. Implement the algorithm logic in ${activityFile}`);
+  console.log(`  2. Set runtime.taskQueue = "reputation-algorithms-typescript" in the algorithm definition`);
+  console.log(`  3. Set runtime.activity = "${algorithmKey.replace(/-/g, '_')}" in the algorithm definition`);
+  console.log('  4. Adjust input parsing and output serialization as needed');
+  console.log(`  5. Update content type if not using CSV (e.g., 'application/json')`);
 }
 main();

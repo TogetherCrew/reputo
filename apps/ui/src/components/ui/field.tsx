@@ -207,6 +207,7 @@ function FieldError({
       <ul className="ml-4 flex list-disc flex-col gap-1">
         {errors.map(
           (error, index) =>
+            // biome-ignore lint/suspicious/noArrayIndexKey: Error messages are stable and order doesn't change
             error?.message && <li key={index}>{error.message}</li>
         )}
       </ul>

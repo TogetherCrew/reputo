@@ -1,7 +1,8 @@
 "use client";
 
+import { useState } from "react";
+import { CSVViewerDialog } from "@/components/app/csv/csv-viewer-dialog";
 import { Button } from "@/components/ui/button";
-import { storageApi } from "@/lib/api/services";
 import {
   Dialog,
   DialogContent,
@@ -10,9 +11,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { storageApi } from "@/lib/api/services";
 import type { AlgorithmPresetResponseDto } from "@/lib/api/types";
-import { useState } from "react";
-import { CSVViewerDialog } from "@/components/app/csv/csv-viewer-dialog";
 
 interface PresetDetailsDialogProps {
   isOpen: boolean;
