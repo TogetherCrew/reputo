@@ -1,8 +1,12 @@
+"use client";
+
+import { useMemo, useState } from "react";
 import {
   Clock,
-  Layers,
+  FolderOpen,
   LayoutGrid,
   List,
+  Search,
   Target,
   Users
 } from "lucide-react";
@@ -20,16 +24,16 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
+import { Input } from "@/components/ui/input";
 import type { Algorithm } from "@/core/algorithms";
-import { algorithms } from "@/core/algorithms";
+import { searchAlgorithms } from "@/core/algorithms";
 
 // algorithms imported from shared file
 
@@ -47,7 +51,17 @@ const categories: {
   },
 ];
 
+type ViewMode = "grid" | "list";
+
 export default function Home() {
+  const [viewMode, setViewMode] = useState<ViewMode>("grid");
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Search algorithms based on query
+  const filteredAlgorithms = useMemo(() => {
+    return searchAlgorithms(searchQuery);
+  }, [searchQuery]);
+
   return (
     <div className="min-h-screen w-full">
       <main className="mx-auto w-full max-w-6xl px-6 py-8">
@@ -58,143 +72,173 @@ export default function Home() {
                 <Input
                   placeholder="Search algorithms by name, description, or tags..."
                   className="pl-9"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                 />
-                <svg
-                  aria-hidden="true"
-                  viewBox="0 0 24 24"
+                <Search
                   className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
-                >
-                  <path
-                    fill="currentColor"
-                    d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"
-                  />
-                </svg>
+                  aria-hidden="true"
+                />
               </div>
-              <Select defaultValue="all">
-                <SelectTrigger>
-                  <SelectValue placeholder="All" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All</SelectItem>
-                  <SelectItem value="core">Core Engagement</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select defaultValue="all">
-                <SelectTrigger>
-                  <SelectValue placeholder="All" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All</SelectItem>
-                  <SelectItem value="simple">Simple</SelectItem>
-                  <SelectItem value="intermediate">Intermediate</SelectItem>
-                  <SelectItem value="advanced">Advanced</SelectItem>
-                </SelectContent>
-              </Select>
               <div className="hidden sm:flex items-center gap-1">
-                <Button variant="ghost" size="icon" aria-label="Grid view">
+                <Button
+                  variant={viewMode === "grid" ? "secondary" : "ghost"}
+                  size="icon"
+                  aria-label="Grid view"
+                  onClick={() => setViewMode("grid")}
+                >
                   <LayoutGrid className="size-4" />
                 </Button>
-                <Button variant="ghost" size="icon" aria-label="List view">
+                <Button
+                  variant={viewMode === "list" ? "secondary" : "ghost"}
+                  size="icon"
+                  aria-label="List view"
+                  onClick={() => setViewMode("list")}
+                >
                   <List className="size-4" />
                 </Button>
-                <div className="relative">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    aria-label="Selected algorithms"
-                  >
-                    <Layers className="size-4" />
-                  </Button>
-                  <span className="absolute -right-1 -top-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-foreground px-1.5 text-xs text-background">
-                    2
-                  </span>
-                </div>
               </div>
             </div>
           </div>
 
           <div className="text-sm text-muted-foreground">
-            1 algorithms found
+            {filteredAlgorithms.length} algorithm{filteredAlgorithms.length !== 1 ? "s" : ""} found
           </div>
 
-          <div className="flex flex-col gap-8">
-            {categories.map((cat) => {
-              const items = algorithms.filter((a) => a.category === cat.key);
-              return (
-                <section key={cat.key} className="flex flex-col gap-4">
-                  <div className="flex items-start gap-2">
-                    <div className="mt-1">{cat.icon}</div>
-                    <div>
-                      <h2 className="text-lg font-semibold">{cat.title}</h2>
-                      <p className="text-sm text-muted-foreground">
-                        {cat.description}
-                      </p>
+          {filteredAlgorithms.length === 0 ? (
+            <Empty className="h-[400px]">
+              <EmptyHeader>
+                <EmptyMedia variant="icon">
+                  <FolderOpen className="size-6" />
+                </EmptyMedia>
+                <EmptyTitle>No Algorithms Found</EmptyTitle>
+                <EmptyDescription>
+                  {searchQuery
+                    ? `No algorithms match "${searchQuery}". Try a different search term.`
+                    : "No algorithms are available at the moment."}
+                </EmptyDescription>
+              </EmptyHeader>
+            </Empty>
+          ) : (
+            <div className="flex flex-col gap-8">
+              {categories.map((cat) => {
+                const items = filteredAlgorithms.filter((a) => a.category === cat.key);
+                if (items.length === 0) return null;
+                return (
+                  <section key={cat.key} className="flex flex-col gap-4">
+                    <div className="flex items-start gap-2">
+                      <div className="mt-1">{cat.icon}</div>
+                      <div>
+                        <h2 className="text-lg font-semibold">{cat.title}</h2>
+                        <p className="text-sm text-muted-foreground">
+                          {cat.description}
+                        </p>
+                      </div>
                     </div>
-                  </div>
 
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    {items.map((algo) => (
-                      <Link
-                        key={algo.id}
-                        href={`/dashboard/algorithms/${algo.id}`}
-                      >
-                        <Card key={algo.id} className="">
-                          <CardHeader className="grid grid-cols-[1fr_auto] gap-2">
-                            <div className="flex flex-col gap-2">
-                              <Badge variant="outline" className="w-fit">
-                                {algo.category}
-                              </Badge>
-                              <CardTitle className="text-base">
-                                {algo.title}
-                              </CardTitle>
-                            </div>
-                            <CardAction>
-                              <Checkbox
-                                aria-label="Select algorithm"
-                                className="size-5 rounded-full"
-                              />
-                            </CardAction>
-                          </CardHeader>
-
-                          <CardContent className="-mt-3">
-                            <CardDescription>
-                              {algo.description}
-                            </CardDescription>
-                            <div className="mt-4 flex flex-wrap items-center gap-4 text-sm">
-                              <span className="inline-flex items-center gap-2 text-muted-foreground">
-                                <Clock className="size-4" /> {algo.duration}
-                              </span>
-                              <span className="inline-flex items-center gap-2 text-muted-foreground">
-                                <Users className="size-4" /> {algo.dependencies}
-                              </span>
-                              <Badge className="bg-emerald-500 text-white border-transparent">
-                                {algo.level}
-                              </Badge>
-                            </div>
-                          </CardContent>
-
-                          <CardFooter>
-                            Inputs:
-                            <div className="flex flex-wrap gap-2 px-2">
-                              {algo.inputs.map((t) => (
-                                <Image
-                                  width={24}
-                                  height={24}
-                                  key={t.type}
-                                  src={`/icons/${t.type}.png`}
-                                  alt={t.type}
+                    <div
+                      className={
+                        viewMode === "grid"
+                          ? "grid gap-4 sm:grid-cols-2"
+                          : "flex flex-col gap-4"
+                      }
+                    >
+                      {items.map((algo) => (
+                        <Link
+                          key={algo.id}
+                          href={`/dashboard/algorithms/${algo.id}`}
+                        >
+                          <Card
+                            key={algo.id}
+                            className={
+                              viewMode === "list"
+                                ? "flex flex-row items-start gap-4"
+                                : ""
+                            }
+                          >
+                            <CardHeader
+                              className={
+                                viewMode === "list"
+                                  ? "flex-1 grid grid-cols-[1fr_auto] gap-2 pb-0"
+                                  : "grid grid-cols-[1fr_auto] gap-2"
+                              }
+                            >
+                              <div className="flex flex-col gap-2 min-w-0">
+                                <Badge variant="outline" className="w-fit">
+                                  {algo.category}
+                                </Badge>
+                                <CardTitle
+                                  className={
+                                    viewMode === "list"
+                                      ? "text-lg font-semibold"
+                                      : "text-base font-semibold"
+                                  }
+                                >
+                                  {algo.title}
+                                </CardTitle>
+                              </div>
+                              <CardAction>
+                                <Checkbox
+                                  aria-label="Select algorithm"
+                                  className="size-5 rounded-full"
                                 />
-                              ))}
-                            </div>
-                          </CardFooter>
-                        </Card>
-                      </Link>
-                    ))}
-                  </div>
-                </section>
-              );
-            })}
-          </div>
+                              </CardAction>
+                            </CardHeader>
+
+                            <CardContent
+                              className={
+                                viewMode === "list"
+                                  ? "flex-1 -mt-3 pb-0"
+                                  : "-mt-3"
+                              }
+                            >
+                              <CardDescription>
+                                {algo.description}
+                              </CardDescription>
+                              <div className="mt-4 flex flex-wrap items-center gap-4 text-sm">
+                                <span className="inline-flex items-center gap-2 text-muted-foreground">
+                                  <Clock className="size-4" /> {algo.duration}
+                                </span>
+                                <span className="inline-flex items-center gap-2 text-muted-foreground">
+                                  <Users className="size-4" /> {algo.dependencies}
+                                </span>
+                                <Badge className="bg-emerald-500 text-white border-transparent">
+                                  {algo.level}
+                                </Badge>
+                              </div>
+                            </CardContent>
+
+                            <CardFooter
+                              className={
+                                viewMode === "list"
+                                  ? "flex-col items-start gap-2 pt-0"
+                                  : ""
+                              }
+                            >
+                              <span className={viewMode === "list" ? "text-sm font-medium" : ""}>
+                                Inputs:
+                              </span>
+                              <div className="flex flex-wrap gap-2 px-2">
+                                {algo.inputs.map((t) => (
+                                  <Image
+                                    width={24}
+                                    height={24}
+                                    key={t.type}
+                                    src={`/icons/${t.type}.png`}
+                                    alt={t.type}
+                                  />
+                                ))}
+                              </div>
+                            </CardFooter>
+                          </Card>
+                        </Link>
+                      ))}
+                    </div>
+                  </section>
+                );
+              })}
+            </div>
+          )}
         </div>
       </main>
     </div>

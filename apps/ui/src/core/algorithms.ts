@@ -1,7 +1,6 @@
 import {
   type AlgorithmDefinition,
   getAlgorithmDefinition,
-  getAlgorithmDefinitionKeys,
 } from '@reputo/reputation-algorithms';
 import { reputoClient } from "./client";
 import { buildSchemaFromAlgorithm } from "./schema-builder";
@@ -21,9 +20,6 @@ export interface Algorithm {
   }>;
 }
 
-// Get all algorithm keys from the registry
-const algorithmKeys = getAlgorithmDefinitionKeys();
-
 // Transform AlgorithmDefinition to UI Algorithm format
 function transformAlgorithm(definition: AlgorithmDefinition): Algorithm {
   return {
@@ -42,27 +38,26 @@ function transformAlgorithm(definition: AlgorithmDefinition): Algorithm {
   };
 }
 
-// Get all algorithms from the registry
-export const algorithms: Algorithm[] = algorithmKeys.map((key: string) => {
+/**
+ * Search algorithms by query string.
+ * Searches across algorithm name, description, key, and category.
+ * 
+ * @param query - Search query string (empty string returns all algorithms)
+ * @returns Array of matching algorithms
+ */
+export function searchAlgorithms(query: string): Algorithm[] {
   try {
-    const definitionJson = getAlgorithmDefinition({ key });
-    const definition = JSON.parse(definitionJson) as AlgorithmDefinition;
-    return transformAlgorithm(definition);
+    const definitionsJson = getAlgorithmDefinition({ query });
+    const definitions = JSON.parse(definitionsJson) as AlgorithmDefinition[];
+    return definitions.map(transformAlgorithm);
   } catch (error) {
-    console.error(`Failed to load algorithm ${key}:`, error);
-    // Return a fallback algorithm
-    return {
-      id: key,
-      title: key.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase()),
-      category: 'Custom',
-      description: 'Algorithm definition could not be loaded',
-      duration: '~2-5 min',
-      dependencies: 'Unknown',
-      level: 'Unknown',
-      inputs: [],
-    };
+    console.error('Failed to search algorithms:', error);
+    return [];
   }
-});
+}
+
+// Get all algorithms from the registry (cached for initial load)
+export const algorithms: Algorithm[] = searchAlgorithms('');
 
 // Helper function to get algorithm by ID
 export function getAlgorithmById(id: string): Algorithm | undefined {
