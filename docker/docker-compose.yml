@@ -125,10 +125,10 @@ services:
         restart: unless-stopped
         depends_on:
             - temporal-postgresql
-            # - temporal-elasticsearch
+            - temporal-elasticsearch
+        ports:
+            - '7233:7233'
         env_file: ./temporal.env
-        volumes:
-            - ./temporal-dynamicconfig:/etc/temporal/config/dynamicconfig:ro
         networks:
             - web
         healthcheck:
