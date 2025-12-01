@@ -21,7 +21,7 @@ export {
 export { ReputoForm } from "./reputo-form";
 // Schema Builder
 export { buildSchemaFromAlgorithm } from "./schema-builder";
-// Types
+// Types - re-exported from @reputo/validator
 export type {
   BooleanInput,
   ColumnDefinition,
@@ -36,12 +36,11 @@ export type {
   SliderInput,
   TextInput,
   ValidationResult,
-} from "./types";
-// Validation
+} from "@reputo/algorithm-validator";
+// Validation - re-exported from @reputo/validator
 export {
   buildZodSchema,
   type InferSchemaType,
   validateCSVContent,
   validatePayload,
-} from "./validation";
-
+} from "@reputo/algorithm-validator";

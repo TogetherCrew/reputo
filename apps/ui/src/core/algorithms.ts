@@ -1,6 +1,7 @@
 import {
   type AlgorithmDefinition,
   getAlgorithmDefinition,
+  getAlgorithmDefinitionKeys,
 } from '@reputo/reputation-algorithms';
 import { reputoClient } from "./client";
 import { buildSchemaFromAlgorithm } from "./schema-builder";
@@ -25,8 +26,8 @@ function transformAlgorithm(definition: AlgorithmDefinition): Algorithm {
   return {
     id: definition.key,
     title: definition.name,
-    category: definition.category === 'engagement' ? 'Core Engagement' : 
-              definition.category === 'activity' ? 'Core Engagement' : 'Custom',
+    category: definition.category === 'engagement' ? 'Core Engagement' :
+      definition.category === 'activity' ? 'Core Engagement' : 'Custom',
     description: definition.description,
     duration: '~2-5 min', // Default duration since it's not in the definition
     dependencies: `${definition.inputs.length} input${definition.inputs.length !== 1 ? 's' : ''}`,
@@ -39,25 +40,34 @@ function transformAlgorithm(definition: AlgorithmDefinition): Algorithm {
 }
 
 /**
- * Search algorithms by query string.
- * Searches across algorithm name, description, key, and category.
+ * Get all algorithms from the registry.
  * 
- * @param query - Search query string (empty string returns all algorithms)
- * @returns Array of matching algorithms
+ * @returns Array of all algorithms
  */
-export function searchAlgorithms(query: string): Algorithm[] {
+function getAllAlgorithms(): Algorithm[] {
   try {
-    const definitionsJson = getAlgorithmDefinition({ query });
-    const definitions = JSON.parse(definitionsJson) as AlgorithmDefinition[];
-    return definitions.map(transformAlgorithm);
+    const keys = getAlgorithmDefinitionKeys();
+    const algorithms: Algorithm[] = [];
+
+    for (const key of keys) {
+      try {
+        const definitionJson = getAlgorithmDefinition({ key });
+        const definition = JSON.parse(definitionJson) as AlgorithmDefinition;
+        algorithms.push(transformAlgorithm(definition));
+      } catch (error) {
+        console.error(`Failed to load algorithm ${key}:`, error);
+      }
+    }
+
+    return algorithms;
   } catch (error) {
-    console.error('Failed to search algorithms:', error);
+    console.error('Failed to get algorithms:', error);
     return [];
   }
 }
 
 // Get all algorithms from the registry (cached for initial load)
-export const algorithms: Algorithm[] = searchAlgorithms('');
+export const algorithms: Algorithm[] = getAllAlgorithms();
 
 // Helper function to get algorithm by ID
 export function getAlgorithmById(id: string): Algorithm | undefined {
