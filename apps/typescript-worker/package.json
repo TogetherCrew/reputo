@@ -1,0 +1,39 @@
+{
+    "name": "@reputo/typescript-worker",
+    "version": "0.1.0",
+    "private": true,
+    "description": "Temporal worker for TypeScript reputation algorithms",
+    "type": "module",
+    "main": "dist/worker/main.js",
+    "scripts": {
+        "build": "tsc",
+        "dev": "tsx watch src/worker/main.ts",
+        "start": "node dist/worker/main.js",
+        "clean": "rm -rf dist",
+        "lint": "biome check .",
+        "lint:fix": "biome check --write .",
+        "test": "vitest run",
+        "test:watch": "vitest",
+        "test:coverage": "vitest run --coverage",
+        "algorithm:new": "tsx scripts/scaffold-algorithm.ts"
+    },
+    "dependencies": {
+        "@aws-sdk/client-s3": "^3.709.0",
+        "@reputo/storage": "workspace:*",
+        "@temporalio/activity": "^1.11.3",
+        "@temporalio/worker": "^1.11.3",
+        "@temporalio/workflow": "^1.11.3",
+        "csv-parse": "^5.6.0",
+        "csv-stringify": "^6.5.2",
+        "dotenv": "^16.4.7",
+        "pino": "^9.8.0",
+        "pino-pretty": "^13.1.2"
+    },
+    "devDependencies": {
+        "@biomejs/biome": "^2.3.7",
+        "@types/node": "^22.18.11",
+        "tsx": "^4.7.0",
+        "typescript": "5.9.2",
+        "vitest": "3.2.4"
+    }
+}

@@ -5,6 +5,10 @@ networks:
 volumes:
     mongodb_data:
         driver: local
+    temporal_elasticsearch_data:
+        driver: local
+    temporal_postgresql_data:
+        driver: local
 
 services:
     mongodb:
@@ -41,7 +45,9 @@ services:
             - ../apps/api/src:/prod/api/src:ro
         depends_on:
             mongodb:
-                condition: service_healthy
+                condition: service_started
+            temporal:
+                condition: service_started
         env_file:
             - ./api.env
 
@@ -51,12 +57,96 @@ services:
             context: ..
             dockerfile: docker/Dockerfile
             target: ui
+            args:
+                NEXT_PUBLIC_API_URL: http://localhost:3000/api/v1
         restart: unless-stopped
         ports:
             - '8080:8080'
         networks: [local]
         env_file:
             - ./ui.env
+
+    temporal:
+        container_name: temporal
+        image: temporalio/auto-setup:1.26.3.0
+        restart: unless-stopped
+        depends_on:
+            - temporal-postgresql
+            - temporal-elasticsearch
+        ports:
+            - '7233:7233'
+        env_file: ./temporal.env
+        networks:
+            - local
+        healthcheck:
+            test:
+                [
+                    'CMD',
+                    'tctl',
+                    '--address',
+                    'temporal:7233',
+                    'workflow',
+                    'list',
+                ]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+            start_period: 90s
+
+    temporal-ui:
+        container_name: temporal-ui
+        image: temporalio/ui:2.32.0
+        restart: unless-stopped
+        env_file: ./temporal-ui.env
+        depends_on:
+            - temporal
+        ports:
+            - '8088:8080'
+        networks:
+            - local
+
+    temporal-elasticsearch:
+        container_name: temporal-elasticsearch
+        restart: unless-stopped
+        image: elasticsearch:7.17.23
+        environment:
+            - cluster.routing.allocation.disk.threshold_enabled=true
+            - cluster.routing.allocation.disk.watermark.low=512mb
+            - cluster.routing.allocation.disk.watermark.high=256mb
+            - cluster.routing.allocation.disk.watermark.flood_stage=128mb
+            - discovery.type=single-node
+            - ES_JAVA_OPTS=-Xms256m -Xmx256m
+            - xpack.security.enabled=false
+        volumes:
+            - temporal_elasticsearch_data:/var/lib/elasticsearch/data
+        networks:
+            - local
+
+    temporal-postgresql:
+        container_name: temporal-postgresql
+        image: postgres:12.22
+        restart: unless-stopped
+        env_file: ./temporal-postgresql.env
+        networks:
+            - local
+        volumes:
+            - temporal_postgresql_data:/var/lib/postgresql/data
+
+    typescript-worker:
+        container_name: typescript-worker
+        build:
+            context: ..
+            dockerfile: docker/Dockerfile
+            target: typescript-worker
+        restart: unless-stopped
+        networks: [local]
+        volumes:
+            - ../apps/typescript-worker/src:/prod/typescript-worker/src:ro
+        depends_on:
+            temporal:
+                condition: service_started
+        env_file:
+            - ./typescript-worker.env
 
     workflows:
         container_name: workflows
@@ -66,3 +156,12 @@ services:
             target: workflows
         restart: unless-stopped
         networks: [local]
+        volumes:
+            - ../apps/workflows/src:/prod/workflows/src:ro
+        depends_on:
+            mongodb:
+                condition: service_started
+            temporal:
+                condition: service_started
+        env_file:
+            - ./workflows.env

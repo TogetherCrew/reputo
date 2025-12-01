@@ -1,144 +1,331 @@
-"use client";
+'use client'
 
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Download, Eye } from 'lucide-react'
+import { useState } from 'react'
+import { CSVViewerDialog } from '@/components/app/csv/csv-viewer-dialog'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import type { SnapshotResponseDto } from "@/lib/api/types";
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog'
+import { storageApi } from '@/lib/api/services'
+import type { SnapshotResponseDto } from '@/lib/api/types'
 
 interface SnapshotDetailsDialogProps {
-  isOpen: boolean;
-  onClose: () => void;
-  snapshot: SnapshotResponseDto | null;
+    isOpen: boolean
+    onClose: () => void
+    snapshot: SnapshotResponseDto | null
 }
 
-export function SnapshotDetailsDialog({ isOpen, onClose, snapshot }: SnapshotDetailsDialogProps) {
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "running":
-        return (
-          <Badge variant="secondary" className="w-fit">
-            Running
-          </Badge>
-        );
-      case "completed":
-        return (
-          <Badge className="bg-foreground text-background border-transparent">
-            Completed
-          </Badge>
-        );
-      case "failed":
-        return (
-          <Badge className="bg-red-500 text-white border-transparent">
-            Failed
-          </Badge>
-        );
-      case "cancelled":
-        return (
-          <Badge variant="outline">
-            Cancelled
-          </Badge>
-        );
-      default:
-        return (
-          <Badge variant="outline">Queued</Badge>
-        );
-    }
-  };
+export function SnapshotDetailsDialog({
+    isOpen,
+    onClose,
+    snapshot,
+}: SnapshotDetailsDialogProps) {
+    const [csvViewerOpen, setCsvViewerOpen] = useState(false)
+    const [csvHref, setCsvHref] = useState<string | null>(null)
 
-  return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-2xl">
-        <DialogHeader>
-          <DialogTitle>Snapshot Details</DialogTitle>
-          <DialogDescription>
-            View detailed information about this snapshot execution
-          </DialogDescription>
-        </DialogHeader>
-        {snapshot && (
-          <div className="space-y-6">
-            <div className="grid gap-4">
-              <div>
-                <h3 className="text-sm font-medium text-muted-foreground">Snapshot ID</h3>
-                <p className="text-sm font-mono">{snapshot._id}</p>
-              </div>
-              <div>
-                <h3 className="text-sm font-medium text-muted-foreground">Status</h3>
-                <div className="mt-1">
-                  {getStatusBadge(snapshot.status)}
-                </div>
-              </div>
-              <div>
-                <h3 className="text-sm font-medium text-muted-foreground">Preset</h3>
-                <p className="text-sm">
-                  {typeof snapshot.algorithmPreset === 'string' 
-                    ? `Preset ${snapshot.algorithmPreset.slice(-8)}`
-                    : 'Unknown Preset'}
-                </p>
-              </div>
-              <div>
-                <h3 className="text-sm font-medium text-muted-foreground">Created</h3>
-                <p className="text-sm">{new Date(snapshot.createdAt).toLocaleString()}</p>
-              </div>
-              <div>
-                <h3 className="text-sm font-medium text-muted-foreground">Last Updated</h3>
-                <p className="text-sm">{new Date(snapshot.updatedAt).toLocaleString()}</p>
-              </div>
-            </div>
-            
-            {snapshot.temporal && (
-              <div>
-                <h3 className="text-sm font-medium text-muted-foreground mb-3">Temporal Workflow</h3>
-                <div className="space-y-2">
-                  <div className="p-3 border rounded-lg">
-                    <div className="font-medium">Workflow ID</div>
-                    <div className="text-sm text-muted-foreground font-mono">{snapshot.temporal.workflowId}</div>
-                  </div>
-                  {snapshot.temporal.runId && (
-                    <div className="p-3 border rounded-lg">
-                      <div className="font-medium">Run ID</div>
-                      <div className="text-sm text-muted-foreground font-mono">{snapshot.temporal.runId}</div>
+    const getStatusBadge = (status: string) => {
+        switch (status) {
+            case 'running':
+                return (
+                    <Badge variant="secondary" className="w-fit">
+                        Running
+                    </Badge>
+                )
+            case 'completed':
+                return (
+                    <Badge className="bg-foreground text-background border-transparent">
+                        Completed
+                    </Badge>
+                )
+            case 'failed':
+                return (
+                    <Badge className="bg-red-500 text-white border-transparent">
+                        Failed
+                    </Badge>
+                )
+            case 'cancelled':
+                return <Badge variant="outline">Cancelled</Badge>
+            default:
+                return <Badge variant="outline">Queued</Badge>
+        }
+    }
+
+    return (
+        <Dialog open={isOpen} onOpenChange={onClose}>
+            <DialogContent className="sm:max-w-2xl max-h-[90vh] flex flex-col">
+                <DialogHeader className="shrink-0">
+                    <DialogTitle>Snapshot Details</DialogTitle>
+                    <DialogDescription>
+                        View detailed information about this snapshot execution
+                    </DialogDescription>
+                </DialogHeader>
+                {snapshot && (
+                    <div className="space-y-6 overflow-y-auto flex-1 min-h-0 pr-1">
+                        <div className="grid gap-4">
+                            <div>
+                                <h3 className="text-sm font-medium text-muted-foreground">
+                                    Snapshot ID
+                                </h3>
+                                <p className="text-sm font-mono">
+                                    {snapshot._id}
+                                </p>
+                            </div>
+                            <div>
+                                <h3 className="text-sm font-medium text-muted-foreground">
+                                    Status
+                                </h3>
+                                <div className="mt-1">
+                                    {getStatusBadge(snapshot.status)}
+                                </div>
+                            </div>
+                            <div>
+                                <h3 className="text-sm font-medium text-muted-foreground">
+                                    Preset
+                                </h3>
+                                <p className="text-sm">
+                                    {snapshot.algorithmPresetFrozen?.name ||
+                                        (typeof snapshot.algorithmPreset ===
+                                        'string'
+                                            ? `Preset ${snapshot.algorithmPreset.slice(
+                                                  -8
+                                              )}`
+                                            : 'Unknown Preset')}
+                                </p>
+                            </div>
+                            <div>
+                                <h3 className="text-sm font-medium text-muted-foreground">
+                                    Created
+                                </h3>
+                                <p className="text-sm">
+                                    {new Date(
+                                        snapshot.createdAt
+                                    ).toLocaleString()}
+                                </p>
+                            </div>
+                            <div>
+                                <h3 className="text-sm font-medium text-muted-foreground">
+                                    Last Updated
+                                </h3>
+                                <p className="text-sm">
+                                    {new Date(
+                                        snapshot.updatedAt
+                                    ).toLocaleString()}
+                                </p>
+                            </div>
+                        </div>
+
+                        {snapshot.temporal && (
+                            <div>
+                                <h3 className="text-sm font-medium text-muted-foreground mb-3">
+                                    Temporal Workflow
+                                </h3>
+                                <div className="space-y-2">
+                                    <div className="p-3 border rounded-lg">
+                                        <div className="font-medium">
+                                            Workflow ID
+                                        </div>
+                                        <div className="text-sm text-muted-foreground font-mono">
+                                            {snapshot.temporal.workflowId}
+                                        </div>
+                                    </div>
+                                    {snapshot.temporal.runId && (
+                                        <div className="p-3 border rounded-lg">
+                                            <div className="font-medium">
+                                                Run ID
+                                            </div>
+                                            <div className="text-sm text-muted-foreground font-mono">
+                                                {snapshot.temporal.runId}
+                                            </div>
+                                        </div>
+                                    )}
+                                    {snapshot.temporal.taskQueue && (
+                                        <div className="p-3 border rounded-lg">
+                                            <div className="font-medium">
+                                                Task Queue
+                                            </div>
+                                            <div className="text-sm text-muted-foreground">
+                                                {snapshot.temporal.taskQueue}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+
+                        {snapshot.outputs &&
+                            Object.keys(snapshot.outputs).length > 0 && (
+                                <div>
+                                    <h3 className="text-sm font-medium text-muted-foreground mb-3">
+                                        Outputs
+                                    </h3>
+                                    <div className="space-y-2">
+                                        {Object.entries(snapshot.outputs).map(
+                                            ([key, value]) => {
+                                                const isStringValue =
+                                                    typeof value === 'string'
+                                                // Check if it's a public file (starts with / or is a filename)
+                                                const isPublicFile =
+                                                    isStringValue &&
+                                                    (value.startsWith('/') ||
+                                                        value.startsWith(
+                                                            'sample-'
+                                                        ) ||
+                                                        /^[^\/]+\.(csv|json|txt|pdf)$/i.test(
+                                                            value
+                                                        ))
+                                                const isCsvFile =
+                                                    isStringValue &&
+                                                    (value
+                                                        .toLowerCase()
+                                                        .endsWith('.csv') ||
+                                                        key.toLowerCase() ===
+                                                            'csv')
+                                                // Construct file path for public folder
+                                                const filePath = isPublicFile
+                                                    ? value.startsWith('/')
+                                                        ? value
+                                                        : `/${value}`
+                                                    : null
+
+                                                return (
+                                                    <div
+                                                        key={key}
+                                                        className="p-3 border rounded-lg"
+                                                    >
+                                                        <div className="font-medium mb-2">
+                                                            {key}
+                                                        </div>
+                                                        <div className="flex items-center justify-between gap-3">
+                                                            <div className="text-sm text-muted-foreground break-all flex-1">
+                                                                {typeof value ===
+                                                                'object'
+                                                                    ? JSON.stringify(
+                                                                          value,
+                                                                          null,
+                                                                          2
+                                                                      )
+                                                                    : String(
+                                                                          value
+                                                                      )}
+                                                            </div>
+                                                            <div className="flex items-center gap-2 shrink-0">
+                                                                {filePath && (
+                                                                    <>
+                                                                        <Button
+                                                                            size="sm"
+                                                                            variant="outline"
+                                                                            onClick={() => {
+                                                                                window.open(
+                                                                                    filePath,
+                                                                                    '_blank',
+                                                                                    'noopener,noreferrer'
+                                                                                )
+                                                                            }}
+                                                                            className="gap-2"
+                                                                        >
+                                                                            <Download className="size-3" />
+                                                                            Download
+                                                                        </Button>
+                                                                        {isCsvFile && (
+                                                                            <Button
+                                                                                size="sm"
+                                                                                variant="outline"
+                                                                                onClick={() => {
+                                                                                    setCsvHref(
+                                                                                        filePath
+                                                                                    )
+                                                                                    setCsvViewerOpen(
+                                                                                        true
+                                                                                    )
+                                                                                }}
+                                                                                className="gap-2"
+                                                                            >
+                                                                                <Eye className="size-3" />
+                                                                                View
+                                                                            </Button>
+                                                                        )}
+                                                                    </>
+                                                                )}
+                                                                {!filePath &&
+                                                                    isStringValue &&
+                                                                    !/^https?:\/\//i.test(
+                                                                        value
+                                                                    ) && (
+                                                                        <Button
+                                                                            size="sm"
+                                                                            variant="secondary"
+                                                                            onClick={async () => {
+                                                                                try {
+                                                                                    const val =
+                                                                                        value as string
+                                                                                    let url =
+                                                                                        val
+                                                                                    if (
+                                                                                        !/^https?:\/\//i.test(
+                                                                                            val
+                                                                                        )
+                                                                                    ) {
+                                                                                        const res =
+                                                                                            await storageApi.createDownload(
+                                                                                                {
+                                                                                                    key: val,
+                                                                                                }
+                                                                                            )
+                                                                                        url =
+                                                                                            res.url
+                                                                                    }
+                                                                                    setCsvHref(
+                                                                                        url
+                                                                                    )
+                                                                                    setCsvViewerOpen(
+                                                                                        true
+                                                                                    )
+                                                                                } catch (e) {
+                                                                                    console.error(
+                                                                                        e
+                                                                                    )
+                                                                                    alert(
+                                                                                        'Unable to open CSV viewer'
+                                                                                    )
+                                                                                }
+                                                                            }}
+                                                                            className="gap-2"
+                                                                        >
+                                                                            <Eye className="size-3" />
+                                                                            View
+                                                                            CSV
+                                                                        </Button>
+                                                                    )}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                )
+                                            }
+                                        )}
+                                    </div>
+                                </div>
+                            )}
                     </div>
-                  )}
-                  {snapshot.temporal.taskQueue && (
-                    <div className="p-3 border rounded-lg">
-                      <div className="font-medium">Task Queue</div>
-                      <div className="text-sm text-muted-foreground">{snapshot.temporal.taskQueue}</div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-            
-            {snapshot.outputs && Object.keys(snapshot.outputs).length > 0 && (
-              <div>
-                <h3 className="text-sm font-medium text-muted-foreground mb-3">Outputs</h3>
-                <div className="space-y-2">
-                  {Object.entries(snapshot.outputs).map(([key, value]) => (
-                    <div key={key} className="p-3 border rounded-lg">
-                      <div className="font-medium">{key}</div>
-                      <div className="text-sm text-muted-foreground">
-                        {typeof value === 'object' ? JSON.stringify(value, null, 2) : String(value)}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
-            Close
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
+                )}
+                <DialogFooter className="shrink-0">
+                    <Button variant="outline" onClick={onClose}>
+                        Close
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+            <CSVViewerDialog
+                isOpen={csvViewerOpen}
+                onClose={() => setCsvViewerOpen(false)}
+                href={csvHref}
+                title="CSV Output Preview"
+            />
+        </Dialog>
+    )
 }

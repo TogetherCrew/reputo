@@ -44,6 +44,8 @@ export function ReputoForm({
   const form = useForm({
     resolver: clientValidate && zodSchema ? zodResolver(zodSchema) : undefined,
     defaultValues: getDefaultValues(schema, defaultValues),
+    mode: "onBlur",
+    reValidateMode: "onBlur",
   });
 
   // Render appropriate field component based on input type

@@ -1,5 +1,5 @@
 import { Schema } from 'mongoose';
-import type { AlgorithmPresetFrozen } from '../interfaces/index.js';
+import type { AlgorithmPresetFrozen } from '../shared/types/index.js';
 
 /**
  * Mongoose schema for frozen AlgorithmPreset embedded in Snapshot documents.

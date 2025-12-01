@@ -28,7 +28,7 @@ export function buildRegistry(config: Partial<RegistryGeneratorConfig> = {}): vo
     console.log(generateRegistryStats(registryIndex));
 
     console.log('📝 Generating registry index...');
-    const indexContent = generateRegistryIndexContent(registryIndex, finalConfig.includeMetadata);
+    const indexContent = generateRegistryIndexContent(registryIndex);
     const normalizedContent = indexContent.endsWith('\n') ? indexContent : `${indexContent}\n`;
 
     const exists = existsSync(finalConfig.outputPath);

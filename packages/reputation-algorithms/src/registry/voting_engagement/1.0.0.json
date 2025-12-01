@@ -17,19 +17,19 @@
                 "maxBytes": 104857600,
                 "columns": [
                     {
-                        "key": "collection_id",
-                        "type": "string",
-                        "aliases": ["voter_id", "user_id"],
-                        "description": "Unique voter identifier"
+                        "key": "id",
+                        "type": "number",
+                        "required": false,
+                        "description": "Row identifier"
                     },
                     {
-                        "key": "proposal_id",
-                        "type": "string",
-                        "aliases": ["question", "proposalId"],
-                        "description": "Unique proposal identifier"
+                        "key": "event_id",
+                        "type": "number",
+                        "required": false,
+                        "description": "Voting event identifier"
                     },
                     {
-                        "key": "vote",
+                        "key": "answer",
                         "type": "enum",
                         "enum": [
                             "skip",
@@ -46,8 +46,46 @@
                         ],
                         "description": "Vote value or skip"
                     },
-                    { "key": "timestamp", "type": "date", "required": false },
-                    { "key": "round", "type": "string", "required": false }
+                    {
+                        "key": "created_on",
+                        "type": "date",
+                        "required": false,
+                        "description": "Creation timestamp of the vote"
+                    },
+                    {
+                        "key": "updated_on",
+                        "type": "date",
+                        "required": false,
+                        "description": "Last update timestamp of the vote"
+                    },
+                    {
+                        "key": "question_id",
+                        "type": "string",
+                        "description": "Unique proposal/question identifier"
+                    },
+                    {
+                        "key": "balance",
+                        "type": "number",
+                        "required": false,
+                        "description": "Balance at time of vote (if provided)"
+                    },
+                    {
+                        "key": "stake",
+                        "type": "number",
+                        "required": false,
+                        "description": "Stake associated with the vote (if provided)"
+                    },
+                    {
+                        "key": "collection_id",
+                        "type": "string",
+                        "description": "Unique voter identifier"
+                    },
+                    {
+                        "key": "vote_id",
+                        "type": "number",
+                        "required": false,
+                        "description": "Vote identifier"
+                    }
                 ]
             }
         }
@@ -76,5 +114,9 @@
                 ]
             }
         }
-    ]
+    ],
+    "runtime": {
+        "taskQueue": "typescript-worker",
+        "activity": "voting_engagement"
+    }
 }

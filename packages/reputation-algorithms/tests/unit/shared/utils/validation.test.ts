@@ -183,6 +183,10 @@ describe('Validation Utils', () => {
             entity: 'user',
           },
         ],
+        runtime: {
+          taskQueue: 'typescript-worker',
+          activity: 'test_algorithm',
+        },
       };
 
       const result = validator.validate(validDefinition);
@@ -225,6 +229,10 @@ describe('Validation Utils', () => {
             entity: 'user',
           },
         ],
+        runtime: {
+          taskQueue: 'typescript-worker',
+          activity: 'test_algorithm',
+        },
       };
 
       const result = validator.validateAndThrow(validDefinition);
@@ -251,6 +259,10 @@ describe('Validation Utils', () => {
         version: '1.0.0',
         inputs: [],
         outputs: [{ key: 'result', type: 'score_map', entity: 'user' }],
+        runtime: {
+          taskQueue: 'typescript-worker',
+          activity: 'test',
+        },
       });
 
       expect(result.isValid).toBe(true);

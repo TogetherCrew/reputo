@@ -1,25 +1,51 @@
 {
     "name": "@reputo/workflows",
     "version": "2.0.0",
-    "description": "",
+    "description": "Temporal-based workflow orchestration for Reputo algorithms",
+    "type": "module",
     "main": "dist/index.js",
     "private": "true",
     "scripts": {
         "build": "tsc",
         "start": "node dist/index.js",
+        "clean": "rm -rf dist",
         "dev": "tsx watch src/index.ts",
         "check": "pnpm exec biome check --write",
         "format": "pnpm exec biome format --write",
         "lint": "pnpm exec biome lint --write",
-        "test": "echo \"no tests yet\"",
+        "test": "vitest",
+        "test:watch": "vitest --watch",
+        "test:cov": "vitest --coverage",
         "release": "semantic-release"
     },
-    "dependencies": {},
-    "devDependencies": {
-        "tsx": "^4.7.0"
+    "dependencies": {
+        "@reputo/database": "workspace:*",
+        "@reputo/reputation-algorithms": "workspace:*",
+        "@temporalio/activity": "^1.11.3",
+        "@temporalio/client": "^1.11.3",
+        "@temporalio/worker": "^1.11.3",
+        "@temporalio/workflow": "^1.11.3",
+        "dotenv": "^16.4.7",
+        "mongoose": "^8.8.4",
+        "pino": "^9.8.0",
+        "pino-pretty": "^13.1.2"
     },
-    "keywords": [],
-    "author": "",
-    "license": "ISC",
+    "devDependencies": {
+        "@types/node": "^22.18.11",
+        "tsx": "^4.7.0",
+        "typescript": "5.9.2",
+        "vitest": "3.2.4"
+    },
+    "keywords": [
+        "temporal",
+        "workflow",
+        "orchestration",
+        "reputation"
+    ],
+    "author": {
+        "name": "Behzad Rabiei",
+        "url": "https://github.com/Behzad-rabiei"
+    },
+    "license": "GPL-3.0",
     "packageManager": "pnpm@10.12.4"
 }

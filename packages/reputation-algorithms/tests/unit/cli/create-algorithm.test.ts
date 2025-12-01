@@ -191,7 +191,9 @@ describe('CLI: createAlgorithm', () => {
         outputPath: testDir,
       });
 
-      expect(mockConsole.error).toHaveBeenCalledWith('Examples: user_activity, voting_power, content_quality');
+      expect(mockConsole.error).toHaveBeenCalledWith(
+        'Examples: voting_engagement, proposal_engagement, contribution_engagement',
+      );
     });
 
     it('should reject when file already exists and overwrite is false', () => {

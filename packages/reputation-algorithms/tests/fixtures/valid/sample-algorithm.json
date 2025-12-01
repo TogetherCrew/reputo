@@ -29,5 +29,9 @@
             "type": "score_map",
             "entity": "user"
         }
-    ]
+    ],
+    "runtime": {
+        "taskQueue": "typescript-worker",
+        "activity": "sample_algorithm"
+    }
 }

@@ -11,6 +11,7 @@
         "dev": "pnpm --filter \"./apps/*\" --parallel dev",
         "start": "pnpm --filter \"./apps/*\" --parallel start",
         "build": "pnpm -r build",
+        "clean": "pnpm -r --parallel clean",
         "check": "pnpm -r --parallel check",
         "lint": "pnpm -r --parallel lint",
         "format": "pnpm -r --parallel format",
@@ -26,7 +27,7 @@
     },
     "devDependencies": {
         "@anolilab/semantic-release-pnpm": "^2.0.2",
-        "@biomejs/biome": "^2.0.6",
+        "@biomejs/biome": "^2.3.7",
         "@commitlint/cli": "^19.8.1",
         "@commitlint/config-conventional": "^19.8.1",
         "@semantic-release/changelog": "^6.0.3",

@@ -7,7 +7,8 @@
         "build": "next build --turbopack",
         "start": "next start",
         "lint": "biome check --write",
-        "format": "biome format --write"
+        "format": "biome format --write",
+        "clean": "rm -rf coverage dist docs node_modules tsconfig.tsbuildinfo"
     },
     "dependencies": {
         "@hookform/resolvers": "^5.2.2",
@@ -62,7 +63,7 @@
         "zod": "^3.25.76"
     },
     "devDependencies": {
-        "@biomejs/biome": "2.2.0",
+        "@biomejs/biome": "^2.3.7",
         "@tailwindcss/postcss": "^4",
         "@types/node": "^20",
         "@types/react": "^19",

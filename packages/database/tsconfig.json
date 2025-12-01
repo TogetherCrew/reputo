@@ -1,14 +1,12 @@
 {
     "compilerOptions": {
         "incremental": true,
-        "composite": true,
 
         "target": "ES2022",
         "lib": ["ES2022"],
 
-        "module": "ESNext",
-        "moduleResolution": "bundler",
-        "moduleDetection": "force",
+        "module": "nodenext",
+        "moduleResolution": "nodenext",
         "types": ["node"],
 
         "rootDir": "./src",
@@ -19,7 +17,6 @@
 
         "resolveJsonModule": true,
         "isolatedModules": true,
-        "isolatedDeclarations": true,
         "forceConsistentCasingInFileNames": true,
         "esModuleInterop": true,
         "allowSyntheticDefaultImports": true,

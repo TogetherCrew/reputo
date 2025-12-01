@@ -19,7 +19,8 @@ jobs:
             packages: write
         strategy:
             matrix:
-                image: [api, ui, workflows]
+                os: [ubuntu-latest]
+                image: [api, ui, workflows, typescript-worker]
         outputs:
             image-tag: ${{ steps.meta.outputs.tags }}
 

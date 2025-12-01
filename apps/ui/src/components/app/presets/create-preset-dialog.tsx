@@ -1,5 +1,6 @@
 "use client";
 
+import { type AlgorithmDefinition, getAlgorithmDefinition } from "@reputo/reputation-algorithms";
 import { AlertCircle, Plus } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -84,6 +85,18 @@ export function CreatePresetDialog({
     return buildSchemaFromAlgorithm(algo, "1.0.0");
   }, [algo]);
 
+  // Fetch full algorithm definition to get original input keys
+  const fullDefinition = useMemo(() => {
+    if (!algo) return null;
+    try {
+      const definitionJson = getAlgorithmDefinition({ key: algo.id });
+      return JSON.parse(definitionJson) as AlgorithmDefinition;
+    } catch (error) {
+      console.warn(`Could not fetch full definition for ${algo.id}:`, error);
+      return null;
+    }
+  }, [algo]);
+
   // Parse backend errors
   const backendErrors = useMemo(() => {
     if (!error) return [];
@@ -105,20 +118,27 @@ export function CreatePresetDialog({
         version: (data.version as string) || "1.0.0",
         name: data.name as string | undefined,
         description: data.description as string | undefined,
-        inputs: algo.inputs.map((input) => {
-          const inputKey = input.label.toLowerCase().replace(/\s+/g, "_");
-          const value = data[inputKey];
+        inputs: algo.inputs.map((input, index) => {
+          const formFieldKey = input.label.toLowerCase().replace(/\s+/g, "_");
+          const value = data[formFieldKey];
+          
+          formFieldKey
+          const originalInputKey = fullDefinition?.inputs.find(
+            (defInput) => defInput.label === input.label
+          )?.key || 
+          fullDefinition?.inputs[index]?.key || 
+          formFieldKey;
           
           // Convert File object to filename string
           let inputValue: unknown;
           if (value instanceof File) {
             inputValue = value.name;
           } else {
-            inputValue = value || `placeholder_${inputKey}.csv`;
+            inputValue = value || `placeholder_${originalInputKey}.csv`;
           }
 
           return {
-            key: input.label,
+            key: originalInputKey,
             value: inputValue,
           };
         }),
