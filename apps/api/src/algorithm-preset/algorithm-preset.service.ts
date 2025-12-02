@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import type { AlgorithmPreset } from '@reputo/database';
 import { MODEL_NAMES } from '@reputo/database';
 import type { AlgorithmDefinition } from '@reputo/reputation-algorithms';
-import { getAlgorithmDefinition } from '@reputo/reputation-algorithms/api';
+import { getAlgorithmDefinition } from '@reputo/reputation-algorithms';
 import type { FilterQuery } from 'mongoose';
 import { throwNotFoundError } from '../shared/exceptions';
 import { pick } from '../shared/utils';
