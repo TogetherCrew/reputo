@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import type { AlgorithmPreset } from '@reputo/database';
 import { MODEL_NAMES } from '@reputo/database';
 import type { AlgorithmDefinition } from '@reputo/reputation-algorithms';
@@ -31,7 +31,7 @@ export class AlgorithmPresetService {
       return JSON.parse(definitionJson) as AlgorithmDefinition;
     } catch (error) {
       if (error && typeof error === 'object' && 'code' in error) {
-        throw new BadRequestException(`Algorithm definition not found: ${key}@${version}`);
+        throw new NotFoundException(`Algorithm definition not found: ${key}@${version}`);
       }
       throw error;
     }
