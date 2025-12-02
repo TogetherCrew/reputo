@@ -6,7 +6,7 @@
 
 # Interface: ParsedStorageKey
 
-Defined in: shared/types/types.ts:47
+Defined in: [shared/types/types.ts:47](https://github.com/TogetherCrew/reputo/blob/b53a1fc775dec485fe8825232e01c2b312ae43cf/packages/storage/src/shared/types/types.ts#L47)
 
 Parsed components of a storage key.
 Extracted from the key path structure.
@@ -17,7 +17,7 @@ Extracted from the key path structure.
 
 > **filename**: `string`
 
-Defined in: shared/types/types.ts:53
+Defined in: [shared/types/types.ts:53](https://github.com/TogetherCrew/reputo/blob/b53a1fc775dec485fe8825232e01c2b312ae43cf/packages/storage/src/shared/types/types.ts#L53)
 
 Full filename including extension.
 
@@ -33,7 +33,7 @@ Full filename including extension.
 
 > **ext**: `string`
 
-Defined in: shared/types/types.ts:60
+Defined in: [shared/types/types.ts:60](https://github.com/TogetherCrew/reputo/blob/b53a1fc775dec485fe8825232e01c2b312ae43cf/packages/storage/src/shared/types/types.ts#L60)
 
 File extension without the dot.
 
@@ -49,6 +49,6 @@ File extension without the dot.
 
 > **timestamp**: `number`
 
-Defined in: shared/types/types.ts:65
+Defined in: [shared/types/types.ts:65](https://github.com/TogetherCrew/reputo/blob/b53a1fc775dec485fe8825232e01c2b312ae43cf/packages/storage/src/shared/types/types.ts#L65)
 
 Unix timestamp (seconds since epoch) when the key was generated.

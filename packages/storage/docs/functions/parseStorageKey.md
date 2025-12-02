@@ -8,7 +8,7 @@
 
 > **parseStorageKey**(`key`): [`ParsedStorageKey`](../interfaces/ParsedStorageKey.md)
 
-Defined in: shared/utils/keys.ts:115
+Defined in: [shared/utils/keys.ts:115](https://github.com/TogetherCrew/reputo/blob/b53a1fc775dec485fe8825232e01c2b312ae43cf/packages/storage/src/shared/utils/keys.ts#L115)
 
 Parses a storage key into its component parts.
 

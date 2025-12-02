@@ -6,7 +6,7 @@
 
 # Class: StorageError
 
-Defined in: shared/errors/errors.ts:13
+Defined in: [shared/errors/errors.ts:13](https://github.com/TogetherCrew/reputo/blob/b53a1fc775dec485fe8825232e01c2b312ae43cf/packages/storage/src/shared/errors/errors.ts#L13)
 
 Base error class for all storage-related errors.
 Extends the standard Error class with proper name and stack trace.
@@ -29,7 +29,7 @@ Extends the standard Error class with proper name and stack trace.
 
 > **new StorageError**(`message`): `StorageError`
 
-Defined in: shared/errors/errors.ts:19
+Defined in: [shared/errors/errors.ts:19](https://github.com/TogetherCrew/reputo/blob/b53a1fc775dec485fe8825232e01c2b312ae43cf/packages/storage/src/shared/errors/errors.ts#L19)
 
 Creates a new StorageError instance.
 

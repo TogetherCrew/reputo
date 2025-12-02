@@ -6,7 +6,7 @@
 
 # Interface: PresignedUpload
 
-Defined in: shared/types/types.ts:102
+Defined in: [shared/types/types.ts:102](https://github.com/TogetherCrew/reputo/blob/b53a1fc775dec485fe8825232e01c2b312ae43cf/packages/storage/src/shared/types/types.ts#L102)
 
 Response from generating a presigned upload URL.
 
@@ -16,7 +16,7 @@ Response from generating a presigned upload URL.
 
 > **key**: `string`
 
-Defined in: shared/types/types.ts:106
+Defined in: [shared/types/types.ts:106](https://github.com/TogetherCrew/reputo/blob/b53a1fc775dec485fe8825232e01c2b312ae43cf/packages/storage/src/shared/types/types.ts#L106)
 
 S3 object key where the file should be uploaded.
 
@@ -26,7 +26,7 @@ S3 object key where the file should be uploaded.
 
 > **url**: `string`
 
-Defined in: shared/types/types.ts:112
+Defined in: [shared/types/types.ts:112](https://github.com/TogetherCrew/reputo/blob/b53a1fc775dec485fe8825232e01c2b312ae43cf/packages/storage/src/shared/types/types.ts#L112)
 
 Presigned URL for uploading the file.
 Valid for the duration specified in presignPutTtl.
@@ -37,6 +37,6 @@ Valid for the duration specified in presignPutTtl.
 
 > **expiresIn**: `number`
 
-Defined in: shared/types/types.ts:117
+Defined in: [shared/types/types.ts:117](https://github.com/TogetherCrew/reputo/blob/b53a1fc775dec485fe8825232e01c2b312ae43cf/packages/storage/src/shared/types/types.ts#L117)
 
 Number of seconds until the URL expires.

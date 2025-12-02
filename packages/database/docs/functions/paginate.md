@@ -8,7 +8,7 @@
 
 > **paginate**\<`T`\>(`schema`): `void`
 
-Defined in: packages/database/src/shared/plugins/paginate.plugin.ts:39
+Defined in: [packages/database/src/shared/plugins/paginate.plugin.ts:39](https://github.com/TogetherCrew/reputo/blob/b53a1fc775dec485fe8825232e01c2b312ae43cf/packages/database/src/shared/plugins/paginate.plugin.ts#L39)
 
 Pagination plugin for Mongoose schemas
 

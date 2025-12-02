@@ -8,7 +8,7 @@
 
 > **NotFoundErrorCode** = `"KEY_NOT_FOUND"` \| `"VERSION_NOT_FOUND"`
 
-Defined in: shared/types/errors.ts:7
+Defined in: [shared/types/errors.ts:7](https://github.com/TogetherCrew/reputo/blob/b53a1fc775dec485fe8825232e01c2b312ae43cf/packages/reputation-algorithms/src/shared/types/errors.ts#L7)
 
 Error codes for NotFoundError instances.
 
