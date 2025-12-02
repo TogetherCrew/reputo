@@ -8,7 +8,7 @@
 
 > **generateUploadKey**(`filename`, `contentType`, `now`): `string`
 
-Defined in: [shared/utils/keys.ts:88](https://github.com/TogetherCrew/reputo/blob/b53a1fc775dec485fe8825232e01c2b312ae43cf/packages/storage/src/shared/utils/keys.ts#L88)
+Defined in: [shared/utils/keys.ts:88](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/storage/src/shared/utils/keys.ts#L88)
 
 Generates an S3 key for uploading a file.
 

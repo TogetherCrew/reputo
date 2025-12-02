@@ -6,7 +6,7 @@
 
 # Interface: Output
 
-Defined in: [packages/algorithm-validator/src/types.ts:151](https://github.com/TogetherCrew/reputo/blob/b53a1fc775dec485fe8825232e01c2b312ae43cf/packages/algorithm-validator/src/types.ts#L151)
+Defined in: [packages/algorithm-validator/src/types.ts:151](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/algorithm-validator/src/types.ts#L151)
 
 Definition for an algorithm output.
 
@@ -16,7 +16,7 @@ Definition for an algorithm output.
 
 > **key**: `string`
 
-Defined in: [packages/algorithm-validator/src/types.ts:153](https://github.com/TogetherCrew/reputo/blob/b53a1fc775dec485fe8825232e01c2b312ae43cf/packages/algorithm-validator/src/types.ts#L153)
+Defined in: [packages/algorithm-validator/src/types.ts:153](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/algorithm-validator/src/types.ts#L153)
 
 Unique key identifier for the output
 
@@ -26,7 +26,7 @@ Unique key identifier for the output
 
 > **label**: `string`
 
-Defined in: [packages/algorithm-validator/src/types.ts:155](https://github.com/TogetherCrew/reputo/blob/b53a1fc775dec485fe8825232e01c2b312ae43cf/packages/algorithm-validator/src/types.ts#L155)
+Defined in: [packages/algorithm-validator/src/types.ts:155](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/algorithm-validator/src/types.ts#L155)
 
 Human-readable label for the output
 
@@ -36,7 +36,7 @@ Human-readable label for the output
 
 > **type**: `string`
 
-Defined in: [packages/algorithm-validator/src/types.ts:157](https://github.com/TogetherCrew/reputo/blob/b53a1fc775dec485fe8825232e01c2b312ae43cf/packages/algorithm-validator/src/types.ts#L157)
+Defined in: [packages/algorithm-validator/src/types.ts:157](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/algorithm-validator/src/types.ts#L157)
 
 Type of the output (e.g., 'number', 'string', 'csv')
 
@@ -46,7 +46,7 @@ Type of the output (e.g., 'number', 'string', 'csv')
 
 > `optional` **entity**: `string`
 
-Defined in: [packages/algorithm-validator/src/types.ts:159](https://github.com/TogetherCrew/reputo/blob/b53a1fc775dec485fe8825232e01c2b312ae43cf/packages/algorithm-validator/src/types.ts#L159)
+Defined in: [packages/algorithm-validator/src/types.ts:159](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/algorithm-validator/src/types.ts#L159)
 
 Optional entity type the output relates to
 
@@ -56,6 +56,6 @@ Optional entity type the output relates to
 
 > `optional` **description**: `string`
 
-Defined in: [packages/algorithm-validator/src/types.ts:161](https://github.com/TogetherCrew/reputo/blob/b53a1fc775dec485fe8825232e01c2b312ae43cf/packages/algorithm-validator/src/types.ts#L161)
+Defined in: [packages/algorithm-validator/src/types.ts:161](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/algorithm-validator/src/types.ts#L161)
 
 Optional description of the output

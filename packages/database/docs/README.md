@@ -22,7 +22,7 @@ pnpm add @reputo/database
 
 ## Usage
 
-See the full API reference in [docs](_media/globals.md).
+See the full API reference in [docs](docs/globals.md).
 
 ### Models
 

@@ -6,7 +6,7 @@
 
 # Interface: NumberInput
 
-Defined in: [packages/algorithm-validator/src/types.ts:86](https://github.com/TogetherCrew/reputo/blob/b53a1fc775dec485fe8825232e01c2b312ae43cf/packages/algorithm-validator/src/types.ts#L86)
+Defined in: [packages/algorithm-validator/src/types.ts:86](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/algorithm-validator/src/types.ts#L86)
 
 Numeric input with min/max constraints.
 
@@ -20,7 +20,7 @@ Numeric input with min/max constraints.
 
 > **key**: `string`
 
-Defined in: [packages/algorithm-validator/src/types.ts:61](https://github.com/TogetherCrew/reputo/blob/b53a1fc775dec485fe8825232e01c2b312ae43cf/packages/algorithm-validator/src/types.ts#L61)
+Defined in: [packages/algorithm-validator/src/types.ts:61](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/algorithm-validator/src/types.ts#L61)
 
 Unique key identifier for the input
 
@@ -34,7 +34,7 @@ Unique key identifier for the input
 
 > **label**: `string`
 
-Defined in: [packages/algorithm-validator/src/types.ts:63](https://github.com/TogetherCrew/reputo/blob/b53a1fc775dec485fe8825232e01c2b312ae43cf/packages/algorithm-validator/src/types.ts#L63)
+Defined in: [packages/algorithm-validator/src/types.ts:63](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/algorithm-validator/src/types.ts#L63)
 
 Human-readable label for the input
 
@@ -48,7 +48,7 @@ Human-readable label for the input
 
 > `optional` **description**: `string`
 
-Defined in: [packages/algorithm-validator/src/types.ts:65](https://github.com/TogetherCrew/reputo/blob/b53a1fc775dec485fe8825232e01c2b312ae43cf/packages/algorithm-validator/src/types.ts#L65)
+Defined in: [packages/algorithm-validator/src/types.ts:65](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/algorithm-validator/src/types.ts#L65)
 
 Optional description of the input
 
@@ -62,7 +62,7 @@ Optional description of the input
 
 > `optional` **required**: `boolean`
 
-Defined in: [packages/algorithm-validator/src/types.ts:67](https://github.com/TogetherCrew/reputo/blob/b53a1fc775dec485fe8825232e01c2b312ae43cf/packages/algorithm-validator/src/types.ts#L67)
+Defined in: [packages/algorithm-validator/src/types.ts:67](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/algorithm-validator/src/types.ts#L67)
 
 Whether the input is required (default: true)
 
@@ -76,7 +76,7 @@ Whether the input is required (default: true)
 
 > **type**: `"number"`
 
-Defined in: [packages/algorithm-validator/src/types.ts:87](https://github.com/TogetherCrew/reputo/blob/b53a1fc775dec485fe8825232e01c2b312ae43cf/packages/algorithm-validator/src/types.ts#L87)
+Defined in: [packages/algorithm-validator/src/types.ts:87](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/algorithm-validator/src/types.ts#L87)
 
 ***
 
@@ -84,7 +84,7 @@ Defined in: [packages/algorithm-validator/src/types.ts:87](https://github.com/To
 
 > `optional` **min**: `number`
 
-Defined in: [packages/algorithm-validator/src/types.ts:89](https://github.com/TogetherCrew/reputo/blob/b53a1fc775dec485fe8825232e01c2b312ae43cf/packages/algorithm-validator/src/types.ts#L89)
+Defined in: [packages/algorithm-validator/src/types.ts:89](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/algorithm-validator/src/types.ts#L89)
 
 Minimum allowed value
 
@@ -94,6 +94,6 @@ Minimum allowed value
 
 > `optional` **max**: `number`
 
-Defined in: [packages/algorithm-validator/src/types.ts:91](https://github.com/TogetherCrew/reputo/blob/b53a1fc775dec485fe8825232e01c2b312ae43cf/packages/algorithm-validator/src/types.ts#L91)
+Defined in: [packages/algorithm-validator/src/types.ts:91](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/algorithm-validator/src/types.ts#L91)
 
 Maximum allowed value

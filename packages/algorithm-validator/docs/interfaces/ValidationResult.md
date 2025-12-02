@@ -6,7 +6,7 @@
 
 # Interface: ValidationResult
 
-Defined in: [packages/algorithm-validator/src/types.ts:190](https://github.com/TogetherCrew/reputo/blob/b53a1fc775dec485fe8825232e01c2b312ae43cf/packages/algorithm-validator/src/types.ts#L190)
+Defined in: [packages/algorithm-validator/src/types.ts:190](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/algorithm-validator/src/types.ts#L190)
 
 Result of payload validation against a ReputoSchema.
 
@@ -16,7 +16,7 @@ Result of payload validation against a ReputoSchema.
 
 > **success**: `boolean`
 
-Defined in: [packages/algorithm-validator/src/types.ts:192](https://github.com/TogetherCrew/reputo/blob/b53a1fc775dec485fe8825232e01c2b312ae43cf/packages/algorithm-validator/src/types.ts#L192)
+Defined in: [packages/algorithm-validator/src/types.ts:192](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/algorithm-validator/src/types.ts#L192)
 
 Whether validation succeeded
 
@@ -26,7 +26,7 @@ Whether validation succeeded
 
 > `optional` **data**: `unknown`
 
-Defined in: [packages/algorithm-validator/src/types.ts:194](https://github.com/TogetherCrew/reputo/blob/b53a1fc775dec485fe8825232e01c2b312ae43cf/packages/algorithm-validator/src/types.ts#L194)
+Defined in: [packages/algorithm-validator/src/types.ts:194](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/algorithm-validator/src/types.ts#L194)
 
 Validated data (only present if success is true)
 
@@ -36,7 +36,7 @@ Validated data (only present if success is true)
 
 > `optional` **errors**: `object`[]
 
-Defined in: [packages/algorithm-validator/src/types.ts:196](https://github.com/TogetherCrew/reputo/blob/b53a1fc775dec485fe8825232e01c2b312ae43cf/packages/algorithm-validator/src/types.ts#L196)
+Defined in: [packages/algorithm-validator/src/types.ts:196](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/algorithm-validator/src/types.ts#L196)
 
 Array of validation errors (only present if success is false)
 

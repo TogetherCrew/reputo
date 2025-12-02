@@ -6,7 +6,7 @@
 
 # Interface: CSVConfig
 
-Defined in: [packages/algorithm-validator/src/types.ts:36](https://github.com/TogetherCrew/reputo/blob/b53a1fc775dec485fe8825232e01c2b312ae43cf/packages/algorithm-validator/src/types.ts#L36)
+Defined in: [packages/algorithm-validator/src/types.ts:36](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/algorithm-validator/src/types.ts#L36)
 
 Configuration for CSV validation.
 
@@ -18,7 +18,7 @@ Defines the structure, constraints, and expected columns for CSV files.
 
 > **hasHeader**: `boolean`
 
-Defined in: [packages/algorithm-validator/src/types.ts:38](https://github.com/TogetherCrew/reputo/blob/b53a1fc775dec485fe8825232e01c2b312ae43cf/packages/algorithm-validator/src/types.ts#L38)
+Defined in: [packages/algorithm-validator/src/types.ts:38](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/algorithm-validator/src/types.ts#L38)
 
 Whether the CSV file has a header row
 
@@ -28,7 +28,7 @@ Whether the CSV file has a header row
 
 > **delimiter**: `string`
 
-Defined in: [packages/algorithm-validator/src/types.ts:40](https://github.com/TogetherCrew/reputo/blob/b53a1fc775dec485fe8825232e01c2b312ae43cf/packages/algorithm-validator/src/types.ts#L40)
+Defined in: [packages/algorithm-validator/src/types.ts:40](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/algorithm-validator/src/types.ts#L40)
 
 The delimiter character used in the CSV (e.g., ',', ';', '\t')
 
@@ -38,7 +38,7 @@ The delimiter character used in the CSV (e.g., ',', ';', '\t')
 
 > `optional` **maxRows**: `number`
 
-Defined in: [packages/algorithm-validator/src/types.ts:42](https://github.com/TogetherCrew/reputo/blob/b53a1fc775dec485fe8825232e01c2b312ae43cf/packages/algorithm-validator/src/types.ts#L42)
+Defined in: [packages/algorithm-validator/src/types.ts:42](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/algorithm-validator/src/types.ts#L42)
 
 Maximum number of data rows allowed
 
@@ -48,7 +48,7 @@ Maximum number of data rows allowed
 
 > `optional` **maxBytes**: `number`
 
-Defined in: [packages/algorithm-validator/src/types.ts:44](https://github.com/TogetherCrew/reputo/blob/b53a1fc775dec485fe8825232e01c2b312ae43cf/packages/algorithm-validator/src/types.ts#L44)
+Defined in: [packages/algorithm-validator/src/types.ts:44](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/algorithm-validator/src/types.ts#L44)
 
 Maximum file size in bytes
 
@@ -58,6 +58,6 @@ Maximum file size in bytes
 
 > **columns**: [`ColumnDefinition`](ColumnDefinition.md)[]
 
-Defined in: [packages/algorithm-validator/src/types.ts:46](https://github.com/TogetherCrew/reputo/blob/b53a1fc775dec485fe8825232e01c2b312ae43cf/packages/algorithm-validator/src/types.ts#L46)
+Defined in: [packages/algorithm-validator/src/types.ts:46](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/algorithm-validator/src/types.ts#L46)
 
 Array of column definitions that must be present

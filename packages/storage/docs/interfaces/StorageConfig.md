@@ -6,7 +6,7 @@
 
 # Interface: StorageConfig
 
-Defined in: [shared/types/types.ts:10](https://github.com/TogetherCrew/reputo/blob/b53a1fc775dec485fe8825232e01c2b312ae43cf/packages/storage/src/shared/types/types.ts#L10)
+Defined in: [shared/types/types.ts:10](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/storage/src/shared/types/types.ts#L10)
 
 Configuration options for the Storage instance.
 
@@ -16,7 +16,7 @@ Configuration options for the Storage instance.
 
 > **bucket**: `string`
 
-Defined in: [shared/types/types.ts:14](https://github.com/TogetherCrew/reputo/blob/b53a1fc775dec485fe8825232e01c2b312ae43cf/packages/storage/src/shared/types/types.ts#L14)
+Defined in: [shared/types/types.ts:14](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/storage/src/shared/types/types.ts#L14)
 
 S3 bucket name where objects will be stored.
 
@@ -26,7 +26,7 @@ S3 bucket name where objects will be stored.
 
 > **presignPutTtl**: `number`
 
-Defined in: [shared/types/types.ts:20](https://github.com/TogetherCrew/reputo/blob/b53a1fc775dec485fe8825232e01c2b312ae43cf/packages/storage/src/shared/types/types.ts#L20)
+Defined in: [shared/types/types.ts:20](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/storage/src/shared/types/types.ts#L20)
 
 Time-to-live for presigned PUT URLs in seconds.
 Controls how long upload URLs remain valid.
@@ -37,7 +37,7 @@ Controls how long upload URLs remain valid.
 
 > **presignGetTtl**: `number`
 
-Defined in: [shared/types/types.ts:26](https://github.com/TogetherCrew/reputo/blob/b53a1fc775dec485fe8825232e01c2b312ae43cf/packages/storage/src/shared/types/types.ts#L26)
+Defined in: [shared/types/types.ts:26](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/storage/src/shared/types/types.ts#L26)
 
 Time-to-live for presigned GET URLs in seconds.
 Controls how long download URLs remain valid.
@@ -48,7 +48,7 @@ Controls how long download URLs remain valid.
 
 > **maxSizeBytes**: `number`
 
-Defined in: [shared/types/types.ts:32](https://github.com/TogetherCrew/reputo/blob/b53a1fc775dec485fe8825232e01c2b312ae43cf/packages/storage/src/shared/types/types.ts#L32)
+Defined in: [shared/types/types.ts:32](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/storage/src/shared/types/types.ts#L32)
 
 Maximum allowed object size in bytes.
 Files exceeding this size will be rejected.
@@ -59,7 +59,7 @@ Files exceeding this size will be rejected.
 
 > **contentTypeAllowlist**: `string`[]
 
-Defined in: [shared/types/types.ts:40](https://github.com/TogetherCrew/reputo/blob/b53a1fc775dec485fe8825232e01c2b312ae43cf/packages/storage/src/shared/types/types.ts#L40)
+Defined in: [shared/types/types.ts:40](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/storage/src/shared/types/types.ts#L40)
 
 Allowed content types (MIME types) for uploads.
 Only files with these content types will be accepted.
