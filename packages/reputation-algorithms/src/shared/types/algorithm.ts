@@ -110,3 +110,26 @@ export interface AlgorithmDefinition {
   /** Runtime execution metadata for orchestration layers */
   runtime: AlgorithmRuntimeMetadata;
 }
+
+/**
+ * Filters for searching algorithm definitions by metadata.
+ */
+export interface SearchAlgorithmFilters {
+  /**
+   * Algorithm key to search for.
+   * Supports exact and partial (substring) matching, case-insensitive.
+   */
+  key?: string;
+
+  /**
+   * Human-readable algorithm name to search for.
+   * Supports exact and partial (substring) matching, case-insensitive.
+   */
+  name?: string;
+
+  /**
+   * Algorithm category to search for.
+   * Supports exact and partial (substring) matching, case-insensitive.
+   */
+  category?: string;
+}

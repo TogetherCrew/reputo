@@ -1,7 +1,7 @@
 {
     "key": "voting_engagement",
     "name": "Voting Engagement",
-    "category": "engagement",
+    "category": "Engagement",
     "description": "Computes Ve(i) = H(i)/log2(11) where H(i) is the entropy of user i over {skip,1..10}.",
     "version": "1.0.0",
     "inputs": [
