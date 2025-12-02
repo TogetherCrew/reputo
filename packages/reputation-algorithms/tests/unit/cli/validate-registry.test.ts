@@ -51,7 +51,7 @@ describe('CLI: validateRegistry', () => {
       const algorithmDef = {
         key: 'test_algorithm',
         name: 'Test Algorithm',
-        category: 'custom',
+        category: 'Custom',
         description: 'A test algorithm',
         version: '1.0.0',
         inputs: [],
@@ -97,7 +97,7 @@ describe('CLI: validateRegistry', () => {
             key: algo.key,
             version,
             name: algo.key,
-            category: 'custom',
+            category: 'Custom',
             description: 'Test',
             inputs: [],
             outputs: [
@@ -141,7 +141,7 @@ describe('CLI: validateRegistry', () => {
         content: {
           key: 'test_algorithm',
           name: 'Test Algorithm',
-          category: 'custom',
+          category: 'Custom',
           description: 'Test',
           version: '1.0.0',
           inputs: [],
@@ -177,7 +177,7 @@ describe('CLI: validateRegistry', () => {
         content: {
           key: 'content_key',
           name: 'Test',
-          category: 'custom',
+          category: 'Custom',
           description: 'Test',
           version: '1.0.0',
           inputs: [],
@@ -196,7 +196,7 @@ describe('CLI: validateRegistry', () => {
         content: {
           key: 'test_algorithm',
           name: 'Test',
-          category: 'custom',
+          category: 'Custom',
           description: 'Test',
           version: '2.0.0',
           inputs: [],
@@ -338,7 +338,7 @@ describe('CLI: validateRegistry', () => {
       const algorithmDef = {
         key: 'test_algorithm',
         name: 'Test Algorithm',
-        category: 'custom',
+        category: 'Custom',
         description: 'A test algorithm',
         version: '1.0.0',
         inputs: [],
@@ -380,7 +380,7 @@ describe('CLI: validateRegistry', () => {
       const mismatchDef = {
         key: 'content_name',
         name: 'Test',
-        category: 'custom',
+        category: 'Custom',
         description: 'Test',
         version: '1.0.0',
         inputs: [],
@@ -399,7 +399,7 @@ describe('CLI: validateRegistry', () => {
       const mismatchDef = {
         key: 'test_algorithm',
         name: 'Test',
-        category: 'custom',
+        category: 'Custom',
         description: 'Test',
         version: '2.0.0',
         inputs: [],
@@ -420,7 +420,7 @@ describe('CLI: validateRegistry', () => {
       const algorithmDef = {
         key: 'test_algorithm',
         name: 'Test Algorithm',
-        category: 'custom',
+        category: 'Custom',
         description: 'Test',
         version: '1.0.0',
         inputs: [],
@@ -452,7 +452,7 @@ describe('CLI: validateRegistry', () => {
         const algorithmDef = {
           key: algo.key,
           name: algo.key.replace(/_/g, ' '),
-          category: 'custom',
+          category: 'Custom',
           description: 'Test algorithm',
           version: algo.version,
           inputs: [],

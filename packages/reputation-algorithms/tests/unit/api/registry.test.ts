@@ -128,7 +128,7 @@ const hoisted = vi.hoisted(() => {
     'engagement_score@0.1.0': {
       key: 'engagement_score',
       name: 'Engagement Score',
-      category: 'engagement',
+      category: 'Engagement',
       description: 'Beta version of engagement scoring',
       version: '0.1.0',
       inputs: [
@@ -152,7 +152,7 @@ const hoisted = vi.hoisted(() => {
     'engagement_score@0.2.0': {
       key: 'engagement_score',
       name: 'Engagement Score',
-      category: 'engagement',
+      category: 'Engagement',
       description: 'Improved beta with time-weighted activities',
       version: '0.2.0',
       inputs: [
@@ -176,7 +176,7 @@ const hoisted = vi.hoisted(() => {
     'engagement_score@1.0.0': {
       key: 'engagement_score',
       name: 'Engagement Score',
-      category: 'engagement',
+      category: 'Engagement',
       description: 'Production-ready engagement scoring',
       version: '1.0.0',
       inputs: [
@@ -495,7 +495,7 @@ describe('API: searchAlgorithmDefinitions', () => {
     expect(results.length).toBe(1);
     const def = JSON.parse(results[0]!) as { key: string; category: string };
     expect(def.key).toBe('engagement_score');
-    expect(def.category).toBe('engagement');
+    expect(def.category).toBe('Engagement');
   });
 
   it('should search by category with partial substring match', () => {
@@ -510,7 +510,7 @@ describe('API: searchAlgorithmDefinitions', () => {
   it('should use OR logic across filters', () => {
     const results = searchAlgorithmDefinitions({
       key: 'reputation',
-      category: 'engagement',
+      category: 'Engagement',
     });
 
     const parsed = results.map((r) => JSON.parse(r) as { key: string });

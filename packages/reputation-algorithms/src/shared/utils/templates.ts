@@ -13,7 +13,7 @@ export interface TemplateConfig {
 }
 
 const DEFAULT_TEMPLATE_CONFIG: Required<TemplateConfig> = {
-  category: 'custom',
+  category: 'Custom',
   includeExampleInput: true,
   includeExampleOutput: true,
   customDescription: 'TODO: Add algorithm description',

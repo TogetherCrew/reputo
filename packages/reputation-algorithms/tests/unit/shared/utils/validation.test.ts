@@ -154,7 +154,7 @@ describe('Validation Utils', () => {
       const validDefinition = {
         key: 'test_algorithm',
         name: 'Test Algorithm',
-        category: 'custom',
+        category: 'Custom',
         description: 'A test algorithm',
         version: '1.0.0',
         inputs: [
@@ -218,7 +218,7 @@ describe('Validation Utils', () => {
       const validDefinition = {
         key: 'test_algorithm',
         name: 'Test Algorithm',
-        category: 'custom',
+        category: 'Custom',
         description: 'A test algorithm',
         version: '1.0.0',
         inputs: [],
@@ -254,7 +254,7 @@ describe('Validation Utils', () => {
       const result = validator.validate({
         key: 'test',
         name: 'Test',
-        category: 'custom',
+        category: 'Custom',
         description: 'Test',
         version: '1.0.0',
         inputs: [],

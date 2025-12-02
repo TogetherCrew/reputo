@@ -1,7 +1,7 @@
 {
     "key": "sample_algorithm",
     "name": "Sample Algorithm",
-    "category": "custom",
+    "category": "Custom",
     "description": "A sample algorithm for testing purposes",
     "version": "1.0.0",
     "inputs": [

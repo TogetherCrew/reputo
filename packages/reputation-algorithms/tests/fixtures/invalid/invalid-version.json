@@ -1,7 +1,7 @@
 {
     "key": "invalid_version",
     "name": "Invalid Version",
-    "category": "custom",
+    "category": "Custom",
     "description": "Algorithm with invalid version",
     "version": "v1.0",
     "inputs": [],

@@ -69,7 +69,7 @@ describe('Build: Schema Validation', () => {
       const invalid = {
         key: 'InvalidKey',
         name: 'Test',
-        category: 'custom',
+        category: 'Custom',
         description: 'Test',
         version: '1.0.0',
         inputs: [],
@@ -88,7 +88,7 @@ describe('Build: Schema Validation', () => {
       const invalid = {
         key: 'test_algo',
         name: 'Test',
-        category: 'custom',
+        category: 'Custom',
         description: 'Test',
         version: 'v1.0',
         inputs: [],
@@ -107,7 +107,7 @@ describe('Build: Schema Validation', () => {
       const invalid = {
         key: 'test_algo',
         name: 'Test',
-        category: 'custom',
+        category: 'Custom',
         description: 'Test',
         version: '1.0.0',
         inputs: [],
@@ -126,7 +126,7 @@ describe('Build: Schema Validation', () => {
       const invalid = {
         key: 'test_algo',
         name: 'Test',
-        category: 'custom',
+        category: 'Custom',
         description: 'Test',
         version: '1.0.0',
         inputs: [
@@ -150,7 +150,7 @@ describe('Build: Schema Validation', () => {
       const invalid = {
         key: 'test_algo',
         name: 'Test',
-        category: 'custom',
+        category: 'Custom',
         description: 'Test',
         version: '1.0.0',
         inputs: [],
@@ -171,7 +171,7 @@ describe('Build: Schema Validation', () => {
     });
 
     it('should accept valid categories', () => {
-      const categories = ['engagement', 'quality', 'activity', 'custom'];
+      const categories = ['Engagement', 'Quality', 'Activity', 'Custom'];
 
       for (const category of categories) {
         const valid = {
@@ -199,7 +199,7 @@ describe('Build: Schema Validation', () => {
       const valid = {
         key: 'test_algo',
         name: 'Test',
-        category: 'custom',
+        category: 'Custom',
         description: 'Test',
         version: '1.0.0',
         inputs: [],
@@ -219,7 +219,7 @@ describe('Build: Schema Validation', () => {
       const invalid = {
         key: 'test_algo',
         name: 'Test',
-        category: 'custom',
+        category: 'Custom',
         description: 'Test',
         version: '1.0.0',
         inputs: [],
@@ -235,7 +235,7 @@ describe('Build: Schema Validation', () => {
       const invalid = {
         key: 'test_algo',
         name: 'Test',
-        category: 'custom',
+        category: 'Custom',
         description: 'Test',
         version: '1.0.0',
         inputs: [],
@@ -254,7 +254,7 @@ describe('Build: Schema Validation', () => {
       const invalid = {
         key: 'test_algo',
         name: 'Test',
-        category: 'custom',
+        category: 'Custom',
         description: 'Test',
         version: '1.0.0',
         inputs: [],
@@ -273,7 +273,7 @@ describe('Build: Schema Validation', () => {
       const invalid = {
         key: 'test_algo',
         name: 'Test',
-        category: 'custom',
+        category: 'Custom',
         description: 'Test',
         version: '1.0.0',
         inputs: [],
@@ -293,7 +293,7 @@ describe('Build: Schema Validation', () => {
       const invalid = {
         key: 'test_algo',
         name: 'Test',
-        category: 'custom',
+        category: 'Custom',
         description: 'Test',
         version: '1.0.0',
         inputs: [],
@@ -313,7 +313,7 @@ describe('Build: Schema Validation', () => {
       const invalid = {
         key: 'test_algo',
         name: 'Test',
-        category: 'custom',
+        category: 'Custom',
         description: 'Test',
         version: '1.0.0',
         inputs: [],
@@ -337,7 +337,7 @@ describe('Build: Schema Validation', () => {
         const valid = {
           key: 'test_algo',
           name: 'Test',
-          category: 'custom',
+          category: 'Custom',
           description: 'Test',
           version: '1.0.0',
           inputs: [],
