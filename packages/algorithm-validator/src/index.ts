@@ -1,6 +1,13 @@
 /**
  * @reputo/algorithm-validator
- * Shared Zod-based validation library for the Reputo ecosystem
+ *
+ * Shared Zod-based validation library for the Reputo ecosystem.
+ *
+ * Provides schema building, payload validation, and CSV content validation
+ * that runs identically on both client and server, ensuring consistent
+ * validation across the entire application.
+ *
+ * @packageDocumentation
  */
 
 // CSV validation exports

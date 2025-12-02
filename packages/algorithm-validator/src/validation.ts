@@ -7,8 +7,37 @@ import { z } from 'zod/v4';
 import type { CSVConfig, Input, ReputoSchema, ValidationResult } from './types.js';
 
 /**
- * Validates data against a ReputoSchema
- * This function can run on both client and server
+ * Validates data against a ReputoSchema definition.
+ *
+ * This function runs identically on both client and server, ensuring consistent
+ * validation across the entire application. It builds a Zod schema from the
+ * ReputoSchema and validates the payload against it.
+ *
+ * @param schema - The ReputoSchema definition containing input/output specifications
+ * @param payload - The data to validate against the schema
+ * @returns A ValidationResult object containing either validated data or error details
+ *
+ * @example
+ * ```typescript
+ * const schema: ReputoSchema = {
+ *   key: 'voting_engagement',
+ *   name: 'Voting Engagement',
+ *   category: 'engagement',
+ *   description: 'Calculates engagement',
+ *   version: '1.0.0',
+ *   inputs: [
+ *     { key: 'threshold', label: 'Threshold', type: 'number', min: 0, max: 1, required: true }
+ *   ],
+ *   outputs: []
+ * }
+ *
+ * const result = validatePayload(schema, { threshold: 0.5 })
+ * if (result.success) {
+ *   console.log('Valid:', result.data)
+ * } else {
+ *   console.error('Errors:', result.errors)
+ * }
+ * ```
  */
 export function validatePayload(schema: ReputoSchema, payload: unknown): ValidationResult {
   try {
@@ -43,8 +72,23 @@ export function validatePayload(schema: ReputoSchema, payload: unknown): Validat
 }
 
 /**
- * Builds a Zod schema from a ReputoSchema definition
- * This is the core validation logic used everywhere
+ * Builds a Zod schema from a ReputoSchema definition.
+ *
+ * This is the core validation logic that converts a ReputoSchema into a Zod schema
+ * that can be used for runtime validation. Each input in the schema is converted
+ * to its corresponding Zod validator with appropriate constraints.
+ *
+ * @param reputoSchema - The ReputoSchema definition to convert
+ * @returns A Zod object schema that can be used for validation
+ *
+ * @example
+ * ```typescript
+ * const schema: ReputoSchema = {
+ *   // ... schema definition
+ * }
+ * const zodSchema = buildZodSchema(schema)
+ * const result = zodSchema.safeParse(data)
+ * ```
  */
 export function buildZodSchema(reputoSchema: ReputoSchema): z.ZodObject<Record<string, z.ZodType>> {
   const shape: Record<string, z.ZodType> = {};
@@ -57,8 +101,16 @@ export function buildZodSchema(reputoSchema: ReputoSchema): z.ZodObject<Record<s
 }
 
 /**
- * Builds a Zod schema for a single input field
- * Each field type has specific validation rules
+ * Builds a Zod schema for a single input field based on its type.
+ *
+ * Each input type (text, number, boolean, date, enum, csv, slider) has specific
+ * validation rules and constraints that are applied to the resulting Zod schema.
+ * The function handles optional fields and applies type-specific validations.
+ *
+ * @param input - The input field definition from ReputoSchema
+ * @returns A Zod schema for the input field
+ *
+ * @internal
  */
 function buildFieldSchema(input: Input): z.ZodType {
   let schema: z.ZodType;
@@ -153,7 +205,16 @@ function buildFieldSchema(input: Input): z.ZodType {
 }
 
 /**
- * Builds a Zod schema for CSV file validation (client-side only)
+ * Builds a Zod schema for CSV file validation (client-side only).
+ *
+ * Validates that the input is a File object, has the correct MIME type or extension,
+ * and meets size constraints defined in the CSV configuration.
+ *
+ * @param csvConfig - CSV configuration containing validation constraints
+ * @param label - Label for the input field (used in error messages)
+ * @returns A Zod schema that validates File objects
+ *
+ * @internal
  */
 function buildCSVSchema(csvConfig: CSVConfig, label: string): z.ZodType {
   return z
@@ -169,6 +230,18 @@ function buildCSVSchema(csvConfig: CSVConfig, label: string): z.ZodType {
 }
 
 /**
- * Type inference helper
+ * Type inference helper for ReputoSchema.
+ *
+ * Infers the TypeScript type of the validated payload from a ReputoSchema definition.
+ * This allows you to get type-safe access to validated data.
+ *
+ * @example
+ * ```typescript
+ * const schema: ReputoSchema = {
+ *   // ... schema definition
+ * }
+ * type ValidatedType = InferSchemaType<typeof schema>
+ * // ValidatedType will be the inferred type from the schema
+ * ```
  */
 export type InferSchemaType = z.infer<ReturnType<typeof buildZodSchema>>;

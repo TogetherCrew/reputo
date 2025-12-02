@@ -515,6 +515,12 @@ importers:
       '@types/node':
         specifier: ^22.17.0
         version: 22.19.1
+      typedoc:
+        specifier: ^0.28.13
+        version: 0.28.14(typescript@5.9.2)
+      typedoc-plugin-markdown:
+        specifier: ^4.9.0
+        version: 4.9.0(typedoc@0.28.14(typescript@5.9.2))
       typescript:
         specifier: ^5.9.2
         version: 5.9.2

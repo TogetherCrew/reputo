@@ -7,8 +7,19 @@
 import type { CSVConfig, CSVValidationResult } from './types.js';
 
 /**
- * Normalizes a string key for comparison
- * Handles BOM, NBSP, spaces, dashes, and quotes
+ * Normalizes a string key for comparison.
+ *
+ * Handles various edge cases including:
+ * - UTF-8 BOM (Byte Order Mark) removal
+ * - Non-breaking spaces (NBSP) conversion
+ * - Whitespace and dash normalization
+ * - Quote stripping
+ * - Case-insensitive comparison
+ *
+ * @param s - The string to normalize
+ * @returns Normalized string suitable for key comparison
+ *
+ * @internal
  */
 function normalizeKey(s: string): string {
   return s
@@ -23,8 +34,17 @@ function normalizeKey(s: string): string {
 }
 
 /**
- * Reads text content from various input types
- * Supports File (browser), string, and Buffer (Node.js)
+ * Reads text content from various input types.
+ *
+ * Supports multiple input formats to work in both browser and Node.js environments:
+ * - File objects (browser)
+ * - String content (universal)
+ * - Buffer objects (Node.js)
+ *
+ * @param file - File object, string, or Buffer containing CSV content
+ * @returns Object containing the text content and file metadata
+ *
+ * @internal
  */
 async function readContent(file: File | string | Buffer): Promise<{ text: string; fileInfo: Record<string, unknown> }> {
   if (typeof file === 'string') {
@@ -48,12 +68,43 @@ async function readContent(file: File | string | Buffer): Promise<{ text: string
 }
 
 /**
- * Validates CSV content against column definitions
- * Can be used on both client and server
+ * Validates CSV content against column definitions and constraints.
+ *
+ * This function works identically on both client and server, supporting:
+ * - File objects (browser environment)
+ * - String content (universal)
+ * - Buffer objects (Node.js environment)
+ *
+ * Validation includes:
+ * - Required column presence (with alias support)
+ * - Row count limits
+ * - Column count consistency
+ * - Enum value validation
+ * - Delimiter detection
+ * - BOM and line ending normalization
  *
  * @param file - File object (browser), string content, or Buffer (Node.js)
- * @param csvConfig - Configuration defining expected columns and constraints
- * @returns Validation result with any errors found
+ * @param csvConfig - Configuration defining expected columns, constraints, and validation rules
+ * @returns Promise resolving to a CSVValidationResult with validation status and any errors
+ *
+ * @example
+ * ```typescript
+ * const csvConfig: CSVConfig = {
+ *   hasHeader: true,
+ *   delimiter: ',',
+ *   maxRows: 10000,
+ *   columns: [
+ *     { key: 'user_id', type: 'string', required: true, aliases: ['userId'] },
+ *     { key: 'vote', type: 'enum', required: true, enum: ['upvote', 'downvote'] }
+ *   ]
+ * }
+ *
+ * // Browser
+ * const result = await validateCSVContent(fileInput.files[0], csvConfig)
+ *
+ * // Node.js
+ * const result = await validateCSVContent(csvString, csvConfig)
+ * ```
  */
 export async function validateCSVContent(
   file: File | string | Buffer,
@@ -180,7 +231,9 @@ export async function validateCSVContent(
           const value = values[colIndex]?.trim().replace(/^["']+|["']+$/g, '');
           if (value && col.enum && !col.enum.includes(value)) {
             errors.push(
-              `Row ${i + 1}, column ${col.key}: "${value}" is not a valid value. Expected one of: ${col.enum.join(', ')}`,
+              `Row ${i + 1}, column ${col.key}: "${value}" is not a valid value. Expected one of: ${col.enum.join(
+                ', ',
+              )}`,
             );
           }
         }

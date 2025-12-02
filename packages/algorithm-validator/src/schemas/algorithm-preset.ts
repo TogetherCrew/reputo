@@ -1,12 +1,16 @@
 /**
- * Zod schemas for Algorithm Preset validation
- * Used by both frontend and backend
+ * Zod schemas for Algorithm Preset validation.
+ *
+ * These schemas are used by both frontend and backend to ensure consistent
+ * validation of algorithm preset creation payloads.
  */
 
 import { z } from 'zod/v4';
 
 /**
- * Zod schema for algorithm preset input validation
+ * Zod schema for validating a single algorithm preset input.
+ *
+ * Each input must have a key (string) and a value (any non-null/undefined value).
  */
 export const algorithmPresetInputSchema = z.object({
   key: z.string().min(1, 'Input key is required'),
@@ -16,7 +20,14 @@ export const algorithmPresetInputSchema = z.object({
 });
 
 /**
- * Zod schema for CreateAlgorithmPresetDto validation
+ * Zod schema for validating algorithm preset creation payloads.
+ *
+ * Validates the complete structure required to create an algorithm preset:
+ * - key: Algorithm key (required, non-empty string)
+ * - version: Algorithm version (required, non-empty string)
+ * - inputs: Array of inputs (required, at least one)
+ * - name: Optional name (3-100 characters if provided)
+ * - description: Optional description (10-500 characters if provided)
  */
 export const createAlgorithmPresetSchema = z.object({
   key: z.string().min(1, 'Algorithm key is required'),
@@ -35,19 +46,45 @@ export const createAlgorithmPresetSchema = z.object({
 });
 
 /**
- * Type inferred from Zod schema
+ * TypeScript type inferred from the create algorithm preset Zod schema.
+ *
+ * Use this type for type-safe algorithm preset creation payloads.
  */
 export type CreateAlgorithmPresetInput = z.infer<typeof createAlgorithmPresetSchema>;
 
 /**
- * Type for algorithm preset input
+ * TypeScript type for a single algorithm preset input.
+ *
+ * Represents one input in the inputs array of a preset.
  */
 export type AlgorithmPresetInputType = z.infer<typeof algorithmPresetInputSchema>;
 
 /**
- * Validates CreateAlgorithmPresetDto using Zod schema
- * @param data - The data to validate
- * @returns Validation result with parsed data or errors
+ * Validates algorithm preset creation payload using Zod schema.
+ *
+ * This is a convenience function that wraps the Zod schema's safeParse method,
+ * providing a consistent validation interface for algorithm preset creation.
+ *
+ * @param data - The data to validate against the algorithm preset schema
+ * @returns Zod's SafeParseReturnType containing either the validated data or error details
+ *
+ * @example
+ * ```typescript
+ * const result = validateCreateAlgorithmPreset({
+ *   key: 'voting_engagement',
+ *   version: '1.0.0',
+ *   inputs: [{ key: 'threshold', value: 0.5 }],
+ *   name: 'Voting Engagement',
+ *   description: 'Calculates engagement based on voting patterns'
+ * })
+ *
+ * if (result.success) {
+ *   const preset: CreateAlgorithmPresetInput = result.data
+ *   // Use validated preset data
+ * } else {
+ *   console.error('Validation errors:', result.error)
+ * }
+ * ```
  */
 export function validateCreateAlgorithmPreset(data: unknown) {
   return createAlgorithmPresetSchema.safeParse(data);
