@@ -31,6 +31,7 @@
         "@nestjs/mongoose": "^11.0.3",
         "@nestjs/platform-express": "11.0.1",
         "@nestjs/swagger": "^11.2.1",
+        "@reputo/algorithm-validator": "workspace:*",
         "@reputo/database": "workspace:*",
         "@reputo/reputation-algorithms": "workspace:*",
         "@reputo/storage": "workspace:*",

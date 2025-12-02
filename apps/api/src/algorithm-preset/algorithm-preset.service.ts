@@ -1,7 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { type CSVInput, type ReputoSchema, validatePayload } from '@reputo/algorithm-validator';
 import type { AlgorithmPreset } from '@reputo/database';
 import { MODEL_NAMES } from '@reputo/database';
-import type { AlgorithmDefinition } from '@reputo/reputation-algorithms';
+import type { AlgorithmDefinition, CsvIoItem } from '@reputo/reputation-algorithms';
 import { getAlgorithmDefinition } from '@reputo/reputation-algorithms';
 import type { FilterQuery } from 'mongoose';
 import { throwNotFoundError } from '../shared/exceptions';
@@ -18,22 +19,110 @@ export class AlgorithmPresetService {
   ) {}
 
   async create(createDto: CreateAlgorithmPresetDto) {
-    const definition = this.getAlgorithmDefinitionOrThrow(createDto.key, createDto.version);
+    const algorithmDefinition = this.getAlgorithmDefinition(createDto.key, createDto.version);
 
-    await this.validateStorageInputs(createDto, definition);
+    this.validatePresetInputs(createDto, algorithmDefinition);
+    await this.validateStorageInputs(createDto, algorithmDefinition);
 
     return this.repository.create(createDto);
   }
 
-  private getAlgorithmDefinitionOrThrow(key: string, version: string): AlgorithmDefinition {
+  private getAlgorithmDefinition(key: string, version: string): AlgorithmDefinition {
     try {
-      const definitionJson = getAlgorithmDefinition({ key, version });
-      return JSON.parse(definitionJson) as AlgorithmDefinition;
+      const algorithmDefinition = getAlgorithmDefinition({ key, version });
+      return JSON.parse(algorithmDefinition) as AlgorithmDefinition;
     } catch (error) {
       if (error && typeof error === 'object' && 'code' in error) {
         throw new NotFoundException(`Algorithm definition not found: ${key}@${version}`);
       }
       throw error;
+    }
+  }
+
+  private validatePresetInputs(dto: CreateAlgorithmPresetDto, definition: AlgorithmDefinition): void {
+    const reputoSchema = this.convertToReputoSchema(definition);
+
+    const payload: Record<string, unknown> = {};
+    for (const input of dto.inputs) {
+      payload[input.key] = input.value;
+    }
+
+    const result = validatePayload(reputoSchema, payload);
+
+    if (!result.success) {
+      throw new BadRequestException({
+        message: 'Invalid preset inputs',
+        errors: result.errors,
+      });
+    }
+  }
+
+  private convertToReputoSchema(definition: AlgorithmDefinition): ReputoSchema {
+    const inputs = definition.inputs.map((input) => {
+      if (input.type === 'csv') {
+        return this.convertCsvInput(input);
+      }
+      // For other input types, we need to map them appropriately
+      // Currently, AlgorithmDefinition only supports CSV, but this is extensible
+      throw new Error(`Unsupported input type: ${input.type}`);
+    });
+
+    return {
+      key: definition.key,
+      name: definition.name,
+      category: definition.category,
+      description: definition.description,
+      version: definition.version,
+      inputs,
+      outputs: definition.outputs.map((output) => ({
+        key: output.key,
+        label: output.label || output.key,
+        type: output.type,
+        entity: output.entity,
+        description: output.description,
+      })),
+    };
+  }
+
+  private convertCsvInput(input: CsvIoItem): CSVInput {
+    return {
+      key: input.key,
+      label: input.label || input.key,
+      description: input.description,
+      type: 'csv',
+      required: true, // CSV inputs are typically required
+      csv: {
+        hasHeader: input.csv.hasHeader ?? true,
+        delimiter: input.csv.delimiter ?? ',',
+        maxRows: input.csv.maxRows,
+        maxBytes: input.csv.maxBytes,
+        columns: input.csv.columns.map((column) => ({
+          key: column.key,
+          type: this.mapColumnType(column.type),
+          required: column.required ?? false,
+          aliases: column.aliases,
+          description: column.description,
+          enum: column.enum?.map((val) => String(val)),
+        })),
+      },
+    };
+  }
+
+  private mapColumnType(type: string): 'string' | 'number' | 'date' | 'enum' | 'boolean' {
+    switch (type) {
+      case 'string':
+        return 'string';
+      case 'integer':
+      case 'number':
+        return 'number';
+      case 'date':
+        return 'date';
+      case 'enum':
+        return 'enum';
+      case 'boolean':
+        return 'boolean';
+      default:
+        return 'string';
     }
   }
 
