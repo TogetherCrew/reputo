@@ -36,19 +36,11 @@ export class SnapshotService {
 
     const createdSnapshot = await this.repository.create(snapshot);
 
-    // Start workflow asynchronously - don't fail snapshot creation if workflow start fails
-    // Use void to explicitly mark as fire-and-forget
     void this.startWorkflowAsync(createdSnapshot._id.toString());
 
     return createdSnapshot;
   }
 
-  /**
-   * Starts the RunSnapshotWorkflow asynchronously.
-   * Errors are logged but do not affect snapshot creation.
-   *
-   * @param snapshotId - MongoDB ObjectId of the created snapshot
-   */
   private async startWorkflowAsync(snapshotId: string): Promise<void> {
     try {
       this.logger.log(`Attempting to start workflow for snapshot ${snapshotId}`);

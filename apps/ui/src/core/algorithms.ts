@@ -1,85 +1,93 @@
 import {
-  type AlgorithmDefinition,
-  getAlgorithmDefinition,
-  getAlgorithmDefinitionKeys,
-} from '@reputo/reputation-algorithms';
-import { reputoClient } from "./client";
-import { buildSchemaFromAlgorithm } from "./schema-builder";
+    type AlgorithmDefinition,
+    getAlgorithmDefinition,
+    getAlgorithmDefinitionKeys,
+} from '@reputo/reputation-algorithms'
+import { reputoClient } from './client'
+import { buildSchemaFromAlgorithm } from './schema-builder'
 
 // Transform the AlgorithmDefinition from the package to match the UI's expected format
 export interface Algorithm {
-  id: string;
-  title: string;
-  category: string;
-  description: string;
-  duration: string;
-  dependencies: string;
-  level: string;
-  inputs: Array<{
-    type: string;
-    label: string;
-  }>;
+    id: string
+    title: string
+    category: string
+    description: string
+    duration: string
+    dependencies: string
+    level: string
+    inputs: Array<{
+        type: string
+        label: string
+    }>
 }
 
 // Transform AlgorithmDefinition to UI Algorithm format
 function transformAlgorithm(definition: AlgorithmDefinition): Algorithm {
-  return {
-    id: definition.key,
-    title: definition.name,
-    category: definition.category === 'engagement' ? 'Core Engagement' :
-      definition.category === 'activity' ? 'Core Engagement' : 'Custom',
-    description: definition.description,
-    duration: '~2-5 min', // Default duration since it's not in the definition
-    dependencies: `${definition.inputs.length} input${definition.inputs.length !== 1 ? 's' : ''}`,
-    level: 'Intermediate', // Default level since it's not in the definition
-    inputs: definition.inputs.map((input) => ({
-      type: input.type,
-      label: input.label || input.key,
-    })),
-  };
+    return {
+        id: definition.key,
+        title: definition.name,
+        category:
+            definition.category === 'Engagement'
+                ? 'Core Engagement'
+                : definition.category === 'Activity'
+                ? 'Core Engagement'
+                : 'Custom',
+        description: definition.description,
+        duration: '~2-5 min', // Default duration since it's not in the definition
+        dependencies: `${definition.inputs.length} input${
+            definition.inputs.length !== 1 ? 's' : ''
+        }`,
+        level: 'Intermediate', // Default level since it's not in the definition
+        inputs: definition.inputs.map((input) => ({
+            type: input.type,
+            label: input.label || input.key,
+        })),
+    }
 }
 
 /**
  * Get all algorithms from the registry.
- * 
+ *
  * @returns Array of all algorithms
  */
 function getAllAlgorithms(): Algorithm[] {
-  try {
-    const keys = getAlgorithmDefinitionKeys();
-    const algorithms: Algorithm[] = [];
+    try {
+        const keys = getAlgorithmDefinitionKeys()
+        const algorithms: Algorithm[] = []
 
-    for (const key of keys) {
-      try {
-        const definitionJson = getAlgorithmDefinition({ key });
-        const definition = JSON.parse(definitionJson) as AlgorithmDefinition;
-        algorithms.push(transformAlgorithm(definition));
-      } catch (error) {
-        console.error(`Failed to load algorithm ${key}:`, error);
-      }
+        for (const key of keys) {
+            try {
+                const definitionJson = getAlgorithmDefinition({ key })
+                const definition = JSON.parse(
+                    definitionJson
+                ) as AlgorithmDefinition
+                algorithms.push(transformAlgorithm(definition))
+            } catch (error) {
+                console.error(`Failed to load algorithm ${key}:`, error)
+            }
+        }
+
+        return algorithms
+    } catch (error) {
+        console.error('Failed to get algorithms:', error)
+        return []
     }
-
-    return algorithms;
-  } catch (error) {
-    console.error('Failed to get algorithms:', error);
-    return [];
-  }
 }
 
 // Get all algorithms from the registry (cached for initial load)
-export const algorithms: Algorithm[] = getAllAlgorithms();
+export const algorithms: Algorithm[] = getAllAlgorithms()
 
 // Helper function to get algorithm by ID
 export function getAlgorithmById(id: string): Algorithm | undefined {
-  return algorithms.find(algo => algo.id === id);
+    return algorithms.find((algo) => algo.id === id)
 }
 
 // Auto-register all algorithm schemas when module loads
 algorithms.forEach((algorithm) => {
-  try {
-    const schema = buildSchemaFromAlgorithm(algorithm);
-    reputoClient.registerSchema(schema);
-  } catch (error) {
-    console.error(`Failed to register schema for ${algorithm.id}:`, error);
-  }
-});
+    try {
+        const schema = buildSchemaFromAlgorithm(algorithm)
+        reputoClient.registerSchema(schema)
+    } catch (error) {
+        console.error(`Failed to register schema for ${algorithm.id}:`, error)
+    }
+})

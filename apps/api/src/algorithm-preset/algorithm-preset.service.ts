@@ -1,17 +1,54 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import type { AlgorithmPreset } from '@reputo/database';
 import { MODEL_NAMES } from '@reputo/database';
+import type { AlgorithmDefinition } from '@reputo/reputation-algorithms';
+import { getAlgorithmDefinition } from '@reputo/reputation-algorithms/api';
 import type { FilterQuery } from 'mongoose';
 import { throwNotFoundError } from '../shared/exceptions';
 import { pick } from '../shared/utils';
+import { StorageService } from '../storage/storage.service';
 import { AlgorithmPresetRepository } from './algorithm-preset.repository';
 import type { CreateAlgorithmPresetDto, ListAlgorithmPresetsQueryDto, UpdateAlgorithmPresetDto } from './dto';
+
 @Injectable()
 export class AlgorithmPresetService {
-  constructor(private readonly repository: AlgorithmPresetRepository) {}
+  constructor(
+    private readonly repository: AlgorithmPresetRepository,
+    private readonly storageService: StorageService,
+  ) {}
 
-  create(createDto: CreateAlgorithmPresetDto) {
+  async create(createDto: CreateAlgorithmPresetDto) {
+    const definition = this.getAlgorithmDefinitionOrThrow(createDto.key, createDto.version);
+
+    await this.validateStorageInputs(createDto, definition);
+
     return this.repository.create(createDto);
+  }
+
+  private getAlgorithmDefinitionOrThrow(key: string, version: string): AlgorithmDefinition {
+    try {
+      const definitionJson = getAlgorithmDefinition({ key, version });
+      return JSON.parse(definitionJson) as AlgorithmDefinition;
+    } catch (error) {
+      if (error && typeof error === 'object' && 'code' in error) {
+        throw new BadRequestException(`Algorithm definition not found: ${key}@${version}`);
+      }
+      throw error;
+    }
+  }
+
+  private async validateStorageInputs(dto: CreateAlgorithmPresetDto, definition: AlgorithmDefinition): Promise<void> {
+    for (const definitionInput of definition.inputs) {
+      const isStorageType = definitionInput.type === 'csv';
+
+      if (!isStorageType) {
+        continue;
+      }
+
+      const presetInput = dto.inputs.find((input) => input.key === definitionInput.key);
+
+      if (presetInput) await this.storageService.getObjectMetadata(presetInput.value as string);
+    }
   }
 
   list(queryDto: ListAlgorithmPresetsQueryDto) {

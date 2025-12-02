@@ -161,7 +161,6 @@ export function searchAlgorithmDefinitions(filters: SearchAlgorithmFilters = {})
     }
 
     if (!hasAnyFilter) {
-      // No filters: return latest version for all algorithms
       result.push(JSON.stringify(definition));
       continue;
     }
@@ -170,7 +169,6 @@ export function searchAlgorithmDefinitions(filters: SearchAlgorithmFilters = {})
     const matchesName = matchesField(definition.name, name);
     const matchesCategory = matchesField(definition.category, category);
 
-    // OR logic across provided filters
     if (matchesKey || matchesName || matchesCategory) {
       result.push(JSON.stringify(definition));
     }
