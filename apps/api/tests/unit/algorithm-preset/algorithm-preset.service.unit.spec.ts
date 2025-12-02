@@ -35,10 +35,24 @@ describe('AlgorithmPresetService', () => {
                 key: 'input1',
                 label: 'Input 1',
                 description: 'Test input',
-                type: 'string',
+                type: 'csv',
+                csv: {
+                    hasHeader: true,
+                    delimiter: ',',
+                    columns: [
+                        {
+                            key: 'column1',
+                            type: 'string',
+                            required: false,
+                        },
+                    ],
+                },
             },
         ],
         outputs: [],
+        runtime: {
+            taskQueue: 'test-queue',
+        },
     }
 
     beforeEach(() => {
