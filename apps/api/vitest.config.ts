@@ -27,6 +27,10 @@ export default defineConfig({
                 __dirname,
                 '../../packages/storage/src/index.ts'
             ),
+            '@reputo/algorithm-validator': resolve(
+                __dirname,
+                '../../packages/algorithm-validator/src/index.ts'
+            ),
         },
     },
 })
