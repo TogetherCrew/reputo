@@ -120,7 +120,7 @@ export function CSVField({ input, control }: CSVFieldProps) {
       render={({ field: { value, onChange } }) => {
         // Handle both File objects and string filenames (from backend)
         const fileValue = value instanceof File ? value : null;
-        const filenameValue = typeof value === "string" ? value : null;
+        const filenameValue = typeof value === "string" && value ? value : null;
         
         return (
           <FormItem>

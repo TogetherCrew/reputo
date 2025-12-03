@@ -79,10 +79,15 @@ export function PresetDetailsDialog({ isOpen, onClose, preset }: PresetDetailsDi
               <div className="space-y-2">
                 {preset.inputs.map((input) => (
                   <div key={input.key} className="flex items-center justify-between p-3 border rounded-lg">
-                    <div>
+                    <div className="flex-1 min-w-0">
                       <div className="font-medium">{input.key}</div>
+                      {typeof input.value === "string" && input.value && (
+                        <div className="text-sm text-muted-foreground truncate" title={input.value}>
+                          {input.value.split("/").pop() || input.value}
+                        </div>
+                      )}
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-shrink-0">
                       {typeof input.value === "string" && input.value && (input.value.includes("/") || input.value.startsWith("uploads/")) && (
                         <Button
                           size="sm"
