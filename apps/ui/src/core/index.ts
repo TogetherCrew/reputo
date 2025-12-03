@@ -2,9 +2,8 @@
  * Core exports for Reputo form builder and validation system
  */
 
-
 // Algorithms
-export { type Algorithm, algorithms, getAlgorithmById } from "./algorithms";
+export { type Algorithm, algorithms, getAlgorithmById, searchAlgorithms } from "./algorithms";
 // Client
 export { ReputoClientClass, reputoClient } from "./client";
 // Field Components
@@ -20,27 +19,4 @@ export {
 // Form Component
 export { ReputoForm } from "./reputo-form";
 // Schema Builder
-export { buildSchemaFromAlgorithm } from "./schema-builder";
-// Types - re-exported from @reputo/validator
-export type {
-  BooleanInput,
-  ColumnDefinition,
-  CSVConfig,
-  CSVInput,
-  DateInput,
-  EnumInput,
-  Input,
-  NumberInput,
-  Output,
-  ReputoSchema,
-  SliderInput,
-  TextInput,
-  ValidationResult,
-} from "@reputo/algorithm-validator";
-// Validation - re-exported from @reputo/validator
-export {
-  buildZodSchema,
-  type InferSchemaType,
-  validateCSVContent,
-  validatePayload,
-} from "@reputo/algorithm-validator";
+export { buildSchemaFromAlgorithm, buildZodSchema, type InferSchemaType, validateCSVContent } from "./schema-builder";

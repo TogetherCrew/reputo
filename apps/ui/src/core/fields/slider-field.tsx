@@ -10,7 +10,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Slider } from "@/components/ui/slider";
-import type { SliderInput } from "../types";
+import type { SliderInput } from "@reputo/algorithm-validator";
 
 interface SliderFieldProps {
   input: SliderInput;

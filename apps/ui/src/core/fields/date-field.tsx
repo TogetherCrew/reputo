@@ -10,7 +10,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import type { DateInput } from "../types";
+import type { DateInput } from "@reputo/algorithm-validator";
 
 interface DateFieldProps {
   input: DateInput;

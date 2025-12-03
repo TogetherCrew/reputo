@@ -32,7 +32,7 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty";
 import { Input } from "@/components/ui/input";
-import { type Algorithm, algorithms } from "@/core/algorithms";
+import { type Algorithm, searchAlgorithms } from "@/core/algorithms";
 
 // algorithms imported from shared file
 
@@ -56,17 +56,9 @@ export default function Home() {
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Filter algorithms based on query (local filtering)
+  // Filter algorithms using registry search
   const filteredAlgorithms = useMemo(() => {
-    if (!searchQuery.trim()) return algorithms;
-    const query = searchQuery.toLowerCase();
-    return algorithms.filter(
-      (algo) =>
-        algo.title.toLowerCase().includes(query) ||
-        algo.description.toLowerCase().includes(query) ||
-        algo.id.toLowerCase().includes(query) ||
-        algo.category.toLowerCase().includes(query)
-    );
+    return searchAlgorithms(searchQuery);
   }, [searchQuery]);
 
   return (

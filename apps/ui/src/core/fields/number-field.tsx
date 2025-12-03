@@ -10,7 +10,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import type { NumberInput } from "../types";
+import type { NumberInput } from "@reputo/algorithm-validator";
 
 interface NumberFieldProps {
   input: NumberInput;

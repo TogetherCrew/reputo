@@ -3,8 +3,8 @@
  * Validates payloads against schemas on both client and server
  */
 
-import type { ReputoSchema, ValidationResult } from "./types";
-import { validatePayload } from "./validation";
+import type { ReputoSchema, ValidationResult } from "@reputo/algorithm-validator";
+import { validatePayload } from "@reputo/algorithm-validator";
 
 /**
  * Schema registry for storing known schemas

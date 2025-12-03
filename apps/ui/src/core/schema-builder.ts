@@ -7,7 +7,7 @@ import {
   getAlgorithmDefinition,
 } from "@reputo/reputation-algorithms";
 import type { Algorithm } from "./algorithms";
-import type { CSVConfig, CSVInput, Input, ReputoSchema, TextInput } from "./types";
+import type { CSVConfig, CSVInput, Input, ReputoSchema, TextInput } from "@reputo/algorithm-validator";
 
 /**
  * Builds a ReputoSchema from an Algorithm object
@@ -173,7 +173,7 @@ function transformInputToReputoInput(
 }
 
 /**
- * Re-export validation functions from the core validation module
+ * Re-export validation functions from the validator package
  */
-export { buildZodSchema, type InferSchemaType, validateCSVContent } from "./validation";
+export { buildZodSchema, type InferSchemaType, validateCSVContent } from "@reputo/algorithm-validator";
 

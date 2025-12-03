@@ -17,8 +17,8 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import { storageApi } from "@/lib/api/services";
 import { useFormUploadOptional } from "../form-context";
-import type { CSVInput } from "../types";
-import { validateCSVContent } from "../validation";
+import type { CSVInput } from "@reputo/algorithm-validator";
+import { validateCSVContent } from "@reputo/algorithm-validator";
 
 interface CSVFieldProps {
   input: CSVInput;

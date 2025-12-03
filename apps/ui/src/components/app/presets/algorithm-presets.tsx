@@ -219,8 +219,8 @@ export function AlgorithmPresets({ algo }: { algo?: Algorithm }) {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Preset</TableHead>
-                <TableHead>Algorithm</TableHead>
+                <TableHead className="max-w-[200px]">Preset</TableHead>
+                <TableHead className="max-w-[250px]">Algorithm</TableHead>
                 <TableHead>Version</TableHead>
                 <TableHead>Created</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
@@ -229,9 +229,9 @@ export function AlgorithmPresets({ algo }: { algo?: Algorithm }) {
             <TableBody>
               {presetsData?.results.map((preset) => (
                 <TableRow key={preset._id}>
-                  <TableCell>
+                  <TableCell className="max-w-[200px]">
                     <div className="flex flex-col">
-                      <div className="font-medium">
+                      <div className="font-medium truncate">
                         {preset.name || `${preset.key} preset`}
                       </div>
                       <div className="text-muted-foreground text-xs">
@@ -239,10 +239,10 @@ export function AlgorithmPresets({ algo }: { algo?: Algorithm }) {
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="max-w-[250px]">
                     <div className="flex flex-col">
-                      <div className="font-medium">{preset.key}</div>
-                      <div className="text-muted-foreground text-xs">
+                      <div className="font-medium truncate">{preset.key}</div>
+                      <div className="text-muted-foreground text-xs truncate">
                         {preset.description || `Algorithm preset`}
                       </div>
                     </div>

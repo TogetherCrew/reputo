@@ -2,6 +2,7 @@ import {
     type AlgorithmDefinition,
     getAlgorithmDefinition,
     getAlgorithmDefinitionKeys,
+    searchAlgorithmDefinitions,
 } from '@reputo/reputation-algorithms'
 import { reputoClient } from './client'
 import { buildSchemaFromAlgorithm } from './schema-builder'
@@ -80,6 +81,36 @@ export const algorithms: Algorithm[] = getAllAlgorithms()
 // Helper function to get algorithm by ID
 export function getAlgorithmById(id: string): Algorithm | undefined {
     return algorithms.find((algo) => algo.id === id)
+}
+
+/**
+ * Search algorithms using the registry's search functionality.
+ * Uses OR logic across filters: matches if key, name, or category matches.
+ *
+ * @param query - Search query string to match against key, name, and category
+ * @returns Array of matching algorithms
+ */
+export function searchAlgorithms(query: string): Algorithm[] {
+    if (!query.trim()) {
+        return algorithms
+    }
+
+    try {
+        // Search using OR logic - algorithm matches if any field matches
+        const results = searchAlgorithmDefinitions({
+            key: query,
+            name: query,
+            category: query,
+        })
+
+        return results.map((jsonStr) => {
+            const definition = JSON.parse(jsonStr) as AlgorithmDefinition
+            return transformAlgorithm(definition)
+        })
+    } catch (error) {
+        console.error('Failed to search algorithms:', error)
+        return []
+    }
 }
 
 // Auto-register all algorithm schemas when module loads

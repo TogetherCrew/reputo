@@ -14,8 +14,8 @@ import {
   TextField,
 } from "./fields";
 import { FormUploadProvider, useFormUpload } from "./form-context";
-import type { Input, ReputoSchema } from "./types";
-import { buildZodSchema } from "./validation";
+import type { Input, ReputoSchema } from "@reputo/algorithm-validator";
+import { buildZodSchema } from "@reputo/algorithm-validator";
 
 interface ReputoFormProps {
   schema: ReputoSchema;
