@@ -511,6 +511,9 @@ importers:
 
   packages/algorithm-validator:
     dependencies:
+      '@reputo/reputation-algorithms':
+        specifier: workspace:*
+        version: link:../reputation-algorithms
       zod:
         specifier: ^4.1.0
         version: 4.1.12

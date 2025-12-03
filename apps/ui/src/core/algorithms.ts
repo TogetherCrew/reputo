@@ -113,12 +113,8 @@ export function searchAlgorithms(query: string): Algorithm[] {
     }
 }
 
-// Auto-register all algorithm schemas when module loads
-algorithms.forEach((algorithm) => {
-    try {
-        const schema = buildSchemaFromAlgorithm(algorithm)
-        reputoClient.registerSchema(schema)
-    } catch (error) {
-        console.error(`Failed to register schema for ${algorithm.id}:`, error)
-    }
-})
+// Note: Form schemas are not registered in the reputoClient as they are UI-specific.
+// Validation happens through buildZodSchema in the form component.
+// To register actual algorithm definitions, use:
+// const definition = getAlgorithmDefinition({ key: algorithm.id })
+// reputoClient.registerSchema(JSON.parse(definition) as AlgorithmDefinition)

@@ -2,12 +2,14 @@
 
 Shared Zod-based validation library for the Reputo ecosystem. Provides schema building, payload validation, and CSV content validation that runs identically on both client and server.
 
+This package uses `@reputo/reputation-algorithms` as the single source of truth for algorithm definition types.
+
 ## Features
 
 -   **Type-safe**: Full TypeScript support with comprehensive type definitions
 -   **Zod-based**: Built on Zod v4 for robust runtime validation
 -   **Universal**: Runs identically in Node.js and browser environments
--   **Schema-driven**: Build Zod schemas from ReputoSchema definitions
+-   **Schema-driven**: Build Zod schemas from AlgorithmDefinition
 -   **CSV validation**: Comprehensive CSV structure and column validation
 -   **Algorithm preset validation**: Pre-built schemas for algorithm preset creation
 
@@ -23,122 +25,57 @@ See the full API reference in [docs](docs/globals.md).
 
 ### Payload Validation
 
-Validate data against a ReputoSchema definition. This works identically on both client and server:
-
-```typescript
-import { validatePayload, type ReputoSchema } from '@reputo/algorithm-validator'
-
-const schema: ReputoSchema = {
-    key: 'voting_engagement',
-    name: 'Voting Engagement Algorithm',
-    category: 'engagement',
-    description: 'Calculates engagement based on voting patterns',
-    version: '1.0.0',
-    inputs: [
-        {
-            key: 'threshold',
-            label: 'Threshold',
-            type: 'number',
-            min: 0,
-            max: 1,
-            required: true,
-        },
-        {
-            key: 'weight',
-            label: 'Weight',
-            type: 'number',
-            min: 0,
-            required: true,
-        },
-        {
-            key: 'algorithm_name',
-            label: 'Algorithm Name',
-            type: 'text',
-            minLength: 3,
-            maxLength: 50,
-            required: false,
-        },
-    ],
-    outputs: [
-        {
-            key: 'score',
-            label: 'Engagement Score',
-            type: 'number',
-        },
-    ],
-}
-
-// Validate payload
-const result = validatePayload(schema, {
-    threshold: 0.5,
-    weight: 1.2,
-    algorithm_name: 'Voting Engagement',
-})
-
-if (result.success) {
-    console.log('Valid data:', result.data)
-} else {
-    console.error('Validation errors:', result.errors)
-    // [
-    //   { field: 'threshold', message: 'Threshold must be at least 0', code: 'too_small' },
-    //   ...
-    // ]
-}
-```
-
-### Building Zod Schemas
-
-Build a Zod schema from a ReputoSchema definition for advanced use cases:
+Validate data against an AlgorithmDefinition. This works identically on both client and server:
 
 ```typescript
 import {
-    buildZodSchema,
-    type InferSchemaType,
-    type ReputoSchema,
+    validatePayload,
+    type AlgorithmDefinition,
 } from '@reputo/algorithm-validator'
+import { getAlgorithmDefinition } from '@reputo/reputation-algorithms'
 
-const schema: ReputoSchema = {
-    // ... schema definition
+// Get algorithm definition from the registry
+const definitionJson = getAlgorithmDefinition({
+    key: 'voting_engagement',
+    version: '1.0.0',
+})
+const definition = JSON.parse(definitionJson) as AlgorithmDefinition
+
+// Validate payload
+const result = validatePayload(definition, {
+    votes: 'storage-key-for-csv-file',
+})
+
+if (result.success) {
+    console.log('Valid:', result.data)
+} else {
+    console.error('Errors:', result.errors)
 }
-
-const zodSchema = buildZodSchema(schema)
-
-// Use the schema directly
-const parsed = zodSchema.parse({ threshold: 0.5, weight: 1.2 })
-
-// Infer TypeScript types from the schema
-type SchemaType = InferSchemaType<typeof schema>
 ```
 
 ### CSV Content Validation
 
-Validate CSV files for structure, required columns, and data constraints. Works with File objects (browser), strings, or Buffers (Node.js):
+Validate CSV files against column definitions:
 
 ```typescript
-import { validateCSVContent, type CSVConfig } from '@reputo/algorithm-validator'
+import { validateCSVContent, type CsvIoItem } from '@reputo/algorithm-validator'
 
-const csvConfig: CSVConfig = {
+const csvConfig: CsvIoItem['csv'] = {
     hasHeader: true,
     delimiter: ',',
     maxRows: 10000,
-    maxBytes: 10485760, // 10 MB
     columns: [
         {
             key: 'user_id',
             type: 'string',
             required: true,
-            aliases: ['userId', 'user-id', 'user id'],
+            aliases: ['userId', 'user'],
         },
         {
             key: 'vote',
             type: 'enum',
             required: true,
-            enum: ['upvote', 'downvote', 'neutral'],
-        },
-        {
-            key: 'timestamp',
-            type: 'date',
-            required: false,
+            enum: ['upvote', 'downvote'],
         },
     ],
 }
@@ -186,10 +123,7 @@ import {
 const result = validateCreateAlgorithmPreset({
     key: 'voting_engagement',
     version: '1.0.0',
-    inputs: [
-        { key: 'threshold', value: 0.5 },
-        { key: 'weight', value: 1.2 },
-    ],
+    inputs: [{ key: 'votes', value: 'storage-key-123' }],
     name: 'Voting Engagement Algorithm',
     description: 'Calculates engagement based on voting patterns',
 })
@@ -206,145 +140,51 @@ const zodSchema = createAlgorithmPresetSchema
 const parsed = zodSchema.parse(presetData)
 ```
 
-## Input Types
+## Type Definitions
 
-The validator supports various input types with specific validation rules:
+This package uses `@reputo/reputation-algorithms` as the source of truth for algorithm definition types:
 
--   **text**: String input with min/max length and pattern validation
--   **number**: Numeric input with min/max constraints
--   **boolean**: Boolean true/false values
--   **date**: Date strings with min/max date constraints
--   **enum**: Selection from predefined options
--   **csv**: CSV file input with column validation
--   **slider**: Numeric input with min/max range (for UI sliders)
+-   `AlgorithmDefinition`: Complete algorithm definition structure with inputs, outputs, and runtime metadata
+-   `CsvIoItem`: CSV input/output item configuration
+-   `ValidationResult`: Result of payload validation
+-   `CSVValidationResult`: Result of CSV content validation
 
-## Integration Examples
+## Building Zod Schemas
 
-### NestJS Backend
-
-```typescript
-import { validatePayload, type ReputoSchema } from '@reputo/algorithm-validator'
-import { getAlgorithmDefinition } from '@reputo/reputation-algorithms/api'
-
-@Injectable()
-export class AlgorithmPresetService {
-    async validatePresetInputs(key: string, version: string, inputs: unknown) {
-        // Get algorithm definition
-        const definitionJson = getAlgorithmDefinition({ key, version })
-        const definition = JSON.parse(definitionJson) as AlgorithmDefinition
-
-        // Convert to ReputoSchema format
-        const schema: ReputoSchema = {
-            key: definition.key,
-            name: definition.name,
-            category: definition.category,
-            description: definition.description,
-            version: definition.version,
-            inputs: definition.inputs,
-            outputs: definition.outputs,
-        }
-
-        // Validate inputs
-        const result = validatePayload(schema, inputs)
-        if (!result.success) {
-            throw new BadRequestException({
-                message: 'Invalid preset inputs',
-                errors: result.errors,
-            })
-        }
-
-        return result.data
-    }
-}
-```
-
-### React Frontend
+You can build Zod schemas from algorithm definitions for custom validation:
 
 ```typescript
 import {
-    validatePayload,
-    validateCSVContent,
-    type ReputoSchema,
-    type CSVConfig,
+    buildZodSchema,
+    type InferSchemaType,
 } from '@reputo/algorithm-validator'
-import { useForm } from 'react-hook-form'
 
-function AlgorithmPresetForm({ schema }: { schema: ReputoSchema }) {
-    const {
-        register,
-        handleSubmit,
-        formState: { errors },
-    } = useForm()
-
-    const onSubmit = async (data: unknown) => {
-        // Validate form data
-        const result = validatePayload(schema, data)
-        if (!result.success) {
-            // Handle validation errors
-            return
-        }
-
-        // Validate CSV files if any
-        for (const input of schema.inputs) {
-            if (input.type === 'csv' && data[input.key] instanceof File) {
-                const csvResult = await validateCSVContent(
-                    data[input.key],
-                    input.csv
-                )
-                if (!csvResult.valid) {
-                    // Handle CSV validation errors
-                    return
-                }
-            }
-        }
-
-        // Submit validated data
-    }
-
-    return <form onSubmit={handleSubmit(onSubmit)}>{/* Form fields */}</form>
+const definition: AlgorithmDefinition = {
+    // ... your definition
 }
+
+const zodSchema = buildZodSchema(definition)
+
+// Infer TypeScript type from schema
+type ValidatedType = InferSchemaType
 ```
 
-## API Reference
+## Development
 
-### Core Functions
+```bash
+# Run tests
+pnpm test
 
-#### `validatePayload(schema: ReputoSchema, payload: unknown): ValidationResult`
+# Type check
+pnpm typecheck
 
-Validates data against a ReputoSchema definition. Returns a result object with either validated data or error details.
+# Build
+pnpm build
 
-#### `buildZodSchema(reputoSchema: ReputoSchema): z.ZodObject<...>`
-
-Builds a Zod schema from a ReputoSchema definition. Useful for advanced validation scenarios or type inference.
-
-#### `validateCSVContent(file: File | string | Buffer, csvConfig: CSVConfig): Promise<CSVValidationResult>`
-
-Validates CSV content for structure, required columns, and data constraints. Works in both browser and Node.js environments.
-
-### Schema Functions
-
-#### `validateCreateAlgorithmPreset(data: unknown): SafeParseReturnType<...>`
-
-Validates algorithm preset creation payloads using Zod's safeParse.
-
-#### `createAlgorithmPresetSchema: z.ZodObject<...>`
-
-Zod schema for algorithm preset creation validation.
-
-### Types
-
-See the full API reference in [docs](docs/globals.md) for complete type definitions including:
-
--   `ReputoSchema` - Algorithm schema definition
--   `Input` types - TextInput, NumberInput, BooleanInput, DateInput, EnumInput, CSVInput, SliderInput
--   `Output` - Algorithm output definition
--   `ValidationResult` - Payload validation result
--   `CSVValidationResult` - CSV validation result
--   `CSVConfig` - CSV validation configuration
--   `ColumnDefinition` - CSV column definition
+# Generate documentation
+pnpm docs
+```
 
 ## License
 
-Released under the **GPL-3.0** license. See [LICENSE](../../LICENSE) file for details.
-
-This project is open source and welcomes contributions from the community.
+GPL-3.0
