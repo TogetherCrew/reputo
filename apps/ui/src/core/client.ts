@@ -3,11 +3,8 @@
  * Validates payloads against algorithm definitions on both client and server
  */
 
-import type {
-    AlgorithmDefinition,
-    ValidationResult,
-} from '@reputo/algorithm-validator'
-import { validatePayload } from '@reputo/algorithm-validator'
+import type { AlgorithmDefinition } from '@reputo/reputation-algorithms'
+import { validatePayload, type ValidationResult } from '@reputo/algorithm-validator'
 
 /**
  * Schema registry for storing known algorithm definitions

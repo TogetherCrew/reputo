@@ -1,8 +1,8 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { type AlgorithmDefinition, validatePayload } from '@reputo/algorithm-validator';
+import { validatePayload } from '@reputo/algorithm-validator';
 import type { AlgorithmPreset } from '@reputo/database';
 import { MODEL_NAMES } from '@reputo/database';
-import { getAlgorithmDefinition } from '@reputo/reputation-algorithms';
+import { type AlgorithmDefinition, getAlgorithmDefinition } from '@reputo/reputation-algorithms';
 import type { FilterQuery } from 'mongoose';
 import { throwNotFoundError } from '../shared/exceptions';
 import { pick } from '../shared/utils';

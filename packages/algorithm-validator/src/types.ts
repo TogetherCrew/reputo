@@ -4,17 +4,9 @@
  * These types are used for validation on both client and server, ensuring
  * consistent type safety and validation rules across the entire application.
  *
- * Note: Algorithm definition types (AlgorithmDefinition, CsvIoItem, etc.) are
- * imported from @reputo/reputation-algorithms as the single source of truth.
+ * Note: Algorithm definition types (AlgorithmDefinition, CsvIoItem, etc.) should
+ * be imported directly from @reputo/reputation-algorithms as the single source of truth.
  */
-
-import type { AlgorithmDefinition, CsvIoItem } from '@reputo/reputation-algorithms';
-
-/**
- * Re-export AlgorithmDefinition as the primary schema type.
- * This type represents the complete algorithm definition structure.
- */
-export type { AlgorithmDefinition, CsvIoItem };
 
 /**
  * Result of payload validation against an AlgorithmDefinition.

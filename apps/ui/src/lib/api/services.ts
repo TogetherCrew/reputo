@@ -13,9 +13,10 @@ import type {
 
 // Create axios instance with base configuration
 const api = axios.create({
-    baseURL:
-        process.env.NEXT_PUBLIC_API_URL ||
-        'https://api-staging.logid.xyz/api/v1',
+    baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api/v1',
+    // 'https://api-staging.logid.xyz/api/v1',
+
+    // 'https://api-staging.logid.xyz/api/v1',
     headers: {
         'Content-Type': 'application/json',
     },

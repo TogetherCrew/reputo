@@ -2,8 +2,7 @@
  * Schema builder utilities for generating form schemas from Algorithm objects
  */
 
-import type { AlgorithmDefinition } from '@reputo/algorithm-validator'
-import { getAlgorithmDefinition } from '@reputo/reputation-algorithms'
+import { getAlgorithmDefinition, type AlgorithmDefinition } from '@reputo/reputation-algorithms'
 import type { Algorithm } from './algorithms'
 
 /**

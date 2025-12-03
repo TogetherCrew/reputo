@@ -14,7 +14,7 @@ import {
     TextField,
 } from './fields'
 import { FormUploadProvider, useFormUpload } from './form-context'
-import type { AlgorithmDefinition } from '@reputo/algorithm-validator'
+import type { AlgorithmDefinition } from '@reputo/reputation-algorithms'
 import { buildZodSchema } from '@reputo/algorithm-validator'
 import type { FormInput, FormSchema } from './schema-builder'
 
@@ -56,7 +56,7 @@ function ReputoFormInner({
     // Initialize form with react-hook-form
     const form = useForm({
         resolver:
-            clientValidate && zodSchema ? zodResolver(zodSchema) : undefined,
+            clientValidate && zodSchema ? zodResolver(zodSchema as any) : undefined,
         defaultValues: getDefaultValues(schema, defaultValues),
         mode: 'onChange', // Validate on change for real-time validity
         reValidateMode: 'onChange',

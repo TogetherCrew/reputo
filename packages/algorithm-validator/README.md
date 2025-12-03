@@ -2,7 +2,7 @@
 
 Shared Zod-based validation library for the Reputo ecosystem. Provides schema building, payload validation, and CSV content validation that runs identically on both client and server.
 
-This package uses `@reputo/reputation-algorithms` as the single source of truth for algorithm definition types.
+**Important**: Algorithm definition types (`AlgorithmDefinition`, `CsvIoItem`, etc.) should be imported directly from `@reputo/reputation-algorithms`, not from this package.
 
 ## Features
 
@@ -28,11 +28,11 @@ See the full API reference in [docs](docs/globals.md).
 Validate data against an AlgorithmDefinition. This works identically on both client and server:
 
 ```typescript
+import { validatePayload } from '@reputo/algorithm-validator'
 import {
-    validatePayload,
+    getAlgorithmDefinition,
     type AlgorithmDefinition,
-} from '@reputo/algorithm-validator'
-import { getAlgorithmDefinition } from '@reputo/reputation-algorithms'
+} from '@reputo/reputation-algorithms'
 
 // Get algorithm definition from the registry
 const definitionJson = getAlgorithmDefinition({
@@ -58,7 +58,8 @@ if (result.success) {
 Validate CSV files against column definitions:
 
 ```typescript
-import { validateCSVContent, type CsvIoItem } from '@reputo/algorithm-validator'
+import { validateCSVContent } from '@reputo/algorithm-validator'
+import type { CsvIoItem } from '@reputo/reputation-algorithms'
 
 const csvConfig: CsvIoItem['csv'] = {
     hasHeader: true,
@@ -142,22 +143,26 @@ const parsed = zodSchema.parse(presetData)
 
 ## Type Definitions
 
-This package uses `@reputo/reputation-algorithms` as the source of truth for algorithm definition types:
+### Validation Result Types (from this package)
+
+-   `ValidationResult`: Result of payload validation
+-   `CSVValidationResult`: Result of CSV content validation
+
+### Algorithm Types (from @reputo/reputation-algorithms)
+
+Import algorithm definition types directly from `@reputo/reputation-algorithms`:
 
 -   `AlgorithmDefinition`: Complete algorithm definition structure with inputs, outputs, and runtime metadata
 -   `CsvIoItem`: CSV input/output item configuration
--   `ValidationResult`: Result of payload validation
--   `CSVValidationResult`: Result of CSV content validation
+-   `AlgorithmCategory`, `IoType`, etc.
 
 ## Building Zod Schemas
 
 You can build Zod schemas from algorithm definitions for custom validation:
 
 ```typescript
-import {
-    buildZodSchema,
-    type InferSchemaType,
-} from '@reputo/algorithm-validator'
+import { buildZodSchema, type InferSchemaType } from '@reputo/algorithm-validator'
+import type { AlgorithmDefinition } from '@reputo/reputation-algorithms'
 
 const definition: AlgorithmDefinition = {
     // ... your definition

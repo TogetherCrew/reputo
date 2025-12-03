@@ -7,8 +7,8 @@
  * that runs identically on both client and server, ensuring consistent
  * validation across the entire application.
  *
- * Uses @reputo/reputation-algorithms as the source of truth for algorithm
- * definition types (AlgorithmDefinition, CsvIoItem, etc.).
+ * Note: Algorithm definition types (AlgorithmDefinition, CsvIoItem, etc.) should
+ * be imported directly from @reputo/reputation-algorithms.
  *
  * @packageDocumentation
  */
@@ -23,11 +23,9 @@ export {
   createAlgorithmPresetSchema,
   validateCreateAlgorithmPreset,
 } from './schemas/index.js';
-// Type exports (re-exported from @reputo/reputation-algorithms)
+// Type exports (validation result types only)
 export type {
-  AlgorithmDefinition,
   CSVValidationResult,
-  CsvIoItem,
   ValidationResult,
 } from './types.js';
 // Validation exports
