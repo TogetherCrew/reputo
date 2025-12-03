@@ -16,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { EnumInput } from "../types";
+import type { EnumInput } from "@reputo/algorithm-validator";
 
 interface EnumFieldProps {
   input: EnumInput;

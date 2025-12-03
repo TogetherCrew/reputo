@@ -3,16 +3,57 @@ import { NotFoundException } from '@nestjs/common'
 import { MODEL_NAMES } from '@reputo/database'
 import { AlgorithmPresetService } from '../../../src/algorithm-preset/algorithm-preset.service'
 import { AlgorithmPresetRepository } from '../../../src/algorithm-preset/algorithm-preset.repository'
+import { StorageService } from '../../../src/storage/storage.service'
 import type {
     CreateAlgorithmPresetDto,
     ListAlgorithmPresetsQueryDto,
     UpdateAlgorithmPresetDto,
 } from '../../../src/algorithm-preset/dto'
+import { getAlgorithmDefinition } from '@reputo/reputation-algorithms'
 
+vi.mock('@reputo/reputation-algorithms', async () => {
+    const actual = await vi.importActual('@reputo/reputation-algorithms')
+    return {
+        ...actual,
+        getAlgorithmDefinition: vi.fn(),
+    }
+})
 
 describe('AlgorithmPresetService', () => {
     let service: AlgorithmPresetService
     let mockRepository: AlgorithmPresetRepository
+    let mockStorageService: StorageService
+
+    const mockAlgorithmDefinition = {
+        key: 'test_key',
+        name: 'Test Algorithm',
+        category: 'Test',
+        description: 'Test algorithm definition',
+        version: '1.0.0',
+        inputs: [
+            {
+                key: 'input1',
+                label: 'Input 1',
+                description: 'Test input',
+                type: 'csv',
+                csv: {
+                    hasHeader: true,
+                    delimiter: ',',
+                    columns: [
+                        {
+                            key: 'column1',
+                            type: 'string',
+                            required: false,
+                        },
+                    ],
+                },
+            },
+        ],
+        outputs: [],
+        runtime: {
+            taskQueue: 'test-queue',
+        },
+    }
 
     beforeEach(() => {
         vi.clearAllMocks()
@@ -25,7 +66,15 @@ describe('AlgorithmPresetService', () => {
             deleteById: vi.fn(),
         } as unknown as AlgorithmPresetRepository
 
-        service = new AlgorithmPresetService(mockRepository)
+        mockStorageService = {
+            getObjectMetadata: vi.fn(),
+        } as unknown as StorageService
+
+        vi.mocked(getAlgorithmDefinition).mockReturnValue(
+            JSON.stringify(mockAlgorithmDefinition)
+        )
+
+        service = new AlgorithmPresetService(mockRepository, mockStorageService)
     })
 
     describe('create', () => {

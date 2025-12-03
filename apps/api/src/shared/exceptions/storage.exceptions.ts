@@ -1,26 +1,22 @@
 import { BadRequestException, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 
-export class StorageConfigurationException extends InternalServerErrorException {
-  constructor(message: string) {
+export class FileTooLargeException extends BadRequestException {
+  constructor(maxSizeBytes: number) {
+    const message = `File too large. Maximum size allowed: ${maxSizeBytes} bytes`;
     super(message);
   }
 }
 
 export class InvalidContentTypeException extends BadRequestException {
-  constructor(contentType: string, allowedTypes: string[]) {
-    super(`contentType not allowed. Allowed: ${allowedTypes.join(', ')}. Got: ${contentType}`);
-  }
-}
-
-export class FileTooLargeException extends BadRequestException {
-  constructor(maxSizeBytes: number) {
-    super(`file too large. Max bytes: ${maxSizeBytes}`);
+  constructor(contentType: string, allowedTypes: readonly string[]) {
+    const message = `ContentType not allowed: ${contentType}. Allowed types: ${allowedTypes.join(', ')}`;
+    super(message);
   }
 }
 
 export class ObjectNotFoundException extends NotFoundException {
   constructor() {
-    super('object not found');
+    super('Object not found');
   }
 }
 

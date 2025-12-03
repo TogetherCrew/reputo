@@ -1,0 +1,31 @@
+[**@reputo/database v0.0.0**](../README.md)
+
+***
+
+[@reputo/database](../globals.md) / paginate
+
+# Function: paginate()
+
+> **paginate**\<`T`\>(`schema`): `void`
+
+Defined in: [packages/database/src/shared/plugins/paginate.plugin.ts:39](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/database/src/shared/plugins/paginate.plugin.ts#L39)
+
+Pagination plugin for Mongoose schemas
+
+## Type Parameters
+
+### T
+
+`T`
+
+## Parameters
+
+### schema
+
+`Schema`\<`T`\>
+
+Mongoose schema to add pagination to
+
+## Returns
+
+`void`

@@ -245,7 +245,7 @@ export function AlgorithmSnapshots({ algo }: { algo?: Algorithm }) {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Preset Name</TableHead>
+                <TableHead className="max-w-[200px]">Preset Name</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Started</TableHead>
                 <TableHead>Duration</TableHead>
@@ -265,9 +265,9 @@ export function AlgorithmSnapshots({ algo }: { algo?: Algorithm }) {
                 
                 return (
                   <TableRow key={snapshot._id}>
-                    <TableCell>
+                    <TableCell className="max-w-[200px]">
                       <div className="flex flex-col">
-                        <div className="font-medium">{presetName}</div>
+                        <div className="font-medium truncate">{presetName}</div>
                         <div className="text-muted-foreground text-xs">
                           {snapshot.outputs ? Object.keys(snapshot.outputs).length : 0} outputs
                         </div>

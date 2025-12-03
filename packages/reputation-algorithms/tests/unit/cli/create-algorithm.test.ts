@@ -46,7 +46,7 @@ describe('CLI: createAlgorithm', () => {
         key: 'test_algorithm',
         name: 'Test Algorithm',
         version: '1.0.0',
-        category: 'custom',
+        category: 'Custom',
         description: 'TODO: Add algorithm description',
       });
 
@@ -56,7 +56,7 @@ describe('CLI: createAlgorithm', () => {
     it('should create algorithm with custom config', () => {
       createAlgorithm('voting_engagement', '2.1.0', {
         outputPath: testDir,
-        category: 'engagement',
+        category: 'Engagement',
         customDescription: 'Measures user voting engagement',
         includeExampleInput: false,
         includeExampleOutput: true,
@@ -70,7 +70,7 @@ describe('CLI: createAlgorithm', () => {
         key: 'voting_engagement',
         name: 'Voting Engagement',
         version: '2.1.0',
-        category: 'engagement',
+        category: 'Engagement',
         description: 'Measures user voting engagement',
         inputs: [],
         outputs: [

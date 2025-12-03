@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import {
@@ -13,8 +13,9 @@ import {
   SliderField,
   TextField,
 } from "./fields";
-import type { Input, ReputoSchema } from "./types";
-import { buildZodSchema } from "./validation";
+import { FormUploadProvider, useFormUpload } from "./form-context";
+import type { Input, ReputoSchema } from "@reputo/algorithm-validator";
+import { buildZodSchema } from "@reputo/algorithm-validator";
 
 interface ReputoFormProps {
   schema: ReputoSchema;
@@ -27,7 +28,15 @@ interface ReputoFormProps {
   hiddenFields?: string[]; // Field keys to hide from UI but keep in validation
 }
 
-export function ReputoForm({
+export function ReputoForm(props: ReputoFormProps) {
+  return (
+    <FormUploadProvider>
+      <ReputoFormInner {...props} />
+    </FormUploadProvider>
+  );
+}
+
+function ReputoFormInner({
   schema,
   onSubmit,
   defaultValues = {},
@@ -44,9 +53,15 @@ export function ReputoForm({
   const form = useForm({
     resolver: clientValidate && zodSchema ? zodResolver(zodSchema) : undefined,
     defaultValues: getDefaultValues(schema, defaultValues),
-    mode: "onBlur",
-    reValidateMode: "onBlur",
+    mode: "onChange", // Validate on change for real-time validity
+    reValidateMode: "onChange",
   });
+
+  // Get upload state from context
+  const { isUploading } = useFormUpload();
+
+  // Watch all values to trigger re-validation
+  const watchedValues = useWatch({ control: form.control });
 
   // Render appropriate field component based on input type
   const renderField = (input: Input) => {
@@ -80,6 +95,29 @@ export function ReputoForm({
     (input) => !hiddenFields.includes(input.key)
   );
 
+  // Check if all required fields have values
+  const hasAllRequiredValues = schema.inputs
+    .filter((input) => input.required !== false)
+    .every((input) => {
+      const value = watchedValues?.[input.key];
+      if (value === undefined || value === null || value === "") {
+        return false;
+      }
+      // For CSV fields, make sure it's a string (uploaded key) not a File object
+      if (input.type === "csv" && value instanceof File) {
+        return false; // Still uploading or validating
+      }
+      return true;
+    });
+
+  // Determine if submit should be disabled
+  const isSubmitDisabled = 
+    form.formState.isSubmitting || 
+    isUploading || 
+    !form.formState.isValid ||
+    !hasAllRequiredValues ||
+    Object.keys(form.formState.errors).length > 0;
+
   return (
     <div className={className}>
       <Form {...form}>
@@ -96,8 +134,12 @@ export function ReputoForm({
                 Reset
               </Button>
             )}
-            <Button type="submit" disabled={form.formState.isSubmitting}>
-              {form.formState.isSubmitting ? "Submitting..." : submitLabel}
+            <Button type="submit" disabled={isSubmitDisabled}>
+              {form.formState.isSubmitting 
+                ? "Submitting..." 
+                : isUploading 
+                  ? "Uploading..." 
+                  : submitLabel}
             </Button>
           </div>
         </form>
@@ -146,4 +188,3 @@ function getDefaultValues(
 
   return defaults;
 }
-

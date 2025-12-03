@@ -128,7 +128,7 @@ const hoisted = vi.hoisted(() => {
     'engagement_score@0.1.0': {
       key: 'engagement_score',
       name: 'Engagement Score',
-      category: 'engagement',
+      category: 'Engagement',
       description: 'Beta version of engagement scoring',
       version: '0.1.0',
       inputs: [
@@ -152,7 +152,7 @@ const hoisted = vi.hoisted(() => {
     'engagement_score@0.2.0': {
       key: 'engagement_score',
       name: 'Engagement Score',
-      category: 'engagement',
+      category: 'Engagement',
       description: 'Improved beta with time-weighted activities',
       version: '0.2.0',
       inputs: [
@@ -176,7 +176,7 @@ const hoisted = vi.hoisted(() => {
     'engagement_score@1.0.0': {
       key: 'engagement_score',
       name: 'Engagement Score',
-      category: 'engagement',
+      category: 'Engagement',
       description: 'Production-ready engagement scoring',
       version: '1.0.0',
       inputs: [
@@ -398,6 +398,7 @@ import {
   getAlgorithmDefinition,
   getAlgorithmDefinitionKeys,
   getAlgorithmDefinitionVersions,
+  searchAlgorithmDefinitions,
 } from '../../../src/api/registry';
 
 describe('API: getAlgorithmDefinitionKeys', () => {
@@ -424,6 +425,112 @@ describe('API: getAlgorithmDefinitionKeys', () => {
     for (let i = 0; i < keys.length - 1; i++) {
       expect(keys[i]! < keys[i + 1]!).toBe(true);
     }
+  });
+});
+
+describe('API: searchAlgorithmDefinitions', () => {
+  it('should return all latest definitions when called without filters', () => {
+    const results = searchAlgorithmDefinitions();
+
+    expect(Array.isArray(results)).toBe(true);
+    expect(results.length).toBe(4);
+
+    const parsed = results.map((r) => JSON.parse(r) as { key: string; version: string });
+    const keys = parsed.map((d) => d.key).sort();
+    expect(keys).toEqual(['content_moderation', 'engagement_score', 'reputation_rank', 'voting_power']);
+
+    // latest versions per algorithm
+    const byKey = Object.fromEntries(parsed.map((d) => [d.key, d.version]));
+    expect(byKey.content_moderation).toBe('2.0.0');
+    expect(byKey.engagement_score).toBe('1.0.0');
+    expect(byKey.reputation_rank).toBe('1.0.0');
+    expect(byKey.voting_power).toBe('2.1.0');
+  });
+
+  it('should return all latest definitions when called with empty filters object', () => {
+    const results = searchAlgorithmDefinitions({});
+
+    expect(Array.isArray(results)).toBe(true);
+    expect(results.length).toBe(4);
+  });
+
+  it('should search by key with exact case-insensitive match', () => {
+    const results = searchAlgorithmDefinitions({ key: 'VOTING_POWER' });
+
+    expect(results.length).toBe(1);
+    const def = JSON.parse(results[0]!) as { key: string; version: string };
+    expect(def.key).toBe('voting_power');
+    expect(def.version).toBe('2.1.0');
+  });
+
+  it('should search by key with partial substring match', () => {
+    const results = searchAlgorithmDefinitions({ key: 'voting' });
+
+    expect(results.length).toBe(1);
+    const def = JSON.parse(results[0]!) as { key: string };
+    expect(def.key).toBe('voting_power');
+  });
+
+  it('should search by name with exact case-insensitive match', () => {
+    const results = searchAlgorithmDefinitions({ name: 'ENGAGEMENT SCORE' });
+
+    expect(results.length).toBe(1);
+    const def = JSON.parse(results[0]!) as { key: string; name: string };
+    expect(def.key).toBe('engagement_score');
+    expect(def.name).toBe('Engagement Score');
+  });
+
+  it('should search by name with partial substring match', () => {
+    const results = searchAlgorithmDefinitions({ name: 'moderation v2' });
+
+    expect(results.length).toBe(1);
+    const def = JSON.parse(results[0]!) as { key: string; name: string };
+    expect(def.key).toBe('content_moderation');
+    expect(def.name).toBe('Content Moderation v2');
+  });
+
+  it('should search by category with exact case-insensitive match', () => {
+    const results = searchAlgorithmDefinitions({ category: 'ENGAGEMENT' });
+
+    expect(results.length).toBe(1);
+    const def = JSON.parse(results[0]!) as { key: string; category: string };
+    expect(def.key).toBe('engagement_score');
+    expect(def.category).toBe('Engagement');
+  });
+
+  it('should search by category with partial substring match', () => {
+    const results = searchAlgorithmDefinitions({ category: 'govern' });
+
+    expect(results.length).toBe(1);
+    const def = JSON.parse(results[0]!) as { key: string; category: string };
+    expect(def.key).toBe('voting_power');
+    expect(def.category).toBe('governance');
+  });
+
+  it('should use OR logic across filters', () => {
+    const results = searchAlgorithmDefinitions({
+      key: 'reputation',
+      category: 'Engagement',
+    });
+
+    const parsed = results.map((r) => JSON.parse(r) as { key: string });
+    const keys = parsed.map((d) => d.key).sort();
+
+    // matches:
+    // - engagement_score (category: engagement)
+    // - reputation_rank (key includes 'reputation')
+    expect(keys).toEqual(['engagement_score', 'reputation_rank']);
+  });
+
+  it('should return empty array when no algorithms match', () => {
+    const results = searchAlgorithmDefinitions({
+      key: 'nonexistent',
+      name: 'Unknown Algorithm',
+      category: 'does_not_exist',
+    });
+
+    expect(Array.isArray(results)).toBe(true);
+    expect(results.length).toBe(0);
   });
 });
 

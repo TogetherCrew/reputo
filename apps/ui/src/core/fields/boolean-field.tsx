@@ -10,7 +10,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Switch } from "@/components/ui/switch";
-import type { BooleanInput } from "../types";
+import type { BooleanInput } from "@reputo/algorithm-validator";
 
 interface BooleanFieldProps {
   input: BooleanInput;

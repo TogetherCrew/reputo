@@ -1,0 +1,11 @@
+[**@reputo/database v0.0.0**](../README.md)
+
+***
+
+[@reputo/database](../globals.md) / ModelName
+
+# Type Alias: ModelName
+
+> **ModelName** = *typeof* [`MODEL_NAMES`](../variables/MODEL_NAMES.md)\[keyof *typeof* [`MODEL_NAMES`](../variables/MODEL_NAMES.md)\]
+
+Defined in: [packages/database/src/shared/constants/models.constants.ts:6](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/database/src/shared/constants/models.constants.ts#L6)

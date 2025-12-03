@@ -1,5 +1,6 @@
 import { _DEFINITIONS, REGISTRY_INDEX } from '../registry/index.gen.js';
 import { NotFoundError } from '../shared/errors/index.js';
+import type { AlgorithmDefinition, SearchAlgorithmFilters } from '../shared/types/algorithm.js';
 
 // ——— internal helpers ———
 function getVersionsOrThrow(key: string): readonly string[] {
@@ -24,6 +25,28 @@ function resolveVersion(key: string, version: string | 'latest'): string {
   }
 
   return resolved;
+}
+
+function normalize(value: string | undefined): string | undefined {
+  return typeof value === 'string' ? value.trim().toLowerCase() : undefined;
+}
+
+function matchesField(fieldValue: string | undefined, filterValue: string | undefined): boolean {
+  if (!filterValue) return false;
+  const normalizedField = normalize(fieldValue);
+  const normalizedFilter = normalize(filterValue);
+  if (!normalizedField || !normalizedFilter) return false;
+
+  // exact match (case-insensitive)
+  if (normalizedField === normalizedFilter) return true;
+
+  // partial/substring match
+  return normalizedField.includes(normalizedFilter);
+}
+
+function getLatestVersion(key: string): string {
+  const versions = getVersionsOrThrow(key);
+  return versions[versions.length - 1] as string;
 }
 
 // ——— public API ———
@@ -90,4 +113,66 @@ export function getAlgorithmDefinition(filters: { key: string; version?: string 
     throw new NotFoundError('KEY_NOT_FOUND', key);
   }
   return JSON.stringify(definition);
+}
+
+/**
+ * Searches algorithm definitions by metadata using flexible filters.
+ *
+ * Matching rules:
+ * - OR logic across fields: an algorithm matches if it satisfies ANY provided filter
+ * - Within each field, matching is case-insensitive and supports:
+ *   - Exact match (e.g. 'voting_power' === 'voting_power')
+ *   - Partial/substring match (e.g. 'engagement' matches 'Engagement Score')
+ *
+ * Version handling:
+ * - Only the latest version of each algorithm key is considered and returned
+ *
+ * @param filters - Optional filters to apply when searching
+ * @returns Array of JSON string representations of matching algorithm definitions
+ *
+ * @example
+ * ```ts
+ * // Search by key (exact or partial)
+ * const byKey = searchAlgorithmDefinitions({ key: 'voting' })
+ *
+ * // Search by name
+ * const byName = searchAlgorithmDefinitions({ name: 'Engagement Score' })
+ *
+ * // Search by category
+ * const byCategory = searchAlgorithmDefinitions({ category: 'engagement' })
+ *
+ * // Combined filters (OR logic)
+ * const mixed = searchAlgorithmDefinitions({ key: 'voting', category: 'engagement' })
+ * ```
+ */
+export function searchAlgorithmDefinitions(filters: SearchAlgorithmFilters = {}): string[] {
+  const { key, name, category } = filters;
+  const hasAnyFilter = Boolean(key || name || category);
+
+  const result: string[] = [];
+
+  for (const algorithmKey of Object.keys(REGISTRY_INDEX)) {
+    const latestVersion = getLatestVersion(algorithmKey);
+    const definitionKey = `${algorithmKey}@${latestVersion}`;
+    const definition = _DEFINITIONS[definitionKey] as AlgorithmDefinition | undefined;
+
+    if (!definition) {
+      continue;
+    }
+
+    if (!hasAnyFilter) {
+      result.push(JSON.stringify(definition));
+      continue;
+    }
+
+    const matchesKey = matchesField(definition.key, key);
+    const matchesName = matchesField(definition.name, name);
+    const matchesCategory = matchesField(definition.category, category);
+
+    if (matchesKey || matchesName || matchesCategory) {
+      result.push(JSON.stringify(definition));
+    }
+  }
+
+  return result;
 }

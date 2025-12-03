@@ -35,7 +35,7 @@ describe('Template Utils', () => {
       expect(template).toEqual({
         key: 'test_algorithm',
         name: 'Test Algorithm',
-        category: 'custom',
+        category: 'Custom',
         description: 'TODO: Add algorithm description',
         version: '1.0.0',
         inputs: [
@@ -75,13 +75,13 @@ describe('Template Utils', () => {
 
     it('should create template with custom category', () => {
       const template = createAlgorithmTemplate('voting_power', '2.1.0', {
-        category: 'engagement',
+        category: 'Engagement',
       });
 
       expect(template).toMatchObject({
         key: 'voting_power',
         name: 'Voting Power',
-        category: 'engagement',
+        category: 'Engagement',
         version: '2.1.0',
         runtime: {
           taskQueue: 'typescript-worker',
@@ -130,7 +130,7 @@ describe('Template Utils', () => {
       expect(template).toEqual({
         key: 'minimal_algo',
         name: 'Minimal Algo',
-        category: 'custom',
+        category: 'Custom',
         description: 'TODO: Add algorithm description',
         version: '1.0.0',
         inputs: [],
@@ -144,7 +144,7 @@ describe('Template Utils', () => {
 
     it('should create template with all custom options', () => {
       const template = createAlgorithmTemplate('custom_algo', '3.2.1', {
-        category: 'quality',
+        category: 'Quality',
         customDescription: 'Custom algorithm for quality assessment',
         includeExampleInput: false,
         includeExampleOutput: true,
@@ -153,7 +153,7 @@ describe('Template Utils', () => {
       expect(template).toEqual({
         key: 'custom_algo',
         name: 'Custom Algo',
-        category: 'quality',
+        category: 'Quality',
         description: 'Custom algorithm for quality assessment',
         version: '3.2.1',
         inputs: [],

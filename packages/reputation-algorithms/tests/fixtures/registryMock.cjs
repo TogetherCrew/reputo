@@ -125,7 +125,7 @@ export const DEFINITIONS = {
     'engagement_score@0.1.0': {
         key: 'engagement_score',
         name: 'Engagement Score',
-        category: 'engagement',
+        category: 'Engagement',
         description: 'Beta version of engagement scoring',
         version: '0.1.0',
         inputs: [
@@ -149,7 +149,7 @@ export const DEFINITIONS = {
     'engagement_score@0.2.0': {
         key: 'engagement_score',
         name: 'Engagement Score',
-        category: 'engagement',
+        category: 'Engagement',
         description: 'Improved beta with time-weighted activities',
         version: '0.2.0',
         inputs: [
@@ -173,7 +173,7 @@ export const DEFINITIONS = {
     'engagement_score@1.0.0': {
         key: 'engagement_score',
         name: 'Engagement Score',
-        category: 'engagement',
+        category: 'Engagement',
         description: 'Production-ready engagement scoring',
         version: '1.0.0',
         inputs: [

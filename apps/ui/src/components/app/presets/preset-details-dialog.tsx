@@ -1,7 +1,5 @@
 "use client";
 
-import { useState } from "react";
-import { CSVViewerDialog } from "@/components/app/csv/csv-viewer-dialog";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -11,8 +9,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { storageApi } from "@/lib/api/services";
 import type { AlgorithmPresetResponseDto } from "@/lib/api/types";
+import { FileDisplay } from "../file-display";
 
 interface PresetDetailsDialogProps {
   isOpen: boolean;
@@ -20,10 +18,15 @@ interface PresetDetailsDialogProps {
   preset: AlgorithmPresetResponseDto | null;
 }
 
-export function PresetDetailsDialog({ isOpen, onClose, preset }: PresetDetailsDialogProps) {
-  const [csvViewerOpen, setCsvViewerOpen] = useState(false);
-  const [csvHref, setCsvHref] = useState<string | null>(null);
+/**
+ * Check if a value looks like a storage key (file path)
+ */
+function isStorageKey(value: unknown): value is string {
+  if (typeof value !== "string" || !value) return false;
+  return value.includes("/") || value.startsWith("uploads/");
+}
 
+export function PresetDetailsDialog({ isOpen, onClose, preset }: PresetDetailsDialogProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-2xl">
@@ -78,53 +81,22 @@ export function PresetDetailsDialog({ isOpen, onClose, preset }: PresetDetailsDi
               <h3 className="text-sm font-medium text-muted-foreground mb-3">Input Parameters</h3>
               <div className="space-y-2">
                 {preset.inputs.map((input) => (
-                  <div key={input.key} className="flex items-center justify-between p-3 border rounded-lg">
-                    <div>
-                      <div className="font-medium">{input.key}</div>
+                  isStorageKey(input.value) ? (
+                    <FileDisplay
+                      key={input.key}
+                      label={input.key}
+                      storageKey={input.value}
+                    />
+                  ) : (
+                    <div key={input.key} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div className="flex-1 min-w-0">
+                        <div className="font-medium">{input.key}</div>
+                        <div className="text-sm text-muted-foreground">
+                          {String(input.value)}
+                        </div>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      {typeof input.value === "string" && input.value && (input.value.includes("/") || input.value.startsWith("uploads/")) && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={async () => {
-                            try {
-                              const { url } = await storageApi.createDownload({ key: input.value as string });
-                              window.open(url, "_blank", "noopener,noreferrer");
-                            } catch (e) {
-                              console.error(e);
-                              alert("Failed to create download link");
-                            }
-                          }}
-                        >
-                          Download
-                        </Button>
-                      )}
-                      {typeof input.value === "string" && input.value && input.value.toLowerCase().includes(".csv") && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={async () => {
-                            try {
-                              const val = input.value as string;
-                              let url = val;
-                              if (!/^https?:\/\//i.test(val)) {
-                                const res = await storageApi.createDownload({ key: val });
-                                url = res.url;
-                              }
-                              setCsvHref(url);
-                              setCsvViewerOpen(true);
-                            } catch (e) {
-                              console.error(e);
-                              alert("Unable to open CSV viewer");
-                            }
-                          }}
-                        >
-                          View
-                        </Button>
-                      )}
-                    </div>
-                  </div>
+                  )
                 ))}
               </div>
             </div>
@@ -136,12 +108,6 @@ export function PresetDetailsDialog({ isOpen, onClose, preset }: PresetDetailsDi
           </Button>
         </DialogFooter>
       </DialogContent>
-      <CSVViewerDialog
-        isOpen={csvViewerOpen}
-        onClose={() => setCsvViewerOpen(false)}
-        href={csvHref}
-        title="CSV Input Preview"
-      />
     </Dialog>
   );
 }

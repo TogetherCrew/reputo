@@ -2,10 +2,10 @@
  * Supported algorithm categories for organizing reputation algorithms.
  */
 export type AlgorithmCategory =
-  | 'engagement' // Algorithms focused on user engagement metrics
-  | 'quality' // Algorithms measuring content or user quality
-  | 'activity' // Algorithms tracking user activity patterns
-  | 'custom'; // Custom or specialized algorithms
+  | 'Engagement' // Algorithms focused on user engagement metrics
+  | 'Quality' // Algorithms measuring content or user quality
+  | 'Activity' // Algorithms tracking user activity patterns
+  | 'Custom'; // Custom or specialized algorithms
 
 /**
  * Supported input/output types for algorithm definitions.
@@ -109,4 +109,27 @@ export interface AlgorithmDefinition {
   outputs: IoItem[];
   /** Runtime execution metadata for orchestration layers */
   runtime: AlgorithmRuntimeMetadata;
+}
+
+/**
+ * Filters for searching algorithm definitions by metadata.
+ */
+export interface SearchAlgorithmFilters {
+  /**
+   * Algorithm key to search for.
+   * Supports exact and partial (substring) matching, case-insensitive.
+   */
+  key?: string;
+
+  /**
+   * Human-readable algorithm name to search for.
+   * Supports exact and partial (substring) matching, case-insensitive.
+   */
+  name?: string;
+
+  /**
+   * Algorithm category to search for.
+   * Supports exact and partial (substring) matching, case-insensitive.
+   */
+  category?: string;
 }

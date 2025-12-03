@@ -1,7 +1,7 @@
 {
     "key": "Invalid-Key-With-Capitals",
     "name": "Invalid Key",
-    "category": "custom",
+    "category": "Custom",
     "description": "Algorithm with invalid key format",
     "version": "1.0.0",
     "inputs": [],

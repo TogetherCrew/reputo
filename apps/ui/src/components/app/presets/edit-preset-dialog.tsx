@@ -1,5 +1,6 @@
 "use client";
 
+import { type AlgorithmDefinition, getAlgorithmDefinition } from "@reputo/reputation-algorithms";
 import { AlertCircle } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -91,6 +92,18 @@ export function EditPresetDialog({
     return buildSchemaFromAlgorithm(algorithm, preset?.version || "1.0.0");
   }, [algorithm, preset]);
 
+  // Fetch full algorithm definition to get original input keys
+  const fullDefinition = useMemo(() => {
+    if (!preset) return null;
+    try {
+      const definitionJson = getAlgorithmDefinition({ key: preset.key });
+      return JSON.parse(definitionJson) as AlgorithmDefinition;
+    } catch (error) {
+      console.warn(`Could not fetch full definition for ${preset.key}:`, error);
+      return null;
+    }
+  }, [preset]);
+
   // Build default values from preset
   const defaultValues = useMemo(() => {
     if (!preset || !algorithm) return {};
@@ -102,27 +115,32 @@ export function EditPresetDialog({
       description: preset.description || "",
     };
 
-    // Map preset inputs to form field values
+    // Map preset inputs to form field values using the full definition
+    // The preset stores original keys (e.g., "votes"), but the form uses label-derived keys (e.g., "votes_csv")
     preset.inputs.forEach((presetInput) => {
-      // Try to match preset input key to algorithm input label
-      const algoInput = algorithm.inputs.find(
-        (input) => input.label === presetInput.key || input.label.toLowerCase().replace(/\s+/g, "_") === presetInput.key.toLowerCase()
+      // Find the input in full definition by original key
+      const fullDefInput = fullDefinition?.inputs.find(
+        (input) => input.key === presetInput.key
       );
       
-      if (algoInput) {
-        const inputKey = algoInput.label.toLowerCase().replace(/\s+/g, "_");
-        // Convert string value to File-like object if it's a filename
-        if (presetInput.value && typeof presetInput.value === "string") {
-          // For CSV fields, we'll store the filename
-          defaults[inputKey] = presetInput.value;
-        } else {
-          defaults[inputKey] = presetInput.value;
+      if (fullDefInput?.label) {
+        // The form key is derived from the label
+        const formKey = fullDefInput.label.toLowerCase().replace(/\s+/g, "_");
+        defaults[formKey] = presetInput.value;
+      } else {
+        // Fallback: try matching by the preset key directly (for backwards compatibility)
+        const algoInput = algorithm.inputs.find(
+          (input) => input.label.toLowerCase().replace(/\s+/g, "_") === presetInput.key.toLowerCase()
+        );
+        if (algoInput) {
+          const formKey = algoInput.label.toLowerCase().replace(/\s+/g, "_");
+          defaults[formKey] = presetInput.value;
         }
       }
     });
 
     return defaults;
-  }, [preset, algorithm]);
+  }, [preset, algorithm, fullDefinition]);
 
   // Parse backend errors
   const backendErrors = useMemo(() => {
@@ -144,9 +162,16 @@ export function EditPresetDialog({
       const updateData: UpdateAlgorithmPresetDto = {
         name: data.name as string | undefined,
         description: data.description as string | undefined,
-        inputs: algorithm.inputs.map((input) => {
-          const inputKey = input.label.toLowerCase().replace(/\s+/g, "_");
-          const value = data[inputKey];
+        inputs: algorithm.inputs.map((input, index) => {
+          const formKey = input.label.toLowerCase().replace(/\s+/g, "_");
+          const value = data[formKey];
+          
+          // Get the original key from the full definition
+          const originalKey = fullDefinition?.inputs.find(
+            (defInput) => defInput.label === input.label
+          )?.key || 
+          fullDefinition?.inputs[index]?.key || 
+          formKey;
           
           // Convert File object to filename string
           let inputValue: unknown;
@@ -157,7 +182,7 @@ export function EditPresetDialog({
           }
 
           return {
-            key: input.label,
+            key: originalKey,
             value: inputValue,
           };
         }),
@@ -207,8 +232,9 @@ export function EditPresetDialog({
           </Alert>
         )}
 
-        {/* Dynamic form */}
+        {/* Dynamic form - key forces re-mount when preset changes */}
         <ReputoForm
+          key={preset._id}
           schema={schema}
           onSubmit={handleSubmit}
           submitLabel="Update Preset"

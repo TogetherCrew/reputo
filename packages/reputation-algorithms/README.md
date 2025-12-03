@@ -4,11 +4,11 @@ Framework-agnostic TypeScript library for describing, validating, and discoverin
 
 ## Features
 
-- **Type-safe**: Full TypeScript support with comprehensive type definitions
-- **Schema-driven**: JSON Schema validation using Ajv
-- **Framework-agnostic**: Works in Node.js and browser environments
-- **Registry-based**: Read-only registry for algorithm discovery
-- **No code execution**: Safe, validation-only approach
+-   **Type-safe**: Full TypeScript support with comprehensive type definitions
+-   **Schema-driven**: JSON Schema validation using Ajv
+-   **Framework-agnostic**: Works in Node.js and browser environments
+-   **Registry-based**: Read-only registry for algorithm discovery
+-   **No code execution**: Safe, validation-only approach
 
 ## Installation
 
@@ -25,6 +25,7 @@ import {
     getAlgorithmDefinitionKeys,
     getAlgorithmDefinitionVersions,
     getAlgorithmDefinition,
+    searchAlgorithmDefinitions,
 } from '@reputo/reputation-algorithms/api'
 
 // List all algorithm keys (sorted)
@@ -39,6 +40,15 @@ const json = getAlgorithmDefinition({
     version: 'latest',
 })
 const definition = JSON.parse(json)
+
+// Search definitions by metadata (key, name, category).
+// OR logic across fields; each field supports exact + partial, case-insensitive matching.
+const searchResults = searchAlgorithmDefinitions({
+    key: 'voting', // matches keys containing 'voting', e.g. 'voting_engagement'
+    // name: 'Engagement',  // matches names containing 'Engagement'
+    // category: 'engage',  // matches categories containing 'engage'
+})
+const parsedResults = searchResults.map((json) => JSON.parse(json))
 ```
 
 ## Algorithm definition creation
@@ -46,6 +56,7 @@ const definition = JSON.parse(json)
 Definitions live under `packages/reputation-algorithms/src/registry/` as versioned JSON files, and an auto-generated index (`index.gen.ts`) wires them into the runtime registry. Follow this flow to add a new algorithm:
 
 1. Create a new definition from a template
+
     - Using the provided script from `package.json`:
 
         ```bash
@@ -64,9 +75,11 @@ Definitions live under `packages/reputation-algorithms/src/registry/` as version
         - `version` is SemVer (e.g., `1.0.0`, `1.0.0-beta`)
 
 2. Edit the generated JSON file
+
     - Fill in `key`, `version`, metadata, inputs, and outputs according to the schema.
 
 3. Validate the registry
+
     - Validate all definitions against the JSON Schema and guard against duplicates:
 
         ```bash
@@ -74,6 +87,7 @@ Definitions live under `packages/reputation-algorithms/src/registry/` as version
         ```
 
 4. Generate the registry index
+
     - Build the in-repo registry index to include your new version:
 
         ```bash
@@ -83,6 +97,7 @@ Definitions live under `packages/reputation-algorithms/src/registry/` as version
     - This writes/updates `src/registry/index.gen.ts` (auto-generated; do not edit).
 
 5. Build the package
+
     - `pnpm build` compiles TypeScript. The `prebuild` step automatically runs validation and registry generation:
 
         ```json

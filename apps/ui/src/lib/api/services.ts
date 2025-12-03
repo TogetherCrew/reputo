@@ -91,12 +91,33 @@ export const snapshotsApi = {
 // Storage API
 export const storageApi = {
     // Create presigned upload URL
-    createUpload: async (data: { filename: string; contentType: string }): Promise<{ key: string; url: string; expiresIn: number }> => {
+    createUpload: async (data: {
+        filename: string
+        contentType: string
+    }): Promise<{ key: string; url: string; expiresIn: number }> => {
         const response = await api.post('/storage/uploads', data)
         return response.data
     },
-    createDownload: async (data: { key: string }): Promise<{ url: string; expiresIn: number }> => {
+    createDownload: async (data: {
+        key: string
+    }): Promise<{ url: string; expiresIn: number }> => {
         const response = await api.post('/storage/downloads', data)
+        return response.data
+    },
+    // Verify upload and get metadata
+    verify: async (data: {
+        key: string
+    }): Promise<{
+        key: string
+        metadata: {
+            filename: string
+            ext: string
+            size: number
+            contentType: string
+            timestamp: number
+        }
+    }> => {
+        const response = await api.post('/storage/uploads/verify', data)
         return response.data
     },
 }
