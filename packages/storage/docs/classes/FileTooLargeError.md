@@ -6,7 +6,7 @@
 
 # Class: FileTooLargeError
 
-Defined in: [shared/errors/errors.ts:33](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/storage/src/shared/errors/errors.ts#L33)
+Defined in: [shared/errors/errors.ts:33](https://github.com/TogetherCrew/reputo/blob/7ce1d253271f56ea8d742827bb41a3600a765412/packages/storage/src/shared/errors/errors.ts#L33)
 
 Error thrown when a file exceeds the maximum allowed size.
 
@@ -23,7 +23,7 @@ or handle it according to their error handling strategy.
 
 > **new FileTooLargeError**(`maxSizeBytes`): `FileTooLargeError`
 
-Defined in: [shared/errors/errors.ts:44](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/storage/src/shared/errors/errors.ts#L44)
+Defined in: [shared/errors/errors.ts:44](https://github.com/TogetherCrew/reputo/blob/7ce1d253271f56ea8d742827bb41a3600a765412/packages/storage/src/shared/errors/errors.ts#L44)
 
 Creates a new FileTooLargeError instance.
 
@@ -49,6 +49,6 @@ The maximum allowed file size in bytes
 
 > `readonly` **maxSizeBytes**: `number`
 
-Defined in: [shared/errors/errors.ts:37](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/storage/src/shared/errors/errors.ts#L37)
+Defined in: [shared/errors/errors.ts:37](https://github.com/TogetherCrew/reputo/blob/7ce1d253271f56ea8d742827bb41a3600a765412/packages/storage/src/shared/errors/errors.ts#L37)
 
 Maximum allowed file size in bytes.

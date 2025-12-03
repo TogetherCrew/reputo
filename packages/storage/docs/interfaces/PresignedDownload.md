@@ -6,7 +6,7 @@
 
 # Interface: PresignedDownload
 
-Defined in: [shared/types/types.ts:124](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/storage/src/shared/types/types.ts#L124)
+Defined in: [shared/types/types.ts:124](https://github.com/TogetherCrew/reputo/blob/7ce1d253271f56ea8d742827bb41a3600a765412/packages/storage/src/shared/types/types.ts#L124)
 
 Response from generating a presigned download URL.
 Includes metadata about the object being downloaded.
@@ -17,7 +17,7 @@ Includes metadata about the object being downloaded.
 
 > **url**: `string`
 
-Defined in: [shared/types/types.ts:129](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/storage/src/shared/types/types.ts#L129)
+Defined in: [shared/types/types.ts:129](https://github.com/TogetherCrew/reputo/blob/7ce1d253271f56ea8d742827bb41a3600a765412/packages/storage/src/shared/types/types.ts#L129)
 
 Presigned URL for downloading the file.
 Valid for the duration specified in presignGetTtl.
@@ -28,7 +28,7 @@ Valid for the duration specified in presignGetTtl.
 
 > **expiresIn**: `number`
 
-Defined in: [shared/types/types.ts:134](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/storage/src/shared/types/types.ts#L134)
+Defined in: [shared/types/types.ts:134](https://github.com/TogetherCrew/reputo/blob/7ce1d253271f56ea8d742827bb41a3600a765412/packages/storage/src/shared/types/types.ts#L134)
 
 Number of seconds until the URL expires.
 
@@ -38,6 +38,6 @@ Number of seconds until the URL expires.
 
 > **metadata**: [`StorageMetadata`](StorageMetadata.md)
 
-Defined in: [shared/types/types.ts:139](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/storage/src/shared/types/types.ts#L139)
+Defined in: [shared/types/types.ts:139](https://github.com/TogetherCrew/reputo/blob/7ce1d253271f56ea8d742827bb41a3600a765412/packages/storage/src/shared/types/types.ts#L139)
 
 Complete metadata about the object.

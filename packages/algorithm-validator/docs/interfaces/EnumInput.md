@@ -6,7 +6,7 @@
 
 # Interface: EnumInput
 
-Defined in: [packages/algorithm-validator/src/types.ts:115](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/algorithm-validator/src/types.ts#L115)
+Defined in: [packages/algorithm-validator/src/types.ts:115](https://github.com/TogetherCrew/reputo/blob/7ce1d253271f56ea8d742827bb41a3600a765412/packages/algorithm-validator/src/types.ts#L115)
 
 Enum input with predefined options.
 
@@ -20,7 +20,7 @@ Enum input with predefined options.
 
 > **key**: `string`
 
-Defined in: [packages/algorithm-validator/src/types.ts:61](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/algorithm-validator/src/types.ts#L61)
+Defined in: [packages/algorithm-validator/src/types.ts:61](https://github.com/TogetherCrew/reputo/blob/7ce1d253271f56ea8d742827bb41a3600a765412/packages/algorithm-validator/src/types.ts#L61)
 
 Unique key identifier for the input
 
@@ -34,7 +34,7 @@ Unique key identifier for the input
 
 > **label**: `string`
 
-Defined in: [packages/algorithm-validator/src/types.ts:63](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/algorithm-validator/src/types.ts#L63)
+Defined in: [packages/algorithm-validator/src/types.ts:63](https://github.com/TogetherCrew/reputo/blob/7ce1d253271f56ea8d742827bb41a3600a765412/packages/algorithm-validator/src/types.ts#L63)
 
 Human-readable label for the input
 
@@ -48,7 +48,7 @@ Human-readable label for the input
 
 > `optional` **description**: `string`
 
-Defined in: [packages/algorithm-validator/src/types.ts:65](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/algorithm-validator/src/types.ts#L65)
+Defined in: [packages/algorithm-validator/src/types.ts:65](https://github.com/TogetherCrew/reputo/blob/7ce1d253271f56ea8d742827bb41a3600a765412/packages/algorithm-validator/src/types.ts#L65)
 
 Optional description of the input
 
@@ -62,7 +62,7 @@ Optional description of the input
 
 > `optional` **required**: `boolean`
 
-Defined in: [packages/algorithm-validator/src/types.ts:67](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/algorithm-validator/src/types.ts#L67)
+Defined in: [packages/algorithm-validator/src/types.ts:67](https://github.com/TogetherCrew/reputo/blob/7ce1d253271f56ea8d742827bb41a3600a765412/packages/algorithm-validator/src/types.ts#L67)
 
 Whether the input is required (default: true)
 
@@ -76,7 +76,7 @@ Whether the input is required (default: true)
 
 > **type**: `"enum"`
 
-Defined in: [packages/algorithm-validator/src/types.ts:116](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/algorithm-validator/src/types.ts#L116)
+Defined in: [packages/algorithm-validator/src/types.ts:116](https://github.com/TogetherCrew/reputo/blob/7ce1d253271f56ea8d742827bb41a3600a765412/packages/algorithm-validator/src/types.ts#L116)
 
 ***
 
@@ -84,6 +84,6 @@ Defined in: [packages/algorithm-validator/src/types.ts:116](https://github.com/T
 
 > **enum**: `string`[]
 
-Defined in: [packages/algorithm-validator/src/types.ts:118](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/algorithm-validator/src/types.ts#L118)
+Defined in: [packages/algorithm-validator/src/types.ts:118](https://github.com/TogetherCrew/reputo/blob/7ce1d253271f56ea8d742827bb41a3600a765412/packages/algorithm-validator/src/types.ts#L118)
 
 Array of allowed values

@@ -6,7 +6,7 @@
 
 # Interface: SliderInput
 
-Defined in: [packages/algorithm-validator/src/types.ts:133](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/algorithm-validator/src/types.ts#L133)
+Defined in: [packages/algorithm-validator/src/types.ts:133](https://github.com/TogetherCrew/reputo/blob/7ce1d253271f56ea8d742827bb41a3600a765412/packages/algorithm-validator/src/types.ts#L133)
 
 Slider input for numeric ranges (typically used in UI components).
 
@@ -20,7 +20,7 @@ Slider input for numeric ranges (typically used in UI components).
 
 > **key**: `string`
 
-Defined in: [packages/algorithm-validator/src/types.ts:61](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/algorithm-validator/src/types.ts#L61)
+Defined in: [packages/algorithm-validator/src/types.ts:61](https://github.com/TogetherCrew/reputo/blob/7ce1d253271f56ea8d742827bb41a3600a765412/packages/algorithm-validator/src/types.ts#L61)
 
 Unique key identifier for the input
 
@@ -34,7 +34,7 @@ Unique key identifier for the input
 
 > **label**: `string`
 
-Defined in: [packages/algorithm-validator/src/types.ts:63](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/algorithm-validator/src/types.ts#L63)
+Defined in: [packages/algorithm-validator/src/types.ts:63](https://github.com/TogetherCrew/reputo/blob/7ce1d253271f56ea8d742827bb41a3600a765412/packages/algorithm-validator/src/types.ts#L63)
 
 Human-readable label for the input
 
@@ -48,7 +48,7 @@ Human-readable label for the input
 
 > `optional` **description**: `string`
 
-Defined in: [packages/algorithm-validator/src/types.ts:65](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/algorithm-validator/src/types.ts#L65)
+Defined in: [packages/algorithm-validator/src/types.ts:65](https://github.com/TogetherCrew/reputo/blob/7ce1d253271f56ea8d742827bb41a3600a765412/packages/algorithm-validator/src/types.ts#L65)
 
 Optional description of the input
 
@@ -62,7 +62,7 @@ Optional description of the input
 
 > `optional` **required**: `boolean`
 
-Defined in: [packages/algorithm-validator/src/types.ts:67](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/algorithm-validator/src/types.ts#L67)
+Defined in: [packages/algorithm-validator/src/types.ts:67](https://github.com/TogetherCrew/reputo/blob/7ce1d253271f56ea8d742827bb41a3600a765412/packages/algorithm-validator/src/types.ts#L67)
 
 Whether the input is required (default: true)
 
@@ -76,7 +76,7 @@ Whether the input is required (default: true)
 
 > **type**: `"slider"`
 
-Defined in: [packages/algorithm-validator/src/types.ts:134](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/algorithm-validator/src/types.ts#L134)
+Defined in: [packages/algorithm-validator/src/types.ts:134](https://github.com/TogetherCrew/reputo/blob/7ce1d253271f56ea8d742827bb41a3600a765412/packages/algorithm-validator/src/types.ts#L134)
 
 ***
 
@@ -84,7 +84,7 @@ Defined in: [packages/algorithm-validator/src/types.ts:134](https://github.com/T
 
 > **min**: `number`
 
-Defined in: [packages/algorithm-validator/src/types.ts:136](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/algorithm-validator/src/types.ts#L136)
+Defined in: [packages/algorithm-validator/src/types.ts:136](https://github.com/TogetherCrew/reputo/blob/7ce1d253271f56ea8d742827bb41a3600a765412/packages/algorithm-validator/src/types.ts#L136)
 
 Minimum value
 
@@ -94,7 +94,7 @@ Minimum value
 
 > **max**: `number`
 
-Defined in: [packages/algorithm-validator/src/types.ts:138](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/algorithm-validator/src/types.ts#L138)
+Defined in: [packages/algorithm-validator/src/types.ts:138](https://github.com/TogetherCrew/reputo/blob/7ce1d253271f56ea8d742827bb41a3600a765412/packages/algorithm-validator/src/types.ts#L138)
 
 Maximum value
 
@@ -104,6 +104,6 @@ Maximum value
 
 > `optional` **step**: `number`
 
-Defined in: [packages/algorithm-validator/src/types.ts:140](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/algorithm-validator/src/types.ts#L140)
+Defined in: [packages/algorithm-validator/src/types.ts:140](https://github.com/TogetherCrew/reputo/blob/7ce1d253271f56ea8d742827bb41a3600a765412/packages/algorithm-validator/src/types.ts#L140)
 
 Step increment (optional)

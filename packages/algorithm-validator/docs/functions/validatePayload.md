@@ -8,7 +8,7 @@
 
 > **validatePayload**(`schema`, `payload`): [`ValidationResult`](../interfaces/ValidationResult.md)
 
-Defined in: [packages/algorithm-validator/src/validation.ts:42](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/algorithm-validator/src/validation.ts#L42)
+Defined in: [packages/algorithm-validator/src/validation.ts:42](https://github.com/TogetherCrew/reputo/blob/7ce1d253271f56ea8d742827bb41a3600a765412/packages/algorithm-validator/src/validation.ts#L42)
 
 Validates data against a ReputoSchema definition.
 

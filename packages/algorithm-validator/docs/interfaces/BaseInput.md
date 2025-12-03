@@ -6,7 +6,7 @@
 
 # Interface: BaseInput
 
-Defined in: [packages/algorithm-validator/src/types.ts:59](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/algorithm-validator/src/types.ts#L59)
+Defined in: [packages/algorithm-validator/src/types.ts:59](https://github.com/TogetherCrew/reputo/blob/7ce1d253271f56ea8d742827bb41a3600a765412/packages/algorithm-validator/src/types.ts#L59)
 
 Base interface for all input types.
 
@@ -28,7 +28,7 @@ All input types extend this interface with type-specific properties.
 
 > **key**: `string`
 
-Defined in: [packages/algorithm-validator/src/types.ts:61](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/algorithm-validator/src/types.ts#L61)
+Defined in: [packages/algorithm-validator/src/types.ts:61](https://github.com/TogetherCrew/reputo/blob/7ce1d253271f56ea8d742827bb41a3600a765412/packages/algorithm-validator/src/types.ts#L61)
 
 Unique key identifier for the input
 
@@ -38,7 +38,7 @@ Unique key identifier for the input
 
 > **label**: `string`
 
-Defined in: [packages/algorithm-validator/src/types.ts:63](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/algorithm-validator/src/types.ts#L63)
+Defined in: [packages/algorithm-validator/src/types.ts:63](https://github.com/TogetherCrew/reputo/blob/7ce1d253271f56ea8d742827bb41a3600a765412/packages/algorithm-validator/src/types.ts#L63)
 
 Human-readable label for the input
 
@@ -48,7 +48,7 @@ Human-readable label for the input
 
 > `optional` **description**: `string`
 
-Defined in: [packages/algorithm-validator/src/types.ts:65](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/algorithm-validator/src/types.ts#L65)
+Defined in: [packages/algorithm-validator/src/types.ts:65](https://github.com/TogetherCrew/reputo/blob/7ce1d253271f56ea8d742827bb41a3600a765412/packages/algorithm-validator/src/types.ts#L65)
 
 Optional description of the input
 
@@ -58,6 +58,6 @@ Optional description of the input
 
 > `optional` **required**: `boolean`
 
-Defined in: [packages/algorithm-validator/src/types.ts:67](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/algorithm-validator/src/types.ts#L67)
+Defined in: [packages/algorithm-validator/src/types.ts:67](https://github.com/TogetherCrew/reputo/blob/7ce1d253271f56ea8d742827bb41a3600a765412/packages/algorithm-validator/src/types.ts#L67)
 
 Whether the input is required (default: true)

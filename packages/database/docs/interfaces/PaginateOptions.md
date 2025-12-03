@@ -6,7 +6,7 @@
 
 # Interface: PaginateOptions
 
-Defined in: [packages/database/src/shared/plugins/paginate.plugin.ts:6](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/database/src/shared/plugins/paginate.plugin.ts#L6)
+Defined in: [packages/database/src/shared/plugins/paginate.plugin.ts:6](https://github.com/TogetherCrew/reputo/blob/7ce1d253271f56ea8d742827bb41a3600a765412/packages/database/src/shared/plugins/paginate.plugin.ts#L6)
 
 Options for pagination query
 
@@ -16,7 +16,7 @@ Options for pagination query
 
 > `optional` **sortBy**: `string`
 
-Defined in: [packages/database/src/shared/plugins/paginate.plugin.ts:8](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/database/src/shared/plugins/paginate.plugin.ts#L8)
+Defined in: [packages/database/src/shared/plugins/paginate.plugin.ts:8](https://github.com/TogetherCrew/reputo/blob/7ce1d253271f56ea8d742827bb41a3600a765412/packages/database/src/shared/plugins/paginate.plugin.ts#L8)
 
 Sorting criteria using the format: sortField:(desc|asc). Multiple sorting criteria should be separated by commas
 
@@ -26,7 +26,7 @@ Sorting criteria using the format: sortField:(desc|asc). Multiple sorting criter
 
 > `optional` **populate**: `string` \| `PopulateOptions` \| (`string` \| `PopulateOptions`)[]
 
-Defined in: [packages/database/src/shared/plugins/paginate.plugin.ts:10](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/database/src/shared/plugins/paginate.plugin.ts#L10)
+Defined in: [packages/database/src/shared/plugins/paginate.plugin.ts:10](https://github.com/TogetherCrew/reputo/blob/7ce1d253271f56ea8d742827bb41a3600a765412/packages/database/src/shared/plugins/paginate.plugin.ts#L10)
 
 Populate data fields. Can be a string, object, or array of populate options
 
@@ -36,7 +36,7 @@ Populate data fields. Can be a string, object, or array of populate options
 
 > `optional` **limit**: `string` \| `number`
 
-Defined in: [packages/database/src/shared/plugins/paginate.plugin.ts:12](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/database/src/shared/plugins/paginate.plugin.ts#L12)
+Defined in: [packages/database/src/shared/plugins/paginate.plugin.ts:12](https://github.com/TogetherCrew/reputo/blob/7ce1d253271f56ea8d742827bb41a3600a765412/packages/database/src/shared/plugins/paginate.plugin.ts#L12)
 
 Maximum number of results per page (default = 10)
 
@@ -46,7 +46,7 @@ Maximum number of results per page (default = 10)
 
 > `optional` **page**: `string` \| `number`
 
-Defined in: [packages/database/src/shared/plugins/paginate.plugin.ts:14](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/database/src/shared/plugins/paginate.plugin.ts#L14)
+Defined in: [packages/database/src/shared/plugins/paginate.plugin.ts:14](https://github.com/TogetherCrew/reputo/blob/7ce1d253271f56ea8d742827bb41a3600a765412/packages/database/src/shared/plugins/paginate.plugin.ts#L14)
 
 Current page (default = 1)
 
@@ -56,6 +56,6 @@ Current page (default = 1)
 
 > `optional` **skip**: `number`
 
-Defined in: [packages/database/src/shared/plugins/paginate.plugin.ts:16](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/database/src/shared/plugins/paginate.plugin.ts#L16)
+Defined in: [packages/database/src/shared/plugins/paginate.plugin.ts:16](https://github.com/TogetherCrew/reputo/blob/7ce1d253271f56ea8d742827bb41a3600a765412/packages/database/src/shared/plugins/paginate.plugin.ts#L16)
 
 Number of documents to skip (calculated automatically if not provided)
