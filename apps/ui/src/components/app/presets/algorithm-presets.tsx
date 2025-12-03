@@ -61,6 +61,8 @@ export function AlgorithmPresets({ algo }: { algo?: Algorithm }) {
   const [presetToEdit, setPresetToEdit] =
     useState<AlgorithmPresetResponseDto | null>(null);
   const [runningPresetId, setRunningPresetId] = useState<string | null>(null);
+  const [updatingPresetId, setUpdatingPresetId] = useState<string | null>(null);
+  const [deletingPresetId, setDeletingPresetId] = useState<string | null>(null);
 
   // API hooks
   const {
@@ -97,21 +99,29 @@ export function AlgorithmPresets({ algo }: { algo?: Algorithm }) {
 
   const handleUpdatePreset = async (data: UpdateAlgorithmPresetDto) => {
     if (!presetToEdit) return;
-    await updatePresetMutation.mutateAsync({
-      id: presetToEdit._id,
-      data,
-    });
+    setUpdatingPresetId(presetToEdit._id);
+    try {
+      await updatePresetMutation.mutateAsync({
+        id: presetToEdit._id,
+        data,
+      });
+    } finally {
+      setUpdatingPresetId(null);
+    }
   };
 
   const confirmDeletePreset = async () => {
     if (!presetToDelete) return;
 
+    setDeletingPresetId(presetToDelete);
     try {
       await deletePresetMutation.mutateAsync(presetToDelete);
       setIsDeleteDialogOpen(false);
       setPresetToDelete(null);
     } catch (error) {
       console.error("Failed to delete preset:", error);
+    } finally {
+      setDeletingPresetId(null);
     }
   };
 
@@ -283,9 +293,9 @@ export function AlgorithmPresets({ algo }: { algo?: Algorithm }) {
                         size="icon"
                         aria-label="Edit"
                         onClick={() => handleEditPreset(preset)}
-                        disabled={updatePresetMutation.isPending}
+                        disabled={updatingPresetId === preset._id}
                       >
-                        {updatePresetMutation.isPending ? (
+                        {updatingPresetId === preset._id ? (
                           <Loader2 className="size-4 animate-spin" />
                         ) : (
                           <Edit className="size-4" />
@@ -296,9 +306,9 @@ export function AlgorithmPresets({ algo }: { algo?: Algorithm }) {
                         size="icon"
                         aria-label="Delete"
                         onClick={() => handleDeletePreset(preset._id)}
-                        disabled={deletePresetMutation.isPending}
+                        disabled={deletingPresetId === preset._id}
                       >
-                        {deletePresetMutation.isPending ? (
+                        {deletingPresetId === preset._id ? (
                           <Loader2 className="size-4 animate-spin" />
                         ) : (
                           <Trash2 className="size-4" />

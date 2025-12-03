@@ -1,7 +1,7 @@
 "use client";
 
 import { AlertCircle, CheckCircle2 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { Control, FieldValues } from "react-hook-form";
 import { useFormContext } from "react-hook-form";
 import { Dropzone, DropzoneContent, DropzoneEmptyState } from "@/components/app/dropzone";
@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/form";
 import { Spinner } from "@/components/ui/spinner";
 import { storageApi } from "@/lib/api/services";
+import { useFormUploadOptional } from "../form-context";
 import type { CSVInput } from "../types";
 import { validateCSVContent } from "../validation";
 
@@ -26,12 +27,23 @@ interface CSVFieldProps {
 
 export function CSVField({ input, control }: CSVFieldProps) {
   const { setError, clearErrors } = useFormContext<FieldValues>();
+  const formUpload = useFormUploadOptional();
   const [validationResult, setValidationResult] = useState<{
     valid: boolean;
     errors: string[];
   } | null>(null);
   const [isValidating, setIsValidating] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+
+  // Track the combined busy state
+  const isBusy = isUploading || isValidating;
+
+  // Notify form context when uploading state changes
+  useEffect(() => {
+    if (formUpload) {
+      formUpload.setFieldUploading(input.key, isBusy);
+    }
+  }, [isBusy, input.key, formUpload]);
 
   const handleFileChange = async (file: File | null, onChange: (value: File | string | null) => void) => {
     // Clear previous validation state
