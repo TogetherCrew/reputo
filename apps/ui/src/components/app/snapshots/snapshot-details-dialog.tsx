@@ -1,8 +1,5 @@
 'use client'
 
-import { Download, Eye } from 'lucide-react'
-import { useState } from 'react'
-import { CSVViewerDialog } from '@/components/app/csv/csv-viewer-dialog'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -13,8 +10,8 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog'
-import { storageApi } from '@/lib/api/services'
 import type { SnapshotResponseDto } from '@/lib/api/types'
+import { FileDisplay } from '../file-display'
 
 interface SnapshotDetailsDialogProps {
     isOpen: boolean
@@ -22,14 +19,19 @@ interface SnapshotDetailsDialogProps {
     snapshot: SnapshotResponseDto | null
 }
 
+/**
+ * Check if a value looks like a storage key (file path)
+ */
+function isStorageKey(value: unknown): value is string {
+    if (typeof value !== 'string' || !value) return false
+    return value.includes('/') || value.startsWith('uploads/')
+}
+
 export function SnapshotDetailsDialog({
     isOpen,
     onClose,
     snapshot,
 }: SnapshotDetailsDialogProps) {
-    const [csvViewerOpen, setCsvViewerOpen] = useState(false)
-    const [csvHref, setCsvHref] = useState<string | null>(null)
-
     const getStatusBadge = (status: string) => {
         switch (status) {
             case 'running':
@@ -165,35 +167,21 @@ export function SnapshotDetailsDialog({
                                     <h3 className="text-sm font-medium text-muted-foreground mb-3">
                                         Outputs
                                     </h3>
-                                    <div className="space-y-2">
+                                    <div className="space-y-2 pb-4">
                                         {Object.entries(snapshot.outputs).map(
                                             ([key, value]) => {
-                                                const isStringValue =
-                                                    typeof value === 'string'
-                                                // Check if it's a public file (starts with / or is a filename)
-                                                const isPublicFile =
-                                                    isStringValue &&
-                                                    (value.startsWith('/') ||
-                                                        value.startsWith(
-                                                            'sample-'
-                                                        ) ||
-                                                        /^[^\/]+\.(csv|json|txt|pdf)$/i.test(
-                                                            value
-                                                        ))
-                                                const isCsvFile =
-                                                    isStringValue &&
-                                                    (value
-                                                        .toLowerCase()
-                                                        .endsWith('.csv') ||
-                                                        key.toLowerCase() ===
-                                                            'csv')
-                                                // Construct file path for public folder
-                                                const filePath = isPublicFile
-                                                    ? value.startsWith('/')
-                                                        ? value
-                                                        : `/${value}`
-                                                    : null
+                                                // Check if value is a storage key (file)
+                                                if (isStorageKey(value)) {
+                                                    return (
+                                                        <FileDisplay
+                                                            key={key}
+                                                            label={key}
+                                                            storageKey={value}
+                                                        />
+                                                    )
+                                                }
 
+                                                // Non-file value
                                                 return (
                                                     <div
                                                         key={key}
@@ -202,8 +190,7 @@ export function SnapshotDetailsDialog({
                                                         <div className="font-medium mb-2">
                                                             {key}
                                                         </div>
-                                                        <div className="flex items-center justify-between gap-3">
-                                                            <div className="text-sm text-muted-foreground break-all flex-1">
+                                                        <div className="text-sm text-muted-foreground break-all">
                                                                 {typeof value ===
                                                                 'object'
                                                                     ? JSON.stringify(
@@ -211,99 +198,7 @@ export function SnapshotDetailsDialog({
                                                                           null,
                                                                           2
                                                                       )
-                                                                    : String(
-                                                                          value
-                                                                      )}
-                                                            </div>
-                                                            <div className="flex items-center gap-2 shrink-0">
-                                                                {filePath && (
-                                                                    <>
-                                                                        <Button
-                                                                            size="sm"
-                                                                            variant="outline"
-                                                                            onClick={() => {
-                                                                                window.open(
-                                                                                    filePath,
-                                                                                    '_blank',
-                                                                                    'noopener,noreferrer'
-                                                                                )
-                                                                            }}
-                                                                            className="gap-2"
-                                                                        >
-                                                                            <Download className="size-3" />
-                                                                            Download
-                                                                        </Button>
-                                                                        {isCsvFile && (
-                                                                            <Button
-                                                                                size="sm"
-                                                                                variant="outline"
-                                                                                onClick={() => {
-                                                                                    setCsvHref(
-                                                                                        filePath
-                                                                                    )
-                                                                                    setCsvViewerOpen(
-                                                                                        true
-                                                                                    )
-                                                                                }}
-                                                                                className="gap-2"
-                                                                            >
-                                                                                <Eye className="size-3" />
-                                                                                View
-                                                                            </Button>
-                                                                        )}
-                                                                    </>
-                                                                )}
-                                                                {!filePath &&
-                                                                    isStringValue &&
-                                                                    !/^https?:\/\//i.test(
-                                                                        value
-                                                                    ) && (
-                                                                        <Button
-                                                                            size="sm"
-                                                                            variant="secondary"
-                                                                            onClick={async () => {
-                                                                                try {
-                                                                                    const val =
-                                                                                        value as string
-                                                                                    let url =
-                                                                                        val
-                                                                                    if (
-                                                                                        !/^https?:\/\//i.test(
-                                                                                            val
-                                                                                        )
-                                                                                    ) {
-                                                                                        const res =
-                                                                                            await storageApi.createDownload(
-                                                                                                {
-                                                                                                    key: val,
-                                                                                                }
-                                                                                            )
-                                                                                        url =
-                                                                                            res.url
-                                                                                    }
-                                                                                    setCsvHref(
-                                                                                        url
-                                                                                    )
-                                                                                    setCsvViewerOpen(
-                                                                                        true
-                                                                                    )
-                                                                                } catch (e) {
-                                                                                    console.error(
-                                                                                        e
-                                                                                    )
-                                                                                    alert(
-                                                                                        'Unable to open CSV viewer'
-                                                                                    )
-                                                                                }
-                                                                            }}
-                                                                            className="gap-2"
-                                                                        >
-                                                                            <Eye className="size-3" />
-                                                                            View
-                                                                            CSV
-                                                                        </Button>
-                                                                    )}
-                                                            </div>
+                                                                : String(value)}
                                                         </div>
                                                     </div>
                                                 )
@@ -320,12 +215,6 @@ export function SnapshotDetailsDialog({
                     </Button>
                 </DialogFooter>
             </DialogContent>
-            <CSVViewerDialog
-                isOpen={csvViewerOpen}
-                onClose={() => setCsvViewerOpen(false)}
-                href={csvHref}
-                title="CSV Output Preview"
-            />
         </Dialog>
     )
 }

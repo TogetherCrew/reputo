@@ -104,6 +104,22 @@ export const storageApi = {
         const response = await api.post('/storage/downloads', data)
         return response.data
     },
+    // Verify upload and get metadata
+    verify: async (data: {
+        key: string
+    }): Promise<{
+        key: string
+        metadata: {
+            filename: string
+            ext: string
+            size: number
+            contentType: string
+            timestamp: number
+        }
+    }> => {
+        const response = await api.post('/storage/uploads/verify', data)
+        return response.data
+    },
 }
 
 export { api }
