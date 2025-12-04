@@ -1,111 +1,118 @@
-"use client";
+"use client"
 
-import { Download, Eye, FileIcon, Loader2 } from "lucide-react";
-import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { storageApi } from "@/lib/api/services";
-import { CSVViewerDialog } from "./csv/csv-viewer-dialog";
+import { Download, Eye, FileIcon, Loader2 } from "lucide-react"
+import { useEffect, useState } from "react"
+import { Button } from "@/components/ui/button"
+import { storageApi } from "@/lib/api/services"
+import { CSVViewerDialog } from "./csv/csv-viewer-dialog"
 
 interface FileMetadata {
-  filename: string;
-  ext: string;
-  size: number;
-  contentType: string;
-  timestamp: number;
+  filename: string
+  ext: string
+  size: number
+  contentType: string
+  timestamp: number
 }
 
 interface FileDisplayProps {
   /** The label/key to display for this file */
-  label: string;
+  label: string
   /** The storage key (e.g., "uploads/123/file.csv") */
-  storageKey: string;
+  storageKey: string
   /** Optional class name for the container */
-  className?: string;
+  className?: string
 }
 
 /**
  * Formats file size in a human-readable format
  */
 function formatFileSize(bytes: number): string {
-  if (bytes === 0) return "0 B";
-  const k = 1024;
-  const sizes = ["B", "KB", "MB", "GB"];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return `${Number.parseFloat((bytes / k ** i).toFixed(1))} ${sizes[i]}`;
+  if (bytes === 0) return "0 B"
+  const k = 1024
+  const sizes = ["B", "KB", "MB", "GB"]
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+  return `${Number.parseFloat((bytes / k ** i).toFixed(1))} ${sizes[i]}`
 }
 
 /**
  * Shared component for displaying file inputs/outputs with download and view options.
  * Fetches the original filename from the storage verify API.
  */
-export function FileDisplay({ label, storageKey, className }: FileDisplayProps) {
-  const [metadata, setMetadata] = useState<FileMetadata | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [csvViewerOpen, setCsvViewerOpen] = useState(false);
-  const [csvHref, setCsvHref] = useState<string | null>(null);
-  const [isDownloading, setIsDownloading] = useState(false);
+export function FileDisplay({
+  label,
+  storageKey,
+  className,
+}: FileDisplayProps) {
+  const [metadata, setMetadata] = useState<FileMetadata | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [csvViewerOpen, setCsvViewerOpen] = useState(false)
+  const [csvHref, setCsvHref] = useState<string | null>(null)
+  const [isDownloading, setIsDownloading] = useState(false)
 
   // Fetch metadata on mount
   useEffect(() => {
     async function fetchMetadata() {
       if (!storageKey) {
-        setIsLoading(false);
-        return;
+        setIsLoading(false)
+        return
       }
 
       try {
-        const result = await storageApi.verify({ key: storageKey });
-        setMetadata(result.metadata);
+        const result = await storageApi.verify({ key: storageKey })
+        setMetadata(result.metadata)
       } catch (err) {
-        console.error("Failed to fetch file metadata:", err);
+        console.error("Failed to fetch file metadata:", err)
         // Fallback: extract filename from key
-        const fallbackFilename = storageKey.split("/").pop() || storageKey;
+        const fallbackFilename = storageKey.split("/").pop() || storageKey
         setMetadata({
           filename: fallbackFilename,
           ext: fallbackFilename.split(".").pop() || "",
           size: 0,
           contentType: "application/octet-stream",
           timestamp: 0,
-        });
+        })
       } finally {
-        setIsLoading(false);
+        setIsLoading(false)
       }
     }
 
-    fetchMetadata();
-  }, [storageKey]);
+    fetchMetadata()
+  }, [storageKey])
 
   const handleDownload = async () => {
-    setIsDownloading(true);
+    setIsDownloading(true)
     try {
-      const { url } = await storageApi.createDownload({ key: storageKey });
-      window.open(url, "_blank", "noopener,noreferrer");
+      const { url } = await storageApi.createDownload({ key: storageKey })
+      window.open(url, "_blank", "noopener,noreferrer")
     } catch (err) {
-      console.error("Failed to create download link:", err);
-      alert("Failed to create download link");
+      console.error("Failed to create download link:", err)
+      alert("Failed to create download link")
     } finally {
-      setIsDownloading(false);
+      setIsDownloading(false)
     }
-  };
+  }
 
   const handleView = async () => {
     try {
-      const { url } = await storageApi.createDownload({ key: storageKey });
-      setCsvHref(url);
-      setCsvViewerOpen(true);
+      const { url } = await storageApi.createDownload({ key: storageKey })
+      setCsvHref(url)
+      setCsvViewerOpen(true)
     } catch (err) {
-      console.error("Failed to open viewer:", err);
-      alert("Unable to open CSV viewer");
+      console.error("Failed to open viewer:", err)
+      alert("Unable to open CSV viewer")
     }
-  };
+  }
 
-  const isCsvFile = metadata?.ext?.toLowerCase() === "csv" || 
+  const isCsvFile =
+    metadata?.ext?.toLowerCase() === "csv" ||
     metadata?.contentType === "text/csv" ||
-    storageKey.toLowerCase().endsWith(".csv");
+    storageKey.toLowerCase().endsWith(".csv")
 
   return (
     <>
-      <div className={`flex items-center justify-between p-3 border rounded-lg ${className || ""}`}>
+      <div
+        className={`flex items-center justify-between p-3 border rounded-lg ${className || ""}`}
+      >
         <div className="flex items-center gap-3 flex-1 min-w-0">
           <div className="shrink-0">
             <FileIcon className="size-5 text-muted-foreground" />
@@ -118,14 +125,22 @@ export function FileDisplay({ label, storageKey, className }: FileDisplayProps) 
                 <span>Loading file info...</span>
               </div>
             ) : metadata ? (
-              <div className="text-sm text-muted-foreground truncate" title={metadata.filename}>
+              <div
+                className="text-sm text-muted-foreground truncate"
+                title={metadata.filename}
+              >
                 {metadata.filename}
                 {metadata.size > 0 && (
-                  <span className="ml-2 text-xs">({formatFileSize(metadata.size)})</span>
+                  <span className="ml-2 text-xs">
+                    ({formatFileSize(metadata.size)})
+                  </span>
                 )}
               </div>
             ) : (
-              <div className="text-sm text-muted-foreground truncate" title={storageKey}>
+              <div
+                className="text-sm text-muted-foreground truncate"
+                title={storageKey}
+              >
                 {storageKey.split("/").pop() || storageKey}
               </div>
             )}
@@ -166,6 +181,5 @@ export function FileDisplay({ label, storageKey, className }: FileDisplayProps) 
         title={`Preview: ${metadata?.filename || "File"}`}
       />
     </>
-  );
+  )
 }
-

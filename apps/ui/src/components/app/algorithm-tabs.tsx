@@ -1,23 +1,23 @@
-"use client";
+"use client"
 
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { AlgorithmPresets } from "@/components/app/presets/algorithm-presets";
-import { AlgorithmSnapshots } from "@/components/app/snapshots/algorithm-snapshots";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import type { Algorithm } from "@/core/algorithms";
+import { usePathname, useRouter, useSearchParams } from "next/navigation"
+import { AlgorithmPresets } from "@/components/app/presets/algorithm-presets"
+import { AlgorithmSnapshots } from "@/components/app/snapshots/algorithm-snapshots"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import type { Algorithm } from "@/core/algorithms"
 
 export function AlgorithmTabs({ algo }: { algo: Algorithm }) {
-  const searchParams = useSearchParams();
-  const pathname = usePathname();
-  const router = useRouter();
+  const searchParams = useSearchParams()
+  const pathname = usePathname()
+  const router = useRouter()
 
-  const selected = searchParams.get("tab") ?? "presets";
+  const selected = searchParams.get("tab") ?? "presets"
 
   const handleChange = (value: string) => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("tab", value);
-    router.push(`${pathname}?${params.toString()}`, { scroll: false });
-  };
+    const params = new URLSearchParams(searchParams.toString())
+    params.set("tab", value)
+    router.push(`${pathname}?${params.toString()}`, { scroll: false })
+  }
 
   return (
     <Tabs value={selected} onValueChange={handleChange} className="mt-4">
@@ -32,7 +32,5 @@ export function AlgorithmTabs({ algo }: { algo: Algorithm }) {
         <AlgorithmSnapshots algo={algo} />
       </TabsContent>
     </Tabs>
-  );
+  )
 }
-
-

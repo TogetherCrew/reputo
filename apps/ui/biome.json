@@ -1,56 +1,62 @@
 {
   "$schema": "https://biomejs.dev/schemas/2.3.7/schema.json",
-  "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
+  "root": false,
+  "extends": "//",
   "files": {
     "ignoreUnknown": true,
     "includes": ["**", "!node_modules", "!.next", "!dist", "!build"]
   },
   "formatter": {
-    "enabled": false,
-    "formatWithErrors": false,
+    "enabled": true,
     "indentStyle": "space",
     "indentWidth": 2,
-    "lineEnding": "lf",
-    "lineWidth": 80,
-    "attributePosition": "auto",
-    "bracketSameLine": false,
-    "bracketSpacing": true,
-    "expand": "auto",
-    "useEditorconfig": true
-  },
-  "linter": {
-    "enabled": true,
-    "rules": {
-      "recommended": false,
-      "style": { "useBlockStatements": "off" },
-      "suspicious": { "noUnknownAtRules": "off" },
-      "a11y": { "noLabelWithoutControl": "off" }
-    },
-    "includes": ["**", "**/fixtures/**"],
-    "domains": { "react": "recommended", "next": "recommended" }
+    "lineWidth": 80
   },
   "javascript": {
     "formatter": {
       "jsxQuoteStyle": "double",
-      "quoteProperties": "asNeeded",
-      "trailingCommas": "es5",
-      "semicolons": "asNeeded",
-      "arrowParentheses": "always",
-      "bracketSameLine": false,
       "quoteStyle": "double",
-      "attributePosition": "auto",
-      "bracketSpacing": true
+      "trailingCommas": "es5",
+      "semicolons": "asNeeded"
     }
   },
-  "html": { "formatter": { "selfCloseVoidElements": "always" } },
   "css": {
     "parser": {
       "tailwindDirectives": true
     }
   },
-  "overrides": [{ "includes": ["*.ts", "*.tsx"] }],
+  "linter": {
+    "rules": {
+      "recommended": true,
+      "style": {
+        "useBlockStatements": "off"
+      },
+      "correctness": {
+        "noUnusedFunctionParameters": "off"
+      },
+      "suspicious": {
+        "noUnknownAtRules": "off",
+        "noExplicitAny": "off",
+        "noDocumentCookie": "off"
+      },
+      "a11y": {
+        "noLabelWithoutControl": "off",
+        "useSemanticElements": "off",
+        "useFocusableInteractive": "off",
+        "useKeyWithClickEvents": "off",
+        "useAriaPropsForRole": "off"
+      }
+    },
+    "domains": {
+      "react": "recommended",
+      "next": "recommended"
+    }
+  },
   "assist": {
-    "enabled": null,
-    "actions": { "source": { "organizeImports": "on" } }
+    "actions": {
+      "source": {
+        "organizeImports": "on"
+      }
+    }
   }
 }

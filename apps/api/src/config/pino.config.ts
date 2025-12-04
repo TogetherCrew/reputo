@@ -15,7 +15,7 @@ export const pinoConfig = (configService: ConfigService) => {
             }
           : undefined,
       formatters: {
-        level: (label) => {
+        level: (label: string) => {
           return { level: label.toUpperCase() };
         },
       },

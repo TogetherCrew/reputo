@@ -1,8 +1,14 @@
-import { defineProject } from 'vitest/config';
+import { defineConfig } from 'vitest/config'
 
-export default defineProject({
-  test: {
-    environment: 'node',
-    globals: true,
-  },
-});
+export default defineConfig({
+    test: {
+        globals: true,
+        environment: 'node',
+        include: ['tests/**/*.test.ts'],
+        coverage: {
+            provider: 'v8',
+            reporter: ['text', 'html', 'lcov'],
+            exclude: ['**/dist/**', '**/node_modules/**'],
+        },
+    },
+})
