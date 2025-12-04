@@ -20,6 +20,10 @@ export default defineConfig({
     resolve: {
         alias: {
             src: resolve(__dirname, './src'),
+            '@reputo/storage': resolve(
+                __dirname,
+                '../../packages/storage/src/index.ts'
+            ),
             '@reputo/algorithm-validator': resolve(
                 __dirname,
                 '../../packages/algorithm-validator/src/index.ts'
