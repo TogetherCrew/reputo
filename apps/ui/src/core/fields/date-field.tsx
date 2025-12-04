@@ -1,6 +1,6 @@
-"use client";
+"use client"
 
-import { Control } from "react-hook-form";
+import type { Control } from "react-hook-form"
 import {
   FormControl,
   FormDescription,
@@ -8,13 +8,13 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import type { DateInput } from "@reputo/algorithm-validator";
+} from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
+import type { FormInput } from "../schema-builder"
 
 interface DateFieldProps {
-  input: DateInput;
-  control: Control<any>;
+  input: FormInput
+  control: Control<any>
 }
 
 export function DateField({ input, control }: DateFieldProps) {
@@ -26,7 +26,9 @@ export function DateField({ input, control }: DateFieldProps) {
         <FormItem>
           <FormLabel>
             {input.label}
-            {input.required !== false && <span className="text-destructive ml-1">*</span>}
+            {input.required !== false && (
+              <span className="text-destructive ml-1">*</span>
+            )}
           </FormLabel>
           <FormControl>
             <Input
@@ -43,6 +45,5 @@ export function DateField({ input, control }: DateFieldProps) {
         </FormItem>
       )}
     />
-  );
+  )
 }
-

@@ -1,6 +1,6 @@
-"use client";
+"use client"
 
-import { Control } from "react-hook-form";
+import type { Control } from "react-hook-form"
 import {
   FormControl,
   FormDescription,
@@ -8,13 +8,13 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import type { TextInput } from "@reputo/algorithm-validator";
+} from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
+import type { FormInput } from "../schema-builder"
 
 interface TextFieldProps {
-  input: TextInput;
-  control: Control<any>;
+  input: FormInput
+  control: Control<any>
 }
 
 export function TextField({ input, control }: TextFieldProps) {
@@ -26,7 +26,9 @@ export function TextField({ input, control }: TextFieldProps) {
         <FormItem>
           <FormLabel>
             {input.label}
-            {input.required !== false && <span className="text-destructive ml-1">*</span>}
+            {input.required !== false && (
+              <span className="text-destructive ml-1">*</span>
+            )}
           </FormLabel>
           <FormControl>
             <Input
@@ -42,6 +44,5 @@ export function TextField({ input, control }: TextFieldProps) {
         </FormItem>
       )}
     />
-  );
+  )
 }
-

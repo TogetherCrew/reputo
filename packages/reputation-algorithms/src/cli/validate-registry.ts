@@ -56,13 +56,13 @@ export function validateEntry(entry: RegistryEntry, validator: ReturnType<typeof
     throw new ValidationError(
       filePath,
       result.errors,
-      data['key'] as string | undefined,
-      data['version'] as string | undefined,
+      data.key as string | undefined,
+      data.version as string | undefined,
     );
   }
 
-  const contentKey = data['key'] as string;
-  const contentVersion = data['version'] as string;
+  const contentKey = data.key as string;
+  const contentVersion = data.version as string;
 
   if (folderKey !== contentKey) {
     throw new KeyMismatchError(filePath, folderKey, contentKey, filenameVersion);
@@ -80,8 +80,8 @@ export function checkDuplicates(entries: RegistryEntry[]): void {
     if (typeof entry.content !== 'object' || entry.content === null) continue;
 
     const data = entry.content as Record<string, unknown>;
-    const key = data['key'] as string;
-    const version = data['version'] as string;
+    const key = data.key as string;
+    const version = data.version as string;
 
     if (!key || !version) continue;
 

@@ -1,90 +1,16 @@
 {
-  "root": false,
-  "extends": "//",
-  "files": {
-    "includes": ["**/*.{ts,tsx,mts,cts}"]
-  },
-  "linter": {
-    "rules": {
-      "recommended": false,
-      "complexity": {
-        "noUselessTypeConstraint": "error",
-        "noAdjacentSpacesInRegex": "error",
-        "noExtraBooleanCast": "error",
-        "noUselessCatch": "error",
-        "noUselessEscapeInRegex": "error",
-        "noArguments": "error"
-      },
-      "correctness": {
-        "noUnusedVariables": "error",
-        "noConstAssign": "off",
-        "noConstantCondition": "error",
-        "noEmptyCharacterClassInRegex": "error",
-        "noEmptyPattern": "error",
-        "noGlobalObjectCalls": "off",
-        "noInvalidBuiltinInstantiation": "off",
-        "noInvalidConstructorSuper": "off",
-        "noNonoctalDecimalEscape": "error",
-        "noPrecisionLoss": "error",
-        "noSelfAssign": "error",
-        "noSetterReturn": "off",
-        "noSwitchDeclarations": "error",
-        "noUndeclaredVariables": "off",
-        "noUnreachable": "off",
-        "noUnreachableSuper": "off",
-        "noUnsafeFinally": "error",
-        "noUnsafeOptionalChaining": "error",
-        "noUnusedLabels": "error",
-        "noUnusedPrivateClassMembers": "error",
-        "useIsNan": "error",
-        "useValidForDirection": "error",
-        "useValidTypeof": "error",
-        "useYield": "error"
-      },
-      "style": {
-        "noCommonJs": "error",
-        "noNamespace": "error",
-        "useArrayLiterals": "error",
-        "useAsConstAssertion": "error",
-        "useConst": "error"
-      },
-      "suspicious": {
-        "noExplicitAny": "error",
-        "noExtraNonNullAssertion": "error",
-        "noMisleadingInstantiator": "error",
-        "noUnsafeDeclarationMerging": "error",
-        "useNamespaceKeyword": "error",
-        "noAsyncPromiseExecutor": "error",
-        "noCatchAssign": "error",
-        "noClassAssign": "off",
-        "noCompareNegZero": "error",
-        "noControlCharactersInRegex": "error",
-        "noDebugger": "error",
-        "noDuplicateCase": "error",
-        "noDuplicateClassMembers": "off",
-        "noDuplicateElseIf": "error",
-        "noDuplicateObjectKeys": "off",
-        "noDuplicateParameters": "off",
-        "noEmptyBlockStatements": "error",
-        "noFallthroughSwitchClause": "error",
-        "noFunctionAssign": "off",
-        "noGlobalAssign": "error",
-        "noImportAssign": "off",
-        "noIrregularWhitespace": "error",
-        "noMisleadingCharacterClass": "error",
-        "noPrototypeBuiltins": "error",
-        "noRedeclare": "off",
-        "noShadowRestrictedNames": "error",
-        "noSparseArray": "error",
-        "noUnsafeNegation": "off",
-        "noVar": "error",
-        "noWith": "off",
-        "useGetterReturn": "off"
-      }
+    "$schema": "https://biomejs.dev/schemas/2.3.7/schema.json",
+    "root": false,
+    "extends": "//",
+    "files": {
+        "includes": ["src/**/*.ts", "tests/**/*.ts"]
+    },
+    "linter": {
+        "rules": {
+            "recommended": true,
+            "suspicious": {
+                "noExplicitAny": "error"
+            }
+        }
     }
-  },
-  "javascript": {
-    "globals": ["exports"]
-  }
 }
-

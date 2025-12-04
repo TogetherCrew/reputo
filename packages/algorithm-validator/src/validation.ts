@@ -4,34 +4,46 @@
  */
 
 import { z } from 'zod/v4';
-import type { CSVConfig, Input, ReputoSchema, ValidationResult } from './types.js';
+import type { AlgorithmDefinition, CsvIoItem, ValidationResult } from './types/index.js';
 
 /**
- * Validates data against a ReputoSchema definition.
+ * Validates data against an AlgorithmDefinition.
  *
  * This function runs identically on both client and server, ensuring consistent
  * validation across the entire application. It builds a Zod schema from the
- * ReputoSchema and validates the payload against it.
+ * AlgorithmDefinition and validates the payload against it.
  *
- * @param schema - The ReputoSchema definition containing input/output specifications
- * @param payload - The data to validate against the schema
+ * @param definition - The AlgorithmDefinition containing input/output specifications
+ * @param payload - The data to validate against the definition
  * @returns A ValidationResult object containing either validated data or error details
  *
  * @example
  * ```typescript
- * const schema: ReputoSchema = {
+ * const definition: AlgorithmDefinition = {
  *   key: 'voting_engagement',
  *   name: 'Voting Engagement',
- *   category: 'engagement',
+ *   category: 'Engagement',
  *   description: 'Calculates engagement',
  *   version: '1.0.0',
  *   inputs: [
- *     { key: 'threshold', label: 'Threshold', type: 'number', min: 0, max: 1, required: true }
+ *     {
+ *       key: 'votes',
+ *       label: 'Votes CSV',
+ *       type: 'csv',
+ *       csv: {
+ *         hasHeader: true,
+ *         delimiter: ',',
+ *         columns: [
+ *           { key: 'user_id', type: 'string', required: true }
+ *         ]
+ *       }
+ *     }
  *   ],
- *   outputs: []
+ *   outputs: [],
+ *   runtime: { taskQueue: 'default', activity: 'calculateVotingEngagement' }
  * }
  *
- * const result = validatePayload(schema, { threshold: 0.5 })
+ * const result = validatePayload(definition, { votes: 'storage-key-123' })
  * if (result.success) {
  *   console.log('Valid:', result.data)
  * } else {
@@ -39,9 +51,9 @@ import type { CSVConfig, Input, ReputoSchema, ValidationResult } from './types.j
  * }
  * ```
  */
-export function validatePayload(schema: ReputoSchema, payload: unknown): ValidationResult {
+export function validatePayload(definition: AlgorithmDefinition, payload: unknown): ValidationResult {
   try {
-    const zodSchema = buildZodSchema(schema);
+    const zodSchema = buildZodSchema(definition);
     const result = zodSchema.safeParse(payload);
 
     if (result.success) {
@@ -72,28 +84,28 @@ export function validatePayload(schema: ReputoSchema, payload: unknown): Validat
 }
 
 /**
- * Builds a Zod schema from a ReputoSchema definition.
+ * Builds a Zod schema from an AlgorithmDefinition.
  *
- * This is the core validation logic that converts a ReputoSchema into a Zod schema
- * that can be used for runtime validation. Each input in the schema is converted
+ * This is the core validation logic that converts an AlgorithmDefinition into a Zod schema
+ * that can be used for runtime validation. Each input in the definition is converted
  * to its corresponding Zod validator with appropriate constraints.
  *
- * @param reputoSchema - The ReputoSchema definition to convert
+ * @param definition - The AlgorithmDefinition to convert
  * @returns A Zod object schema that can be used for validation
  *
  * @example
  * ```typescript
- * const schema: ReputoSchema = {
- *   // ... schema definition
+ * const definition: AlgorithmDefinition = {
+ *   // ... definition
  * }
- * const zodSchema = buildZodSchema(schema)
+ * const zodSchema = buildZodSchema(definition)
  * const result = zodSchema.safeParse(data)
  * ```
  */
-export function buildZodSchema(reputoSchema: ReputoSchema): z.ZodObject<Record<string, z.ZodType>> {
+export function buildZodSchema(definition: AlgorithmDefinition): z.ZodObject<Record<string, z.ZodType>> {
   const shape: Record<string, z.ZodType> = {};
 
-  for (const input of reputoSchema.inputs) {
+  for (const input of definition.inputs) {
     shape[input.key] = buildFieldSchema(input);
   }
 
@@ -103,102 +115,37 @@ export function buildZodSchema(reputoSchema: ReputoSchema): z.ZodObject<Record<s
 /**
  * Builds a Zod schema for a single input field based on its type.
  *
- * Each input type (text, number, boolean, date, enum, csv, slider) has specific
- * validation rules and constraints that are applied to the resulting Zod schema.
- * The function handles optional fields and applies type-specific validations.
+ * Currently supports CSV input types. The function handles optional fields
+ * and applies type-specific validations based on the IoItem type.
  *
- * @param input - The input field definition from ReputoSchema
+ * @param input - The input field definition from AlgorithmDefinition
  * @returns A Zod schema for the input field
  *
  * @internal
  */
-function buildFieldSchema(input: Input): z.ZodType {
+function buildFieldSchema(input: CsvIoItem): z.ZodType {
   let schema: z.ZodType;
 
-  switch (input.type) {
-    case 'text': {
-      let textSchema = z.string();
-      if (input.minLength !== undefined) {
-        textSchema = textSchema.min(input.minLength, `${input.label} must be at least ${input.minLength} characters`);
-      }
-      if (input.maxLength !== undefined) {
-        textSchema = textSchema.max(input.maxLength, `${input.label} must be at most ${input.maxLength} characters`);
-      }
-      if (input.pattern !== undefined) {
-        textSchema = textSchema.regex(new RegExp(input.pattern), `${input.label} must match the required pattern`);
-      }
-      schema = textSchema;
-      break;
+  // Handle CSV input type
+  if (input.type === 'csv') {
+    // For server validation, CSV is validated as a string (storage key)
+    // Client-side uses File object validation
+    const isBrowser =
+      typeof globalThis !== 'undefined' && typeof (globalThis as { window?: unknown }).window !== 'undefined';
+
+    if (!isBrowser) {
+      // Server-side: validate as string (storage key)
+      schema = z.string().min(1, `${input.label ?? input.key} is required`);
+    } else {
+      // Client-side: accept either a File (for local validation) OR a string storage key (after upload)
+      schema = z.union([
+        buildCSVSchema(input.csv, input.label ?? input.key),
+        z.string().min(1, `${input.label ?? input.key} is required`),
+      ]);
     }
-
-    case 'number': {
-      let numberSchema = z.number();
-      if (input.min !== undefined) {
-        numberSchema = numberSchema.min(input.min, `${input.label} must be at least ${input.min}`);
-      }
-      if (input.max !== undefined) {
-        numberSchema = numberSchema.max(input.max, `${input.label} must be at most ${input.max}`);
-      }
-      schema = numberSchema;
-      break;
-    }
-
-    case 'boolean':
-      schema = z.boolean();
-      break;
-
-    case 'date': {
-      let dateSchema: z.ZodType = z
-        .string()
-        .refine((val) => !Number.isNaN(Date.parse(val)), `${input.label} must be a valid date`);
-      if (input.minDate !== undefined) {
-        const minDate = new Date(input.minDate);
-        dateSchema = (dateSchema as z.ZodString).refine(
-          (val) => new Date(val) >= minDate,
-          `${input.label} must be after ${input.minDate}`,
-        );
-      }
-      if (input.maxDate !== undefined) {
-        const maxDate = new Date(input.maxDate);
-        dateSchema = (dateSchema as z.ZodString).refine(
-          (val) => new Date(val) <= maxDate,
-          `${input.label} must be before ${input.maxDate}`,
-        );
-      }
-      schema = dateSchema;
-      break;
-    }
-
-    case 'enum':
-      schema = z.enum(input.enum as [string, ...string[]]);
-      break;
-
-    case 'csv': {
-      // For server validation, CSV is validated as a string (filename or data)
-      // Client-side uses File object validation
-      const isBrowser =
-        typeof globalThis !== 'undefined' && typeof (globalThis as { window?: unknown }).window !== 'undefined';
-      if (!isBrowser) {
-        // Server-side: validate as string
-        schema = z.string().min(1, `${input.label} is required`);
-      } else {
-        // Client-side: accept either a File (for local validation) OR a string storage key (after upload)
-        schema = z.union([buildCSVSchema(input.csv, input.label), z.string().min(1, `${input.label} is required`)]);
-      }
-      break;
-    }
-
-    case 'slider':
-      schema = z.number().min(input.min).max(input.max);
-      break;
-
-    default:
-      schema = z.string();
-  }
-
-  // Make optional if not required
-  if (input.required === false) {
-    schema = schema.optional();
+  } else {
+    // Default to string for other types (extensible for future IoItem types)
+    schema = z.string();
   }
 
   return schema;
@@ -216,7 +163,7 @@ function buildFieldSchema(input: Input): z.ZodType {
  *
  * @internal
  */
-function buildCSVSchema(csvConfig: CSVConfig, label: string): z.ZodType {
+function buildCSVSchema(csvConfig: CsvIoItem['csv'], label: string): z.ZodType {
   return z
     .instanceof(File, { message: `${label} must be a file` })
     .refine((file) => file.type === 'text/csv' || file.name.endsWith('.csv'), {
@@ -230,18 +177,18 @@ function buildCSVSchema(csvConfig: CSVConfig, label: string): z.ZodType {
 }
 
 /**
- * Type inference helper for ReputoSchema.
+ * Type inference helper for AlgorithmDefinition.
  *
- * Infers the TypeScript type of the validated payload from a ReputoSchema definition.
+ * Infers the TypeScript type of the validated payload from an AlgorithmDefinition.
  * This allows you to get type-safe access to validated data.
  *
  * @example
  * ```typescript
- * const schema: ReputoSchema = {
- *   // ... schema definition
+ * const definition: AlgorithmDefinition = {
+ *   // ... definition
  * }
- * type ValidatedType = InferSchemaType<typeof schema>
- * // ValidatedType will be the inferred type from the schema
+ * type ValidatedType = InferSchemaType<typeof definition>
+ * // ValidatedType will be the inferred type from the definition
  * ```
  */
 export type InferSchemaType = z.infer<ReturnType<typeof buildZodSchema>>;

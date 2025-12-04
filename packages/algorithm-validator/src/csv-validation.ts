@@ -4,7 +4,7 @@
  * Works in both browser (File) and Node.js (string/Buffer) environments
  */
 
-import type { CSVConfig, CSVValidationResult } from './types.js';
+import type { CSVValidationResult, CsvIoItem } from './types/index.js';
 
 /**
  * Normalizes a string key for comparison.
@@ -84,12 +84,12 @@ async function readContent(file: File | string | Buffer): Promise<{ text: string
  * - BOM and line ending normalization
  *
  * @param file - File object (browser), string content, or Buffer (Node.js)
- * @param csvConfig - Configuration defining expected columns, constraints, and validation rules
+ * @param csvConfig - CSV configuration from CsvIoItem defining expected columns and constraints
  * @returns Promise resolving to a CSVValidationResult with validation status and any errors
  *
  * @example
  * ```typescript
- * const csvConfig: CSVConfig = {
+ * const csvConfig: CsvIoItem['csv'] = {
  *   hasHeader: true,
  *   delimiter: ',',
  *   maxRows: 10000,
@@ -108,7 +108,7 @@ async function readContent(file: File | string | Buffer): Promise<{ text: string
  */
 export async function validateCSVContent(
   file: File | string | Buffer,
-  csvConfig: CSVConfig,
+  csvConfig: CsvIoItem['csv'],
 ): Promise<CSVValidationResult> {
   const errors: string[] = [];
 
@@ -123,23 +123,25 @@ export async function validateCSVContent(
     const lines = rawLines.filter((line) => line.trim().length > 0);
 
     // Check max rows
-    const dataLines = csvConfig.hasHeader ? lines.slice(1) : lines;
+    const hasHeader = csvConfig.hasHeader ?? true;
+    const dataLines = hasHeader ? lines.slice(1) : lines;
     if (csvConfig.maxRows !== undefined && dataLines.length > csvConfig.maxRows) {
       errors.push(`CSV has ${dataLines.length} rows, but maximum is ${csvConfig.maxRows}`);
     }
 
     // Parse header
-    const headerLine = csvConfig.hasHeader ? lines[0] : null;
-    if (!headerLine && csvConfig.hasHeader) {
+    const headerLine = hasHeader ? lines[0] : null;
+    if (!headerLine && hasHeader) {
       errors.push('CSV is missing header row');
       return { valid: false, errors };
     }
 
     // Detect delimiter (prefer configured, but fall back if header doesn't split)
-    const candidateDelimiters = [csvConfig.delimiter, ',', ';', '\t', '|'].filter(
+    const configuredDelimiter = csvConfig.delimiter ?? ',';
+    const candidateDelimiters = [configuredDelimiter, ',', ';', '\t', '|'].filter(
       (d, idx, arr) => d !== undefined && arr.indexOf(d) === idx,
     );
-    let delimiter = csvConfig.delimiter;
+    let delimiter = configuredDelimiter;
     if (headerLine) {
       let bestSplit = headerLine.split(delimiter);
       if (bestSplit.length <= 1) {
@@ -165,25 +167,23 @@ export async function validateCSVContent(
     const headersNormalized = headersSanitized.map((h) => normalizeKey(h));
 
     // Debug logs (only in development/debug mode)
-    if (process.env['NODE_ENV'] === 'development') {
-      console.groupCollapsed?.('[CSV Validation] Debug');
-      console.log?.('Input', fileInfo);
-      console.log?.('Had BOM', hadBom);
-      console.log?.('Configured delimiter', csvConfig.delimiter);
-      console.log?.('Chosen delimiter', delimiter);
-      console.log?.('Candidate delimiters', candidateDelimiters);
-      console.log?.('Lines count (raw/non-empty)', rawLines.length, '/', lines.length);
-      console.log?.('Header line (first 200 chars)', headerLine?.slice(0, 200));
-      console.log?.('Headers (raw)', headers);
-      console.log?.('Headers (sanitized)', headersSanitized);
-      console.log?.('Headers (lower)', headersLower);
-      console.log?.('Headers (normalized)', headersNormalized);
-      console.log?.(
-        'Required columns',
-        csvConfig.columns.filter((c) => c.required !== false),
-      );
-      console.groupEnd?.();
-    }
+    console.groupCollapsed?.('[CSV Validation] Debug');
+    console.log?.('Input', fileInfo);
+    console.log?.('Had BOM', hadBom);
+    console.log?.('Configured delimiter', configuredDelimiter);
+    console.log?.('Chosen delimiter', delimiter);
+    console.log?.('Candidate delimiters', candidateDelimiters);
+    console.log?.('Lines count (raw/non-empty)', rawLines.length, '/', lines.length);
+    console.log?.('Header line (first 200 chars)', headerLine?.slice(0, 200));
+    console.log?.('Headers (raw)', headers);
+    console.log?.('Headers (sanitized)', headersSanitized);
+    console.log?.('Headers (lower)', headersLower);
+    console.log?.('Headers (normalized)', headersNormalized);
+    console.log?.(
+      'Required columns',
+      csvConfig.columns.filter((c) => c.required !== false),
+    );
+    console.groupEnd?.();
 
     // Validate required columns
     const requiredColumns = csvConfig.columns.filter((col) => col.required !== false);

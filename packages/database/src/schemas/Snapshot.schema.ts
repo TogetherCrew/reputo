@@ -1,7 +1,7 @@
 import { Schema } from 'mongoose';
 import { MODEL_NAMES, SNAPSHOT_STATUS } from '../shared/constants/index.js';
 import { paginate } from '../shared/plugins/index.js';
-import { Snapshot, SnapshotModel } from '../shared/types/index.js';
+import type { Snapshot, SnapshotModel } from '../shared/types/index.js';
 import { AlgorithmPresetFrozenSchema } from './AlgorithmPresetFrozen.schema.js';
 
 /**

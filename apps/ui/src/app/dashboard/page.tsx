@@ -1,6 +1,5 @@
-"use client";
+"use client"
 
-import { useMemo, useState } from "react";
 import {
   Clock,
   FolderOpen,
@@ -8,12 +7,13 @@ import {
   List,
   Search,
   Target,
-  Users
-} from "lucide-react";
-import Image from "next/image";
-import Link from "next/link";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+  Users,
+} from "lucide-react"
+import Image from "next/image"
+import Link from "next/link"
+import { useMemo, useState } from "react"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import {
   Card,
   CardAction,
@@ -22,25 +22,25 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
+} from "@/components/ui/card"
+import { Checkbox } from "@/components/ui/checkbox"
 import {
   Empty,
   EmptyDescription,
   EmptyHeader,
   EmptyMedia,
   EmptyTitle,
-} from "@/components/ui/empty";
-import { Input } from "@/components/ui/input";
-import { type Algorithm, searchAlgorithms } from "@/core/algorithms";
+} from "@/components/ui/empty"
+import { Input } from "@/components/ui/input"
+import { type Algorithm, searchAlgorithms } from "@/core/algorithms"
 
 // algorithms imported from shared file
 
 const categories: {
-  key: Algorithm["category"];
-  title: string;
-  description: string;
-  icon: React.ReactNode;
+  key: Algorithm["category"]
+  title: string
+  description: string
+  icon: React.ReactNode
 }[] = [
   {
     key: "Core Engagement",
@@ -48,18 +48,18 @@ const categories: {
     description: "Fundamental algorithms for measuring user participation",
     icon: <Target className="size-4 text-primary" />,
   },
-];
+]
 
-type ViewMode = "grid" | "list";
+type ViewMode = "grid" | "list"
 
 export default function Home() {
-  const [viewMode, setViewMode] = useState<ViewMode>("grid");
-  const [searchQuery, setSearchQuery] = useState("");
+  const [viewMode, setViewMode] = useState<ViewMode>("grid")
+  const [searchQuery, setSearchQuery] = useState("")
 
   // Filter algorithms using registry search
   const filteredAlgorithms = useMemo(() => {
-    return searchAlgorithms(searchQuery);
-  }, [searchQuery]);
+    return searchAlgorithms(searchQuery)
+  }, [searchQuery])
 
   return (
     <div className="min-h-screen w-full">
@@ -101,7 +101,8 @@ export default function Home() {
           </div>
 
           <div className="text-sm text-muted-foreground">
-            {filteredAlgorithms.length} algorithm{filteredAlgorithms.length !== 1 ? "s" : ""} found
+            {filteredAlgorithms.length} algorithm
+            {filteredAlgorithms.length !== 1 ? "s" : ""} found
           </div>
 
           {filteredAlgorithms.length === 0 ? (
@@ -121,8 +122,10 @@ export default function Home() {
           ) : (
             <div className="flex flex-col gap-8">
               {categories.map((cat) => {
-                const items = filteredAlgorithms.filter((a) => a.category === cat.key);
-                if (items.length === 0) return null;
+                const items = filteredAlgorithms.filter(
+                  (a) => a.category === cat.key
+                )
+                if (items.length === 0) return null
                 return (
                   <section key={cat.key} className="flex flex-col gap-4">
                     <div className="flex items-start gap-2">
@@ -199,7 +202,8 @@ export default function Home() {
                                   <Clock className="size-4" /> {algo.duration}
                                 </span>
                                 <span className="inline-flex items-center gap-2 text-muted-foreground">
-                                  <Users className="size-4" /> {algo.dependencies}
+                                  <Users className="size-4" />{" "}
+                                  {algo.dependencies}
                                 </span>
                                 <Badge className="bg-emerald-500 text-white border-transparent">
                                   {algo.level}
@@ -214,7 +218,13 @@ export default function Home() {
                                   : ""
                               }
                             >
-                              <span className={viewMode === "list" ? "text-sm font-medium" : ""}>
+                              <span
+                                className={
+                                  viewMode === "list"
+                                    ? "text-sm font-medium"
+                                    : ""
+                                }
+                              >
                                 Inputs:
                               </span>
                               <div className="flex flex-wrap gap-2 px-2">
@@ -234,12 +244,12 @@ export default function Home() {
                       ))}
                     </div>
                   </section>
-                );
+                )
               })}
             </div>
           )}
         </div>
       </main>
     </div>
-  );
+  )
 }

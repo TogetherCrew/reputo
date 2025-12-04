@@ -1,5 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { SNAPSHOT_STATUS, SnapshotStatus } from '@reputo/database';
+import type { SnapshotStatus } from '@reputo/database';
+import { SNAPSHOT_STATUS } from '@reputo/database';
 import { IsEnum, IsMongoId, IsOptional, IsString } from 'class-validator';
 import { PaginationQueryDto } from '../../shared/dto';
 

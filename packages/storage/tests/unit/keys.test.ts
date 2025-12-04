@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { InvalidStorageKeyError } from '../../src/shared/errors/index.js';
-import { generateUploadKey, parseStorageKey } from '../../src/shared/utils/keys.js';
+import {
+  detectKeyType,
+  generateSnapshotInputKey,
+  generateSnapshotOutputKey,
+  generateUploadKey,
+  parseStorageKey,
+} from '../../src/shared/utils/keys.js';
 
 describe('generateUploadKey', () => {
   it('should generate a valid key with timestamp, sanitized filename, and extension', () => {
@@ -79,64 +85,142 @@ describe('generateUploadKey', () => {
   });
 });
 
+describe('generateSnapshotInputKey', () => {
+  it('should generate a valid snapshot input key', () => {
+    const key = generateSnapshotInputKey('abc123', 'votes');
+    expect(key).toBe('snapshots/abc123/inputs/votes.csv');
+  });
+
+  it('should use custom extension when provided', () => {
+    const key = generateSnapshotInputKey('abc123', 'config', 'json');
+    expect(key).toBe('snapshots/abc123/inputs/config.json');
+  });
+});
+
+describe('generateSnapshotOutputKey', () => {
+  it('should generate a valid snapshot output key', () => {
+    const key = generateSnapshotOutputKey('abc123', 'voting_engagement');
+    expect(key).toBe('snapshots/abc123/outputs/voting_engagement.csv');
+  });
+
+  it('should use custom extension when provided', () => {
+    const key = generateSnapshotOutputKey('abc123', 'results', 'json');
+    expect(key).toBe('snapshots/abc123/outputs/results.json');
+  });
+});
+
+describe('detectKeyType', () => {
+  it('should detect upload keys', () => {
+    expect(detectKeyType('uploads/1704067200/votes.csv')).toBe('upload');
+  });
+
+  it('should detect snapshot input keys', () => {
+    expect(detectKeyType('snapshots/abc123/inputs/votes.csv')).toBe('snapshot-input');
+  });
+
+  it('should detect snapshot output keys', () => {
+    expect(detectKeyType('snapshots/abc123/outputs/voting_engagement.csv')).toBe('snapshot-output');
+  });
+
+  it('should return null for unrecognized keys', () => {
+    expect(detectKeyType('unknown/path/file.txt')).toBeNull();
+    expect(detectKeyType('snapshots/abc123/other/file.csv')).toBeNull();
+  });
+});
+
 describe('parseStorageKey', () => {
-  it('should parse a valid key correctly', () => {
-    const result = parseStorageKey('uploads/1704067200/votes.csv');
+  describe('upload keys', () => {
+    it('should parse a valid upload key correctly', () => {
+      const result = parseStorageKey('uploads/1704067200/votes.csv');
 
-    expect(result).toEqual({
-      filename: 'votes.csv',
-      ext: 'csv',
-      timestamp: 1704067200,
+      expect(result).toEqual({
+        type: 'upload',
+        filename: 'votes.csv',
+        ext: 'csv',
+        timestamp: 1704067200,
+      });
+    });
+
+    it('should handle nested paths after timestamp', () => {
+      const result = parseStorageKey('uploads/1704067200/subfolder/data.json');
+
+      expect(result).toEqual({
+        type: 'upload',
+        filename: 'subfolder/data.json',
+        ext: 'json',
+        timestamp: 1704067200,
+      });
+    });
+
+    it('should handle filenames with multiple dots', () => {
+      const result = parseStorageKey('uploads/1704067200/file.backup.csv');
+
+      expect(result).toEqual({
+        type: 'upload',
+        filename: 'file.backup.csv',
+        ext: 'csv',
+        timestamp: 1704067200,
+      });
+    });
+
+    it('should throw InvalidStorageKeyError if timestamp is not a number', () => {
+      expect(() => parseStorageKey('uploads/notanumber/votes.csv')).toThrow(InvalidStorageKeyError);
+      expect(() => parseStorageKey('uploads/notanumber/votes.csv')).toThrow('Invalid timestamp');
     });
   });
 
-  it('should handle nested paths after timestamp', () => {
-    const result = parseStorageKey('uploads/1704067200/subfolder/data.json');
+  describe('snapshot input keys', () => {
+    it('should parse a valid snapshot input key correctly', () => {
+      const result = parseStorageKey('snapshots/abc123/inputs/votes.csv');
 
-    expect(result).toEqual({
-      filename: 'subfolder/data.json',
-      ext: 'json',
-      timestamp: 1704067200,
+      expect(result).toEqual({
+        type: 'snapshot-input',
+        filename: 'votes.csv',
+        ext: 'csv',
+        snapshotId: 'abc123',
+        inputName: 'votes',
+      });
     });
   });
 
-  it('should handle filenames with multiple dots', () => {
-    const result = parseStorageKey('uploads/1704067200/file.backup.csv');
+  describe('snapshot output keys', () => {
+    it('should parse a valid snapshot output key correctly', () => {
+      const result = parseStorageKey('snapshots/abc123/outputs/voting_engagement.csv');
 
-    expect(result).toEqual({
-      filename: 'file.backup.csv',
-      ext: 'csv',
-      timestamp: 1704067200,
+      expect(result).toEqual({
+        type: 'snapshot-output',
+        filename: 'voting_engagement.csv',
+        ext: 'csv',
+        snapshotId: 'abc123',
+        algorithmKey: 'voting_engagement',
+      });
     });
   });
 
-  it('should throw InvalidStorageKeyError if key does not start with "uploads/"', () => {
-    expect(() => parseStorageKey('downloads/1704067200/votes.csv')).toThrow(InvalidStorageKeyError);
-    expect(() => parseStorageKey('downloads/1704067200/votes.csv')).toThrow('Key must start with "uploads/"');
-  });
+  describe('error handling', () => {
+    it('should throw InvalidStorageKeyError for unrecognized key patterns', () => {
+      expect(() => parseStorageKey('downloads/1704067200/votes.csv')).toThrow(InvalidStorageKeyError);
+    });
 
-  it('should throw InvalidStorageKeyError if key has fewer than 3 segments', () => {
-    expect(() => parseStorageKey('uploads/1704067200')).toThrow(InvalidStorageKeyError);
-    expect(() => parseStorageKey('uploads')).toThrow(InvalidStorageKeyError);
-  });
+    it('should throw InvalidStorageKeyError if key has insufficient segments', () => {
+      expect(() => parseStorageKey('uploads/1704067200')).toThrow(InvalidStorageKeyError);
+      expect(() => parseStorageKey('uploads')).toThrow(InvalidStorageKeyError);
+      expect(() => parseStorageKey('snapshots/abc123/inputs')).toThrow(InvalidStorageKeyError);
+    });
 
-  it('should throw InvalidStorageKeyError if timestamp is not a number', () => {
-    expect(() => parseStorageKey('uploads/notanumber/votes.csv')).toThrow(InvalidStorageKeyError);
-    expect(() => parseStorageKey('uploads/notanumber/votes.csv')).toThrow('Invalid timestamp');
-  });
+    it('should throw InvalidStorageKeyError if filename has no extension', () => {
+      expect(() => parseStorageKey('uploads/1704067200/filenoext')).toThrow(InvalidStorageKeyError);
+      expect(() => parseStorageKey('uploads/1704067200/filenoext')).toThrow('No file extension found');
+    });
 
-  it('should throw InvalidStorageKeyError if filename has no extension', () => {
-    expect(() => parseStorageKey('uploads/1704067200/filenoext')).toThrow(InvalidStorageKeyError);
-    expect(() => parseStorageKey('uploads/1704067200/filenoext')).toThrow('No file extension found');
-  });
-
-  it('should preserve the invalid key in the error', () => {
-    const invalidKey = 'invalid/key/format';
-    try {
-      parseStorageKey(invalidKey);
-    } catch (error) {
-      expect(error).toBeInstanceOf(InvalidStorageKeyError);
-      expect((error as InvalidStorageKeyError).key).toBe(invalidKey);
-    }
+    it('should preserve the invalid key in the error', () => {
+      const invalidKey = 'invalid/key/format';
+      try {
+        parseStorageKey(invalidKey);
+      } catch (error) {
+        expect(error).toBeInstanceOf(InvalidStorageKeyError);
+        expect((error as InvalidStorageKeyError).key).toBe(invalidKey);
+      }
+    });
   });
 });

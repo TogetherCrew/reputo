@@ -1,38 +1,64 @@
 /**
- * Schema builder utilities for generating ReputoSchema from Algorithm objects
+ * Schema builder utilities for generating form schemas from Algorithm objects
  */
 
 import {
   type AlgorithmDefinition,
   getAlgorithmDefinition,
-} from "@reputo/reputation-algorithms";
-import type { Algorithm } from "./algorithms";
-import type { CSVConfig, CSVInput, Input, ReputoSchema, TextInput } from "@reputo/algorithm-validator";
+} from "@reputo/reputation-algorithms"
+import type { Algorithm } from "./algorithms"
 
 /**
- * Builds a ReputoSchema from an Algorithm object
- * Includes name, description, key, version, and all algorithm inputs
+ * Form input type for UI forms.
+ * Extended from AlgorithmDefinition to support UI-specific form fields.
+ */
+export interface FormInput {
+  key: string
+  label: string
+  type: string
+  description?: string
+  required?: boolean
+  [key: string]: any // Allow additional properties for different input types
+}
+
+/**
+ * Form schema for UI forms.
+ * Based on AlgorithmDefinition but adapted for form generation.
+ */
+export interface FormSchema {
+  key: string
+  name: string
+  category: string
+  description: string
+  version: string
+  inputs: FormInput[]
+  outputs: any[]
+}
+
+/**
+ * Builds a form schema from an Algorithm object.
+ * Includes name, description, key, version, and all algorithm inputs.
  */
 export function buildSchemaFromAlgorithm(
   algorithm: Algorithm,
   version: string = "1.0.0"
-): ReputoSchema {
+): FormSchema {
   // Fetch full algorithm definition to get CSV config details
-  let fullDefinition: AlgorithmDefinition | null = null;
+  let fullDefinition: AlgorithmDefinition | null = null
   try {
-    const definitionJson = getAlgorithmDefinition({ key: algorithm.id });
-    fullDefinition = JSON.parse(definitionJson) as AlgorithmDefinition;
+    const definitionJson = getAlgorithmDefinition({ key: algorithm.id })
+    fullDefinition = JSON.parse(definitionJson) as AlgorithmDefinition
   } catch (error) {
-    console.warn(`Could not fetch full definition for ${algorithm.id}:`, error);
+    console.warn(`Could not fetch full definition for ${algorithm.id}:`, error)
   }
 
-  // Transform algorithm inputs to ReputoSchema inputs
-  const inputs: Input[] = algorithm.inputs.map((algoInput) => {
-    return transformInputToReputoInput(algoInput, fullDefinition);
-  });
+  // Transform algorithm inputs to form inputs
+  const formInputs: FormInput[] = algorithm.inputs.map((algoInput) => {
+    return transformInputToFormInput(algoInput, fullDefinition)
+  })
 
-  // Add name and description fields
-  const nameInput: TextInput = {
+  // Add metadata fields for preset creation
+  const nameInput: FormInput = {
     key: "name",
     label: "Preset Name",
     type: "text",
@@ -40,9 +66,9 @@ export function buildSchemaFromAlgorithm(
     required: true,
     minLength: 3,
     maxLength: 100,
-  };
+  }
 
-  const descriptionInput: TextInput = {
+  const descriptionInput: FormInput = {
     key: "description",
     label: "Description",
     type: "text",
@@ -50,33 +76,26 @@ export function buildSchemaFromAlgorithm(
     required: true,
     minLength: 10,
     maxLength: 500,
-  };
+  }
 
-  // Add key and version as readonly text fields (for display/validation)
-  const keyInput: TextInput = {
+  const keyInput: FormInput = {
     key: "key",
     label: "Algorithm Key",
     type: "text",
     description: "Algorithm identifier",
     required: true,
-  };
+  }
 
-  const versionInput: TextInput = {
+  const versionInput: FormInput = {
     key: "version",
     label: "Version",
     type: "text",
     description: "Algorithm version",
     required: true,
-  };
+  }
 
   // Build outputs from algorithm definition if available
-  const outputs = fullDefinition?.outputs.map((output) => ({
-    key: output.key,
-    label: output.label || output.key,
-    type: output.type,
-    entity: output.entity,
-    description: output.description,
-  })) || [];
+  const outputs = fullDefinition?.outputs || []
 
   return {
     key: `preset_${algorithm.id}`,
@@ -84,57 +103,63 @@ export function buildSchemaFromAlgorithm(
     category: algorithm.category,
     description: algorithm.description,
     version,
-    inputs: [keyInput, versionInput, nameInput, descriptionInput, ...inputs],
+    inputs: [
+      keyInput,
+      versionInput,
+      nameInput,
+      descriptionInput,
+      ...formInputs,
+    ],
     outputs,
-  };
+  }
 }
 
 /**
- * Transforms an algorithm input to a ReputoSchema input
+ * Transforms an algorithm input to a form input
  */
-function transformInputToReputoInput(
+function transformInputToFormInput(
   algoInput: { type: string; label: string },
   fullDefinition: AlgorithmDefinition | null
-): Input {
-  const inputKey = algoInput.label.toLowerCase().replace(/\s+/g, "_");
+): FormInput {
+  const inputKey = algoInput.label.toLowerCase().replace(/\s+/g, "_")
 
   // Try to find matching input in full definition for CSV config
   const fullInput = fullDefinition?.inputs.find(
     (input) => input.key === inputKey || input.label === algoInput.label
-  );
+  )
 
   switch (algoInput.type) {
     case "csv": {
       // Build CSV config from full definition or use defaults
-      const csvConfig: CSVConfig = fullInput?.type === "csv" && fullInput.csv
-        ? {
-            hasHeader: fullInput.csv.hasHeader ?? true,
-            delimiter: fullInput.csv.delimiter ?? ",",
-            maxRows: fullInput.csv.maxRows,
-            maxBytes: fullInput.csv.maxBytes,
-            columns: fullInput.csv.columns.map((col) => ({
-              key: col.key,
-              type: col.type === "integer" ? "number" : (col.type as any),
-              aliases: col.aliases,
-              description: col.description,
-              required: col.required !== false,
-              enum: col.enum?.map((e) => String(e)),
-            })),
-          }
-        : {
-            hasHeader: true,
-            delimiter: ",",
-            columns: [],
-          };
+      const csvConfig =
+        fullInput?.type === "csv" && fullInput.csv
+          ? {
+              hasHeader: fullInput.csv.hasHeader ?? true,
+              delimiter: fullInput.csv.delimiter ?? ",",
+              maxRows: fullInput.csv.maxRows,
+              maxBytes: fullInput.csv.maxBytes,
+              columns: fullInput.csv.columns.map((col) => ({
+                key: col.key,
+                type: col.type === "integer" ? "number" : col.type,
+                aliases: col.aliases,
+                description: col.description,
+                required: col.required !== false,
+                enum: col.enum?.map((e) => String(e)),
+              })),
+            }
+          : {
+              hasHeader: true,
+              delimiter: ",",
+              columns: [],
+            }
 
-      const csvInput: CSVInput = {
+      return {
         key: inputKey,
         label: algoInput.label,
         type: "csv",
         csv: csvConfig,
         required: true,
-      };
-      return csvInput;
+      }
     }
 
     case "number":
@@ -143,7 +168,7 @@ function transformInputToReputoInput(
         label: algoInput.label,
         type: "number",
         required: true,
-      };
+      }
 
     case "boolean":
       return {
@@ -151,7 +176,7 @@ function transformInputToReputoInput(
         label: algoInput.label,
         type: "boolean",
         required: true,
-      };
+      }
 
     case "string":
       return {
@@ -159,7 +184,7 @@ function transformInputToReputoInput(
         label: algoInput.label,
         type: "text",
         required: true,
-      };
+      }
 
     default:
       // Default to text for unknown types
@@ -168,12 +193,15 @@ function transformInputToReputoInput(
         label: algoInput.label,
         type: "text",
         required: true,
-      };
+      }
   }
 }
 
 /**
  * Re-export validation functions from the validator package
  */
-export { buildZodSchema, type InferSchemaType, validateCSVContent } from "@reputo/algorithm-validator";
-
+export {
+  buildZodSchema,
+  type InferSchemaType,
+  validateCSVContent,
+} from "@reputo/algorithm-validator"

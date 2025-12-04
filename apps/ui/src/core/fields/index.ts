@@ -1,8 +1,7 @@
-export { BooleanField } from "./boolean-field";
-export { CSVField } from "./csv-field";
-export { DateField } from "./date-field";
-export { EnumField } from "./enum-field";
-export { NumberField } from "./number-field";
-export { SliderField } from "./slider-field";
-export { TextField } from "./text-field";
-
+export { BooleanField } from "./boolean-field"
+export { CSVField } from "./csv-field"
+export { DateField } from "./date-field"
+export { EnumField } from "./enum-field"
+export { NumberField } from "./number-field"
+export { SliderField } from "./slider-field"
+export { TextField } from "./text-field"

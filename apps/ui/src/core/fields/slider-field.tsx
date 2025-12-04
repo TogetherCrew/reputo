@@ -1,6 +1,6 @@
-"use client";
+"use client"
 
-import { Control } from "react-hook-form";
+import type { Control } from "react-hook-form"
 import {
   FormControl,
   FormDescription,
@@ -8,13 +8,13 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Slider } from "@/components/ui/slider";
-import type { SliderInput } from "@reputo/algorithm-validator";
+} from "@/components/ui/form"
+import { Slider } from "@/components/ui/slider"
+import type { FormInput } from "../schema-builder"
 
 interface SliderFieldProps {
-  input: SliderInput;
-  control: Control<any>;
+  input: FormInput
+  control: Control<any>
 }
 
 export function SliderField({ input, control }: SliderFieldProps) {
@@ -27,7 +27,9 @@ export function SliderField({ input, control }: SliderFieldProps) {
           <div className="flex justify-between items-center">
             <FormLabel>
               {input.label}
-              {input.required !== false && <span className="text-destructive ml-1">*</span>}
+              {input.required !== false && (
+                <span className="text-destructive ml-1">*</span>
+              )}
             </FormLabel>
             <span className="text-sm text-muted-foreground font-mono">
               {field.value ?? input.min}
@@ -49,6 +51,5 @@ export function SliderField({ input, control }: SliderFieldProps) {
         </FormItem>
       )}
     />
-  );
+  )
 }
-

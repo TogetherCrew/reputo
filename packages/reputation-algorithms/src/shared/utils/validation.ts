@@ -1,10 +1,16 @@
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import Ajv2020 from 'ajv/dist/2020.js';
-import addFormats from 'ajv-formats';
+import Ajv2020Module from 'ajv/dist/2020.js';
+import addFormatsModule from 'ajv-formats';
 import { ValidationError } from '../errors/index.js';
 import type { ValidationErrorDetail, ValidationResult } from '../types/index.js';
+
+// Handle CJS/ESM interop for nodenext module resolution
+type CjsModule<T> = T & { default?: T };
+const Ajv2020 = (Ajv2020Module as CjsModule<typeof Ajv2020Module>).default ?? Ajv2020Module;
+const addFormats = (addFormatsModule as CjsModule<typeof addFormatsModule>).default ?? addFormatsModule;
+type Ajv2020Instance = InstanceType<typeof Ajv2020>;
 
 export function validateKey(key: string): ValidationResult {
   const errors: string[] = [];
@@ -90,8 +96,8 @@ export function compareSemVer(a: string, b: string): number {
 const DEFAULT_SCHEMA_PATH = '../schema/algorithm-definition.schema.json';
 
 export class AlgorithmValidator {
-  private readonly ajv: Ajv2020;
-  private validateAlgorithm: ReturnType<Ajv2020['compile']> | null = null;
+  private readonly ajv: Ajv2020Instance;
+  private validateAlgorithm: ReturnType<Ajv2020Instance['compile']> | null = null;
 
   constructor(schema?: Record<string, unknown>) {
     this.ajv = new Ajv2020({
@@ -129,12 +135,14 @@ export class AlgorithmValidator {
       return { isValid: true, errors: [] };
     }
 
-    const errors: ValidationErrorDetail[] = (this.validateAlgorithm.errors || []).map((e) => ({
-      instancePath: e.instancePath,
-      message: e.message || undefined,
-      keyword: e.keyword,
-      params: e.params || {},
-    }));
+    const errors: ValidationErrorDetail[] = (this.validateAlgorithm.errors || []).map(
+      (e: { instancePath: string; message?: string; keyword: string; params?: Record<string, unknown> }) => ({
+        instancePath: e.instancePath,
+        message: e.message || undefined,
+        keyword: e.keyword,
+        params: e.params || {},
+      }),
+    );
 
     return { isValid: false, errors };
   }
@@ -147,15 +155,15 @@ export class AlgorithmValidator {
       throw new ValidationError(
         filePath,
         result.errors,
-        data?.['key'] as string | undefined,
-        data?.['version'] as string | undefined,
+        data?.key as string | undefined,
+        data?.version as string | undefined,
       );
     }
 
     return definition;
   }
 
-  getAjv(): Ajv2020 {
+  getAjv(): Ajv2020Instance {
     return this.ajv;
   }
 }

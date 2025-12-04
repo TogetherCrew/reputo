@@ -1,4 +1,4 @@
-import type { Storage } from '@reputo/storage';
+import { generateSnapshotOutputKey, type Storage } from '@reputo/storage';
 import { parse } from 'csv-parse/sync';
 import { stringify } from 'csv-stringify/sync';
 import pino from 'pino';
@@ -104,8 +104,8 @@ export async function voting_engagement(payload: WorkerAlgorithmPayload): Promis
       columns: ['collection_id', 'voting_engagement'],
     });
 
-    // 5. Upload output to storage
-    const outputKey = `snapshots/${snapshotId}/outputs/${algorithmKey}.csv`;
+    // 5. Upload output to storage using shared key generator
+    const outputKey = generateSnapshotOutputKey(snapshotId, algorithmKey);
     await storage.putObject(outputKey, outputCsv, 'text/csv');
 
     logger.info({ outputKey }, 'Uploaded voting engagement results');

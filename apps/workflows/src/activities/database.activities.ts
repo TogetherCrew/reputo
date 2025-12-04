@@ -5,8 +5,7 @@
  * These activities handle snapshot retrieval and updates within workflow executions.
  */
 
-import type { Snapshot, SnapshotModel } from '@reputo/database';
-import { MODEL_NAMES } from '@reputo/database';
+import type { Snapshot } from '@reputo/database';
 import { Context } from '@temporalio/activity';
 import type { Model } from 'mongoose';
 

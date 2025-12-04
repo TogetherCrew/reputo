@@ -2,21 +2,33 @@
     "compilerOptions": {
         "module": "nodenext",
         "moduleResolution": "nodenext",
-        "declaration": true,
-        "removeComments": true,
-        "emitDecoratorMetadata": true,
-        "experimentalDecorators": true,
-        "allowSyntheticDefaultImports": true,
         "target": "ES2022",
-        "sourceMap": true,
+        "lib": ["ES2022"],
+
         "outDir": "./dist",
         "baseUrl": "./",
+        "declaration": true,
+        "declarationMap": true,
+        "sourceMap": true,
         "incremental": true,
-        "skipLibCheck": true,
-        "strictNullChecks": true,
+
+        "emitDecoratorMetadata": true,
+        "experimentalDecorators": true,
+
+        "esModuleInterop": true,
+        "allowSyntheticDefaultImports": true,
+        "resolveJsonModule": true,
+        "isolatedModules": true,
         "forceConsistentCasingInFileNames": true,
-        "noImplicitAny": false,
-        "strictBindCallApply": false,
-        "noFallthroughCasesInSwitch": false
-    }
+        "skipLibCheck": true,
+
+        "strict": true,
+        "strictNullChecks": true,
+        "strictBindCallApply": true,
+        "noImplicitAny": true,
+        "noFallthroughCasesInSwitch": true,
+        "strictPropertyInitialization": false
+    },
+    "include": ["src/**/*"],
+    "exclude": ["node_modules", "dist"]
 }

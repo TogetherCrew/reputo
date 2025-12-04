@@ -1,4 +1,4 @@
-"use client";
+"use client"
 
 import {
   AlertCircle,
@@ -9,10 +9,10 @@ import {
   Loader2,
   Play,
   Trash2,
-} from "lucide-react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
+} from "lucide-react"
+import { usePathname, useRouter, useSearchParams } from "next/navigation"
+import { useState } from "react"
+import { Button } from "@/components/ui/button"
 import {
   Empty,
   EmptyContent,
@@ -20,7 +20,7 @@ import {
   EmptyHeader,
   EmptyMedia,
   EmptyTitle,
-} from "@/components/ui/empty";
+} from "@/components/ui/empty"
 import {
   Table,
   TableBody,
@@ -28,41 +28,41 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import type { Algorithm } from "@/core/algorithms";
+} from "@/components/ui/table"
+import type { Algorithm } from "@/core/algorithms"
 import {
   useAlgorithmPresets,
   useCreateAlgorithmPreset,
   useCreateSnapshot,
   useDeleteAlgorithmPreset,
   useUpdateAlgorithmPreset,
-} from "@/lib/api/hooks";
+} from "@/lib/api/hooks"
 import type {
   AlgorithmPresetResponseDto,
   CreateAlgorithmPresetDto,
   CreateSnapshotDto,
   UpdateAlgorithmPresetDto,
-} from "@/lib/api/types";
-import { CreatePresetDialog } from "./create-preset-dialog";
-import { EditPresetDialog } from "./edit-preset-dialog";
-import { PresetDeleteDialog } from "./preset-delete-dialog";
-import { PresetDetailsDialog } from "./preset-details-dialog";
+} from "@/lib/api/types"
+import { CreatePresetDialog } from "./create-preset-dialog"
+import { EditPresetDialog } from "./edit-preset-dialog"
+import { PresetDeleteDialog } from "./preset-delete-dialog"
+import { PresetDetailsDialog } from "./preset-details-dialog"
 
 export function AlgorithmPresets({ algo }: { algo?: Algorithm }) {
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [presetToDelete, setPresetToDelete] = useState<string | null>(null);
+  const router = useRouter()
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false)
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+  const [presetToDelete, setPresetToDelete] = useState<string | null>(null)
   const [presetToView, setPresetToView] =
-    useState<AlgorithmPresetResponseDto | null>(null);
+    useState<AlgorithmPresetResponseDto | null>(null)
   const [presetToEdit, setPresetToEdit] =
-    useState<AlgorithmPresetResponseDto | null>(null);
-  const [runningPresetId, setRunningPresetId] = useState<string | null>(null);
-  const [updatingPresetId, setUpdatingPresetId] = useState<string | null>(null);
-  const [deletingPresetId, setDeletingPresetId] = useState<string | null>(null);
+    useState<AlgorithmPresetResponseDto | null>(null)
+  const [runningPresetId, setRunningPresetId] = useState<string | null>(null)
+  const [updatingPresetId, setUpdatingPresetId] = useState<string | null>(null)
+  const [deletingPresetId, setDeletingPresetId] = useState<string | null>(null)
 
   // API hooks
   const {
@@ -72,87 +72,87 @@ export function AlgorithmPresets({ algo }: { algo?: Algorithm }) {
   } = useAlgorithmPresets({
     key: algo?.id,
     limit: 50,
-  });
-  const createPresetMutation = useCreateAlgorithmPreset();
-  const updatePresetMutation = useUpdateAlgorithmPreset();
-  const deletePresetMutation = useDeleteAlgorithmPreset();
-  const createSnapshotMutation = useCreateSnapshot();
+  })
+  const createPresetMutation = useCreateAlgorithmPreset()
+  const updatePresetMutation = useUpdateAlgorithmPreset()
+  const deletePresetMutation = useDeleteAlgorithmPreset()
+  const createSnapshotMutation = useCreateSnapshot()
 
   const handleCreatePreset = async (data: CreateAlgorithmPresetDto) => {
-    await createPresetMutation.mutateAsync(data);
-  };
+    await createPresetMutation.mutateAsync(data)
+  }
 
   const handleDeletePreset = async (presetId: string) => {
-    setPresetToDelete(presetId);
-    setIsDeleteDialogOpen(true);
-  };
+    setPresetToDelete(presetId)
+    setIsDeleteDialogOpen(true)
+  }
 
   const handleViewPreset = (preset: AlgorithmPresetResponseDto) => {
-    setPresetToView(preset);
-    setIsDetailsDialogOpen(true);
-  };
+    setPresetToView(preset)
+    setIsDetailsDialogOpen(true)
+  }
 
   const handleEditPreset = (preset: AlgorithmPresetResponseDto) => {
-    setPresetToEdit(preset);
-    setIsEditDialogOpen(true);
-  };
+    setPresetToEdit(preset)
+    setIsEditDialogOpen(true)
+  }
 
   const handleUpdatePreset = async (data: UpdateAlgorithmPresetDto) => {
-    if (!presetToEdit) return;
-    setUpdatingPresetId(presetToEdit._id);
+    if (!presetToEdit) return
+    setUpdatingPresetId(presetToEdit._id)
     try {
       await updatePresetMutation.mutateAsync({
         id: presetToEdit._id,
         data,
-      });
+      })
     } finally {
-      setUpdatingPresetId(null);
+      setUpdatingPresetId(null)
     }
-  };
+  }
 
   const confirmDeletePreset = async () => {
-    if (!presetToDelete) return;
+    if (!presetToDelete) return
 
-    setDeletingPresetId(presetToDelete);
+    setDeletingPresetId(presetToDelete)
     try {
-      await deletePresetMutation.mutateAsync(presetToDelete);
-      setIsDeleteDialogOpen(false);
-      setPresetToDelete(null);
+      await deletePresetMutation.mutateAsync(presetToDelete)
+      setIsDeleteDialogOpen(false)
+      setPresetToDelete(null)
     } catch (error) {
-      console.error("Failed to delete preset:", error);
+      console.error("Failed to delete preset:", error)
     } finally {
-      setDeletingPresetId(null);
+      setDeletingPresetId(null)
     }
-  };
+  }
 
   const handleRunPreset = async (presetId: string) => {
     try {
-      setRunningPresetId(presetId);
+      setRunningPresetId(presetId)
       const snapshotData: CreateSnapshotDto = {
         algorithmPresetId: presetId,
         outputs: {},
-      };
+      }
 
-      await createSnapshotMutation.mutateAsync(snapshotData);
+      await createSnapshotMutation.mutateAsync(snapshotData)
 
       // Navigate to snapshots tab with the preset filter
-      const params = new URLSearchParams(searchParams.toString());
-      params.set("tab", "snapshots");
-      params.set("preset", presetId);
-      router.push(`${pathname}?${params.toString()}`);
+      const params = new URLSearchParams(searchParams.toString())
+      params.set("tab", "snapshots")
+      params.set("preset", presetId)
+      router.push(`${pathname}?${params.toString()}`)
     } catch (error) {
-      console.error("Failed to create snapshot:", error);
+      console.error("Failed to create snapshot:", error)
     } finally {
-      setRunningPresetId(null);
+      setRunningPresetId(null)
     }
-  };
+  }
 
   const handleViewSnapshots = (presetId: string) => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("tab", "snapshots");
-    params.set("preset", presetId);
-    router.push(`${pathname}?${params.toString()}`);
-  };
+    const params = new URLSearchParams(searchParams.toString())
+    params.set("tab", "snapshots")
+    params.set("preset", presetId)
+    router.push(`${pathname}?${params.toString()}`)
+  }
 
   return (
     <div className="flex flex-col gap-4">
@@ -251,10 +251,10 @@ export function AlgorithmPresets({ algo }: { algo?: Algorithm }) {
                     {preset.version}
                   </TableCell>
                   <TableCell className="whitespace-nowrap">
-                    {new Date(preset.createdAt).toLocaleDateString('en-US', {
-                      year: 'numeric',
-                      month: 'short',
-                      day: 'numeric'
+                    {new Date(preset.createdAt).toLocaleDateString("en-US", {
+                      year: "numeric",
+                      month: "short",
+                      day: "numeric",
                     })}
                   </TableCell>
                   <TableCell className="text-right">
@@ -336,8 +336,8 @@ export function AlgorithmPresets({ algo }: { algo?: Algorithm }) {
       <EditPresetDialog
         isOpen={isEditDialogOpen}
         onClose={() => {
-          setIsEditDialogOpen(false);
-          setPresetToEdit(null);
+          setIsEditDialogOpen(false)
+          setPresetToEdit(null)
         }}
         preset={presetToEdit}
         onUpdatePreset={handleUpdatePreset}
@@ -348,12 +348,12 @@ export function AlgorithmPresets({ algo }: { algo?: Algorithm }) {
       <PresetDeleteDialog
         isOpen={isDeleteDialogOpen}
         onClose={() => {
-          setIsDeleteDialogOpen(false);
-          setPresetToDelete(null);
+          setIsDeleteDialogOpen(false)
+          setPresetToDelete(null)
         }}
         onConfirm={confirmDeletePreset}
         isLoading={deletePresetMutation.isPending}
       />
     </div>
-  );
+  )
 }

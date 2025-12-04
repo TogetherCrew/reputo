@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import type { AlgorithmPreset, AlgorithmPresetFrozen, Snapshot } from '@reputo/database';
+import type { AlgorithmPresetFrozen, Snapshot } from '@reputo/database';
 import { MODEL_NAMES } from '@reputo/database';
 import type { FilterQuery } from 'mongoose';
 import { AlgorithmPresetRepository } from '../algorithm-preset/algorithm-preset.repository';

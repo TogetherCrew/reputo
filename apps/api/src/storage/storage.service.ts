@@ -46,21 +46,21 @@ export class StorageService {
     }
   }
 
-  async verifyUpload(key: string): Promise<{ key: string; metadata: StorageMetadata }> {
+  async verify(key: string): Promise<{ key: string; metadata: StorageMetadata }> {
     try {
-      return await this.storage.verifyUpload(key);
+      return await this.storage.verify(key);
     } catch (error) {
       this.handleStorageError(error);
     }
   }
 
+  verifyUpload(key: string): Promise<{ key: string; metadata: StorageMetadata }> {
+    return this.verify(key);
+  }
+
   async presignGet(key: string): Promise<PresignedDownload> {
     try {
-      if (key.startsWith('uploads/')) {
-        return await this.storage.presignGet(key);
-      }
-
-      return await this.storage.presignGetForKey(key);
+      return await this.storage.presignGet(key);
     } catch (error) {
       this.handleStorageError(error);
     }
@@ -68,7 +68,7 @@ export class StorageService {
 
   async getObjectMetadata(key: string): Promise<StorageMetadata> {
     try {
-      const result = await this.storage.verifyUpload(key);
+      const result = await this.storage.verify(key);
       return result.metadata;
     } catch (error) {
       this.handleStorageError(error);

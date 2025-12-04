@@ -1,26 +1,19 @@
-import { ArrowLeft, Clock, Users } from "lucide-react";
-import Link from "next/link";
-import { notFound } from "next/navigation";
-import { Suspense } from "react";
-import { AlgorithmTabs } from "@/components/app/algorithm-tabs";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { algorithms, getAlgorithmById } from "@/core/algorithms";
+import { ArrowLeft, Clock, Users } from "lucide-react"
+import Link from "next/link"
+import { notFound } from "next/navigation"
+import { Suspense } from "react"
+import { AlgorithmTabs } from "@/components/app/algorithm-tabs"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { algorithms, getAlgorithmById } from "@/core/algorithms"
 
-type PageProps = { params: Promise<{ id: string }> };
+type PageProps = { params: Promise<{ id: string }> }
 
 export default async function AlgorithmPage({ params }: PageProps) {
-  const { id } = await params;
-  const algo = getAlgorithmById(id);
+  const { id } = await params
+  const algo = getAlgorithmById(id)
   if (!algo) {
-    notFound();
+    notFound()
   }
   return (
     <>
@@ -69,9 +62,9 @@ export default async function AlgorithmPage({ params }: PageProps) {
         <AlgorithmTabs algo={algo} />
       </Suspense>
     </>
-  );
+  )
 }
 
 export async function generateStaticParams() {
-  return algorithms.map((a) => ({ id: a.id }));
+  return algorithms.map((a) => ({ id: a.id }))
 }

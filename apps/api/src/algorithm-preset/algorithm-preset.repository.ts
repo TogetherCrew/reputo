@@ -1,12 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import type {
-  AlgorithmPreset,
-  AlgorithmPresetDoc,
-  AlgorithmPresetModel,
-  PaginateOptions,
-  PaginateResult,
-} from '@reputo/database';
+import type { AlgorithmPreset, AlgorithmPresetModel, PaginateOptions } from '@reputo/database';
 import { MODEL_NAMES } from '@reputo/database';
 import type { FilterQuery } from 'mongoose';
 import type { CreateAlgorithmPresetDto, UpdateAlgorithmPresetDto } from './dto';
