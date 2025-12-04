@@ -19,7 +19,11 @@
       }
     ],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@reputo/algorithm-validator": ["../../packages/algorithm-validator/src"],
+      "@reputo/reputation-algorithms": [
+        "../../packages/reputation-algorithms/src"
+      ]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
