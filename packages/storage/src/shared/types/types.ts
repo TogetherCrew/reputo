@@ -5,6 +5,15 @@
  */
 
 /**
+ * Types of storage keys supported by the system.
+ *
+ * - 'upload': User-uploaded files (`uploads/{timestamp}/{filename}.{ext}`)
+ * - 'snapshot-input': Snapshot input files (`snapshots/{snapshotId}/inputs/{inputName}.{ext}`)
+ * - 'snapshot-output': Snapshot output files (`snapshots/{snapshotId}/outputs/{algorithmKey}.{ext}`)
+ */
+export type StorageKeyType = 'upload' | 'snapshot-input' | 'snapshot-output';
+
+/**
  * Configuration options for the Storage instance.
  */
 export interface StorageConfig {
@@ -41,10 +50,84 @@ export interface StorageConfig {
 }
 
 /**
- * Parsed components of a storage key.
- * Extracted from the key path structure.
+ * Base fields shared by all parsed storage keys.
  */
-export interface ParsedStorageKey {
+interface ParsedStorageKeyBase {
+  /**
+   * Full filename including extension.
+   *
+   * @example 'data.csv'
+   */
+  filename: string;
+
+  /**
+   * File extension without the dot.
+   *
+   * @example 'csv'
+   */
+  ext: string;
+}
+
+/**
+ * Parsed upload key components.
+ * Pattern: `uploads/{timestamp}/{filename}.{ext}`
+ */
+export interface ParsedUploadKey extends ParsedStorageKeyBase {
+  type: 'upload';
+
+  /**
+   * Unix timestamp (seconds since epoch) when the key was generated.
+   */
+  timestamp: number;
+}
+
+/**
+ * Parsed snapshot input key components.
+ * Pattern: `snapshots/{snapshotId}/inputs/{inputName}.{ext}`
+ */
+export interface ParsedSnapshotInputKey extends ParsedStorageKeyBase {
+  type: 'snapshot-input';
+
+  /**
+   * Unique identifier of the snapshot.
+   */
+  snapshotId: string;
+
+  /**
+   * Logical input name (e.g., 'votes', 'users').
+   */
+  inputName: string;
+}
+
+/**
+ * Parsed snapshot output key components.
+ * Pattern: `snapshots/{snapshotId}/outputs/{algorithmKey}.{ext}`
+ */
+export interface ParsedSnapshotOutputKey extends ParsedStorageKeyBase {
+  type: 'snapshot-output';
+
+  /**
+   * Unique identifier of the snapshot.
+   */
+  snapshotId: string;
+
+  /**
+   * Algorithm key that produced this output (e.g., 'voting_engagement').
+   */
+  algorithmKey: string;
+}
+
+/**
+ * Parsed components of a storage key.
+ * Discriminated union based on the `type` field.
+ */
+export type ParsedStorageKey = ParsedUploadKey | ParsedSnapshotInputKey | ParsedSnapshotOutputKey;
+
+/**
+ * @deprecated Use ParsedStorageKey with type discrimination instead.
+ * Legacy interface for backward compatibility.
+ */
+export interface LegacyParsedStorageKey {
   /**
    * Full filename including extension.
    *
@@ -61,6 +144,7 @@ export interface ParsedStorageKey {
 
   /**
    * Unix timestamp (seconds since epoch) when the key was generated.
+   * Only present for upload keys.
    */
   timestamp: number;
 }

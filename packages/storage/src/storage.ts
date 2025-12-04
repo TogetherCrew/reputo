@@ -12,8 +12,14 @@ import {
   InvalidContentTypeError,
   ObjectNotFoundError,
 } from './shared/errors/index.js';
-import type { PresignedDownload, PresignedUpload, StorageConfig, StorageMetadata } from './shared/types/index.js';
-import { generateUploadKey, parseStorageKey } from './shared/utils/keys.js';
+import type {
+  ParsedStorageKey,
+  PresignedDownload,
+  PresignedUpload,
+  StorageConfig,
+  StorageMetadata,
+} from './shared/types/index.js';
+import { detectKeyType, generateUploadKey, parseStorageKey } from './shared/utils/keys.js';
 
 /**
  * Main storage class that wraps an S3Client instance.
@@ -119,47 +125,51 @@ export class Storage {
   }
 
   /**
-   * Verifies that an uploaded file meets size and content-type requirements.
+   * Verifies that a file meets size requirements and optionally content-type policies.
    *
-   * This should be called after a client uploads to a presigned URL
-   * to confirm the upload was successful and meets policy constraints.
+   * Supports all key patterns:
+   * - Upload keys (`uploads/...`): validates size AND content type against allowlist
+   * - Snapshot keys (`snapshots/...`): validates size only (internal use)
    *
-   * @param key - S3 key of the uploaded object
-   * @returns Upload verification result with metadata
+   * @param key - S3 key of the object to verify
+   * @returns Verification result with metadata
    * @throws {ObjectNotFoundError} If the object doesn't exist
    * @throws {HeadObjectFailedError} If metadata retrieval fails
    * @throws {FileTooLargeError} If file exceeds max size
-   * @throws {InvalidContentTypeError} If content type is not allowed
+   * @throws {InvalidContentTypeError} If content type is not allowed (upload keys only)
    *
    * @example
    * ```typescript
-   * const result = await storage.verifyUpload('uploads/1732147200/votes.csv');
-   * // result.key: 'uploads/1732147200/votes.csv'
-   * // result.metadata: {
-   * //   filename: 'votes.csv',
-   * //   ext: 'csv',
-   * //   size: 1024,
-   * //   contentType: 'text/csv',
-   * //   timestamp: 1732147200
-   * // }
+   * // Verify an upload (validates content type)
+   * const result = await storage.verify('uploads/1732147200/votes.csv');
+   *
+   * // Verify a snapshot output (skips content type validation)
+   * const result = await storage.verify('snapshots/abc123/outputs/voting_engagement.csv');
    * ```
    */
-  async verifyUpload(key: string): Promise<{ key: string; metadata: StorageMetadata }> {
+  async verify(key: string): Promise<{ key: string; metadata: StorageMetadata }> {
     const head = await this.getObjectMetadata(key);
 
     const size = head.ContentLength ?? 0;
     const contentType = head.ContentType ?? 'application/octet-stream';
 
+    // Always validate file size
     this.validateFileSize(size);
-    this.validateContentType(contentType);
 
-    const { filename, ext, timestamp } = parseStorageKey(key);
+    // Only validate content type for user uploads (not internal snapshot files)
+    const keyType = detectKeyType(key);
+    if (keyType === 'upload') {
+      this.validateContentType(contentType);
+    }
+
+    const parsed = parseStorageKey(key);
+    const timestamp = this.getTimestampFromParsedKey(parsed);
 
     return {
       key,
       metadata: {
-        filename,
-        ext,
+        filename: parsed.filename,
+        ext: parsed.ext,
         size,
         contentType,
         timestamp,
@@ -168,12 +178,22 @@ export class Storage {
   }
 
   /**
-   * Generates a presigned URL for downloading a file created via the upload
-   * pipeline.
+   * @deprecated Use {@link verify} instead. This method is kept for backward compatibility.
+   */
+  async verifyUpload(key: string): Promise<{ key: string; metadata: StorageMetadata }> {
+    return this.verify(key);
+  }
+
+  /**
+   * Generates a presigned URL for downloading a file.
    *
-   * Expects keys in the standard `uploads/{timestamp}/{filename}.{ext}` format.
-   * For non-standard keys (e.g. internal snapshot outputs), use
-   * {@link presignGetForKey}.
+   * Supports all key patterns:
+   * - Upload keys: `uploads/{timestamp}/{filename}.{ext}`
+   * - Snapshot inputs: `snapshots/{snapshotId}/inputs/{inputName}.{ext}`
+   * - Snapshot outputs: `snapshots/{snapshotId}/outputs/{algorithmKey}.{ext}`
+   *
+   * For upload keys, the timestamp is extracted from the key path.
+   * For snapshot keys, the timestamp is set to the current Unix timestamp.
    *
    * @param key - S3 key of the object to download
    * @returns Download information including presigned URL and metadata
@@ -182,10 +202,11 @@ export class Storage {
    *
    * @example
    * ```typescript
+   * // Download an upload
    * const result = await storage.presignGet('uploads/1732147200/votes.csv');
-   * // result.url: 'https://bucket.s3.amazonaws.com/...'
-   * // result.expiresIn: 900
-   * // result.metadata: { filename: 'votes.csv', ... }
+   *
+   * // Download a snapshot output
+   * const result = await storage.presignGet('snapshots/abc123/outputs/voting_engagement.csv');
    * ```
    */
   async presignGet(key: string): Promise<PresignedDownload> {
@@ -193,7 +214,9 @@ export class Storage {
 
     const size = head.ContentLength ?? 0;
     const contentType = head.ContentType ?? 'application/octet-stream';
-    const { filename, ext, timestamp } = parseStorageKey(key);
+
+    const parsed = parseStorageKey(key);
+    const timestamp = this.getTimestampFromParsedKey(parsed);
 
     const command = new GetObjectCommand({
       Bucket: this.bucket,
@@ -208,8 +231,8 @@ export class Storage {
       url,
       expiresIn: this.presignGetTtl,
       metadata: {
-        filename,
-        ext,
+        filename: parsed.filename,
+        ext: parsed.ext,
         size,
         contentType,
         timestamp,
@@ -218,53 +241,10 @@ export class Storage {
   }
 
   /**
-   * Generates a presigned URL for downloading a file with an arbitrary key.
-   *
-   * This is intended for internal objects that do not follow the standard
-   * `uploads/{timestamp}/{filename}.{ext}` pattern, such as snapshot outputs:
-   * `snapshots/{snapshotId}/outputs/{algorithmKey}.csv`.
-   *
-   * Metadata is derived from the key's last path segment and object headers.
-   * The `timestamp` field is populated with the current Unix timestamp, since
-   * it cannot be inferred from the key structure.
-   *
-   * @param key - S3 key of the object to download
-   * @returns Download information including presigned URL and metadata
-   * @throws {ObjectNotFoundError} If the object doesn't exist
-   * @throws {HeadObjectFailedError} If metadata retrieval fails
+   * @deprecated Use {@link presignGet} instead. This method is kept for backward compatibility.
    */
   async presignGetForKey(key: string): Promise<PresignedDownload> {
-    const head = await this.getObjectMetadata(key);
-
-    const size = head.ContentLength ?? 0;
-    const contentType = head.ContentType ?? 'application/octet-stream';
-
-    const filenameSegment = key.split('/').filter(Boolean).pop() ?? 'file';
-    const lastDotIndex = filenameSegment.lastIndexOf('.');
-
-    const filename = lastDotIndex === -1 ? filenameSegment : filenameSegment.substring(0, lastDotIndex);
-    const ext = lastDotIndex === -1 ? '' : filenameSegment.substring(lastDotIndex + 1);
-
-    const command = new GetObjectCommand({
-      Bucket: this.bucket,
-      Key: key,
-    });
-
-    const url = await getSignedUrl(this.s3Client, command, {
-      expiresIn: this.presignGetTtl,
-    });
-
-    return {
-      url,
-      expiresIn: this.presignGetTtl,
-      metadata: {
-        filename,
-        ext,
-        size,
-        contentType,
-        timestamp: Math.floor(Date.now() / 1000),
-      },
-    };
+    return this.presignGet(key);
   }
 
   /**
@@ -320,21 +300,31 @@ export class Storage {
    * Use this for server-side uploads. For client uploads,
    * use presignPut() to generate an upload URL instead.
    *
+   * Content type validation is only applied for upload keys (`uploads/...`).
+   * Snapshot keys (`snapshots/...`) bypass content type validation for internal use.
+   *
    * @param key - S3 key where the object should be stored
    * @param body - Object contents (Buffer, Uint8Array, or string)
-   * @param contentType - Optional MIME type (validated if provided)
+   * @param contentType - Optional MIME type (validated for upload keys only)
    * @returns The key of the stored object
-   * @throws {InvalidContentTypeError} If content type is provided and not allowed
+   * @throws {InvalidContentTypeError} If content type is not allowed (upload keys only)
    *
    * @example
    * ```typescript
+   * // Upload with content type validation
    * const csvData = 'name,score\nAlice,100\nBob,95';
    * const key = 'uploads/1732147200/results.csv';
    * await storage.putObject(key, csvData, 'text/csv');
+   *
+   * // Snapshot output (skips content type validation)
+   * const outputKey = 'snapshots/abc123/outputs/voting_engagement.csv';
+   * await storage.putObject(outputKey, csvData, 'text/csv');
    * ```
    */
   async putObject(key: string, body: Buffer | Uint8Array | string, contentType?: string): Promise<string> {
-    if (contentType) {
+    // Only validate content type for user uploads (not internal snapshot files)
+    const keyType = detectKeyType(key);
+    if (contentType && keyType === 'upload') {
       this.validateContentType(contentType);
     }
 
@@ -376,6 +366,26 @@ export class Storage {
     if (!this.contentTypeAllowlist.has(contentType)) {
       throw new InvalidContentTypeError(contentType, [...this.contentTypeAllowlist]);
     }
+  }
+
+  /**
+   * Extracts timestamp from a parsed storage key.
+   *
+   * For upload keys, returns the timestamp from the key path.
+   * For snapshot keys, returns the current Unix timestamp.
+   *
+   * @param parsed - Parsed storage key
+   * @returns Unix timestamp in seconds
+   *
+   * @private
+   */
+  private getTimestampFromParsedKey(parsed: ParsedStorageKey): number {
+    if (parsed.type === 'upload') {
+      return parsed.timestamp;
+    }
+
+    // For snapshot keys, use current timestamp
+    return Math.floor(Date.now() / 1000);
   }
 
   /**
