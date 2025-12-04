@@ -4,7 +4,7 @@
 
 import type { Snapshot } from '@reputo/database';
 import type { Model } from 'mongoose';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { createDatabaseActivities } from '../../../src/activities/database.activities.js';
 
 describe('Database Activities', () => {

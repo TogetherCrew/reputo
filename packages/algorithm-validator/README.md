@@ -6,13 +6,13 @@ This package is **self-contained** and has no dependencies on other Reputo packa
 
 ## Features
 
--   **Type-safe**: Full TypeScript support with comprehensive type definitions
--   **Zod-based**: Built on Zod v4 for robust runtime validation
--   **Universal**: Runs identically in Node.js and browser environments
--   **Schema-driven**: Build Zod schemas from AlgorithmDefinition
--   **CSV validation**: Comprehensive CSV structure and column validation
--   **Algorithm preset validation**: Pre-built schemas for algorithm preset creation
--   **Self-contained**: No external Reputo package dependencies
+- **Type-safe**: Full TypeScript support with comprehensive type definitions
+- **Zod-based**: Built on Zod v4 for robust runtime validation
+- **Universal**: Runs identically in Node.js and browser environments
+- **Schema-driven**: Build Zod schemas from AlgorithmDefinition
+- **CSV validation**: Comprehensive CSV structure and column validation
+- **Algorithm preset validation**: Pre-built schemas for algorithm preset creation
+- **Self-contained**: No external Reputo package dependencies
 
 ## Installation
 
@@ -120,12 +120,12 @@ const result = await validateCSVContent(csvString, csvConfig)
 
 The CSV validator:
 
--   Normalizes column names (handles BOM, spaces, dashes, quotes)
--   Validates required columns with alias support
--   Checks row count limits
--   Validates enum column values
--   Detects delimiter automatically if not specified
--   Works with File objects (browser), strings, or Buffers (Node.js)
+- Normalizes column names (handles BOM, spaces, dashes, quotes)
+- Validates required columns with alias support
+- Checks row count limits
+- Validates enum column values
+- Detects delimiter automatically if not specified
+- Works with File objects (browser), strings, or Buffers (Node.js)
 
 ### Algorithm Preset Validation
 
@@ -165,17 +165,17 @@ All types are exported from this package:
 
 ### Validation Result Types
 
--   `ValidationResult`: Result of payload validation
--   `CSVValidationResult`: Result of CSV content validation
+- `ValidationResult`: Result of payload validation
+- `CSVValidationResult`: Result of CSV content validation
 
 ### Algorithm Definition Types
 
--   `AlgorithmDefinition`: Complete algorithm definition structure
--   `CsvIoItem`: CSV input/output item configuration
--   `IoItem`: Union type for all I/O item types
--   `AlgorithmCategory`: Supported algorithm categories
--   `IoType`: Supported input/output types
--   `AlgorithmRuntimeMetadata`: Runtime execution metadata
+- `AlgorithmDefinition`: Complete algorithm definition structure
+- `CsvIoItem`: CSV input/output item configuration
+- `IoItem`: Union type for all I/O item types
+- `AlgorithmCategory`: Supported algorithm categories
+- `IoType`: Supported input/output types
+- `AlgorithmRuntimeMetadata`: Runtime execution metadata
 
 ## Building Zod Schemas
 

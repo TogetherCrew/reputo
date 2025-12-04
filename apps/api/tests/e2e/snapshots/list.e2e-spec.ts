@@ -36,8 +36,8 @@ describe('GET /api/v1/snapshots', () => {
     const preset1 = await insertAlgorithmPreset(algorithmPresetModel, randomAlgorithmPreset());
     const preset2 = await insertAlgorithmPreset(algorithmPresetModel, randomAlgorithmPreset());
 
-    const { createdAt: c1, updatedAt: u1, ...preset1Data } = preset1.toObject();
-    const { createdAt: c2, updatedAt: u2, ...preset2Data } = preset2.toObject();
+    const { createdAt: _c1, updatedAt: _u1, ...preset1Data } = preset1.toObject();
+    const { createdAt: _c2, updatedAt: _u2, ...preset2Data } = preset2.toObject();
 
     for (let i = 0; i < 15; i++) {
       const preset = i % 2 === 0 ? preset1 : preset2;
@@ -67,7 +67,7 @@ describe('GET /api/v1/snapshots', () => {
 
   it('should filter by status=queued (200)', async () => {
     const preset = await insertAlgorithmPreset(algorithmPresetModel);
-    const { createdAt, updatedAt, ...presetData } = preset.toObject();
+    const { createdAt: _createdAt, updatedAt: _updatedAt, ...presetData } = preset.toObject();
 
     const snapshot1 = await insertSnapshot(snapshotModel, preset._id.toString(), presetData);
     await snapshotModel.updateOne({ _id: snapshot1._id }, { status: 'queued' });
@@ -82,7 +82,7 @@ describe('GET /api/v1/snapshots', () => {
 
   it('should filter by status=running (200)', async () => {
     const preset = await insertAlgorithmPreset(algorithmPresetModel);
-    const { createdAt, updatedAt, ...presetData } = preset.toObject();
+    const { createdAt: _createdAt, updatedAt: _updatedAt, ...presetData } = preset.toObject();
 
     await insertSnapshot(snapshotModel, preset._id.toString(), presetData);
     const snapshot2 = await insertSnapshot(snapshotModel, preset._id.toString(), presetData);
@@ -96,7 +96,7 @@ describe('GET /api/v1/snapshots', () => {
 
   it('should filter by status=completed (200)', async () => {
     const preset = await insertAlgorithmPreset(algorithmPresetModel);
-    const { createdAt, updatedAt, ...presetData } = preset.toObject();
+    const { createdAt: _createdAt, updatedAt: _updatedAt, ...presetData } = preset.toObject();
 
     await insertSnapshot(snapshotModel, preset._id.toString(), presetData);
     const snapshot2 = await insertSnapshot(snapshotModel, preset._id.toString(), presetData);
@@ -110,7 +110,7 @@ describe('GET /api/v1/snapshots', () => {
 
   it('should filter by status=failed (200)', async () => {
     const preset = await insertAlgorithmPreset(algorithmPresetModel);
-    const { createdAt, updatedAt, ...presetData } = preset.toObject();
+    const { createdAt: _createdAt, updatedAt: _updatedAt, ...presetData } = preset.toObject();
 
     await insertSnapshot(snapshotModel, preset._id.toString(), presetData);
     const snapshot2 = await insertSnapshot(snapshotModel, preset._id.toString(), presetData);
@@ -124,7 +124,7 @@ describe('GET /api/v1/snapshots', () => {
 
   it('should filter by status=cancelled (200)', async () => {
     const preset = await insertAlgorithmPreset(algorithmPresetModel);
-    const { createdAt, updatedAt, ...presetData } = preset.toObject();
+    const { createdAt: _createdAt, updatedAt: _updatedAt, ...presetData } = preset.toObject();
 
     await insertSnapshot(snapshotModel, preset._id.toString(), presetData);
     const snapshot2 = await insertSnapshot(snapshotModel, preset._id.toString(), presetData);
@@ -144,8 +144,8 @@ describe('GET /api/v1/snapshots', () => {
       key: 'other_key',
     });
 
-    const { createdAt: c1, updatedAt: u1, ...preset1Data } = preset1.toObject();
-    const { createdAt: c2, updatedAt: u2, ...preset2Data } = preset2.toObject();
+    const { createdAt: _c1, updatedAt: _u1, ...preset1Data } = preset1.toObject();
+    const { createdAt: _c2, updatedAt: _u2, ...preset2Data } = preset2.toObject();
 
     await insertSnapshot(snapshotModel, preset1._id.toString(), preset1Data);
     await insertSnapshot(snapshotModel, preset2._id.toString(), preset2Data);
@@ -164,8 +164,8 @@ describe('GET /api/v1/snapshots', () => {
       version: '1.0.0',
     });
 
-    const { createdAt: c1, updatedAt: u1, ...preset1Data } = preset1.toObject();
-    const { createdAt: c2, updatedAt: u2, ...preset2Data } = preset2.toObject();
+    const { createdAt: _c1, updatedAt: _u1, ...preset1Data } = preset1.toObject();
+    const { createdAt: _c2, updatedAt: _u2, ...preset2Data } = preset2.toObject();
 
     await insertSnapshot(snapshotModel, preset1._id.toString(), preset1Data);
     await insertSnapshot(snapshotModel, preset2._id.toString(), preset2Data);
@@ -180,8 +180,8 @@ describe('GET /api/v1/snapshots', () => {
     const preset1 = await insertAlgorithmPreset(algorithmPresetModel);
     const preset2 = await insertAlgorithmPreset(algorithmPresetModel);
 
-    const { createdAt: c1, updatedAt: u1, ...preset1Data } = preset1.toObject();
-    const { createdAt: c2, updatedAt: u2, ...preset2Data } = preset2.toObject();
+    const { createdAt: _c1, updatedAt: _u1, ...preset1Data } = preset1.toObject();
+    const { createdAt: _c2, updatedAt: _u2, ...preset2Data } = preset2.toObject();
 
     await insertSnapshot(snapshotModel, preset1._id.toString(), preset1Data);
     await insertSnapshot(snapshotModel, preset2._id.toString(), preset2Data);
@@ -196,8 +196,8 @@ describe('GET /api/v1/snapshots', () => {
     const preset1 = await insertAlgorithmPreset(algorithmPresetModel);
     const preset2 = await insertAlgorithmPreset(algorithmPresetModel);
 
-    const { createdAt: c1, updatedAt: u1, ...preset1Data } = preset1.toObject();
-    const { createdAt: c2, updatedAt: u2, ...preset2Data } = preset2.toObject();
+    const { createdAt: _c1, updatedAt: _u1, ...preset1Data } = preset1.toObject();
+    const { createdAt: _c2, updatedAt: _u2, ...preset2Data } = preset2.toObject();
 
     const snapshot1 = await insertSnapshot(snapshotModel, preset1._id.toString(), preset1Data);
     await snapshotModel.updateOne({ _id: snapshot1._id }, { status: 'completed' });
@@ -217,7 +217,7 @@ describe('GET /api/v1/snapshots', () => {
 
   it('should sort by createdAt:desc (200)', async () => {
     const preset = await insertAlgorithmPreset(algorithmPresetModel);
-    const { createdAt, updatedAt, ...presetData } = preset.toObject();
+    const { createdAt: _createdAt, updatedAt: _updatedAt, ...presetData } = preset.toObject();
 
     const snapshot1 = await insertSnapshot(snapshotModel, preset._id.toString(), presetData);
     await new Promise((resolve) => setTimeout(resolve, 10));
@@ -231,7 +231,7 @@ describe('GET /api/v1/snapshots', () => {
 
   it('should return empty results when filters match nothing (200)', async () => {
     const preset = await insertAlgorithmPreset(algorithmPresetModel);
-    const { createdAt, updatedAt, ...presetData } = preset.toObject();
+    const { createdAt: _createdAt, updatedAt: _updatedAt, ...presetData } = preset.toObject();
 
     await insertSnapshot(snapshotModel, preset._id.toString(), presetData);
 
@@ -247,7 +247,7 @@ describe('GET /api/v1/snapshots', () => {
       key: 'test_key',
       version: '1.0.0',
     });
-    const { createdAt, updatedAt, ...presetData } = preset.toObject();
+    const { createdAt: _createdAt, updatedAt: _updatedAt, ...presetData } = preset.toObject();
 
     await insertSnapshot(snapshotModel, preset._id.toString(), presetData);
 

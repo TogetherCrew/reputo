@@ -36,7 +36,7 @@ describe('GET /api/v1/snapshots/:id', () => {
       key: 'test_key',
       version: '2.0.0',
     });
-    const { createdAt, updatedAt, ...presetData } = preset.toObject();
+    const { createdAt: _createdAt, updatedAt: _updatedAt, ...presetData } = preset.toObject();
 
     const snapshot = await insertSnapshot(snapshotModel, preset._id.toString(), presetData);
 

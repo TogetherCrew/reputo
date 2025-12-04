@@ -72,15 +72,15 @@ describe('GET /api/v1/algorithm-presets', () => {
   });
 
   it('should sort by createdAt:desc (200)', async () => {
-    const preset1 = await insertAlgorithmPreset(algorithmPresetModel, {
+    const _preset1 = await insertAlgorithmPreset(algorithmPresetModel, {
       key: 'preset_1',
     });
     await new Promise((resolve) => setTimeout(resolve, 10));
-    const preset2 = await insertAlgorithmPreset(algorithmPresetModel, {
+    const _preset2 = await insertAlgorithmPreset(algorithmPresetModel, {
       key: 'preset_2',
     });
     await new Promise((resolve) => setTimeout(resolve, 10));
-    const preset3 = await insertAlgorithmPreset(algorithmPresetModel, {
+    const _preset3 = await insertAlgorithmPreset(algorithmPresetModel, {
       key: 'preset_3',
     });
 

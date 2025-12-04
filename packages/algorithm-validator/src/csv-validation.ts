@@ -167,7 +167,7 @@ export async function validateCSVContent(
     const headersNormalized = headersSanitized.map((h) => normalizeKey(h));
 
     // Debug logs (only in development/debug mode)
-    if (process.env['NODE_ENV'] === 'development') {
+    if (process.env.NODE_ENV === 'development') {
       console.groupCollapsed?.('[CSV Validation] Debug');
       console.log?.('Input', fileInfo);
       console.log?.('Had BOM', hadBom);

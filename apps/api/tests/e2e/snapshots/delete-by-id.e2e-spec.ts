@@ -37,7 +37,7 @@ describe('DELETE /api/v1/snapshots/:id', () => {
       version: '1.0.0',
       inputs: [],
     });
-    const { createdAt, updatedAt, ...presetData } = preset.toObject();
+    const { createdAt: _createdAt, updatedAt: _updatedAt, ...presetData } = preset.toObject();
     const snapshot = await insertSnapshot(snapshotModel, preset._id.toString(), presetData);
 
     const res = await api(app).delete(`/snapshots/${snapshot._id}`).expect(204);
@@ -67,7 +67,7 @@ describe('DELETE /api/v1/snapshots/:id', () => {
       version: '1.0.0',
       inputs: [],
     });
-    const { createdAt, updatedAt, ...presetData } = preset.toObject();
+    const { createdAt: _createdAt, updatedAt: _updatedAt, ...presetData } = preset.toObject();
     const snapshot = await insertSnapshot(snapshotModel, preset._id.toString(), presetData);
 
     await api(app).delete(`/snapshots/${snapshot._id}`).expect(204);
