@@ -8,6 +8,9 @@ const nextConfig: NextConfig = {
     "@reputo/algorithm-validator",
   ],
   outputFileTracingRoot: path.join(__dirname, "../../"),
+  turbopack: {
+    resolveExtensions: [".tsx", ".ts", ".jsx", ".js", ".mjs", ".json"],
+  },
 }
 
 export default nextConfig
