@@ -12,25 +12,17 @@ import { StorageService } from '../storage/storage.service';
 import { AlgorithmPresetRepository } from './algorithm-preset.repository';
 import type { CreateAlgorithmPresetDto, ListAlgorithmPresetsQueryDto, UpdateAlgorithmPresetDto } from './dto';
 
-/** Storage configuration values from environment */
-interface StorageConfig {
-  maxSizeBytes: number;
-  contentTypeAllowlist: string;
-}
-
 @Injectable()
 export class AlgorithmPresetService {
-  private readonly storageConfig: StorageConfig;
-
+  private readonly storageMaxSizeBytes: number;
+  private readonly storageContentTypeAllowlist: string;
   constructor(
     private readonly repository: AlgorithmPresetRepository,
     private readonly storageService: StorageService,
     configService: ConfigService,
   ) {
-    this.storageConfig = {
-      maxSizeBytes: configService.get<number>('storage.maxSizeBytes') as number,
-      contentTypeAllowlist: configService.get<string>('storage.contentTypeAllowlist') as string,
-    };
+    this.storageMaxSizeBytes = configService.get<number>('storage.maxSizeBytes') as number;
+    this.storageContentTypeAllowlist = configService.get<string>('storage.contentTypeAllowlist') as string;
   }
 
   async create(createDto: CreateAlgorithmPresetDto) {
@@ -70,11 +62,6 @@ export class AlgorithmPresetService {
     }
   }
 
-  /**
-   * Validates all storage-backed inputs (CSV files) in the preset.
-   * Performs metadata validation and CSV content validation.
-   * Collects all errors across all inputs before throwing.
-   */
   private async validateStorageInputs(dto: CreateAlgorithmPresetDto, definition: AlgorithmDefinition): Promise<void> {
     const validationErrors: StorageInputValidationError[] = [];
 
@@ -93,12 +80,10 @@ export class AlgorithmPresetService {
       const csvInput = definitionInput as CsvIoItem;
       const inputErrors: string[] = [];
 
-      // Get and validate metadata
       const metadata = await this.storageService.getObjectMetadata(storageKey);
       const metadataErrors = this.validateStorageMetadata(metadata, csvInput);
       inputErrors.push(...metadataErrors);
 
-      // Fetch file and validate CSV content
       const fileBuffer = await this.storageService.getObject(storageKey);
       const csvResult = await validateCSVContent(fileBuffer, csvInput.csv);
       if (!csvResult.valid) {
@@ -118,25 +103,16 @@ export class AlgorithmPresetService {
     }
   }
 
-  /**
-   * Validates storage metadata against API config and algorithm definition limits.
-   * @returns Array of error messages (empty if valid)
-   */
   private validateStorageMetadata(metadata: StorageMetadata, csvInput: CsvIoItem): string[] {
     const errors: string[] = [];
-    const allowedTypes = this.storageConfig.contentTypeAllowlist.split(',').map((t) => t.trim());
+    const allowedTypes = this.storageContentTypeAllowlist.split(',').map((t) => t.trim());
 
-    // Validate content type against API config allowlist
     if (!allowedTypes.includes(metadata.contentType)) {
       errors.push(`Invalid content type: ${metadata.contentType}. Allowed types: ${allowedTypes.join(', ')}`);
     }
-
-    // Validate size against API config limit
-    if (metadata.size > this.storageConfig.maxSizeBytes) {
-      errors.push(`File size ${metadata.size} bytes exceeds API limit of ${this.storageConfig.maxSizeBytes} bytes`);
+    if (metadata.size > this.storageMaxSizeBytes) {
+      errors.push(`File size ${metadata.size} bytes exceeds API limit of ${this.storageMaxSizeBytes} bytes`);
     }
-
-    // Validate size against algorithm definition's maxBytes (if specified)
     if (csvInput.csv.maxBytes !== undefined && metadata.size > csvInput.csv.maxBytes) {
       errors.push(`File size ${metadata.size} bytes exceeds algorithm limit of ${csvInput.csv.maxBytes} bytes`);
     }
