@@ -8,6 +8,16 @@ const nextConfig: NextConfig = {
         '@reputo/algorithm-validator',
         '@reputo/reputation-algorithms',
     ],
+    // Turbopack aliases to resolve workspace packages from built dist
+    // This is needed for pnpm injected workspace packages with Turbopack
+    turbopack: {
+        resolveAlias: {
+            '@reputo/algorithm-validator':
+                '../../packages/algorithm-validator/dist/index.js',
+            '@reputo/reputation-algorithms':
+                '../../packages/reputation-algorithms/dist/index.js',
+        },
+    },
 }
 
 export default nextConfig
