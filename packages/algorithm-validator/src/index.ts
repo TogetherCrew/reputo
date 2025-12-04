@@ -7,8 +7,8 @@
  * that runs identically on both client and server, ensuring consistent
  * validation across the entire application.
  *
- * Note: Algorithm definition types (AlgorithmDefinition, CsvIoItem, etc.) should
- * be imported directly from @reputo/reputation-algorithms.
+ * This package is self-contained and has no dependencies on other Reputo
+ * packages. Algorithm definition types are included for validation purposes.
  *
  * @packageDocumentation
  */
@@ -23,11 +23,19 @@ export {
   createAlgorithmPresetSchema,
   validateCreateAlgorithmPreset,
 } from './schemas/index.js';
-// Type exports (validation result types only)
+// Algorithm definition type exports (self-contained)
+// Type exports (validation result types)
 export type {
+  AlgorithmCategory,
+  AlgorithmDefinition,
+  AlgorithmRuntimeMetadata,
   CSVValidationResult,
+  CsvIoItem,
+  IoItem,
+  IoType,
   ValidationResult,
-} from './types.js';
+} from './types/index.js';
+
 // Validation exports
 export {
   buildZodSchema,

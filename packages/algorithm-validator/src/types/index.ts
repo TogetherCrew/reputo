@@ -1,12 +1,16 @@
 /**
- * Core type definitions for algorithm validation.
- *
- * These types are used for validation on both client and server, ensuring
- * consistent type safety and validation rules across the entire application.
- *
- * Note: Algorithm definition types (AlgorithmDefinition, CsvIoItem, etc.) should
- * be imported directly from @reputo/reputation-algorithms as the single source of truth.
+ * Type exports for algorithm validation.
  */
+
+// Algorithm definition types (self-contained, no external dependencies)
+export type {
+  AlgorithmCategory,
+  AlgorithmDefinition,
+  AlgorithmRuntimeMetadata,
+  CsvIoItem,
+  IoItem,
+  IoType,
+} from './algorithm.js';
 
 /**
  * Result of payload validation against an AlgorithmDefinition.

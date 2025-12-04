@@ -3,9 +3,8 @@
  * This ensures consistency across the entire application
  */
 
-import type { AlgorithmDefinition, CsvIoItem } from '@reputo/reputation-algorithms';
 import { z } from 'zod/v4';
-import type { ValidationResult } from './types.js';
+import type { AlgorithmDefinition, CsvIoItem, ValidationResult } from './types/index.js';
 
 /**
  * Validates data against an AlgorithmDefinition.

@@ -27,7 +27,6 @@
         "clean": "rm -rf coverage dist docs node_modules tsconfig.tsbuildinfo"
     },
     "dependencies": {
-        "@reputo/reputation-algorithms": "workspace:*",
         "zod": "^4.1.0"
     },
     "devDependencies": {

@@ -2,7 +2,7 @@
 
 Shared Zod-based validation library for the Reputo ecosystem. Provides schema building, payload validation, and CSV content validation that runs identically on both client and server.
 
-**Important**: Algorithm definition types (`AlgorithmDefinition`, `CsvIoItem`, etc.) should be imported directly from `@reputo/reputation-algorithms`, not from this package.
+This package is **self-contained** and has no dependencies on other Reputo packages. Algorithm definition types are included for validation purposes.
 
 ## Features
 
@@ -12,6 +12,7 @@ Shared Zod-based validation library for the Reputo ecosystem. Provides schema bu
 -   **Schema-driven**: Build Zod schemas from AlgorithmDefinition
 -   **CSV validation**: Comprehensive CSV structure and column validation
 -   **Algorithm preset validation**: Pre-built schemas for algorithm preset creation
+-   **Self-contained**: No external Reputo package dependencies
 
 ## Installation
 
@@ -28,18 +29,36 @@ See the full API reference in [docs](docs/globals.md).
 Validate data against an AlgorithmDefinition. This works identically on both client and server:
 
 ```typescript
-import { validatePayload } from '@reputo/algorithm-validator'
 import {
-    getAlgorithmDefinition,
+    validatePayload,
     type AlgorithmDefinition,
-} from '@reputo/reputation-algorithms'
+} from '@reputo/algorithm-validator'
 
-// Get algorithm definition from the registry
-const definitionJson = getAlgorithmDefinition({
+// Define or receive an algorithm definition
+const definition: AlgorithmDefinition = {
     key: 'voting_engagement',
+    name: 'Voting Engagement',
+    category: 'Engagement',
+    description: 'Calculates engagement based on voting patterns',
     version: '1.0.0',
-})
-const definition = JSON.parse(definitionJson) as AlgorithmDefinition
+    inputs: [
+        {
+            key: 'votes',
+            label: 'Votes CSV',
+            type: 'csv',
+            csv: {
+                hasHeader: true,
+                delimiter: ',',
+                columns: [
+                    { key: 'user_id', type: 'string', required: true },
+                    { key: 'vote', type: 'enum', enum: ['upvote', 'downvote'] },
+                ],
+            },
+        },
+    ],
+    outputs: [],
+    runtime: { taskQueue: 'default', activity: 'calculateVotingEngagement' },
+}
 
 // Validate payload
 const result = validatePayload(definition, {
@@ -58,8 +77,7 @@ if (result.success) {
 Validate CSV files against column definitions:
 
 ```typescript
-import { validateCSVContent } from '@reputo/algorithm-validator'
-import type { CsvIoItem } from '@reputo/reputation-algorithms'
+import { validateCSVContent, type CsvIoItem } from '@reputo/algorithm-validator'
 
 const csvConfig: CsvIoItem['csv'] = {
     hasHeader: true,
@@ -143,26 +161,32 @@ const parsed = zodSchema.parse(presetData)
 
 ## Type Definitions
 
-### Validation Result Types (from this package)
+All types are exported from this package:
+
+### Validation Result Types
 
 -   `ValidationResult`: Result of payload validation
 -   `CSVValidationResult`: Result of CSV content validation
 
-### Algorithm Types (from @reputo/reputation-algorithms)
+### Algorithm Definition Types
 
-Import algorithm definition types directly from `@reputo/reputation-algorithms`:
-
--   `AlgorithmDefinition`: Complete algorithm definition structure with inputs, outputs, and runtime metadata
+-   `AlgorithmDefinition`: Complete algorithm definition structure
 -   `CsvIoItem`: CSV input/output item configuration
--   `AlgorithmCategory`, `IoType`, etc.
+-   `IoItem`: Union type for all I/O item types
+-   `AlgorithmCategory`: Supported algorithm categories
+-   `IoType`: Supported input/output types
+-   `AlgorithmRuntimeMetadata`: Runtime execution metadata
 
 ## Building Zod Schemas
 
 You can build Zod schemas from algorithm definitions for custom validation:
 
 ```typescript
-import { buildZodSchema, type InferSchemaType } from '@reputo/algorithm-validator'
-import type { AlgorithmDefinition } from '@reputo/reputation-algorithms'
+import {
+    buildZodSchema,
+    type InferSchemaType,
+    type AlgorithmDefinition,
+} from '@reputo/algorithm-validator'
 
 const definition: AlgorithmDefinition = {
     // ... your definition

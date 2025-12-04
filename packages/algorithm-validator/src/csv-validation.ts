@@ -4,8 +4,7 @@
  * Works in both browser (File) and Node.js (string/Buffer) environments
  */
 
-import type { CsvIoItem } from '@reputo/reputation-algorithms';
-import type { CSVValidationResult } from './types.js';
+import type { CSVValidationResult, CsvIoItem } from './types/index.js';
 
 /**
  * Normalizes a string key for comparison.
