@@ -167,25 +167,23 @@ export async function validateCSVContent(
     const headersNormalized = headersSanitized.map((h) => normalizeKey(h));
 
     // Debug logs (only in development/debug mode)
-    if (process.env.NODE_ENV === 'development') {
-      console.groupCollapsed?.('[CSV Validation] Debug');
-      console.log?.('Input', fileInfo);
-      console.log?.('Had BOM', hadBom);
-      console.log?.('Configured delimiter', configuredDelimiter);
-      console.log?.('Chosen delimiter', delimiter);
-      console.log?.('Candidate delimiters', candidateDelimiters);
-      console.log?.('Lines count (raw/non-empty)', rawLines.length, '/', lines.length);
-      console.log?.('Header line (first 200 chars)', headerLine?.slice(0, 200));
-      console.log?.('Headers (raw)', headers);
-      console.log?.('Headers (sanitized)', headersSanitized);
-      console.log?.('Headers (lower)', headersLower);
-      console.log?.('Headers (normalized)', headersNormalized);
-      console.log?.(
-        'Required columns',
-        csvConfig.columns.filter((c) => c.required !== false),
-      );
-      console.groupEnd?.();
-    }
+    console.groupCollapsed?.('[CSV Validation] Debug');
+    console.log?.('Input', fileInfo);
+    console.log?.('Had BOM', hadBom);
+    console.log?.('Configured delimiter', configuredDelimiter);
+    console.log?.('Chosen delimiter', delimiter);
+    console.log?.('Candidate delimiters', candidateDelimiters);
+    console.log?.('Lines count (raw/non-empty)', rawLines.length, '/', lines.length);
+    console.log?.('Header line (first 200 chars)', headerLine?.slice(0, 200));
+    console.log?.('Headers (raw)', headers);
+    console.log?.('Headers (sanitized)', headersSanitized);
+    console.log?.('Headers (lower)', headersLower);
+    console.log?.('Headers (normalized)', headersNormalized);
+    console.log?.(
+      'Required columns',
+      csvConfig.columns.filter((c) => c.required !== false),
+    );
+    console.groupEnd?.();
 
     // Validate required columns
     const requiredColumns = csvConfig.columns.filter((col) => col.required !== false);
