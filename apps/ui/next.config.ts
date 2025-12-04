@@ -8,10 +8,7 @@ const nextConfig: NextConfig = {
   experimental: {
     externalDir: true,
   },
-  transpilePackages: [
-    "@reputo/algorithm-validator",
-    "@reputo/reputation-algorithms",
-  ],
+  transpilePackages: ["@reputo/reputation-algorithms"],
   outputFileTracingRoot: workspaceRoot,
 }
 
