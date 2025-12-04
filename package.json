@@ -6,7 +6,7 @@
     "scripts": {
         "dev": "pnpm --filter \"./apps/*\" --parallel dev",
         "start": "pnpm --filter \"./apps/*\" --parallel start",
-        "build": "pnpm -r build",
+        "build": "pnpm --filter \"./packages/*\" run build && pnpm --filter \"./apps/*\" run build",
         "clean": "pnpm -r --parallel clean",
         "check": "pnpm -r --parallel check",
         "lint": "pnpm -r --parallel lint",

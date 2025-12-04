@@ -1,10 +1,9 @@
 {
     "compilerOptions": {
-        "module": "ESNext",
-        "moduleResolution": "bundler",
-        "moduleDetection": "force",
+        "module": "nodenext",
+        "moduleResolution": "nodenext",
         "target": "ES2022",
-        "lib": ["ES2022", "DOM"],
+        "lib": ["ES2022"],
         "types": ["node"],
 
         "rootDir": "./src",
@@ -13,7 +12,6 @@
         "declarationMap": true,
         "sourceMap": true,
         "incremental": true,
-        "isolatedDeclarations": true,
 
         "esModuleInterop": true,
         "allowSyntheticDefaultImports": true,
