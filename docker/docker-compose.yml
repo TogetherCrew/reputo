@@ -20,7 +20,7 @@ services:
             - mongodb_data:/data/db
             - ./mongo-init.sh:/docker-entrypoint-initdb.d/mongo-init.sh:ro
         env_file:
-            - ./mongodb.env
+            - ./env/mongodb.env
         # command: mongod --replSet rs0 --bind_ip_all
         ports:
             - '27017:27017'
@@ -38,12 +38,12 @@ services:
         ports:
             - '80:80'
             - '443:443'
-        env_file: ./shared.env
+        env_file: ./env/shared.env
         environment:
             - CF_DNS_API_TOKEN=${CF_DNS_API_TOKEN}
         volumes:
             - /var/run/docker.sock:/var/run/docker.sock:ro
-            - ./traefik.yml:/etc/traefik/traefik.yml:ro
+            - ./traefik/traefik.yml:/etc/traefik/traefik.yml:ro
             - ./certs/:/var/traefik/certs/:rw
         networks: [web]
         healthcheck:
@@ -68,7 +68,7 @@ services:
         restart: unless-stopped
         networks: [web]
         env_file:
-            - ./ui.env
+            - ./env/ui.env
         labels:
             - traefik.enable=true
             - traefik.http.routers.ui.rule=Host(`${UI_DOMAIN}`)
@@ -100,7 +100,7 @@ services:
             - traefik.http.middlewares.api-cors.headers.accessControlMaxAge=3600
             - com.centurylinklabs.watchtower.enable=true
         env_file:
-            - ./api.env
+            - ./env/api.env
 
     watchtower:
         image: containrrr/watchtower:latest
@@ -126,7 +126,7 @@ services:
         depends_on:
             - temporal-postgresql
             # - temporal-elasticsearch
-        env_file: ./temporal.env
+        env_file: ./env/temporal.env
         volumes:
             - ./temporal-dynamicconfig:/etc/temporal/config/dynamicconfig:ro
         networks:
@@ -150,7 +150,7 @@ services:
         container_name: temporal-ui
         image: temporalio/ui:2.32.0
         restart: unless-stopped
-        env_file: ./temporal-ui.env
+        env_file: ./env/temporal-ui.env
         depends_on:
             - temporal
         networks:
@@ -184,7 +184,7 @@ services:
         container_name: temporal-postgresql
         image: postgres:12.22
         restart: unless-stopped
-        env_file: ./temporal-postgresql.env
+        env_file: ./env/temporal-postgresql.env
         networks:
             - web
         volumes:
@@ -199,7 +199,7 @@ services:
             temporal:
                 condition: service_healthy
         env_file:
-            - ./typescript-worker.env
+            - ./env/typescript-worker.env
         labels:
             - com.centurylinklabs.watchtower.enable=true
 
@@ -214,6 +214,6 @@ services:
             temporal:
                 condition: service_healthy
         env_file:
-            - ./workflows.env
+            - ./env/workflows.env
         labels:
             - com.centurylinklabs.watchtower.enable=true

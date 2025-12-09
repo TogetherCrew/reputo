@@ -1,7 +1,7 @@
 version: '3.9'
 
 networks:
-    web:
+    preview:
 
 volumes:
     mongodb_data:
@@ -14,9 +14,9 @@ volumes:
 services:
     mongodb:
         container_name: mongodb
-        image: mongo:7.0
+        image: mongo:7.0.5
         restart: unless-stopped
-        networks: [web]
+        networks: [preview]
         volumes:
             - mongodb_data:/data/db
         environment:
@@ -24,7 +24,13 @@ services:
         # No auth for preview simplicity - replica set enabled for Change Streams
         command: mongod --bind_ip_all --replSet rs0
         healthcheck:
-            test: ['CMD', 'mongosh', '--eval', "try { rs.status() } catch(e) { rs.initiate({_id:'rs0',members:[{_id:0,host:'localhost:27017'}]}) }"]
+            test:
+                [
+                    'CMD',
+                    'mongosh',
+                    '--eval',
+                    "try { rs.status() } catch(e) { rs.initiate({_id:'rs0',members:[{_id:0,host:'localhost:27017'}]}) }",
+                ]
             interval: 10s
             timeout: 10s
             retries: 5
@@ -37,7 +43,7 @@ services:
             - '80:80'
         volumes:
             - /var/run/docker.sock:/var/run/docker.sock:ro
-        networks: [web]
+        networks: [preview]
         healthcheck:
             test: ['CMD', 'traefik', 'healthcheck', '--ping']
             interval: 30s
@@ -64,7 +70,7 @@ services:
             args:
                 NEXT_PUBLIC_API_URL: http://api.${PULLPREVIEW_PUBLIC_DNS}/api/v1
         restart: unless-stopped
-        networks: [web]
+        networks: [preview]
         environment:
             - NEXT_PUBLIC_API_URL=http://api.${PULLPREVIEW_PUBLIC_DNS}/api/v1
         labels:
@@ -82,7 +88,7 @@ services:
             dockerfile: docker/Dockerfile
             target: api
         restart: unless-stopped
-        networks: [web]
+        networks: [preview]
         labels:
             - traefik.enable=true
             - traefik.http.routers.api.rule=Host(`api.${PULLPREVIEW_PUBLIC_DNS}`)
@@ -121,8 +127,7 @@ services:
             - temporal-elasticsearch
         ports:
             - '7233:7233'
-        networks:
-            - web
+        networks: [preview]
         environment:
             - DB=postgres12
             - DB_PORT=5432
@@ -153,8 +158,7 @@ services:
         restart: unless-stopped
         depends_on:
             - temporal
-        networks:
-            - web
+        networks: [preview]
         ports:
             - '8088:8080'
         environment:
@@ -175,15 +179,13 @@ services:
             - xpack.security.enabled=false
         volumes:
             - temporal_elasticsearch_data:/var/lib/elasticsearch/data
-        networks:
-            - web
+        networks: [preview]
 
     temporal-postgresql:
         container_name: temporal-postgresql
         image: postgres:12.22
         restart: unless-stopped
-        networks:
-            - web
+        networks: [preview]
         volumes:
             - temporal_postgresql_data:/var/lib/postgresql/data
         environment:
@@ -201,7 +203,7 @@ services:
             dockerfile: docker/Dockerfile
             target: typescript-worker
         restart: unless-stopped
-        networks: [web]
+        networks: [preview]
         environment:
             - NODE_ENV=development
             - LOG_LEVEL=info
@@ -229,7 +231,7 @@ services:
             dockerfile: docker/Dockerfile
             target: workflows
         restart: unless-stopped
-        networks: [web]
+        networks: [preview]
         environment:
             - TEMPORAL_ADDRESS=temporal:7233
             - TEMPORAL_NAMESPACE=default

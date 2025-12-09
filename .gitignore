@@ -21,10 +21,9 @@ Thumbs.db
 docker-compose.override.yml
 
 # ENV
-.env
-.env.*
-!.env.example
-!.env.*.example
+.env*
+**/.env*
+**/*.env
 
 #
 # Docker environment files (except local dev files)
