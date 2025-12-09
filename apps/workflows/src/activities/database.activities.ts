@@ -5,8 +5,7 @@
  * These activities handle snapshot retrieval and updates within workflow executions.
  */
 
-import type { Snapshot, SnapshotModel } from '@reputo/database';
-import { MODEL_NAMES } from '@reputo/database';
+import type { Snapshot } from '@reputo/database';
 import { Context } from '@temporalio/activity';
 import type { Model } from 'mongoose';
 
@@ -139,6 +138,13 @@ export function createDatabaseActivities(snapshotModel: Model<Snapshot>): Databa
 
       if (input.status) {
         updateData.status = input.status;
+
+        // Set timestamp fields based on status transitions
+        if (input.status === 'running') {
+          updateData.startedAt = new Date();
+        } else if (input.status === 'completed' || input.status === 'failed') {
+          updateData.completedAt = new Date();
+        }
       }
 
       if (input.temporal) {

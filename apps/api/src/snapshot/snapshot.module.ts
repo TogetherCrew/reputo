@@ -6,6 +6,7 @@ import { TemporalModule } from '../temporal';
 import { SnapshotController } from './snapshot.controller';
 import { SnapshotRepository } from './snapshot.repository';
 import { SnapshotService } from './snapshot.service';
+import { SnapshotEventsService } from './snapshot-events.service';
 
 @Module({
   imports: [
@@ -20,7 +21,7 @@ import { SnapshotService } from './snapshot.service';
     TemporalModule,
   ],
   controllers: [SnapshotController],
-  providers: [SnapshotRepository, SnapshotService],
+  providers: [SnapshotRepository, SnapshotService, SnapshotEventsService],
   exports: [SnapshotService],
 })
 export class SnapshotModule {}

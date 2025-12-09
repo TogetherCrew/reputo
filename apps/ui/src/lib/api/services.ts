@@ -15,7 +15,8 @@ import type {
 const api = axios.create({
     baseURL:
         process.env.NEXT_PUBLIC_API_URL ||
-        'https://api-staging.logid.xyz/api/v1',
+        // 'https://api-staging.logid.xyz/api/v1',
+        'http://localhost:3000/api/v1',
     headers: {
         'Content-Type': 'application/json',
     },
@@ -85,6 +86,18 @@ export const snapshotsApi = {
     // Delete a snapshot
     delete: async (id: string): Promise<void> => {
         await api.delete(`/snapshots/${id}`)
+    },
+
+    // Subscribe to snapshot events via SSE
+    subscribeToEvents: (params?: {
+        algorithmPreset?: string
+    }): EventSource => {
+        const baseUrl = api.defaults.baseURL || ''
+        const url = new URL(`${baseUrl}/snapshots/events`)
+        if (params?.algorithmPreset) {
+            url.searchParams.set('algorithmPreset', params.algorithmPreset)
+        }
+        return new EventSource(url.toString())
     },
 }
 

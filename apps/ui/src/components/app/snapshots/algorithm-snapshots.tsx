@@ -31,6 +31,7 @@ import {
 import type { Algorithm } from "@/core/algorithms";
 import { useAlgorithmPresets, useDeleteSnapshot, useSnapshots } from "@/lib/api/hooks";
 import type { AlgorithmPresetResponseDto, SnapshotResponseDto } from "@/lib/api/types";
+import { useSnapshotEvents } from "@/lib/api/use-snapshot-events";
 import { SnapshotDeleteDialog } from "./snapshot-delete-dialog";
 import { SnapshotDetailsDialog } from "./snapshot-details-dialog";
 
@@ -63,6 +64,12 @@ export function AlgorithmSnapshots({ algo }: { algo?: Algorithm }) {
   const { data: presetsData } = useAlgorithmPresets({
     key: algo?.id,
     limit: 100, // Get more presets for the dropdown
+  });
+
+  // Subscribe to real-time snapshot updates via SSE
+  useSnapshotEvents({
+    algorithmPreset: presetFilter ?? undefined,
+    enabled: isMounted, // Only connect after component is mounted (client-side)
   });
 
   const deleteSnapshotMutation = useDeleteSnapshot();
@@ -140,6 +147,51 @@ export function AlgorithmSnapshots({ algo }: { algo?: Algorithm }) {
       const days = Math.floor(diffInMinutes / 1440);
       return `${days} day${days > 1 ? 's' : ''} ago`;
     }
+  };
+
+  const formatDuration = (snapshot: SnapshotResponseDto) => {
+    if (!isMounted) {
+      return "—";
+    }
+    
+    // Show dash for running snapshots (duration not yet known)
+    if (snapshot.status === 'running') {
+      return "—";
+    }
+    
+    // Show "—" for queued or cancelled snapshots
+    if (snapshot.status === 'queued' || snapshot.status === 'cancelled') {
+      return "—";
+    }
+    
+    // Calculate duration for completed or failed snapshots
+    if (!snapshot.startedAt || !snapshot.completedAt) {
+      return "—";
+    }
+    
+    const startTime = new Date(snapshot.startedAt).getTime();
+    const endTime = new Date(snapshot.completedAt).getTime();
+    const durationMs = endTime - startTime;
+    
+    if (durationMs < 0) {
+      return "—";
+    }
+    
+    const seconds = Math.floor(durationMs / 1000);
+    if (seconds < 60) {
+      return `${seconds}s`;
+    }
+    
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    
+    if (minutes < 60) {
+      return remainingSeconds > 0 ? `${minutes}m ${remainingSeconds}s` : `${minutes}m`;
+    }
+    
+    const hours = Math.floor(minutes / 60);
+    const remainingMinutes = minutes % 60;
+    return remainingMinutes > 0 ? `${hours}h ${remainingMinutes}m` : `${hours}h`;
   };
 
   return (
@@ -280,12 +332,7 @@ export function AlgorithmSnapshots({ algo }: { algo?: Algorithm }) {
                       {formatTimeAgo(snapshot.createdAt)}
                     </TableCell>
                     <TableCell className="whitespace-nowrap">
-                      {snapshot.status === 'completed' || snapshot.status === 'failed' 
-                        ? "~1 min"
-                        : snapshot.status === 'running'
-                        ? "Running..."
-                        : "—"
-                      }
+                      {formatDuration(snapshot)}
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">

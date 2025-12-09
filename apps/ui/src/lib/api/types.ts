@@ -89,6 +89,8 @@ export interface SnapshotResponseDto {
   algorithmPreset: string;
   algorithmPresetFrozen?: AlgorithmPresetFrozenDto;
   outputs?: Record<string, unknown>;
+  startedAt?: string;
+  completedAt?: string;
   createdAt: string;
   updatedAt: string;
 }

@@ -19,15 +19,14 @@ services:
         networks: [web]
         volumes:
             - mongodb_data:/data/db
-            - ./mongo-init.sh:/docker-entrypoint-initdb.d/mongo-init.sh:ro
         environment:
-            - MONGO_INITDB_ROOT_USERNAME=admin
-            - MONGO_INITDB_ROOT_PASSWORD=preview-password
-        # command: mongod --replSet rs0 --bind_ip_all
+            - MONGO_INITDB_DATABASE=reputo_preview
+        # No auth for preview simplicity - replica set enabled for Change Streams
+        command: mongod --bind_ip_all --replSet rs0
         healthcheck:
-            test: ['CMD', 'mongosh', '--eval', "db.adminCommand('ping')"]
+            test: ['CMD', 'mongosh', '--eval', "try { rs.status() } catch(e) { rs.initiate({_id:'rs0',members:[{_id:0,host:'localhost:27017'}]}) }"]
             interval: 10s
-            timeout: 5s
+            timeout: 10s
             retries: 5
             start_period: 30s
 
@@ -101,8 +100,6 @@ services:
             - LOG_LEVEL=info
             - MONGODB_HOST=mongodb
             - MONGODB_PORT=27017
-            - MONGODB_USER=admin
-            - MONGODB_PASSWORD=preview-password
             - MONGODB_DB_NAME=reputo_preview
             - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
             - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
@@ -239,6 +236,4 @@ services:
             - TEMPORAL_TASK_QUEUE=workflows
             - MONGODB_HOST=mongodb
             - MONGODB_PORT=27017
-            - MONGODB_USER=admin
-            - MONGODB_PASSWORD=preview-password
             - MONGODB_DB_NAME=reputo_preview
