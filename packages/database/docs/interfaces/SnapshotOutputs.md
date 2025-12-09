@@ -6,7 +6,7 @@
 
 # Interface: SnapshotOutputs
 
-Defined in: [packages/database/src/shared/types/Snapshot.interface.ts:12](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/database/src/shared/types/Snapshot.interface.ts#L12)
+Defined in: [packages/database/src/shared/types/Snapshot.interface.ts:12](https://github.com/TogetherCrew/reputo/blob/af19bb44929980b2af51d344df06251cde19d556/packages/database/src/shared/types/Snapshot.interface.ts#L12)
 
 Algorithm execution outputs/results.
 

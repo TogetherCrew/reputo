@@ -8,7 +8,7 @@
 
 > **getAlgorithmDefinitionKeys**(): readonly `string`[]
 
-Defined in: [api/registry.ts:66](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/reputation-algorithms/src/api/registry.ts#L66)
+Defined in: [api/registry.ts:66](https://github.com/TogetherCrew/reputo/blob/af19bb44929980b2af51d344df06251cde19d556/packages/reputation-algorithms/src/api/registry.ts#L66)
 
 Retrieves all available algorithm definition keys from the registry.
 

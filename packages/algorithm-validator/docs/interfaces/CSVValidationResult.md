@@ -6,7 +6,7 @@
 
 # Interface: CSVValidationResult
 
-Defined in: [packages/algorithm-validator/src/types.ts:209](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/algorithm-validator/src/types.ts#L209)
+Defined in: [packages/algorithm-validator/src/types.ts:209](https://github.com/TogetherCrew/reputo/blob/af19bb44929980b2af51d344df06251cde19d556/packages/algorithm-validator/src/types.ts#L209)
 
 Result of CSV content validation.
 
@@ -16,7 +16,7 @@ Result of CSV content validation.
 
 > **valid**: `boolean`
 
-Defined in: [packages/algorithm-validator/src/types.ts:211](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/algorithm-validator/src/types.ts#L211)
+Defined in: [packages/algorithm-validator/src/types.ts:211](https://github.com/TogetherCrew/reputo/blob/af19bb44929980b2af51d344df06251cde19d556/packages/algorithm-validator/src/types.ts#L211)
 
 Whether the CSV is valid
 
@@ -26,6 +26,6 @@ Whether the CSV is valid
 
 > **errors**: `string`[]
 
-Defined in: [packages/algorithm-validator/src/types.ts:213](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/algorithm-validator/src/types.ts#L213)
+Defined in: [packages/algorithm-validator/src/types.ts:213](https://github.com/TogetherCrew/reputo/blob/af19bb44929980b2af51d344df06251cde19d556/packages/algorithm-validator/src/types.ts#L213)
 
 Array of error messages (empty if valid is true)

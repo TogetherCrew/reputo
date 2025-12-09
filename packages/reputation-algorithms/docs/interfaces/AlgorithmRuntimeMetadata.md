@@ -6,7 +6,7 @@
 
 # Interface: AlgorithmRuntimeMetadata
 
-Defined in: [shared/types/algorithm.ts:85](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/reputation-algorithms/src/shared/types/algorithm.ts#L85)
+Defined in: [shared/types/algorithm.ts:85](https://github.com/TogetherCrew/reputo/blob/af19bb44929980b2af51d344df06251cde19d556/packages/reputation-algorithms/src/shared/types/algorithm.ts#L85)
 
 Runtime metadata for algorithm execution by orchestration layers.
 
@@ -16,7 +16,7 @@ Runtime metadata for algorithm execution by orchestration layers.
 
 > **taskQueue**: `string`
 
-Defined in: [shared/types/algorithm.ts:87](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/reputation-algorithms/src/shared/types/algorithm.ts#L87)
+Defined in: [shared/types/algorithm.ts:87](https://github.com/TogetherCrew/reputo/blob/af19bb44929980b2af51d344df06251cde19d556/packages/reputation-algorithms/src/shared/types/algorithm.ts#L87)
 
 Task queue name where this reputation algorithm should be executed
 
@@ -26,6 +26,6 @@ Task queue name where this reputation algorithm should be executed
 
 > **activity**: `string`
 
-Defined in: [shared/types/algorithm.ts:89](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/reputation-algorithms/src/shared/types/algorithm.ts#L89)
+Defined in: [shared/types/algorithm.ts:89](https://github.com/TogetherCrew/reputo/blob/af19bb44929980b2af51d344df06251cde19d556/packages/reputation-algorithms/src/shared/types/algorithm.ts#L89)
 
 Activity name used by the worker to execute this reputation algorithm

@@ -21,10 +21,12 @@ Thumbs.db
 docker-compose.override.yml
 
 # ENV
-.env*
-**/.env*
-**/*.env
+.env
+.env.*
+!.env.example
+!.env.*.example
 
+#
 # Docker environment files (except local dev files)
 docker/shared.env
 
@@ -41,6 +43,5 @@ coverage/
 *.lcov
 .nyc_output
 
-
-#env
-*.env
+*.key
+*.pem

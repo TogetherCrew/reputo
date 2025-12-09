@@ -6,7 +6,7 @@
 
 # Interface: StorageMetadata
 
-Defined in: [shared/types/types.ts:72](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/storage/src/shared/types/types.ts#L72)
+Defined in: [shared/types/types.ts:72](https://github.com/TogetherCrew/reputo/blob/af19bb44929980b2af51d344df06251cde19d556/packages/storage/src/shared/types/types.ts#L72)
 
 Complete metadata about a stored object.
 Includes both parsed key information and S3 object metadata.
@@ -17,7 +17,7 @@ Includes both parsed key information and S3 object metadata.
 
 > **filename**: `string`
 
-Defined in: [shared/types/types.ts:76](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/storage/src/shared/types/types.ts#L76)
+Defined in: [shared/types/types.ts:76](https://github.com/TogetherCrew/reputo/blob/af19bb44929980b2af51d344df06251cde19d556/packages/storage/src/shared/types/types.ts#L76)
 
 Full filename including extension.
 
@@ -27,7 +27,7 @@ Full filename including extension.
 
 > **ext**: `string`
 
-Defined in: [shared/types/types.ts:81](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/storage/src/shared/types/types.ts#L81)
+Defined in: [shared/types/types.ts:81](https://github.com/TogetherCrew/reputo/blob/af19bb44929980b2af51d344df06251cde19d556/packages/storage/src/shared/types/types.ts#L81)
 
 File extension without the dot.
 
@@ -37,7 +37,7 @@ File extension without the dot.
 
 > **size**: `number`
 
-Defined in: [shared/types/types.ts:86](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/storage/src/shared/types/types.ts#L86)
+Defined in: [shared/types/types.ts:86](https://github.com/TogetherCrew/reputo/blob/af19bb44929980b2af51d344df06251cde19d556/packages/storage/src/shared/types/types.ts#L86)
 
 Object size in bytes.
 
@@ -47,7 +47,7 @@ Object size in bytes.
 
 > **contentType**: `string`
 
-Defined in: [shared/types/types.ts:91](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/storage/src/shared/types/types.ts#L91)
+Defined in: [shared/types/types.ts:91](https://github.com/TogetherCrew/reputo/blob/af19bb44929980b2af51d344df06251cde19d556/packages/storage/src/shared/types/types.ts#L91)
 
 Content type (MIME type) of the object.
 
@@ -57,6 +57,6 @@ Content type (MIME type) of the object.
 
 > **timestamp**: `number`
 
-Defined in: [shared/types/types.ts:96](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/storage/src/shared/types/types.ts#L96)
+Defined in: [shared/types/types.ts:96](https://github.com/TogetherCrew/reputo/blob/af19bb44929980b2af51d344df06251cde19d556/packages/storage/src/shared/types/types.ts#L96)
 
 Unix timestamp (seconds since epoch) when the key was generated.

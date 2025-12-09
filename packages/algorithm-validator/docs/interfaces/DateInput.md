@@ -6,7 +6,7 @@
 
 # Interface: DateInput
 
-Defined in: [packages/algorithm-validator/src/types.ts:104](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/algorithm-validator/src/types.ts#L104)
+Defined in: [packages/algorithm-validator/src/types.ts:104](https://github.com/TogetherCrew/reputo/blob/af19bb44929980b2af51d344df06251cde19d556/packages/algorithm-validator/src/types.ts#L104)
 
 Date input with min/max date constraints.
 
@@ -20,7 +20,7 @@ Date input with min/max date constraints.
 
 > **key**: `string`
 
-Defined in: [packages/algorithm-validator/src/types.ts:61](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/algorithm-validator/src/types.ts#L61)
+Defined in: [packages/algorithm-validator/src/types.ts:61](https://github.com/TogetherCrew/reputo/blob/af19bb44929980b2af51d344df06251cde19d556/packages/algorithm-validator/src/types.ts#L61)
 
 Unique key identifier for the input
 
@@ -34,7 +34,7 @@ Unique key identifier for the input
 
 > **label**: `string`
 
-Defined in: [packages/algorithm-validator/src/types.ts:63](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/algorithm-validator/src/types.ts#L63)
+Defined in: [packages/algorithm-validator/src/types.ts:63](https://github.com/TogetherCrew/reputo/blob/af19bb44929980b2af51d344df06251cde19d556/packages/algorithm-validator/src/types.ts#L63)
 
 Human-readable label for the input
 
@@ -48,7 +48,7 @@ Human-readable label for the input
 
 > `optional` **description**: `string`
 
-Defined in: [packages/algorithm-validator/src/types.ts:65](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/algorithm-validator/src/types.ts#L65)
+Defined in: [packages/algorithm-validator/src/types.ts:65](https://github.com/TogetherCrew/reputo/blob/af19bb44929980b2af51d344df06251cde19d556/packages/algorithm-validator/src/types.ts#L65)
 
 Optional description of the input
 
@@ -62,7 +62,7 @@ Optional description of the input
 
 > `optional` **required**: `boolean`
 
-Defined in: [packages/algorithm-validator/src/types.ts:67](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/algorithm-validator/src/types.ts#L67)
+Defined in: [packages/algorithm-validator/src/types.ts:67](https://github.com/TogetherCrew/reputo/blob/af19bb44929980b2af51d344df06251cde19d556/packages/algorithm-validator/src/types.ts#L67)
 
 Whether the input is required (default: true)
 
@@ -76,7 +76,7 @@ Whether the input is required (default: true)
 
 > **type**: `"date"`
 
-Defined in: [packages/algorithm-validator/src/types.ts:105](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/algorithm-validator/src/types.ts#L105)
+Defined in: [packages/algorithm-validator/src/types.ts:105](https://github.com/TogetherCrew/reputo/blob/af19bb44929980b2af51d344df06251cde19d556/packages/algorithm-validator/src/types.ts#L105)
 
 ***
 
@@ -84,7 +84,7 @@ Defined in: [packages/algorithm-validator/src/types.ts:105](https://github.com/T
 
 > `optional` **minDate**: `string`
 
-Defined in: [packages/algorithm-validator/src/types.ts:107](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/algorithm-validator/src/types.ts#L107)
+Defined in: [packages/algorithm-validator/src/types.ts:107](https://github.com/TogetherCrew/reputo/blob/af19bb44929980b2af51d344df06251cde19d556/packages/algorithm-validator/src/types.ts#L107)
 
 Minimum allowed date (ISO string)
 
@@ -94,6 +94,6 @@ Minimum allowed date (ISO string)
 
 > `optional` **maxDate**: `string`
 
-Defined in: [packages/algorithm-validator/src/types.ts:109](https://github.com/TogetherCrew/reputo/blob/5a0a43afb12601c8f7dec76d4c60ab590c463bc5/packages/algorithm-validator/src/types.ts#L109)
+Defined in: [packages/algorithm-validator/src/types.ts:109](https://github.com/TogetherCrew/reputo/blob/af19bb44929980b2af51d344df06251cde19d556/packages/algorithm-validator/src/types.ts#L109)
 
 Maximum allowed date (ISO string)
