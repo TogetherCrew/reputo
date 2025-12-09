@@ -1,16 +1,16 @@
-"use client";
+"use client"
 
-import { AlertCircle, CheckCircle2 } from "lucide-react";
-import { useState } from "react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AlertCircle, CheckCircle2 } from "lucide-react"
+import { useState } from "react"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 interface JsonEditorProps {
-  value: string;
-  onChange: (value: string) => void;
-  onValidChange?: (parsedValue: any) => void;
-  title?: string;
-  height?: string;
+  value: string
+  onChange: (value: string) => void
+  onValidChange?: (parsedValue: unknown) => void
+  title?: string
+  height?: string
 }
 
 export function JsonEditor({
@@ -20,37 +20,37 @@ export function JsonEditor({
   title = "JSON Editor",
   height = "600px",
 }: JsonEditorProps) {
-  const [error, setError] = useState<string | null>(null);
-  const [isValid, setIsValid] = useState(true);
+  const [error, setError] = useState<string | null>(null)
+  const [isValid, setIsValid] = useState(true)
 
   const handleChange = (newValue: string) => {
-    onChange(newValue);
+    onChange(newValue)
 
     // Validate JSON
     try {
-      const parsed = JSON.parse(newValue);
-      setError(null);
-      setIsValid(true);
-      onValidChange?.(parsed);
+      const parsed = JSON.parse(newValue)
+      setError(null)
+      setIsValid(true)
+      onValidChange?.(parsed)
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Invalid JSON");
-      setIsValid(false);
+      setError(e instanceof Error ? e.message : "Invalid JSON")
+      setIsValid(false)
     }
-  };
+  }
 
   const formatJson = () => {
     try {
-      const parsed = JSON.parse(value);
-      const formatted = JSON.stringify(parsed, null, 2);
-      onChange(formatted);
-      setError(null);
-      setIsValid(true);
-      onValidChange?.(parsed);
+      const parsed = JSON.parse(value)
+      const formatted = JSON.stringify(parsed, null, 2)
+      onChange(formatted)
+      setError(null)
+      setIsValid(true)
+      onValidChange?.(parsed)
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Invalid JSON");
-      setIsValid(false);
+      setError(e instanceof Error ? e.message : "Invalid JSON")
+      setIsValid(false)
     }
-  };
+  }
 
   return (
     <Card className="h-full">
@@ -70,6 +70,7 @@ export function JsonEditor({
               </div>
             )}
             <button
+              type="button"
               onClick={formatJson}
               className="text-xs px-2 py-1 rounded bg-secondary text-secondary-foreground hover:bg-secondary/80"
             >
@@ -96,7 +97,5 @@ export function JsonEditor({
         )}
       </CardContent>
     </Card>
-  );
+  )
 }
-
-

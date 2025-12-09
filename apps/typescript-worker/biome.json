@@ -1,14 +1,16 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.3.7/schema.json",
-  "extends": ["../../biome.json"],
-  "files": {
-    "includes": ["**", "!dist"]
-  },
-  "linter": {
-    "rules": {
-      "suspicious": {
-        "noExplicitAny": "off"
-      }
+    "$schema": "https://biomejs.dev/schemas/2.3.7/schema.json",
+    "root": false,
+    "extends": "//",
+    "files": {
+        "includes": ["src/**/*.ts", "tests/**/*.ts"]
+    },
+    "linter": {
+        "rules": {
+            "recommended": true,
+            "suspicious": {
+                "noExplicitAny": "off"
+            }
+        }
     }
-  }
 }

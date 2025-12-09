@@ -1,6 +1,6 @@
 import { Schema } from 'mongoose';
 import { paginate } from '../shared/plugins/index.js';
-import { AlgorithmPreset, AlgorithmPresetModel } from '../shared/types/index.js';
+import type { AlgorithmPreset, AlgorithmPresetModel } from '../shared/types/index.js';
 
 /**
  * Mongoose schema for AlgorithmPreset documents.

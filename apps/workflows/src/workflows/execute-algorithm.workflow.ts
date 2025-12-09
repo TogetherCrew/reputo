@@ -10,8 +10,7 @@
  * algorithm worker implementation.
  */
 
-import * as wf from '@temporalio/workflow';
-import type { WorkflowAlgorithmActivity, WorkflowAlgorithmPayload, WorkflowAlgorithmResult } from '../shared/index.js';
+import type { WorkflowAlgorithmPayload, WorkflowAlgorithmResult } from '../shared/index.js';
 
 /**
  * ExecuteAlgorithmWorkflow - Executes an algorithm activity.
@@ -22,7 +21,7 @@ import type { WorkflowAlgorithmActivity, WorkflowAlgorithmPayload, WorkflowAlgor
  * @param payload - Algorithm execution payload
  * @returns Algorithm execution result
  */
-export async function ExecuteAlgorithmWorkflow(payload: WorkflowAlgorithmPayload): Promise<WorkflowAlgorithmResult> {
+export async function ExecuteAlgorithmWorkflow(_payload: WorkflowAlgorithmPayload): Promise<WorkflowAlgorithmResult> {
   // This workflow should be implemented in the algorithm worker app
   // where the algorithm activities are registered.
   // For now, this is a placeholder that algorithm workers should implement.

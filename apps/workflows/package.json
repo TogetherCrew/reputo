@@ -4,18 +4,19 @@
     "description": "Temporal-based workflow orchestration for Reputo algorithms",
     "type": "module",
     "main": "dist/index.js",
-    "private": "true",
+    "private": true,
     "scripts": {
         "build": "tsc",
         "start": "node dist/index.js",
-        "clean": "rm -rf dist",
         "dev": "tsx watch src/index.ts",
+        "clean": "rm -rf dist",
         "check": "pnpm exec biome check --write",
-        "format": "pnpm exec biome format --write",
         "lint": "pnpm exec biome lint --write",
+        "format": "pnpm exec biome format --write",
         "test": "vitest",
         "test:watch": "vitest --watch",
         "test:cov": "vitest --coverage",
+        "typecheck": "tsc --noEmit",
         "release": "semantic-release"
     },
     "dependencies": {
@@ -26,12 +27,12 @@
         "@temporalio/worker": "^1.11.3",
         "@temporalio/workflow": "^1.11.3",
         "dotenv": "^16.4.7",
-        "mongoose": "^8.8.4",
+        "mongoose": "^8.19.1",
         "pino": "^9.8.0",
         "pino-pretty": "^13.1.2"
     },
     "devDependencies": {
-        "@types/node": "^22.18.11",
+        "@types/node": "^22.17.0",
         "tsx": "^4.7.0",
         "typescript": "5.9.2",
         "vitest": "3.2.4"

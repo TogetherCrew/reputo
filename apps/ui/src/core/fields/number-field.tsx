@@ -1,6 +1,6 @@
-"use client";
+"use client"
 
-import { Control } from "react-hook-form";
+import type { Control } from "react-hook-form"
 import {
   FormControl,
   FormDescription,
@@ -8,13 +8,13 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import type { NumberInput } from "@reputo/algorithm-validator";
+} from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
+import type { FormInput } from "../schema-builder"
 
 interface NumberFieldProps {
-  input: NumberInput;
-  control: Control<any>;
+  input: FormInput
+  control: Control<any>
 }
 
 export function NumberField({ input, control }: NumberFieldProps) {
@@ -26,7 +26,9 @@ export function NumberField({ input, control }: NumberFieldProps) {
         <FormItem>
           <FormLabel>
             {input.label}
-            {input.required !== false && <span className="text-destructive ml-1">*</span>}
+            {input.required !== false && (
+              <span className="text-destructive ml-1">*</span>
+            )}
           </FormLabel>
           <FormControl>
             <Input
@@ -36,8 +38,8 @@ export function NumberField({ input, control }: NumberFieldProps) {
               max={input.max}
               {...field}
               onChange={(e) => {
-                const value = e.target.value;
-                field.onChange(value === "" ? undefined : parseFloat(value));
+                const value = e.target.value
+                field.onChange(value === "" ? undefined : parseFloat(value))
               }}
               value={field.value ?? ""}
             />
@@ -49,6 +51,5 @@ export function NumberField({ input, control }: NumberFieldProps) {
         </FormItem>
       )}
     />
-  );
+  )
 }
-

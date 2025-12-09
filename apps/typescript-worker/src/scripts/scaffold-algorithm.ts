@@ -22,13 +22,19 @@ const ACTIVITIES_INDEX = join(ACTIVITIES_DIR, 'index.ts');
 function generateActivityScaffold(algorithmKey: string): string {
   const functionName = algorithmKey.replace(/-/g, '_');
 
-  return `import pino from 'pino';
-import '../storage.d.js';
+  return `import { generateSnapshotOutputKey, type Storage } from '@reputo/storage';
+import pino from 'pino';
 import type {
   WorkerAlgorithmPayload,
   WorkerAlgorithmResult,
 } from '../types/algorithm.js';
 import { getInputLocation } from './utils.js';
+
+// Extend global type to include storage
+declare global {
+  // eslint-disable-next-line no-var
+  var storage: Storage | undefined;
+}
 
 // Create activity-specific logger
 const logger = pino().child({ activity: '${algorithmKey}' });
@@ -55,8 +61,7 @@ export async function ${functionName}(
 
   try {
     // Get storage instance from global (initialized in worker/main.ts)
-    // biome-ignore lint/suspicious/noExplicitAny: storage is set on global at runtime
-    const storage = (global as any).storage;
+    const storage = global.storage;
     if (!storage) {
       throw new Error('Storage instance not initialized. Ensure worker is properly started.');
     }
@@ -83,8 +88,8 @@ export async function ${functionName}(
     const outputContent = '';
     const contentType = 'text/csv'; // or 'application/json', etc.
 
-    // Upload output to storage
-    const outputKey = \`snapshots/\${snapshotId}/outputs/\${algorithmKey}.csv\`;
+    // Upload output to storage using shared key generator
+    const outputKey = generateSnapshotOutputKey(snapshotId, algorithmKey);
     await storage.putObject(outputKey, outputContent, contentType);
 
     logger.info('Uploaded ${algorithmKey} results', { outputKey });

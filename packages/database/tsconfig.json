@@ -1,12 +1,9 @@
 {
     "compilerOptions": {
-        "incremental": true,
-
-        "target": "ES2022",
-        "lib": ["ES2022"],
-
         "module": "nodenext",
         "moduleResolution": "nodenext",
+        "target": "ES2022",
+        "lib": ["ES2022"],
         "types": ["node"],
 
         "rootDir": "./src",
@@ -14,33 +11,25 @@
         "declaration": true,
         "declarationMap": true,
         "sourceMap": true,
+        "incremental": true,
 
+        "esModuleInterop": true,
+        "allowSyntheticDefaultImports": true,
         "resolveJsonModule": true,
         "isolatedModules": true,
         "forceConsistentCasingInFileNames": true,
-        "esModuleInterop": true,
-        "allowSyntheticDefaultImports": true,
+        "skipLibCheck": true,
 
         "strict": true,
         "noImplicitAny": true,
         "strictNullChecks": true,
         "strictFunctionTypes": true,
         "strictBindCallApply": true,
-        "strictPropertyInitialization": true,
         "noImplicitThis": true,
-        "useUnknownInCatchVariables": true,
-        "alwaysStrict": true,
         "noUnusedLocals": true,
         "noUnusedParameters": true,
-        "exactOptionalPropertyTypes": true,
         "noImplicitReturns": true,
-        "noFallthroughCasesInSwitch": true,
-        "noUncheckedIndexedAccess": true,
-        "noImplicitOverride": true,
-        "noPropertyAccessFromIndexSignature": true,
-        "allowUnusedLabels": false,
-        "allowUnreachableCode": false,
-        "skipLibCheck": true
+        "noFallthroughCasesInSwitch": true
     },
     "include": ["src/**/*.ts", "src/**/*.json"],
     "exclude": ["node_modules", "dist"]

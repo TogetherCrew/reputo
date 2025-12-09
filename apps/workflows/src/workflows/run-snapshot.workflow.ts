@@ -19,7 +19,6 @@ import {
   ALGORITHM_LIBRARY_TIMEOUT,
   DB_ACTIVITY_TIMEOUT,
   type RunSnapshotWorkflowInput,
-  type WorkflowAlgorithmActivity,
   type WorkflowAlgorithmPayload,
   type WorkflowAlgorithmResult,
 } from '../shared/index.js';

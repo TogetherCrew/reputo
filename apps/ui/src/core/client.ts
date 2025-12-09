@@ -1,63 +1,68 @@
 /**
  * ReputoClient - Universal validation client
- * Validates payloads against schemas on both client and server
+ * Validates payloads against algorithm definitions on both client and server
  */
 
-import type { ReputoSchema, ValidationResult } from "@reputo/algorithm-validator";
-import { validatePayload } from "@reputo/algorithm-validator";
+import {
+  type ValidationResult,
+  validatePayload,
+} from "@reputo/algorithm-validator"
+import type { AlgorithmDefinition } from "@reputo/reputation-algorithms"
 
 /**
- * Schema registry for storing known schemas
+ * Schema registry for storing known algorithm definitions
  */
 class SchemaRegistry {
-  private schemas: Map<string, ReputoSchema> = new Map();
+  private schemas: Map<string, AlgorithmDefinition> = new Map()
 
-  register(schema: ReputoSchema) {
-    this.schemas.set(schema.key, schema);
+  register(schema: AlgorithmDefinition) {
+    this.schemas.set(schema.key, schema)
   }
 
-  get(key: string): ReputoSchema | undefined {
-    return this.schemas.get(key);
+  get(key: string): AlgorithmDefinition | undefined {
+    return this.schemas.get(key)
   }
 
   has(key: string): boolean {
-    return this.schemas.has(key);
+    return this.schemas.has(key)
   }
 
-  getAll(): ReputoSchema[] {
-    return Array.from(this.schemas.values());
+  getAll(): AlgorithmDefinition[] {
+    return Array.from(this.schemas.values())
   }
 }
 
 /**
- * ReputoClient - Main client for schema validation
+ * ReputoClient - Main client for algorithm definition validation
  */
 class ReputoClientClass {
-  private registry = new SchemaRegistry();
+  private registry = new SchemaRegistry()
 
   /**
-   * Register a schema for validation
+   * Register an algorithm definition for validation
    */
-  registerSchema(schema: ReputoSchema) {
-    this.registry.register(schema);
-    return this;
+  registerSchema(definition: AlgorithmDefinition) {
+    this.registry.register(definition)
+    return this
   }
 
   /**
-   * Register multiple schemas
+   * Register multiple algorithm definitions
    */
-  registerSchemas(schemas: ReputoSchema[]) {
-    schemas.forEach((schema) => this.registry.register(schema));
-    return this;
+  registerSchemas(definitions: AlgorithmDefinition[]) {
+    for (const def of definitions) {
+      this.registry.register(def)
+    }
+    return this
   }
 
   /**
-   * Validate a payload against a registered schema
-   * 
-   * @param schemaKey - The key of the registered schema
+   * Validate a payload against a registered algorithm definition
+   *
+   * @param schemaKey - The key of the registered algorithm definition
    * @param payload - The data to validate
    * @returns ValidationResult with success status and errors if any
-   * 
+   *
    * @example
    * ```typescript
    * const result = reputoClient.validate("voting_engagement", formData);
@@ -69,49 +74,52 @@ class ReputoClientClass {
    * ```
    */
   validate(schemaKey: string, payload: any): ValidationResult {
-    const schema = this.registry.get(schemaKey);
+    const definition = this.registry.get(schemaKey)
 
-    if (!schema) {
+    if (!definition) {
       return {
         success: false,
         errors: [
           {
             field: "_schema",
-            message: `Schema "${schemaKey}" not found. Please register it first.`,
+            message: `Algorithm definition "${schemaKey}" not found. Please register it first.`,
           },
         ],
-      };
+      }
     }
 
-    return validatePayload(schema, payload);
+    return validatePayload(definition, payload)
   }
 
   /**
-   * Validate a payload against a schema object directly
+   * Validate a payload against an algorithm definition directly
    */
-  validateWithSchema(schema: ReputoSchema, payload: any): ValidationResult {
-    return validatePayload(schema, payload);
+  validateWithSchema(
+    definition: AlgorithmDefinition,
+    payload: any
+  ): ValidationResult {
+    return validatePayload(definition, payload)
   }
 
   /**
-   * Get a registered schema by key
+   * Get a registered algorithm definition by key
    */
-  getSchema(key: string): ReputoSchema | undefined {
-    return this.registry.get(key);
+  getSchema(key: string): AlgorithmDefinition | undefined {
+    return this.registry.get(key)
   }
 
   /**
-   * Check if a schema is registered
+   * Check if an algorithm definition is registered
    */
   hasSchema(key: string): boolean {
-    return this.registry.has(key);
+    return this.registry.has(key)
   }
 
   /**
-   * Get all registered schemas
+   * Get all registered algorithm definitions
    */
-  getAllSchemas(): ReputoSchema[] {
-    return this.registry.getAll();
+  getAllSchemas(): AlgorithmDefinition[] {
+    return this.registry.getAll()
   }
 
   /**
@@ -123,8 +131,8 @@ class ReputoClientClass {
     request: Request
   ): Promise<ValidationResult> {
     try {
-      const payload = await request.json();
-      return this.validate(schemaKey, payload);
+      const payload = await request.json()
+      return this.validate(schemaKey, payload)
     } catch (error) {
       return {
         success: false,
@@ -136,7 +144,7 @@ class ReputoClientClass {
             }`,
           },
         ],
-      };
+      }
     }
   }
 }
@@ -144,10 +152,9 @@ class ReputoClientClass {
 /**
  * Singleton instance of ReputoClient
  */
-export const reputoClient = new ReputoClientClass();
+export const reputoClient = new ReputoClientClass()
 
 /**
  * Export the class for custom instances if needed
  */
-export { ReputoClientClass };
-
+export { ReputoClientClass }

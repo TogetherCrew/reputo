@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { AlgorithmValidator, createValidatorWithSchema } from '../../../../src/shared/utils/validation.js';
+import { type AlgorithmValidator, createValidatorWithSchema } from '../../../../src/shared/utils/validation.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);

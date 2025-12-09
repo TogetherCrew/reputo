@@ -1,10 +1,13 @@
-"use client";
+"use client"
 
-import { type AlgorithmDefinition, getAlgorithmDefinition } from "@reputo/reputation-algorithms";
-import { AlertCircle, Plus } from "lucide-react";
-import { useMemo, useState } from "react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
+import {
+  type AlgorithmDefinition,
+  getAlgorithmDefinition,
+} from "@reputo/reputation-algorithms"
+import { AlertCircle, Plus } from "lucide-react"
+import { useMemo, useState } from "react"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Button } from "@/components/ui/button"
 import {
   Dialog,
   DialogContent,
@@ -12,104 +15,113 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import type { Algorithm } from "@/core/algorithms";
-import { ReputoForm } from "@/core/reputo-form";
-import { buildSchemaFromAlgorithm } from "@/core/schema-builder";
-import type { CreateAlgorithmPresetDto } from "@/lib/api/types";
+} from "@/components/ui/dialog"
+import type { Algorithm } from "@/core/algorithms"
+import { ReputoForm } from "@/core/reputo-form"
+import { buildSchemaFromAlgorithm } from "@/core/schema-builder"
+import type { CreateAlgorithmPresetDto } from "@/lib/api/types"
 
 interface CreatePresetDialogProps {
-  algo?: Algorithm;
-  onCreatePreset: (data: CreateAlgorithmPresetDto) => Promise<void>;
-  isLoading: boolean;
-  error?: unknown;
+  algo?: Algorithm
+  onCreatePreset: (data: CreateAlgorithmPresetDto) => Promise<void>
+  isLoading: boolean
+  error?: unknown
 }
 
 interface BackendError {
-  statusCode?: number;
-  message?: {
-    message?: string[];
-    error?: string;
-    statusCode?: number;
-  } | string;
+  statusCode?: number
+  message?:
+    | {
+        message?: string[]
+        error?: string
+        statusCode?: number
+      }
+    | string
 }
 
 /**
  * Parse backend error response to extract field errors
  */
-function parseBackendError(error: unknown): { field: string; message: string }[] {
-  const errors: { field: string; message: string }[] = [];
-  
+function parseBackendError(
+  error: unknown
+): { field: string; message: string }[] {
+  const errors: { field: string; message: string }[] = []
+
   if (!error || typeof error !== "object") {
-    return errors;
+    return errors
   }
 
-  const backendError = error as BackendError;
-  
+  const backendError = error as BackendError
+
   // Handle nested message structure
   if (backendError.message) {
     if (typeof backendError.message === "string") {
-      errors.push({ field: "_general", message: backendError.message });
-    } else if (typeof backendError.message === "object" && backendError.message.message) {
+      errors.push({ field: "_general", message: backendError.message })
+    } else if (
+      typeof backendError.message === "object" &&
+      backendError.message.message
+    ) {
       const messageArray = Array.isArray(backendError.message.message)
         ? backendError.message.message
-        : [backendError.message.message];
-      
+        : [backendError.message.message]
+
       messageArray.forEach((msg) => {
         if (typeof msg === "string") {
           // Try to extract field name from error message
           // Format: "fieldName must be..."
-          const fieldMatch = msg.match(/^(\w+)\s+/);
-          const field = fieldMatch ? fieldMatch[1] : "_general";
-          errors.push({ field, message: msg });
+          const fieldMatch = msg.match(/^(\w+)\s+/)
+          const field = fieldMatch ? fieldMatch[1] : "_general"
+          errors.push({ field, message: msg })
         }
-      });
+      })
     }
   }
 
-  return errors;
+  return errors
 }
 
-export function CreatePresetDialog({ 
-  algo, 
-  onCreatePreset, 
-  isLoading, 
-  error 
+export function CreatePresetDialog({
+  algo,
+  onCreatePreset,
+  isLoading,
+  error,
 }: CreatePresetDialogProps) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [formErrors, setFormErrors] = useState<{ field: string; message: string }[]>([]);
+  const [isOpen, setIsOpen] = useState(false)
+  const [formErrors, setFormErrors] = useState<
+    { field: string; message: string }[]
+  >([])
 
   // Generate schema from algorithm
   const schema = useMemo(() => {
-    if (!algo) return null;
-    return buildSchemaFromAlgorithm(algo, "1.0.0");
-  }, [algo]);
+    if (!algo) return null
+    return buildSchemaFromAlgorithm(algo, "1.0.0")
+  }, [algo])
 
   // Fetch full algorithm definition to get original input keys
   const fullDefinition = useMemo(() => {
-    if (!algo) return null;
+    if (!algo) return null
     try {
-      const definitionJson = getAlgorithmDefinition({ key: algo.id });
-      return JSON.parse(definitionJson) as AlgorithmDefinition;
+      const definitionJson = getAlgorithmDefinition({ key: algo.id })
+      return JSON.parse(definitionJson) as AlgorithmDefinition
     } catch (error) {
-      console.warn(`Could not fetch full definition for ${algo.id}:`, error);
-      return null;
+      console.warn(`Could not fetch full definition for ${algo.id}:`, error)
+      return null
     }
-  }, [algo]);
+  }, [algo])
 
   // Parse backend errors
   const backendErrors = useMemo(() => {
-    if (!error) return [];
-    return parseBackendError(error);
-  }, [error]);
+    if (!error) return []
+    return parseBackendError(error)
+  }, [error])
 
   // Combine form errors and backend errors
-  const allErrors = [...formErrors, ...backendErrors];
+  const allErrors = [...formErrors, ...backendErrors]
 
   const handleSubmit = async (data: Record<string, unknown>) => {
-    if (!algo) return;
+    if (!algo) return
 
-    setFormErrors([]);
+    setFormErrors([])
 
     try {
       // Transform form data to CreateAlgorithmPresetDto format
@@ -119,51 +131,52 @@ export function CreatePresetDialog({
         name: data.name as string | undefined,
         description: data.description as string | undefined,
         inputs: algo.inputs.map((input, index) => {
-          const formFieldKey = input.label.toLowerCase().replace(/\s+/g, "_");
-          const value = data[formFieldKey];
-          
+          const formFieldKey = input.label.toLowerCase().replace(/\s+/g, "_")
+          const value = data[formFieldKey]
+
           formFieldKey
-          const originalInputKey = fullDefinition?.inputs.find(
-            (defInput) => defInput.label === input.label
-          )?.key || 
-          fullDefinition?.inputs[index]?.key || 
-          formFieldKey;
-          
+          const originalInputKey =
+            fullDefinition?.inputs.find(
+              (defInput) => defInput.label === input.label
+            )?.key ||
+            fullDefinition?.inputs[index]?.key ||
+            formFieldKey
+
           // Convert File object to filename string
-          let inputValue: unknown;
+          let inputValue: unknown
           if (value instanceof File) {
-            inputValue = value.name;
+            inputValue = value.name
           } else {
-            inputValue = value || `placeholder_${originalInputKey}.csv`;
+            inputValue = value || `placeholder_${originalInputKey}.csv`
           }
 
           return {
             key: originalInputKey,
             value: inputValue,
-          };
+          }
         }),
-      };
+      }
 
-      await onCreatePreset(createData);
-      
+      await onCreatePreset(createData)
+
       // Close dialog on success
-      setIsOpen(false);
+      setIsOpen(false)
     } catch (err) {
       // Don't close dialog on error - errors will be displayed
-      const parsedErrors = parseBackendError(err);
-      setFormErrors(parsedErrors);
+      const parsedErrors = parseBackendError(err)
+      setFormErrors(parsedErrors)
     }
-  };
+  }
 
   const handleOpenChange = (open: boolean) => {
-    setIsOpen(open);
+    setIsOpen(open)
     if (!open) {
-      setFormErrors([]);
+      setFormErrors([])
     }
-  };
+  }
 
   if (!algo || !schema) {
-    return null;
+    return null
   }
 
   return (
@@ -209,5 +222,5 @@ export function CreatePresetDialog({
         />
       </DialogContent>
     </Dialog>
-  );
+  )
 }

@@ -43,7 +43,7 @@ function paginate<T>(schema: Schema<T>): void {
    * @param options - Query options
    * @returns Promise resolving to paginated results
    */
-  schema.statics['paginate'] = async function <DocType>(
+  schema.statics.paginate = async function <DocType>(
     this: Model<DocType>,
     filter: FilterQuery<DocType>,
     options: PaginateOptions,

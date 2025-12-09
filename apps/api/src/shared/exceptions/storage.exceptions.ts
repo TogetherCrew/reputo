@@ -25,3 +25,26 @@ export class HeadObjectFailedException extends InternalServerErrorException {
     super('Failed to check object metadata');
   }
 }
+
+/**
+ * Structured error for a specific storage input validation failure.
+ */
+export interface StorageInputValidationError {
+  /** The input key from the algorithm definition */
+  inputKey: string;
+  /** Array of error messages for this input */
+  errors: string[];
+}
+
+/**
+ * Exception thrown when CSV file validation fails.
+ * Collects all validation errors across metadata and content validation.
+ */
+export class CSVValidationException extends BadRequestException {
+  constructor(errors: StorageInputValidationError[]) {
+    super({
+      message: 'CSV validation failed',
+      errors,
+    });
+  }
+}

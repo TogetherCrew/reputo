@@ -7,6 +7,9 @@
  * that runs identically on both client and server, ensuring consistent
  * validation across the entire application.
  *
+ * This package is self-contained and has no dependencies on other Reputo
+ * packages. Algorithm definition types are included for validation purposes.
+ *
  * @packageDocumentation
  */
 
@@ -20,26 +23,19 @@ export {
   createAlgorithmPresetSchema,
   validateCreateAlgorithmPreset,
 } from './schemas/index.js';
-// Type exports
+// Algorithm definition type exports (self-contained)
+// Type exports (validation result types)
 export type {
-  BaseInput,
-  BooleanInput,
-  ColumnDefinition,
-  ColumnType,
-  CSVConfig,
-  CSVInput,
+  AlgorithmCategory,
+  AlgorithmDefinition,
+  AlgorithmRuntimeMetadata,
   CSVValidationResult,
-  DateInput,
-  EnumInput,
-  Input,
-  InputType,
-  NumberInput,
-  Output,
-  ReputoSchema,
-  SliderInput,
-  TextInput,
+  CsvIoItem,
+  IoItem,
+  IoType,
   ValidationResult,
-} from './types.js';
+} from './types/index.js';
+
 // Validation exports
 export {
   buildZodSchema,

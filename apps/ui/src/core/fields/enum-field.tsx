@@ -1,6 +1,6 @@
-"use client";
+"use client"
 
-import { Control } from "react-hook-form";
+import type { Control } from "react-hook-form"
 import {
   FormControl,
   FormDescription,
@@ -8,19 +8,19 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
+} from "@/components/ui/form"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import type { EnumInput } from "@reputo/algorithm-validator";
+} from "@/components/ui/select"
+import type { FormInput } from "../schema-builder"
 
 interface EnumFieldProps {
-  input: EnumInput;
-  control: Control<any>;
+  input: FormInput
+  control: Control<any>
 }
 
 export function EnumField({ input, control }: EnumFieldProps) {
@@ -32,20 +32,24 @@ export function EnumField({ input, control }: EnumFieldProps) {
         <FormItem>
           <FormLabel>
             {input.label}
-            {input.required !== false && <span className="text-destructive ml-1">*</span>}
+            {input.required !== false && (
+              <span className="text-destructive ml-1">*</span>
+            )}
           </FormLabel>
           <Select onValueChange={field.onChange} value={field.value}>
             <FormControl>
               <SelectTrigger>
-                <SelectValue placeholder={`Select ${input.label.toLowerCase()}`} />
+                <SelectValue
+                  placeholder={`Select ${input.label.toLowerCase()}`}
+                />
               </SelectTrigger>
             </FormControl>
             <SelectContent>
-              {input.enum.map((option) => (
+              {input.enum?.map((option: string) => (
                 <SelectItem key={option} value={option}>
                   {option}
                 </SelectItem>
-              ))}
+              )) || null}
             </SelectContent>
           </Select>
           {input.description && (
@@ -55,6 +59,5 @@ export function EnumField({ input, control }: EnumFieldProps) {
         </FormItem>
       )}
     />
-  );
+  )
 }
-
