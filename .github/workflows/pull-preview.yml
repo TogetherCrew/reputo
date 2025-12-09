@@ -29,6 +29,11 @@ jobs:
                   echo "AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID" >> .env
                   echo "AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY" >> .env
 
+            - name: Generate MongoDB replica set key
+              run: |
+                  openssl rand -base64 756 > docker/mongo/replica.key
+                  chmod 400 docker/mongo/replica.key
+
             - uses: pullpreview/action@v5
               with:
                   always_on: main

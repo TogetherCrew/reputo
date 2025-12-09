@@ -1,5 +1,3 @@
-version: '3.9'
-
 networks:
     preview:
 
@@ -17,24 +15,29 @@ services:
         image: mongo:7.0.5
         restart: unless-stopped
         networks: [preview]
-        volumes:
-            - mongodb_data:/data/db
+        command:
+            [
+                '--replSet',
+                'rs0',
+                '--keyFile',
+                '/etc/mongo/replica.key',
+                '--bind_ip_all',
+            ]
         environment:
+            - MONGO_INITDB_ROOT_USERNAME=admin
+            - MONGO_INITDB_ROOT_PASSWORD=preview_password
             - MONGO_INITDB_DATABASE=reputo_preview
-        # No auth for preview simplicity - replica set enabled for Change Streams
-        command: mongod --bind_ip_all --replSet rs0
+        volumes:
+            - ./mongo/init.js:/docker-entrypoint-initdb.d/init.js:ro
+            - ./mongo/healthcheck.js:/etc/mongo/healthcheck.js:ro
+            - ./mongo/replica.key:/etc/mongo/replica.key:ro
+            - mongodb_data:/data/db
         healthcheck:
-            test:
-                [
-                    'CMD',
-                    'mongosh',
-                    '--eval',
-                    "try { rs.status() } catch(e) { rs.initiate({_id:'rs0',members:[{_id:0,host:'localhost:27017'}]}) }",
-                ]
-            interval: 10s
+            test: test $(echo $(mongosh -u $$MONGO_INITDB_ROOT_USERNAME -p $$MONGO_INITDB_ROOT_PASSWORD --quiet /etc/mongo/healthcheck.js)) -eq 1
+            interval: 60s
             timeout: 10s
-            retries: 5
-            start_period: 30s
+            retries: 2
+            start_period: 40s
 
     traefik:
         image: traefik:v3.4
@@ -107,6 +110,8 @@ services:
             - MONGODB_HOST=mongodb
             - MONGODB_PORT=27017
             - MONGODB_DB_NAME=reputo_preview
+            - MONGODB_USER=admin
+            - MONGODB_PASSWORD=preview_password
             - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
             - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
             - AWS_REGION=eu-central-1
@@ -239,3 +244,5 @@ services:
             - MONGODB_HOST=mongodb
             - MONGODB_PORT=27017
             - MONGODB_DB_NAME=reputo_preview
+            - MONGODB_USER=admin
+            - MONGODB_PASSWORD=preview_password
