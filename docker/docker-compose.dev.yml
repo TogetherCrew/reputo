@@ -16,7 +16,7 @@ services:
         image: mongo:7.0.5
         restart: unless-stopped
         networks: [dev]
-        command: ['--replSet', 'rs0', '--keyFile', '/etc/mongo/replica.key']
+        command: ['--replSet', 'rs0', '--keyFile', '/etc/mongo/keyfile.txt']
         ports:
             - 27017:27017
         env_file:
@@ -24,7 +24,7 @@ services:
         volumes:
             - ./mongo/init.js:/docker-entrypoint-initdb.d/init.js:ro
             - ./mongo/healthcheck.js:/etc/mongo/healthcheck.js:ro
-            - ./mongo/replica.key:/etc/mongo/replica.key:ro
+            - ./mongo/keyfile.txt:/etc/mongo/keyfile.txt:ro
             - mongodb_data:/data/db
         healthcheck:
             test: test $(echo $(mongosh -u $$MONGO_INITDB_ROOT_USERNAME -p $$MONGO_INITDB_ROOT_PASSWORD --quiet /etc/mongo/healthcheck.js)) -eq 1

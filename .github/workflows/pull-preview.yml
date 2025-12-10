@@ -31,8 +31,8 @@ jobs:
 
             - name: Generate MongoDB replica set key
               run: |
-                  openssl rand -base64 756 > docker/mongo/replica.key
-                  chmod 400 docker/mongo/replica.key
+                  openssl rand -base64 768 > docker/mongo/keyfile.txt
+                  chmod 400 docker/mongo/keyfile.txt
 
             - uses: pullpreview/action@v5
               with:

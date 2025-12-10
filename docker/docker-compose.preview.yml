@@ -20,7 +20,7 @@ services:
                 '--replSet',
                 'rs0',
                 '--keyFile',
-                '/etc/mongo/replica.key',
+                '/etc/mongo/keyfile.txt',
                 '--bind_ip_all',
             ]
         environment:
@@ -30,7 +30,7 @@ services:
         volumes:
             - ./mongo/init.js:/docker-entrypoint-initdb.d/init.js:ro
             - ./mongo/healthcheck.js:/etc/mongo/healthcheck.js:ro
-            - ./mongo/replica.key:/etc/mongo/replica.key:ro
+            - ./mongo/keyfile.txt:/etc/mongo/keyfile.txt:ro
             - mongodb_data:/data/db
         healthcheck:
             test: test $(echo $(mongosh -u $$MONGO_INITDB_ROOT_USERNAME -p $$MONGO_INITDB_ROOT_PASSWORD --quiet /etc/mongo/healthcheck.js)) -eq 1
