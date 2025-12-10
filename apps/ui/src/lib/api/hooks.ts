@@ -90,6 +90,10 @@ export const useDeleteAlgorithmPreset = () => {
       queryClient.invalidateQueries({
         queryKey: queryKeys.algorithmPresets.lists(),
       })
+      // Deleting a preset cascade deletes its snapshots, so invalidate snapshots too
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.snapshots.lists(),
+      })
     },
   })
 }
