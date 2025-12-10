@@ -3,4 +3,4 @@
  *
  * Each exported function should match an AlgorithmDefinition.runtime.activity value.
  */
-export * from './voting-engagement.activity.js';
+export * from './voting_engagement.activity.js';

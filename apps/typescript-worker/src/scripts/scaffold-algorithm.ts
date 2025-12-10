@@ -13,13 +13,32 @@ import { join } from 'node:path';
  *   pnpm algorithm:new voting_engagement
  */
 
-const ACTIVITIES_DIR = join(process.cwd(), 'src', 'activities');
-const ACTIVITIES_INDEX = join(ACTIVITIES_DIR, 'index.ts');
+/**
+ * Configuration for scaffolding an algorithm activity.
+ */
+export interface ScaffoldConfig {
+  /** Base directory for the typescript-worker package */
+  readonly baseDir: string;
+  /** Whether to skip console output */
+  readonly silent?: boolean;
+}
+
+/**
+ * Result of scaffolding an algorithm activity.
+ */
+export interface ScaffoldResult {
+  /** Path to the created activity file */
+  readonly activityFile: string;
+  /** Path to the activities index file */
+  readonly indexFile: string;
+  /** Whether the index was created or updated */
+  readonly indexAction: 'created' | 'updated' | 'unchanged';
+}
 
 /**
  * Generate the scaffold content for a new algorithm activity.
  */
-function generateActivityScaffold(algorithmKey: string): string {
+export function generateActivityScaffold(algorithmKey: string): string {
   const functionName = algorithmKey.replace(/-/g, '_');
 
   return `import { generateSnapshotOutputKey, type Storage } from '@reputo/storage';
@@ -113,12 +132,38 @@ export async function ${functionName}(
 }
 
 /**
+ * Validate algorithm key format.
+ * @returns Error message if invalid, undefined if valid
+ */
+export function validateAlgorithmKey(algorithmKey: string): string | undefined {
+  if (!/^[a-z][a-z0-9_]*$/.test(algorithmKey)) {
+    return 'Algorithm key must start with a lowercase letter and contain only lowercase letters, numbers, and underscores';
+  }
+  return undefined;
+}
+
+/**
+ * Check if an activity file already exists.
+ */
+export function activityExists(algorithmKey: string, baseDir: string): boolean {
+  const activitiesDir = join(baseDir, 'src', 'activities');
+  const activityFile = join(activitiesDir, `${algorithmKey}.activity.ts`);
+  return existsSync(activityFile);
+}
+
+/**
  * Add export statement to activities index file.
  */
-function addExportToIndex(algorithmKey: string): void {
+export function addExportToIndex(
+  algorithmKey: string,
+  baseDir: string,
+  silent = false,
+): 'created' | 'updated' | 'unchanged' {
+  const activitiesDir = join(baseDir, 'src', 'activities');
+  const indexFile = join(activitiesDir, 'index.ts');
   const exportLine = `export * from './${algorithmKey}.activity.js';`;
 
-  if (!existsSync(ACTIVITIES_INDEX)) {
+  if (!existsSync(indexFile)) {
     // Create new index file
     const content = `/**
  * Export all algorithm activities.
@@ -127,71 +172,126 @@ function addExportToIndex(algorithmKey: string): void {
  */
 ${exportLine}
 `;
-    writeFileSync(ACTIVITIES_INDEX, content, 'utf8');
-    console.log(`✓ Created ${ACTIVITIES_INDEX}`);
-    return;
+    writeFileSync(indexFile, content, 'utf8');
+    if (!silent) {
+      console.log(`✓ Created ${indexFile}`);
+    }
+    return 'created';
   }
 
   // Check if export already exists
-  const indexContent = readFileSync(ACTIVITIES_INDEX, 'utf8');
+  const indexContent = readFileSync(indexFile, 'utf8');
   if (indexContent.includes(exportLine)) {
-    console.log('✓ Export already exists in index.ts');
-    return;
+    if (!silent) {
+      console.log('✓ Export already exists in index.ts');
+    }
+    return 'unchanged';
   }
 
   // Append export to existing index
   const updatedContent = `${indexContent.trimEnd()}\n${exportLine}\n`;
-  writeFileSync(ACTIVITIES_INDEX, updatedContent, 'utf8');
-  console.log(`✓ Added export to ${ACTIVITIES_INDEX}`);
+  writeFileSync(indexFile, updatedContent, 'utf8');
+  if (!silent) {
+    console.log(`✓ Added export to ${indexFile}`);
+  }
+  return 'updated';
 }
 
 /**
- * Main scaffold function.
+ * Scaffold a new algorithm activity.
+ *
+ * @param algorithmKey - The algorithm key (snake_case)
+ * @param config - Configuration options
+ * @returns Result containing paths and actions taken
+ * @throws Error if validation fails or file already exists
  */
-function main(): void {
-  const args = process.argv.slice(2);
-
-  if (args.length === 0) {
-    console.error('❌ Error: Please provide an algorithm key');
-    console.error('Usage: pnpm algorithm:new <algorithm_key>');
-    console.error('Example: pnpm algorithm:new voting_engagement');
-    process.exit(1);
-  }
-
-  const algorithmKey = args[0];
+export function scaffoldActivity(algorithmKey: string, config: ScaffoldConfig): ScaffoldResult {
+  const { baseDir, silent = false } = config;
 
   // Validate algorithm key format
-  if (!/^[a-z][a-z0-9_-]*$/.test(algorithmKey)) {
-    console.error(
-      '❌ Error: Algorithm key must start with a lowercase letter and contain only lowercase letters, numbers, hyphens, and underscores',
-    );
-    process.exit(1);
+  const validationError = validateAlgorithmKey(algorithmKey);
+  if (validationError) {
+    throw new Error(validationError);
   }
 
-  const activityFile = join(ACTIVITIES_DIR, `${algorithmKey}.activity.ts`);
+  const activitiesDir = join(baseDir, 'src', 'activities');
+  const activityFile = join(activitiesDir, `${algorithmKey}.activity.ts`);
+  const indexFile = join(activitiesDir, 'index.ts');
 
   // Check if activity file already exists
   if (existsSync(activityFile)) {
-    console.error(`❌ Error: Activity file already exists: ${activityFile}`);
-    process.exit(1);
+    throw new Error(`Activity file already exists: ${activityFile}`);
   }
 
   // Generate and write activity scaffold
   const scaffold = generateActivityScaffold(algorithmKey);
   writeFileSync(activityFile, scaffold, 'utf8');
-  console.log(`✓ Created ${activityFile}`);
+  if (!silent) {
+    console.log(`✓ Created ${activityFile}`);
+  }
 
   // Add export to index
-  addExportToIndex(algorithmKey);
+  const indexAction = addExportToIndex(algorithmKey, baseDir, silent);
 
-  // Print success message and next steps
-  console.log('\n✅ Algorithm activity scaffolded successfully!');
-  console.log('\nNext steps:');
-  console.log(`  1. Implement the algorithm logic in ${activityFile}`);
-  console.log(`  2. Set runtime.taskQueue = "reputation-algorithms-typescript" in the algorithm definition`);
-  console.log(`  3. Set runtime.activity = "${algorithmKey.replace(/-/g, '_')}" in the algorithm definition`);
-  console.log('  4. Adjust input parsing and output serialization as needed');
-  console.log(`  5. Update content type if not using CSV (e.g., 'application/json')`);
+  return {
+    activityFile,
+    indexFile,
+    indexAction,
+  };
 }
 
-main();
+/**
+ * Print usage information.
+ */
+function printUsage(): void {
+  console.log('Usage: pnpm algorithm:new <algorithm_key>');
+  console.log('');
+  console.log('Arguments:');
+  console.log('  algorithm_key  Algorithm key in snake_case (e.g., voting_engagement)');
+  console.log('');
+  console.log('Examples:');
+  console.log('  pnpm algorithm:new voting_engagement');
+  console.log('  pnpm algorithm:new proposal_engagement');
+  console.log('');
+}
+
+/**
+ * Main CLI function.
+ */
+function main(): void {
+  const args = process.argv.slice(2);
+
+  if (args.length === 0 || args.includes('--help') || args.includes('-h')) {
+    printUsage();
+    process.exit(args.length === 0 ? 1 : 0);
+  }
+
+  const algorithmKey = args[0];
+
+  if (!algorithmKey) {
+    console.error('❌ Error: Please provide an algorithm key');
+    printUsage();
+    process.exit(1);
+  }
+
+  try {
+    const result = scaffoldActivity(algorithmKey, {
+      baseDir: process.cwd(),
+    });
+
+    // Print success message and next steps
+    console.log('\n✅ Algorithm activity scaffolded successfully!');
+    console.log('\nNext steps:');
+    console.log(`  1. Implement the algorithm logic in ${result.activityFile}`);
+    console.log('  2. Adjust input parsing and output serialization as needed');
+    console.log("  3. Update content type if not using CSV (e.g., 'application/json')");
+  } catch (error) {
+    console.error(`❌ Error: ${(error as Error).message}`);
+    process.exit(1);
+  }
+}
+
+// Run main only when executed directly
+if (import.meta.url === `file://${process.argv[1]}`) {
+  main();
+}
