@@ -89,6 +89,8 @@ services:
         depends_on:
             mongodb:
                 condition: service_healthy
+            temporal:
+                condition: service_healthy
         build:
             context: ..
             dockerfile: docker/Dockerfile
@@ -206,6 +208,7 @@ services:
         depends_on:
             temporal:
                 condition: service_healthy
+
         build:
             context: ..
             dockerfile: docker/Dockerfile
