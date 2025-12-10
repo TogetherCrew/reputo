@@ -15,22 +15,26 @@ services:
         image: mongo:7.0.5
         restart: unless-stopped
         networks: [preview]
-        entrypoint: ['/bin/bash', '-c']
-        command: >
-            chown 999:999 /etc/mongo/keyfile.txt &&
+        user: '0:0'
+        entrypoint: >
+            /bin/bash -c "chown 999:999 /etc/mongo/keyfile.txt &&
+            chmod 400 /etc/mongo/keyfile.txt &&
             exec docker-entrypoint.sh mongod
             --replSet rs0
             --keyFile /etc/mongo/keyfile.txt
-            --bind_ip_all
+            --bind_ip_all"
+
         environment:
             - MONGO_INITDB_ROOT_USERNAME=admin
             - MONGO_INITDB_ROOT_PASSWORD=preview_password
             - MONGO_INITDB_DATABASE=reputo_preview
+
         volumes:
             - ./mongo/init.js:/docker-entrypoint-initdb.d/init.js:ro
             - ./mongo/healthcheck.js:/etc/mongo/healthcheck.js:ro
-            - ./mongo/keyfile.txt:/etc/mongo/keyfile.txt:ro
+            - ./mongo/keyfile.txt:/etc/mongo/keyfile.txt
             - mongodb_data:/data/db
+
         healthcheck:
             test: test $(echo $(mongosh -u $$MONGO_INITDB_ROOT_USERNAME -p $$MONGO_INITDB_ROOT_PASSWORD --quiet /etc/mongo/healthcheck.js)) -eq 1
             interval: 60s
