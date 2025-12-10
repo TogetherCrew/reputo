@@ -18,11 +18,10 @@
 2. [Quick Start](#quick-start)
 3. [Prerequisites](#prerequisites)
 4. [Project Structure](#project-structure)
-5. [Environments](#environment-setup)
-6. [Algorithm Development](#algorithm-development)
-7. [Contributing](#contributing)
-8. [License](#license)
-9. [Team](#team)
+5. [Algorithm Development](#algorithm-development)
+6. [Contributing](#contributing)
+7. [License](#license)
+8. [Team](#team)
 
 ---
 
@@ -32,7 +31,7 @@
 | -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ---------------------------------------------------------------------------------------- |
 | `apps/api`                       | ![nestjs](https://img.shields.io/badge/-NestJS-E0234E?logo=nestjs&logoColor=white&style=flat)                                                                                                                   | ✅ Ready | [📚 README](apps/api/README.md) · [📖 API Docs](https://api-staging.logid.xyz/reference) |
 | `apps/ui`                        | ![next](https://img.shields.io/badge/-Next.js-000000?logo=nextdotjs&logoColor=white&style=flat)                                                                                                                 | ✅ Ready | [📚 README](apps/ui/README.md) · [🌐 App](https://staging.logid.xyz)                     |
-| `apps/workflows`                 | ![typescript](https://img.shields.io/badge/-TypeScript-3178C6?logo=typescript&logoColor=white&style=flat)                                                                                                       | ✅ Ready | [📚 README](apps/workflows/README.md)                                                    |
+| `apps/workflows`                 | ![temporal](https://img.shields.io/badge/-Temporal-000000?logo=temporal&logoColor=white&style=flat) + ![typescript](https://img.shields.io/badge/-TypeScript-3178C6?logo=typescript&logoColor=white&style=flat) | ✅ Ready | [📚 README](apps/workflows/README.md)                                                    |
 | `apps/typescript-worker`         | ![temporal](https://img.shields.io/badge/-Temporal-000000?logo=temporal&logoColor=white&style=flat) + ![typescript](https://img.shields.io/badge/-TypeScript-3178C6?logo=typescript&logoColor=white&style=flat) | ✅ Ready | [📚 README](apps/typescript-worker/README.md)                                            |
 | `packages/reputation-algorithms` | ![typescript](https://img.shields.io/badge/-TypeScript-3178C6?logo=typescript&logoColor=white&style=flat)                                                                                                       | ✅ Ready | [📚 README](packages/reputation-algorithms/README.md)                                    |
 | `packages/algorithm-validator`   | ![typescript](https://img.shields.io/badge/-TypeScript-3178C6?logo=typescript&logoColor=white&style=flat)                                                                                                       | ✅ Ready | [📚 README](packages/algorithm-validator/README.md)                                      |
