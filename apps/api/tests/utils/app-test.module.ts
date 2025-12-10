@@ -2,6 +2,7 @@ import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Test } from '@nestjs/testing';
+import { LoggerModule } from 'nestjs-pino';
 import { AlgorithmPresetModule } from '../../src/algorithm-preset/algorithm-preset.module';
 import { configModules } from '../../src/config';
 import { SnapshotModule } from '../../src/snapshot/snapshot.module';
@@ -17,6 +18,11 @@ export async function createTestApp(options: TestAppOptions) {
         load: configModules,
         isGlobal: true,
         ignoreEnvFile: true,
+      }),
+      LoggerModule.forRoot({
+        pinoHttp: {
+          level: 'silent',
+        },
       }),
       MongooseModule.forRoot(options.mongoUri),
       AlgorithmPresetModule,

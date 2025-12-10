@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import type { AlgorithmPreset, AlgorithmPresetModel, PaginateOptions } from '@reputo/database';
 import { MODEL_NAMES } from '@reputo/database';
-import type { FilterQuery } from 'mongoose';
+import type { ClientSession, FilterQuery } from 'mongoose';
 import type { CreateAlgorithmPresetDto, UpdateAlgorithmPresetDto } from './dto';
 
 @Injectable()
@@ -28,7 +28,7 @@ export class AlgorithmPresetRepository {
     return this.model.findByIdAndUpdate(id, updateDto, { new: true }).lean().exec();
   }
 
-  deleteById(id: string) {
-    return this.model.findByIdAndDelete(id).lean().exec();
+  deleteById(id: string, session?: ClientSession) {
+    return this.model.findByIdAndDelete(id, { session }).lean().exec();
   }
 }

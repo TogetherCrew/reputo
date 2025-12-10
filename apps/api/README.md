@@ -4,15 +4,15 @@ NestJS-based REST API for the Reputo ecosystem.
 
 ## Features
 
-- **RESTful API**: Type-safe endpoints with OpenAPI/Swagger documentation
-- **Scalar API Reference**: Interactive documentation UI at `/reference`
-- **URI Versioning**: Built-in API versioning with prefix `/api/v`
-- **MongoDB Integration**: Mongoose ODM for type-safe database operations
-- **Comprehensive Validation**: Request/response validation using class-validator and class-transformer
-- **Security**: Helmet for HTTP security headers and configurable CORS
-- **Structured Logging**: Pino-based logging with error interceptor
-- **Health Checks**: Built-in `/healthz` endpoint for monitoring
-- **Global Error Handling**: Unified exception filters for consistent error responses
+-   **RESTful API**: Type-safe endpoints with OpenAPI/Swagger documentation
+-   **Scalar API Reference**: Interactive documentation UI at `/reference`
+-   **URI Versioning**: Built-in API versioning with prefix `/api/v`
+-   **MongoDB Integration**: Mongoose ODM for type-safe database operations
+-   **Comprehensive Validation**: Request/response validation using class-validator and class-transformer
+-   **Security**: Helmet for HTTP security headers and configurable CORS
+-   **Structured Logging**: Pino-based logging with error interceptor
+-   **Health Checks**: Built-in `/healthz` endpoint for monitoring
+-   **Global Error Handling**: Unified exception filters for consistent error responses
 
 ## Installation
 
@@ -70,17 +70,17 @@ pnpm --filter @reputo/api test:e2e:watch
 
 Comprehensive, interactive API reference powered by Scalar:
 
-- **Local**: [http://localhost:3000/reference](http://localhost:3000/reference)
-- **Staging**: [https://api-staging.logid.xyz/reference](https://api-staging.logid.xyz/reference)
-- **Production**: [https://api.logid.xyz/reference](https://api.logid.xyz/reference)
+-   **Local**: [http://localhost:3000/reference](http://localhost:3000/reference)
+-   **Staging**: [https://api-staging.logid.xyz/reference](https://api-staging.logid.xyz/reference)
+-   **Production**: [https://api.logid.xyz/reference](https://api.logid.xyz/reference)
 
 ### Swagger UI
 
 Traditional Swagger interface:
 
-- **Local**: [http://localhost:3000/api/docs](http://localhost:3000/api/docs)
-- **Staging**: [https://api-staging.logid.xyz/api/docs](https://api-staging.logid.xyz/api/docs)
-- **Production**: [https://api.logid.xyz/api/docs](https://api.logid.xyz/api/docs)
+-   **Local**: [http://localhost:3000/api/docs](http://localhost:3000/api/docs)
+-   **Staging**: [https://api-staging.logid.xyz/api/docs](https://api-staging.logid.xyz/api/docs)
+-   **Production**: [https://api.logid.xyz/api/docs](https://api.logid.xyz/api/docs)
 
 ## API Endpoints
 
@@ -90,20 +90,20 @@ Manage algorithm configuration presets with CRUD operations.
 
 **Base Path**: `/api/v1/algorithm-presets`
 
-| Method   | Endpoint | Description                                 |
-| -------- | -------- | ------------------------------------------- |
-| `POST`   | `/`      | Create a new algorithm preset               |
-| `GET`    | `/`      | List all presets (paginated, sortable)      |
-| `GET`    | `/:id`   | Get preset by ID                            |
-| `PATCH`  | `/:id`   | Update preset (key & version are immutable) |
-| `DELETE` | `/:id`   | Delete preset                               |
+| Method   | Endpoint | Description                                                   |
+| -------- | -------- | ------------------------------------------------------------- |
+| `POST`   | `/`      | Create a new algorithm preset                                 |
+| `GET`    | `/`      | List all presets (paginated, sortable)                        |
+| `GET`    | `/:id`   | Get preset by ID                                              |
+| `PATCH`  | `/:id`   | Update preset (key & version are immutable)                   |
+| `DELETE` | `/:id`   | Delete preset (cascades snapshots; cancels running workflows) |
 
 **Features:**
 
-- Pagination support (`page`, `limit` query params)
-- Sorting by field (`sortBy`, `sortOrder`)
-- Filtering by algorithm key and version
-- Input parameter validation
+-   Pagination support (`page`, `limit` query params)
+-   Sorting by field (`sortBy`, `sortOrder`)
+-   Filtering by algorithm key and version
+-   Input parameter validation
 
 ### Snapshots
 
@@ -111,19 +111,20 @@ Manage algorithm execution snapshots with status tracking and embedded algorithm
 
 **Base Path**: `/api/v1/snapshots`
 
-| Method | Endpoint | Description                                    |
-| ------ | -------- | ---------------------------------------------- |
-| `POST` | `/`      | Create a new snapshot (status: `queued`)       |
-| `GET`  | `/`      | List snapshots (filtered, paginated, sortable) |
-| `GET`  | `/:id`   | Get snapshot by ID                             |
+| Method   | Endpoint | Description                                                |
+| -------- | -------- | ---------------------------------------------------------- |
+| `POST`   | `/`      | Create a new snapshot (status: `queued`)                   |
+| `GET`    | `/`      | List snapshots (filtered, paginated, sortable)             |
+| `GET`    | `/:id`   | Get snapshot by ID                                         |
+| `DELETE` | `/:id`   | Delete snapshot (cancels running workflow before deletion) |
 
 **Features:**
 
-- Status filtering (`status` query param)
-- Algorithm key filtering (`key` query param on embedded preset)
-- Algorithm version filtering (`version` query param on embedded preset)
-- Embedded algorithm preset data (frozen copy mirrors AlgorithmPreset and includes timestamps)
-- Pagination and sorting support
+-   Status filtering (`status` query param)
+-   Algorithm key filtering (`key` query param on embedded preset)
+-   Algorithm version filtering (`version` query param on embedded preset)
+-   Embedded algorithm preset data (frozen copy mirrors AlgorithmPreset and includes timestamps)
+-   Pagination and sorting support
 
 ### Storage
 
@@ -165,14 +166,14 @@ Abstract database operations and provide type-safe MongoDB queries using Mongoos
 
 Define request/response schemas with validation rules using decorators:
 
-- Input validation: `class-validator`
-- Data transformation: `class-transformer`
+-   Input validation: `class-validator`
+-   Data transformation: `class-transformer`
 
 ### Global Pipes & Filters
 
-- **Validation Pipe**: Transforms and validates request data
-- **Exception Filter**: Catches and formats errors consistently
-- **Logging Interceptor**: Logs errors with Pino logger
+-   **Validation Pipe**: Transforms and validates request data
+-   **Exception Filter**: Catches and formats errors consistently
+-   **Logging Interceptor**: Logs errors with Pino logger
 
 ## Project Structure
 
@@ -211,6 +212,9 @@ src/
 | `MONGODB_USER`                   | MongoDB user                               | -                     | Yes      |
 | `MONGODB_PASSWORD`               | MongoDB password                           | -                     | Yes      |
 | `MONGODB_DB_NAME`                | MongoDB database name                      | -                     | Yes      |
+| `TEMPORAL_ADDRESS`               | Temporal server address                    | -                     | No       |
+| `TEMPORAL_NAMESPACE`             | Temporal namespace                         | `default`             | No       |
+| `TEMPORAL_TASK_QUEUE`            | Task queue name                            | `workflows`           | No       |
 | `AWS_REGION`                     | AWS region for S3                          | -                     | Yes      |
 | `AWS_ACCESS_KEY_ID`              | AWS access key ID                          | -                     | No       |
 | `AWS_SECRET_ACCESS_KEY`          | AWS secret access key                      | -                     | No       |

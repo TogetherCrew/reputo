@@ -115,7 +115,9 @@ export class SnapshotController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     summary: 'Delete a snapshot',
-    description: 'Permanently deletes a snapshot by its unique identifier.',
+    description:
+      'Permanently deletes a snapshot by its unique identifier. ' +
+      'If the snapshot status is "running", cancels the Temporal workflow before deletion.',
   })
   @ApiParam({
     name: 'id',

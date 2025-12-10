@@ -112,8 +112,10 @@ export class AlgorithmPresetController {
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
-    summary: 'Delete an algorithm preset',
-    description: 'Permanently deletes an algorithm preset by its unique identifier.',
+    summary: 'Delete an algorithm preset (cascade)',
+    description:
+      'Permanently deletes an algorithm preset and all its referencing snapshots. ' +
+      'For any running snapshots, cancels their Temporal workflows before deletion.',
   })
   @ApiParam({
     name: 'id',
@@ -121,7 +123,7 @@ export class AlgorithmPresetController {
     example: '66f9c9...',
   })
   @ApiNoContentResponse({
-    description: 'Algorithm preset successfully deleted',
+    description: 'Algorithm preset and all referencing snapshots successfully deleted',
   })
   @ApiBadRequestResponse({
     description: 'Invalid ID format',

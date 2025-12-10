@@ -13,7 +13,9 @@ import type {
   UpdateAlgorithmPresetDto,
 } from '../../../src/algorithm-preset/dto';
 import { CSVValidationException } from '../../../src/shared/exceptions';
+import { SnapshotRepository } from '../../../src/snapshot/snapshot.repository';
 import { StorageService } from '../../../src/storage/storage.service';
+import { TemporalService } from '../../../src/temporal';
 
 vi.mock('@reputo/reputation-algorithms', async () => {
   const actual = await vi.importActual('@reputo/reputation-algorithms');
@@ -37,6 +39,17 @@ describe('AlgorithmPresetService', () => {
   let mockRepository: AlgorithmPresetRepository;
   let mockStorageService: StorageService;
   let mockConfigService: ConfigService;
+  let mockSnapshotRepository: SnapshotRepository;
+  let mockTemporalService: TemporalService;
+  let mockConnection: any;
+  const mockLogger = {
+    info: vi.fn(),
+    error: vi.fn(),
+    warn: vi.fn(),
+    debug: vi.fn(),
+    log: vi.fn(),
+    setContext: vi.fn(),
+  } as any;
 
   const defaultStorageConfig = {
     maxSizeBytes: 52428800, // 50MB
@@ -109,6 +122,23 @@ describe('AlgorithmPresetService', () => {
       }),
     } as unknown as ConfigService;
 
+    mockSnapshotRepository = {
+      find: vi.fn().mockResolvedValue([]),
+      deleteMany: vi.fn().mockResolvedValue({ deletedCount: 0 }),
+    } as unknown as SnapshotRepository;
+
+    mockTemporalService = {
+      cancelSnapshotWorkflows: vi.fn().mockResolvedValue(undefined),
+    } as unknown as TemporalService;
+
+    const session = {
+      withTransaction: vi.fn(async (cb: () => Promise<void>) => cb()),
+      endSession: vi.fn(),
+    };
+    mockConnection = {
+      startSession: vi.fn().mockResolvedValue(session),
+    };
+
     vi.mocked(getAlgorithmDefinition).mockReturnValue(JSON.stringify(mockAlgorithmDefinition));
 
     vi.mocked(validatePayload).mockReturnValue({
@@ -121,7 +151,15 @@ describe('AlgorithmPresetService', () => {
       errors: [],
     });
 
-    service = new AlgorithmPresetService(mockRepository, mockStorageService, mockConfigService);
+    service = new AlgorithmPresetService(
+      mockLogger,
+      mockRepository,
+      mockStorageService,
+      mockSnapshotRepository,
+      mockTemporalService,
+      mockConnection,
+      mockConfigService,
+    );
   });
 
   describe('create', () => {
@@ -605,23 +643,51 @@ describe('AlgorithmPresetService', () => {
     it('should complete successfully when preset is deleted', async () => {
       const id = '507f1f77bcf86cd799439011';
 
+      mockRepository.findById = vi.fn().mockResolvedValue({ _id: id });
+      mockSnapshotRepository.find = vi.fn().mockResolvedValue([]);
       mockRepository.deleteById = vi.fn().mockResolvedValue({ _id: id });
 
       await service.deleteById(id);
 
-      expect(mockRepository.deleteById).toHaveBeenCalledOnce();
-      expect(mockRepository.deleteById).toHaveBeenCalledWith(id);
+      expect(mockTemporalService.cancelSnapshotWorkflows).toHaveBeenCalledWith([]);
+      expect(mockSnapshotRepository.deleteMany).not.toHaveBeenCalled();
+      expect(mockRepository.deleteById).toHaveBeenCalled();
     });
 
     it('should throw NotFoundException when preset not found', async () => {
       const id = '507f1f77bcf86cd799439011';
 
-      mockRepository.deleteById = vi.fn().mockResolvedValue(null);
+      mockRepository.findById = vi.fn().mockResolvedValue(null);
 
       const promise = service.deleteById(id);
 
       await expect(promise).rejects.toBeInstanceOf(NotFoundException);
       await expect(promise).rejects.toThrow(`${MODEL_NAMES.ALGORITHM_PRESET} with ID ${id} not found`);
+    });
+
+    it('should cascade delete snapshots and preset', async () => {
+      const id = '507f1f77bcf86cd799439011';
+      mockRepository.findById = vi.fn().mockResolvedValue({ _id: id });
+      mockSnapshotRepository.find = vi.fn().mockResolvedValue([
+        { _id: 's1', status: 'completed' },
+        {
+          _id: 's2',
+          status: 'running',
+          temporal: { workflowId: 'wf-1' },
+        },
+      ]);
+      mockRepository.deleteById = vi.fn().mockResolvedValue({ _id: id });
+      mockTemporalService.cancelSnapshotWorkflows = vi.fn().mockResolvedValue(undefined);
+
+      await service.deleteById(id);
+
+      expect(mockTemporalService.cancelSnapshotWorkflows).toHaveBeenCalled();
+      expect(mockSnapshotRepository.deleteMany).toHaveBeenCalled();
+      const [filter] = (mockSnapshotRepository.deleteMany as any).mock.calls[0];
+      expect(filter).toEqual({ algorithmPreset: id });
+      expect(mockRepository.deleteById).toHaveBeenCalled();
+      const [deleteId] = (mockRepository.deleteById as any).mock.calls[0];
+      expect(deleteId).toBe(id);
     });
   });
 });
