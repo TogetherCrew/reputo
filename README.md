@@ -55,9 +55,7 @@ pnpm build
 pnpm dev
 
 # Run individual services
-pnpm start:backend    # API only
-pnpm start:frontend   # UI only
-pnpm start:temporal   # Workflows only
+pnpm -F @reputo/api dev   # API only
 ```
 
 ### Local development (Docker Compose)
@@ -67,11 +65,6 @@ pnpm start:temporal   # Workflows only
 ```bash
 # Basic local development setup
 docker compose -f docker/docker-compose.dev.yml up --build
-
-# Services available at:
-# - API: http://localhost:3000
-# - UI: http://localhost:8080
-# - Workflows: Background service
 ```
 
 ---
