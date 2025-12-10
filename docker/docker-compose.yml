@@ -1,5 +1,5 @@
 networks:
-    web:
+    production:
         external: true
 
 volumes:
@@ -13,23 +13,25 @@ volumes:
 services:
     mongodb:
         container_name: mongodb
-        image: mongo:7.0
+        image: mongo:7.0.5
         restart: unless-stopped
-        networks: [web]
-        volumes:
-            - mongodb_data:/data/db
-            - ./mongo-init.sh:/docker-entrypoint-initdb.d/mongo-init.sh:ro
+        networks: [production]
+        command: ['--replSet', 'rs0', '--keyFile', '/etc/mongo/keyfile.txt']
+        ports:
+            - 27017:27017
         env_file:
             - ./env/mongodb.env
-        # command: mongod --replSet rs0 --bind_ip_all
-        ports:
-            - '27017:27017'
+        volumes:
+            - ./mongo/init.js:/docker-entrypoint-initdb.d/init.js:ro
+            - ./mongo/healthcheck.js:/etc/mongo/healthcheck.js:ro
+            - ./mongo/keyfile.txt:/etc/mongo/keyfile.txt:ro
+            - mongodb_data:/data/db
         healthcheck:
-            test: ['CMD', 'mongosh', '--eval', "db.adminCommand('ping')"]
-            interval: 10s
-            timeout: 5s
+            test: test $(echo $(mongosh -u $$MONGO_INITDB_ROOT_USERNAME -p $$MONGO_INITDB_ROOT_PASSWORD --quiet /etc/mongo/healthcheck.js)) -eq 1
+            interval: 60s
+            timeout: 60s
             retries: 5
-            start_period: 30s
+            start_period: 40s
 
     traefik:
         image: traefik:v3.5.0
@@ -45,7 +47,7 @@ services:
             - /var/run/docker.sock:/var/run/docker.sock:ro
             - ./traefik/traefik.yml:/etc/traefik/traefik.yml:ro
             - ./certs/:/var/traefik/certs/:rw
-        networks: [web]
+        networks: [production]
         healthcheck:
             test: ['CMD', 'traefik', 'healthcheck', '--ping']
             interval: 30s
@@ -66,7 +68,7 @@ services:
         container_name: ui
         image: ghcr.io/togethercrew/reputo/ui:${IMAGE_TAG}
         restart: unless-stopped
-        networks: [web]
+        networks: [production]
         env_file:
             - ./env/ui.env
         labels:
@@ -82,9 +84,11 @@ services:
         container_name: api
         image: ghcr.io/togethercrew/reputo/api:${IMAGE_TAG}
         restart: unless-stopped
-        networks: [web]
+        networks: [production]
         depends_on:
             mongodb:
+                condition: service_healthy
+            temporal:
                 condition: service_healthy
         labels:
             - traefik.enable=true
@@ -117,7 +121,7 @@ services:
         command: --interval 60 --cleanup
         labels:
             - com.centurylinklabs.watchtower.enable=false
-        networks: [web]
+        networks: [production]
 
     temporal:
         container_name: temporal
@@ -125,12 +129,12 @@ services:
         restart: unless-stopped
         depends_on:
             - temporal-postgresql
-            # - temporal-elasticsearch
+            - temporal-elasticsearch
         env_file: ./env/temporal.env
         volumes:
             - ./temporal-dynamicconfig:/etc/temporal/config/dynamicconfig:ro
-        networks:
-            - web
+        networks: [production]
+
         healthcheck:
             test:
                 [
@@ -153,8 +157,8 @@ services:
         env_file: ./env/temporal-ui.env
         depends_on:
             - temporal
-        networks:
-            - web
+        networks: [production]
+
         labels:
             - traefik.enable=true
             - traefik.http.routers.temporal-ui.rule=Host(`${TEMPORAL_UI_DOMAIN}`)
@@ -177,16 +181,16 @@ services:
             - xpack.security.enabled=false
         volumes:
             - temporal_elasticsearch_data:/var/lib/elasticsearch/data
-        networks:
-            - web
+        networks: [production]
+
 
     temporal-postgresql:
         container_name: temporal-postgresql
         image: postgres:12.22
         restart: unless-stopped
         env_file: ./env/temporal-postgresql.env
-        networks:
-            - web
+        networks: [production]
+
         volumes:
             - temporal_postgresql_data:/var/lib/postgresql/data
 
@@ -194,7 +198,7 @@ services:
         container_name: typescript-worker
         image: ghcr.io/togethercrew/reputo/typescript-worker:${IMAGE_TAG}
         restart: unless-stopped
-        networks: [web]
+        networks: [production]
         depends_on:
             temporal:
                 condition: service_healthy
@@ -207,7 +211,7 @@ services:
         container_name: workflows
         image: ghcr.io/togethercrew/reputo/workflows:${IMAGE_TAG}
         restart: unless-stopped
-        networks: [web]
+        networks: [production]
         depends_on:
             mongodb:
                 condition: service_healthy
