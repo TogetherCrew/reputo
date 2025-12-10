@@ -15,14 +15,13 @@ services:
         image: mongo:7.0.5
         restart: unless-stopped
         networks: [preview]
-        command:
-            [
-                '--replSet',
-                'rs0',
-                '--keyFile',
-                '/etc/mongo/keyfile.txt',
-                '--bind_ip_all',
-            ]
+        entrypoint: ['/bin/bash', '-c']
+        command: >
+            chown 999:999 /etc/mongo/keyfile.txt &&
+            exec docker-entrypoint.sh mongod
+            --replSet rs0
+            --keyFile /etc/mongo/keyfile.txt
+            --bind_ip_all
         environment:
             - MONGO_INITDB_ROOT_USERNAME=admin
             - MONGO_INITDB_ROOT_PASSWORD=preview_password
