@@ -162,6 +162,7 @@ services:
             - traefik.http.routers.temporal-ui.tls=true
             - traefik.http.routers.temporal-ui.tls.certresolver=cloudflare
             - traefik.http.routers.temporal-ui.entrypoints=websecure
+            - traefik.http.routers.temporal-ui.middlewares=auth
             - traefik.http.services.temporal-ui.loadbalancer.server.port=8080
 
     temporal-elasticsearch:
