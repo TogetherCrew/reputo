@@ -1,24 +1,40 @@
 ---
-description: 
-globs: 
+description:
+globs:
 alwaysApply: true
 ---
 
 # Your rule content
+
 Overview
-This monorepo is managed with pnpm workspaces and contains four codebases:
+This monorepo uses pnpm workspaces. Current codebases:
+• apps/api — NestJS backend service
+• apps/ui — Vite/TypeScript web client
+• apps/workflows — Temporal TypeScript workflow orchestrations
+• apps/typescript-worker — Temporal worker/activities runtime
+• packages/reputation-algorithms — ranking and scoring logic
+• packages/database — Mongo models/schemas and data helpers
+• packages/storage — storage abstraction and helpers
+• packages/algorithm-validator — algorithm schema validation utilities
 
 Tooling and Infrastructure
-• Containerization: every service is packaged and run as a Docker image.
-• CI/CD: GitHub Actions builds and pushes images, then drives environment promotion.
+• pnpm for workspace management; dependency scripts run with filters.
+• Containerization for every service; Docker images drive all environments.
+• CI/CD via GitHub Actions to build/push images and promote between envs.
+• Biome for lint/format, Vitest for testing, lefthook for git hooks.
+
+Quality Bar
+• Code must stay clean, modular, and follow best practices by default.
+• Prefer typed interfaces, shared utilities, and small, focused modules.
+• Keep temporal activities/workflows deterministic and side-effect aware.
 
 Branch and Environment Strategy
-• Preview — Pull Preview spins up an ephemeral environment per PR for design and QA feedback.
-• Staging — triggered by merges to main; image tagged latest; Watchtower automatically pulls and restarts containers for regression and release testing.
-• Production — promoted manually; image tagged production; Watchtower redeploys the vetted staging image, giving a zero-rebuild release that runs the exact bits tested in staging.
+• Preview — Pull Preview spins up ephemeral envs per PR for design/QA.
+• Staging — merges to main tag images as latest; Watchtower auto-redeploys.
+• Production — manual promotion; Watchtower redeploys the vetted staging image.
 
 Branching Model
-GitHub Flow with short-lived feature branches that open pull requests, go through review, and merge into main.
+GitHub Flow with short-lived branches that open PRs, get review, and merge to main.
 
 Rollbacks
-Re-tag the previous production image and let Watchtower redeploy, enabling fast, reproducible rollbacks.
+Re-tag the prior production image and let Watchtower redeploy for fast rollback.
