@@ -1,7 +1,9 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AlgorithmPresetSchema, MODEL_NAMES } from '@reputo/database';
+import { SnapshotModule } from '../snapshot/snapshot.module';
 import { StorageModule } from '../storage/storage.module';
+import { TemporalModule } from '../temporal';
 import { AlgorithmPresetController } from './algorithm-preset.controller';
 import { AlgorithmPresetRepository } from './algorithm-preset.repository';
 import { AlgorithmPresetService } from './algorithm-preset.service';
@@ -15,6 +17,8 @@ import { AlgorithmPresetService } from './algorithm-preset.service';
       },
     ]),
     StorageModule,
+    TemporalModule,
+    forwardRef(() => SnapshotModule),
   ],
   controllers: [AlgorithmPresetController],
   providers: [AlgorithmPresetRepository, AlgorithmPresetService],

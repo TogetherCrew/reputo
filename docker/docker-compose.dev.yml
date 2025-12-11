@@ -1,5 +1,5 @@
 networks:
-    local:
+    dev:
         driver: bridge
 
 volumes:
@@ -13,23 +13,25 @@ volumes:
 services:
     mongodb:
         container_name: mongodb
-        image: mongo:7.0
+        image: mongo:7.0.5
         restart: unless-stopped
+        networks: [dev]
+        command: ['--replSet', 'rs0', '--keyFile', '/etc/mongo/keyfile.txt']
         ports:
-            - '27017:27017'
-        networks: [local]
-        volumes:
-            - mongodb_data:/data/db
-            - ./mongo-init.sh:/docker-entrypoint-initdb.d/mongo-init.sh:ro
+            - 27017:27017
         env_file:
-            - ./mongodb.env
-        command: mongod --bind_ip_all
+            - ./env/mongodb.env
+        volumes:
+            - ./mongo/init.js:/docker-entrypoint-initdb.d/init.js:ro
+            - ./mongo/healthcheck.js:/etc/mongo/healthcheck.js:ro
+            - ./mongo/keyfile.txt:/etc/mongo/keyfile.txt:ro
+            - mongodb_data:/data/db
         healthcheck:
-            test: ['CMD', 'mongosh', '--eval', "db.adminCommand('ping')"]
-            interval: 10s
-            timeout: 5s
+            test: test $(echo $(mongosh -u $$MONGO_INITDB_ROOT_USERNAME -p $$MONGO_INITDB_ROOT_PASSWORD --quiet /etc/mongo/healthcheck.js)) -eq 1
+            interval: 60s
+            timeout: 60s
             retries: 5
-            start_period: 30s
+            start_period: 40s
 
     api:
         container_name: api
@@ -40,7 +42,7 @@ services:
         restart: unless-stopped
         ports:
             - '3000:3000'
-        networks: [local]
+        networks: [dev]
         volumes:
             - ../apps/api/src:/prod/api/src:ro
         depends_on:
@@ -49,7 +51,7 @@ services:
             temporal:
                 condition: service_started
         env_file:
-            - ./api.env
+            - ./env/api.env
 
     ui:
         container_name: ui
@@ -62,9 +64,9 @@ services:
         restart: unless-stopped
         ports:
             - '8080:8080'
-        networks: [local]
+        networks: [dev]
         env_file:
-            - ./ui.env
+            - ./env/ui.env
 
     temporal:
         container_name: temporal
@@ -75,9 +77,8 @@ services:
             - temporal-elasticsearch
         ports:
             - '7233:7233'
-        env_file: ./temporal.env
-        networks:
-            - local
+        env_file: ./env/temporal.env
+        networks: [dev]
         healthcheck:
             test:
                 [
@@ -97,13 +98,12 @@ services:
         container_name: temporal-ui
         image: temporalio/ui:2.32.0
         restart: unless-stopped
-        env_file: ./temporal-ui.env
+        env_file: ./env/temporal-ui.env
         depends_on:
             - temporal
         ports:
             - '8088:8080'
-        networks:
-            - local
+        networks: [dev]
 
     temporal-elasticsearch:
         container_name: temporal-elasticsearch
@@ -119,16 +119,15 @@ services:
             - xpack.security.enabled=false
         volumes:
             - temporal_elasticsearch_data:/var/lib/elasticsearch/data
-        networks:
-            - local
+        networks: [dev]
 
     temporal-postgresql:
         container_name: temporal-postgresql
         image: postgres:12.22
         restart: unless-stopped
-        env_file: ./temporal-postgresql.env
-        networks:
-            - local
+        env_file: ./env/temporal-postgresql.env
+        networks: [dev]
+
         volumes:
             - temporal_postgresql_data:/var/lib/postgresql/data
 
@@ -139,14 +138,14 @@ services:
             dockerfile: docker/Dockerfile
             target: typescript-worker
         restart: unless-stopped
-        networks: [local]
+        networks: [dev]
         volumes:
             - ../apps/typescript-worker/src:/prod/typescript-worker/src:ro
         depends_on:
             temporal:
                 condition: service_started
         env_file:
-            - ./typescript-worker.env
+            - ./env/typescript-worker.env
 
     workflows:
         container_name: workflows
@@ -155,7 +154,7 @@ services:
             dockerfile: docker/Dockerfile
             target: workflows
         restart: unless-stopped
-        networks: [local]
+        networks: [dev]
         volumes:
             - ../apps/workflows/src:/prod/workflows/src:ro
         depends_on:
@@ -164,4 +163,4 @@ services:
             temporal:
                 condition: service_started
         env_file:
-            - ./workflows.env
+            - ./env/workflows.env

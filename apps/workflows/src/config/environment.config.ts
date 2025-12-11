@@ -71,13 +71,18 @@ export function loadConfig(): Config {
   const mongodbPassword = process.env.MONGODB_PASSWORD;
   const mongodbDbName = process.env.MONGODB_DB_NAME;
 
-  if (!mongodbHost || !mongodbPort || !mongodbUser || !mongodbPassword || !mongodbDbName) {
-    throw new Error(
-      'MongoDB environment variables are required: MONGODB_HOST, MONGODB_PORT, MONGODB_USER, MONGODB_PASSWORD, MONGODB_DB_NAME',
-    );
+  if (!mongodbHost || !mongodbPort || !mongodbDbName) {
+    throw new Error('MongoDB environment variables are required: MONGODB_HOST, MONGODB_PORT, MONGODB_DB_NAME');
   }
 
-  const mongodbUri = `mongodb://${mongodbUser}:${mongodbPassword}@${mongodbHost}:${mongodbPort}/${mongodbDbName}?authSource=admin`;
+  // Build URI with optional authentication
+  const authPart = mongodbUser && mongodbPassword ? `${mongodbUser}:${mongodbPassword}@` : '';
+  const params: string[] = [];
+  if (mongodbUser && mongodbPassword) {
+    params.push('authSource=admin');
+  }
+  params.push('directConnection=true');
+  const mongodbUri = `mongodb://${authPart}${mongodbHost}:${mongodbPort}/${mongodbDbName}?${params.join('&')}`;
 
   // Application configuration
   const nodeEnv = process.env.NODE_ENV || 'development';

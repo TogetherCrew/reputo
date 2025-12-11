@@ -15,8 +15,8 @@ entryPoints:
             redirections:
                 entryPoint:
                     to: websecure
-                    scheme: https 
-    websecure: 
+                    scheme: https
+    websecure:
         address: ':443'
 
 certificatesResolvers:
@@ -26,7 +26,7 @@ certificatesResolvers:
             storage: /var/traefik/certs/cloudflare-acme.json
             caServer: 'https://acme-v02.api.letsencrypt.org/directory'
             dnsChallenge:
-                provider: cloudflare 
+                provider: cloudflare
                 resolvers:
                     - '1.1.1.1:53'
                     - '8.8.8.8:53'

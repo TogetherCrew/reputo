@@ -11,8 +11,17 @@ describe('SnapshotService', () => {
   let mockSnapshotRepository: SnapshotRepository;
   let mockAlgorithmPresetRepository: AlgorithmPresetRepository;
   let mockTemporalService: {
-    startRunSnapshotWorkflow: ReturnType<typeof vi.fn>;
+    startSnapshotWorkflow: ReturnType<typeof vi.fn>;
+    cancelSnapshotWorkflow: ReturnType<typeof vi.fn>;
   };
+  const mockLogger = {
+    info: vi.fn(),
+    error: vi.fn(),
+    warn: vi.fn(),
+    debug: vi.fn(),
+    log: vi.fn(),
+    setContext: vi.fn(),
+  } as any;
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -30,10 +39,16 @@ describe('SnapshotService', () => {
     } as unknown as AlgorithmPresetRepository;
 
     mockTemporalService = {
-      startRunSnapshotWorkflow: vi.fn().mockResolvedValue(undefined),
+      startSnapshotWorkflow: vi.fn().mockResolvedValue(undefined),
+      cancelSnapshotWorkflow: vi.fn().mockResolvedValue(undefined),
     };
 
-    service = new SnapshotService(mockSnapshotRepository, mockAlgorithmPresetRepository, mockTemporalService as any);
+    service = new SnapshotService(
+      mockLogger,
+      mockSnapshotRepository,
+      mockAlgorithmPresetRepository,
+      mockTemporalService as any,
+    );
   });
 
   describe('create', () => {
@@ -450,10 +465,12 @@ describe('SnapshotService', () => {
     it('should complete successfully when snapshot is deleted', async () => {
       const id = '507f1f77bcf86cd799439011';
 
+      mockSnapshotRepository.findById = vi.fn().mockResolvedValue({ _id: id });
       mockSnapshotRepository.deleteById = vi.fn().mockResolvedValue({ _id: id });
 
       await service.deleteById(id);
 
+      expect(mockSnapshotRepository.findById).toHaveBeenCalledWith(id);
       expect(mockSnapshotRepository.deleteById).toHaveBeenCalledOnce();
       expect(mockSnapshotRepository.deleteById).toHaveBeenCalledWith(id);
     });
@@ -461,12 +478,27 @@ describe('SnapshotService', () => {
     it('should throw NotFoundException when snapshot not found', async () => {
       const id = '507f1f77bcf86cd799439011';
 
-      mockSnapshotRepository.deleteById = vi.fn().mockResolvedValue(null);
+      mockSnapshotRepository.findById = vi.fn().mockResolvedValue(null);
 
       const promise = service.deleteById(id);
 
       await expect(promise).rejects.toBeInstanceOf(NotFoundException);
       await expect(promise).rejects.toThrow(`${MODEL_NAMES.SNAPSHOT} with ID ${id} not found`);
+    });
+
+    it('should cancel workflow when snapshot is running', async () => {
+      const id = '507f1f77bcf86cd799439011';
+      mockSnapshotRepository.findById = vi.fn().mockResolvedValue({
+        _id: id,
+        status: 'running',
+        temporal: { workflowId: 'wf-123' },
+      });
+      mockSnapshotRepository.deleteById = vi.fn().mockResolvedValue({ _id: id });
+
+      await service.deleteById(id);
+
+      expect(mockTemporalService.cancelSnapshotWorkflow).toHaveBeenCalledWith('wf-123');
+      expect(mockSnapshotRepository.deleteById).toHaveBeenCalledWith(id);
     });
   });
 });

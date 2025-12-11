@@ -138,6 +138,13 @@ export function createDatabaseActivities(snapshotModel: Model<Snapshot>): Databa
 
       if (input.status) {
         updateData.status = input.status;
+
+        // Set timestamp fields based on status transitions
+        if (input.status === 'running') {
+          updateData.startedAt = new Date();
+        } else if (input.status === 'completed' || input.status === 'failed') {
+          updateData.completedAt = new Date();
+        }
       }
 
       if (input.temporal) {

@@ -25,6 +25,7 @@ docker-compose.override.yml
 **/.env*
 **/*.env
 
+#
 # Docker environment files (except local dev files)
 docker/shared.env
 
@@ -41,6 +42,6 @@ coverage/
 *.lcov
 .nyc_output
 
-
-#env
-*.env
+*.key
+*.pem
+keyfile.txt

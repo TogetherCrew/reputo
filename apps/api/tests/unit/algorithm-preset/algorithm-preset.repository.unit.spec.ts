@@ -179,7 +179,7 @@ describe('AlgorithmPresetRepository', () => {
   });
 
   describe('deleteById', () => {
-    it('should call model.findByIdAndDelete with id', async () => {
+    it('should call model.findByIdAndDelete with id and session option', async () => {
       const id = '507f1f77bcf86cd799439011';
       const mockDeletedPreset = { _id: id };
 
@@ -190,7 +190,27 @@ describe('AlgorithmPresetRepository', () => {
       const result = await repository.deleteById(id);
 
       expect(mockModel.findByIdAndDelete).toHaveBeenCalledOnce();
-      expect(mockModel.findByIdAndDelete).toHaveBeenCalledWith(id);
+      expect(mockModel.findByIdAndDelete).toHaveBeenCalledWith(id, {
+        session: undefined,
+      });
+      expect(result).toBe(mockDeletedPreset);
+    });
+
+    it('should pass session when provided', async () => {
+      const id = '507f1f77bcf86cd799439011';
+      const mockDeletedPreset = { _id: id };
+      const mockSession = { id: 'session-123' };
+
+      const mockExec = vi.fn().mockResolvedValue(mockDeletedPreset);
+      const mockLean = vi.fn().mockReturnValue({ exec: mockExec });
+      mockModel.findByIdAndDelete = vi.fn().mockReturnValue({ lean: mockLean });
+
+      const result = await repository.deleteById(id, mockSession as any);
+
+      expect(mockModel.findByIdAndDelete).toHaveBeenCalledOnce();
+      expect(mockModel.findByIdAndDelete).toHaveBeenCalledWith(id, {
+        session: mockSession,
+      });
       expect(result).toBe(mockDeletedPreset);
     });
 

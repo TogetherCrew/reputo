@@ -118,6 +118,18 @@ export class SnapshotDto {
   })
   outputs?: SnapshotOutputsDto;
 
+  @ApiPropertyOptional({
+    description: 'Timestamp when execution started (status changed to running)',
+    example: '2025-10-13T19:12:05.000Z',
+  })
+  startedAt?: Date;
+
+  @ApiPropertyOptional({
+    description: 'Timestamp when execution completed (status changed to completed or failed)',
+    example: '2025-10-13T19:12:44.600Z',
+  })
+  completedAt?: Date;
+
   @ApiProperty({
     description: 'Creation timestamp',
     example: '2025-10-13T19:12:03.010Z',

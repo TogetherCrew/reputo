@@ -22,7 +22,10 @@ async function bootstrap() {
     }),
   );
   app.use(helmet());
-  app.enableCors();
+  app.enableCors({
+    origin: true, // Allow all origins in development
+    credentials: true,
+  });
 
   const configService = app.get(ConfigService);
   const port = configService.get('app.port');

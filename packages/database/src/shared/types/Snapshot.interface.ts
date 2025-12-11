@@ -37,6 +37,10 @@ export interface Snapshot {
   algorithmPresetFrozen: AlgorithmPresetFrozen;
   /** Algorithm execution outputs/results */
   outputs?: SnapshotOutputs;
+  /** Timestamp when execution started (status changed to 'running') */
+  startedAt?: Date;
+  /** Timestamp when execution completed (status changed to 'completed' or 'failed') */
+  completedAt?: Date;
   /** Document creation timestamp */
   createdAt?: Date;
   /** Document last update timestamp */

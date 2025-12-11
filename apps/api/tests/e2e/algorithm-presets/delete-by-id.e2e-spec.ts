@@ -10,15 +10,18 @@ import { api } from '../../utils/request';
 describe('DELETE /api/v1/algorithm-presets/:id', () => {
   let app: INestApplication;
   let algorithmPresetModel: Model<any>;
+  let snapshotModel: Model<any>;
 
   beforeAll(async () => {
     const uri = await startMongo();
     const boot = await createTestApp({ mongoUri: uri });
     app = boot.app;
     algorithmPresetModel = boot.moduleRef.get(getModelToken('AlgorithmPreset'));
+    snapshotModel = boot.moduleRef.get(getModelToken('Snapshot'));
   });
 
   afterEach(async () => {
+    await snapshotModel.deleteMany({});
     await algorithmPresetModel.deleteMany({});
   });
 
@@ -57,5 +60,32 @@ describe('DELETE /api/v1/algorithm-presets/:id', () => {
     await api(app).delete(`/algorithm-presets/${preset._id}`).expect(204);
 
     await api(app).get(`/algorithm-presets/${preset._id}`).expect(404);
+  });
+
+  it('should cascade delete snapshots referencing the preset', async () => {
+    const preset = await insertAlgorithmPreset(algorithmPresetModel, {
+      key: 'test_key',
+      version: '1.0.0',
+      inputs: [],
+    });
+    await snapshotModel.create({
+      algorithmPreset: preset._id,
+      algorithmPresetFrozen: {
+        key: preset.key,
+        version: preset.version,
+      },
+      status: 'queued',
+    });
+
+    await api(app).delete(`/algorithm-presets/${preset._id}`).expect(204);
+
+    const snapshotCount = await snapshotModel.countDocuments({
+      algorithmPreset: preset._id,
+    });
+    expect(snapshotCount).toBe(0);
+    const presetCount = await algorithmPresetModel.countDocuments({
+      _id: preset._id,
+    });
+    expect(presetCount).toBe(0);
   });
 });

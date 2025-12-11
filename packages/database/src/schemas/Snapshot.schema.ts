@@ -29,6 +29,8 @@ const SnapshotSchema = new Schema<Snapshot, SnapshotModel>(
     },
     algorithmPresetFrozen: AlgorithmPresetFrozenSchema,
     outputs: new Schema<Snapshot['outputs']>({}, { _id: false, versionKey: false, strict: false }),
+    startedAt: { type: Date },
+    completedAt: { type: Date },
   },
   {
     timestamps: true,

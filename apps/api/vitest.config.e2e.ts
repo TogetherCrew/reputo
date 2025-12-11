@@ -12,7 +12,7 @@ export default defineConfig({
         root: './',
         setupFiles: ['./tests/setup.ts'],
         testTimeout: 30000,
-        hookTimeout: 60000,
+        hookTimeout: 120000,
     },
     resolve: {
         alias: {

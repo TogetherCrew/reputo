@@ -1,7 +1,5 @@
-version: '3.9'
-
 networks:
-    web:
+    preview:
 
 volumes:
     mongodb_data:
@@ -14,22 +12,35 @@ volumes:
 services:
     mongodb:
         container_name: mongodb
-        image: mongo:7.0
+        image: mongo:7.0.5
         restart: unless-stopped
-        networks: [web]
-        volumes:
-            - mongodb_data:/data/db
-            - ./mongo-init.sh:/docker-entrypoint-initdb.d/mongo-init.sh:ro
+        networks: [preview]
+        user: '0:0'
+        entrypoint: >
+            /bin/bash -c "chown 999:999 /etc/mongo/keyfile.txt &&
+            chmod 400 /etc/mongo/keyfile.txt &&
+            exec docker-entrypoint.sh mongod
+            --replSet rs0
+            --keyFile /etc/mongo/keyfile.txt
+            --bind_ip_all"
+
         environment:
             - MONGO_INITDB_ROOT_USERNAME=admin
-            - MONGO_INITDB_ROOT_PASSWORD=preview-password
-        # command: mongod --replSet rs0 --bind_ip_all
+            - MONGO_INITDB_ROOT_PASSWORD=preview_password
+            - MONGO_INITDB_DATABASE=reputo_preview
+
+        volumes:
+            - ./mongo/init.js:/docker-entrypoint-initdb.d/init.js:ro
+            - ./mongo/healthcheck.js:/etc/mongo/healthcheck.js:ro
+            - ./mongo/keyfile.txt:/etc/mongo/keyfile.txt
+            - mongodb_data:/data/db
+
         healthcheck:
-            test: ['CMD', 'mongosh', '--eval', "db.adminCommand('ping')"]
-            interval: 10s
-            timeout: 5s
+            test: test $(echo $(mongosh -u $$MONGO_INITDB_ROOT_USERNAME -p $$MONGO_INITDB_ROOT_PASSWORD --quiet /etc/mongo/healthcheck.js)) -eq 1
+            interval: 60s
+            timeout: 60s
             retries: 5
-            start_period: 30s
+            start_period: 40s
 
     traefik:
         image: traefik:v3.4
@@ -38,7 +49,7 @@ services:
             - '80:80'
         volumes:
             - /var/run/docker.sock:/var/run/docker.sock:ro
-        networks: [web]
+        networks: [preview]
         healthcheck:
             test: ['CMD', 'traefik', 'healthcheck', '--ping']
             interval: 30s
@@ -65,7 +76,7 @@ services:
             args:
                 NEXT_PUBLIC_API_URL: http://api.${PULLPREVIEW_PUBLIC_DNS}/api/v1
         restart: unless-stopped
-        networks: [web]
+        networks: [preview]
         environment:
             - NEXT_PUBLIC_API_URL=http://api.${PULLPREVIEW_PUBLIC_DNS}/api/v1
         labels:
@@ -78,12 +89,14 @@ services:
         depends_on:
             mongodb:
                 condition: service_healthy
+            temporal:
+                condition: service_healthy
         build:
             context: ..
             dockerfile: docker/Dockerfile
             target: api
         restart: unless-stopped
-        networks: [web]
+        networks: [preview]
         labels:
             - traefik.enable=true
             - traefik.http.routers.api.rule=Host(`api.${PULLPREVIEW_PUBLIC_DNS}`)
@@ -101,9 +114,9 @@ services:
             - LOG_LEVEL=info
             - MONGODB_HOST=mongodb
             - MONGODB_PORT=27017
-            - MONGODB_USER=admin
-            - MONGODB_PASSWORD=preview-password
             - MONGODB_DB_NAME=reputo_preview
+            - MONGODB_USER=admin
+            - MONGODB_PASSWORD=preview_password
             - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
             - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
             - AWS_REGION=eu-central-1
@@ -124,8 +137,7 @@ services:
             - temporal-elasticsearch
         ports:
             - '7233:7233'
-        networks:
-            - web
+        networks: [preview]
         environment:
             - DB=postgres12
             - DB_PORT=5432
@@ -156,8 +168,7 @@ services:
         restart: unless-stopped
         depends_on:
             - temporal
-        networks:
-            - web
+        networks: [preview]
         ports:
             - '8088:8080'
         environment:
@@ -178,15 +189,13 @@ services:
             - xpack.security.enabled=false
         volumes:
             - temporal_elasticsearch_data:/var/lib/elasticsearch/data
-        networks:
-            - web
+        networks: [preview]
 
     temporal-postgresql:
         container_name: temporal-postgresql
         image: postgres:12.22
         restart: unless-stopped
-        networks:
-            - web
+        networks: [preview]
         volumes:
             - temporal_postgresql_data:/var/lib/postgresql/data
         environment:
@@ -199,12 +208,13 @@ services:
         depends_on:
             temporal:
                 condition: service_healthy
+
         build:
             context: ..
             dockerfile: docker/Dockerfile
             target: typescript-worker
         restart: unless-stopped
-        networks: [web]
+        networks: [preview]
         environment:
             - NODE_ENV=development
             - LOG_LEVEL=info
@@ -232,13 +242,13 @@ services:
             dockerfile: docker/Dockerfile
             target: workflows
         restart: unless-stopped
-        networks: [web]
+        networks: [preview]
         environment:
             - TEMPORAL_ADDRESS=temporal:7233
             - TEMPORAL_NAMESPACE=default
             - TEMPORAL_TASK_QUEUE=workflows
             - MONGODB_HOST=mongodb
             - MONGODB_PORT=27017
-            - MONGODB_USER=admin
-            - MONGODB_PASSWORD=preview-password
             - MONGODB_DB_NAME=reputo_preview
+            - MONGODB_USER=admin
+            - MONGODB_PASSWORD=preview_password

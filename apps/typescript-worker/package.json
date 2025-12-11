@@ -9,7 +9,7 @@
         "build": "tsc",
         "dev": "tsx watch src/worker/main.ts",
         "start": "node dist/worker/main.js",
-        "clean": "rm -rf dist",
+        "clean": "rm -rf coverage dist docs node_modules tsconfig.tsbuildinfo",
         "check": "pnpm exec biome check --write",
         "lint": "pnpm exec biome lint --write",
         "format": "pnpm exec biome format --write",
@@ -17,7 +17,7 @@
         "test:watch": "vitest --watch",
         "test:cov": "vitest --coverage",
         "typecheck": "tsc --noEmit",
-        "algorithm:new": "tsx scripts/scaffold-algorithm.ts"
+        "algorithm:new": "tsx src/scripts/scaffold-algorithm.ts"
     },
     "dependencies": {
         "@aws-sdk/client-s3": "^3.922.0",

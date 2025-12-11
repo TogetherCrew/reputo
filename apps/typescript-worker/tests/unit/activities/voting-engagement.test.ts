@@ -1,6 +1,6 @@
 import type { Storage } from '@reputo/storage';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { voting_engagement } from '../../../src/activities/voting-engagement.activity.js';
+import { voting_engagement } from '../../../src/activities/voting_engagement.activity.js';
 import type { WorkerAlgorithmPayload, WorkerAlgorithmResult } from '../../../src/types/algorithm.js';
 
 // Extend global type to include storage

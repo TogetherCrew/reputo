@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AlgorithmPresetSchema, MODEL_NAMES, SnapshotSchema } from '@reputo/database';
 import { AlgorithmPresetModule } from '../algorithm-preset/algorithm-preset.module';
@@ -6,6 +6,7 @@ import { TemporalModule } from '../temporal';
 import { SnapshotController } from './snapshot.controller';
 import { SnapshotRepository } from './snapshot.repository';
 import { SnapshotService } from './snapshot.service';
+import { SnapshotEventsService } from './snapshot-events.service';
 
 @Module({
   imports: [
@@ -16,11 +17,11 @@ import { SnapshotService } from './snapshot.service';
         schema: AlgorithmPresetSchema,
       },
     ]),
-    AlgorithmPresetModule,
+    forwardRef(() => AlgorithmPresetModule),
     TemporalModule,
   ],
   controllers: [SnapshotController],
-  providers: [SnapshotRepository, SnapshotService],
-  exports: [SnapshotService],
+  providers: [SnapshotRepository, SnapshotService, SnapshotEventsService],
+  exports: [SnapshotService, SnapshotRepository],
 })
 export class SnapshotModule {}

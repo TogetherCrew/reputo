@@ -1,14 +1,18 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { InjectConnection } from '@nestjs/mongoose';
 import { validateCSVContent, validatePayload } from '@reputo/algorithm-validator';
-import type { AlgorithmPreset } from '@reputo/database';
+import type { AlgorithmPreset, Snapshot } from '@reputo/database';
 import { MODEL_NAMES } from '@reputo/database';
 import { type AlgorithmDefinition, type CsvIoItem, getAlgorithmDefinition } from '@reputo/reputation-algorithms';
 import type { StorageMetadata } from '@reputo/storage';
-import type { FilterQuery } from 'mongoose';
+import type { Connection, FilterQuery } from 'mongoose';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { CSVValidationException, type StorageInputValidationError, throwNotFoundError } from '../shared/exceptions';
 import { pick } from '../shared/utils';
+import { SnapshotRepository } from '../snapshot/snapshot.repository';
 import { StorageService } from '../storage/storage.service';
+import { TemporalService } from '../temporal';
 import { AlgorithmPresetRepository } from './algorithm-preset.repository';
 import type { CreateAlgorithmPresetDto, ListAlgorithmPresetsQueryDto, UpdateAlgorithmPresetDto } from './dto';
 
@@ -16,9 +20,16 @@ import type { CreateAlgorithmPresetDto, ListAlgorithmPresetsQueryDto, UpdateAlgo
 export class AlgorithmPresetService {
   private readonly storageMaxSizeBytes: number;
   private readonly storageContentTypeAllowlist: string;
+
   constructor(
+    @InjectPinoLogger(AlgorithmPresetService.name)
+    private readonly logger: PinoLogger,
     private readonly repository: AlgorithmPresetRepository,
     private readonly storageService: StorageService,
+    @Inject(forwardRef(() => SnapshotRepository))
+    private readonly snapshotRepository: SnapshotRepository,
+    private readonly temporalService: TemporalService,
+    @InjectConnection() private readonly connection: Connection,
     configService: ConfigService,
   ) {
     this.storageMaxSizeBytes = configService.get<number>('storage.maxSizeBytes') as number;
@@ -144,9 +155,30 @@ export class AlgorithmPresetService {
   }
 
   async deleteById(id: string) {
-    const result = await this.repository.deleteById(id);
-    if (!result) {
+    const algorithmPreset = await this.repository.findById(id);
+    if (!algorithmPreset) {
       throwNotFoundError(id, MODEL_NAMES.ALGORITHM_PRESET);
+    }
+    const snapshots: Snapshot[] = await this.snapshotRepository.find({
+      algorithmPreset: id,
+    });
+    await this.temporalService.cancelSnapshotWorkflows(snapshots);
+    await this.deletePresetWithSnapshots(id, snapshots.length);
+  }
+
+  private async deletePresetWithSnapshots(presetId: string, snapshotCount: number): Promise<void> {
+    const session = await this.connection.startSession();
+    try {
+      await session.withTransaction(async () => {
+        if (snapshotCount > 0) {
+          await this.snapshotRepository.deleteMany({ algorithmPreset: presetId }, session);
+          this.logger.info(`Deleted ${snapshotCount} snapshots for algorithm preset ${presetId}`);
+        }
+        await this.repository.deleteById(presetId, session);
+        this.logger.info(`Deleted algorithm preset ${presetId}`);
+      });
+    } finally {
+      await session.endSession();
     }
   }
 }
