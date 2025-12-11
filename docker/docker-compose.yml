@@ -131,10 +131,7 @@ services:
             - temporal-postgresql
             - temporal-elasticsearch
         env_file: ./env/temporal.env
-        volumes:
-            - ./temporal-dynamicconfig:/etc/temporal/config/dynamicconfig:ro
         networks: [production]
-
         healthcheck:
             test:
                 [
