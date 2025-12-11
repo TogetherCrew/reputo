@@ -1,0 +1,39 @@
+{
+    "key": "behzad",
+    "name": "Behzad",
+    "category": "Custom",
+    "description": "TODO: Add algorithm description",
+    "version": "1.0.0",
+    "inputs": [
+        {
+            "key": "input_data",
+            "label": "Input Data",
+            "description": "TODO: Describe input data",
+            "type": "csv",
+            "csv": {
+                "hasHeader": true,
+                "delimiter": ",",
+                "columns": [
+                    {
+                        "key": "example_column",
+                        "type": "string",
+                        "description": "TODO: Describe column"
+                    }
+                ]
+            }
+        }
+    ],
+    "outputs": [
+        {
+            "key": "result",
+            "label": "Result",
+            "type": "score_map",
+            "entity": "user",
+            "description": "TODO: Describe output"
+        }
+    ],
+    "runtime": {
+        "taskQueue": "typescript-worker",
+        "activity": "behzad"
+    }
+}
