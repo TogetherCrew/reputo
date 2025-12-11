@@ -6,10 +6,8 @@ export const REGISTRY_INDEX = {
   voting_engagement: ['1.0.0'],
 } as const;
 
-import _behzad_1_0_0 from './behzad/1.0.0.json' with { type: 'json' };
 import _voting_engagement_1_0_0 from './voting_engagement/1.0.0.json' with { type: 'json' };
 
 export const _DEFINITIONS: Record<string, unknown> = {
-  'behzad@1.0.0': _behzad_1_0_0 as unknown,
   'voting_engagement@1.0.0': _voting_engagement_1_0_0 as unknown,
 } as const;

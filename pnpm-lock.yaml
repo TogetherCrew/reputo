@@ -451,7 +451,7 @@ importers:
         specifier: ^1.4.0
         version: 1.4.0
       typescript:
-        specifier: ^5
+        specifier: 5.9.2
         version: 5.9.2
 
   apps/workflows:
