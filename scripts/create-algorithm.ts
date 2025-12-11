@@ -18,6 +18,12 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import {
+    validateKey,
+    validateVersion,
+} from '../packages/reputation-algorithms/src/shared/utils/validation.js'
+import { createAlgorithmTemplate } from '../packages/reputation-algorithms/src/shared/utils/templates.js'
+import { generateActivityScaffold } from '../apps/typescript-worker/src/scripts/scaffold-algorithm.js'
 
 // Get monorepo root directory
 const __filename = fileURLToPath(import.meta.url)
@@ -31,112 +37,6 @@ const REPUTATION_ALGORITHMS_PATH = join(
     'reputation-algorithms'
 )
 const TYPESCRIPT_WORKER_PATH = join(MONOREPO_ROOT, 'apps', 'typescript-worker')
-
-// ============================================================================
-// Validation (adapted from reputation-algorithms/src/shared/utils/validation.ts)
-// ============================================================================
-
-interface ValidationResult {
-    isValid: boolean
-    errors: string[]
-}
-
-function validateKey(key: string): ValidationResult {
-    const errors: string[] = []
-
-    if (!key || key.length < 2) {
-        errors.push('Key must be at least 2 characters long')
-    }
-
-    const pattern = /^[a-z][a-z0-9_]*$/
-    if (!pattern.test(key)) {
-        errors.push(
-            'Key must be snake_case, start with a letter, and contain only lowercase letters, numbers, and underscores'
-        )
-    }
-
-    return {
-        isValid: errors.length === 0,
-        errors,
-    }
-}
-
-function validateVersion(version: string): ValidationResult {
-    const errors: string[] = []
-
-    if (!version) {
-        errors.push('Version is required')
-    }
-
-    const pattern =
-        /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-[0-9A-Za-z-.]+)?(?:\+[0-9A-Za-z-.]+)?$/
-    if (!pattern.test(version)) {
-        errors.push(
-            'Version must be a valid semantic version (e.g., 1.0.0, 2.1.3-beta, 3.0.0+build.123)'
-        )
-    }
-
-    return {
-        isValid: errors.length === 0,
-        errors,
-    }
-}
-
-// ============================================================================
-// Template generation (adapted from reputation-algorithms/src/shared/utils/templates.ts)
-// ============================================================================
-
-function keyToDisplayName(key: string): string {
-    return key
-        .split('_')
-        .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(' ')
-}
-
-function createAlgorithmTemplate(
-    key: string,
-    version: string
-): Record<string, unknown> {
-    return {
-        key,
-        name: keyToDisplayName(key),
-        category: 'Custom',
-        description: 'TODO: Add algorithm description',
-        version,
-        inputs: [
-            {
-                key: 'input_data',
-                label: 'Input Data',
-                description: 'TODO: Describe input data',
-                type: 'csv',
-                csv: {
-                    hasHeader: true,
-                    delimiter: ',',
-                    columns: [
-                        {
-                            key: 'example_column',
-                            type: 'string',
-                            description: 'TODO: Describe column',
-                        },
-                    ],
-                },
-            },
-        ],
-        outputs: [
-            {
-                key: 'result',
-                label: 'Result',
-                type: 'score_map',
-                entity: 'user',
-                description: 'TODO: Describe output',
-            },
-        ],
-        runtime: {
-            taskQueue: 'typescript-worker',
-            activity: key,
-        },
-    }
-}
 
 // ============================================================================
 // Algorithm Definition Creation
@@ -167,103 +67,6 @@ function createAlgorithmDefinition(
     writeFileSync(filePath, `${content}\n`, 'utf-8')
 
     return { filePath, created: true }
-}
-
-// ============================================================================
-// Activity Scaffold Generation (adapted from typescript-worker)
-// ============================================================================
-
-function generateActivityScaffold(algorithmKey: string): string {
-    const functionName = algorithmKey.replace(/-/g, '_')
-
-    return `import { generateSnapshotOutputKey, type Storage } from '@reputo/storage';
-import pino from 'pino';
-import type {
-  WorkerAlgorithmPayload,
-  WorkerAlgorithmResult,
-} from '../types/algorithm.js';
-import { getInputLocation } from './utils.js';
-
-// Extend global type to include storage
-declare global {
-  // eslint-disable-next-line no-var
-  var storage: Storage | undefined;
-}
-
-// Create activity-specific logger
-const logger = pino().child({ activity: '${algorithmKey}' });
-
-/**
- * Activity implementation for the ${algorithmKey} algorithm.
- *
- * TODO: Add algorithm description and documentation.
- *
- * @param payload - Workflow payload containing snapshot and input locations
- * @returns Output locations for computed results
- */
-export async function ${functionName}(
-  payload: WorkerAlgorithmPayload,
-): Promise<WorkerAlgorithmResult> {
-  const { snapshotId, algorithmKey, algorithmVersion, inputLocations } =
-    payload;
-
-  logger.info('Starting ${algorithmKey} algorithm', {
-    snapshotId,
-    algorithmKey,
-    algorithmVersion,
-  });
-
-  try {
-    // Get storage instance from global (initialized in worker/main.ts)
-    const storage = global.storage;
-    if (!storage) {
-      throw new Error('Storage instance not initialized. Ensure worker is properly started.');
-    }
-
-    // TODO: Use getInputLocation to resolve storage keys for your inputs
-    // const inputKey = getInputLocation(inputLocations, 'your_input_key');
-    // const buffer = await storage.getObject(inputKey);
-    // const text = buffer.toString('utf8');
-
-    // TODO: Parse input data (CSV, JSON, etc.)
-    // Example for CSV:
-    // import { parse } from 'csv-parse/sync';
-    // const rows = parse(text, { columns: true, skip_empty_lines: true });
-
-    // TODO: Implement algorithm computation logic
-    // const results = computeResults(rows);
-
-    // TODO: Serialize output data
-    // Example for CSV:
-    // import { stringify } from 'csv-stringify/sync';
-    // const outputCsv = stringify(results, { header: true });
-
-    // TODO: Replace with actual output content and content type
-    const outputContent = '';
-    const contentType = 'text/csv'; // or 'application/json', etc.
-
-    // Upload output to storage using shared key generator
-    const outputKey = generateSnapshotOutputKey(snapshotId, algorithmKey);
-    await storage.putObject(outputKey, outputContent, contentType);
-
-    logger.info('Uploaded ${algorithmKey} results', { outputKey });
-
-    // Return output locations
-    // TODO: Adjust output key to match AlgorithmDefinition.outputs[].key
-    return {
-      outputs: {
-        ${algorithmKey}: outputKey,
-      },
-    };
-  } catch (error) {
-    logger.error('Failed to compute ${algorithmKey}', error as Error, {
-      snapshotId,
-      algorithmKey,
-    });
-    throw error;
-  }
-}
-`
 }
 
 interface CreateActivityResult {
