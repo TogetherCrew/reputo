@@ -69,11 +69,25 @@ describe('Build: Schema Validation', () => {
       const invalid = {
         key: 'InvalidKey',
         name: 'Test',
-        category: 'Custom',
+        category: 'Activity',
+        summary: 'Test',
         description: 'Test',
         version: '1.0.0',
         inputs: [],
-        outputs: [{ key: 'result', type: 'score_map', entity: 'user' }],
+        outputs: [
+          {
+            key: 'result',
+            type: 'csv',
+            csv: {
+              hasHeader: true,
+              delimiter: ',',
+              columns: [
+                { key: 'collection_id', type: 'string', description: 'User identifier' },
+                { key: 'result', type: 'number', description: 'Result score' },
+              ],
+            },
+          },
+        ],
         runtime: {
           taskQueue: 'typescript-worker',
           activity: 'test_algo',
@@ -88,11 +102,25 @@ describe('Build: Schema Validation', () => {
       const invalid = {
         key: 'test_algo',
         name: 'Test',
-        category: 'Custom',
+        category: 'Activity',
+        summary: 'Test',
         description: 'Test',
         version: 'v1.0',
         inputs: [],
-        outputs: [{ key: 'result', type: 'score_map', entity: 'user' }],
+        outputs: [
+          {
+            key: 'result',
+            type: 'csv',
+            csv: {
+              hasHeader: true,
+              delimiter: ',',
+              columns: [
+                { key: 'collection_id', type: 'string', description: 'User identifier' },
+                { key: 'result', type: 'number', description: 'Result score' },
+              ],
+            },
+          },
+        ],
         runtime: {
           taskQueue: 'typescript-worker',
           activity: 'test_algo',
@@ -107,7 +135,8 @@ describe('Build: Schema Validation', () => {
       const invalid = {
         key: 'test_algo',
         name: 'Test',
-        category: 'Custom',
+        category: 'Activity',
+        summary: 'Test',
         description: 'Test',
         version: '1.0.0',
         inputs: [],
@@ -126,7 +155,8 @@ describe('Build: Schema Validation', () => {
       const invalid = {
         key: 'test_algo',
         name: 'Test',
-        category: 'Custom',
+        category: 'Activity',
+        summary: 'Test',
         description: 'Test',
         version: '1.0.0',
         inputs: [
@@ -135,7 +165,20 @@ describe('Build: Schema Validation', () => {
             type: 'csv',
           },
         ],
-        outputs: [{ key: 'result', type: 'score_map', entity: 'user' }],
+        outputs: [
+          {
+            key: 'result',
+            type: 'csv',
+            csv: {
+              hasHeader: true,
+              delimiter: ',',
+              columns: [
+                { key: 'collection_id', type: 'string', description: 'User identifier' },
+                { key: 'result', type: 'number', description: 'Result score' },
+              ],
+            },
+          },
+        ],
         runtime: {
           taskQueue: 'typescript-worker',
           activity: 'test_algo',
@@ -146,18 +189,19 @@ describe('Build: Schema Validation', () => {
       expect(result.isValid).toBe(false);
     });
 
-    it('should require entity when type is score_map', () => {
+    it('should require csv property when type is csv', () => {
       const invalid = {
         key: 'test_algo',
         name: 'Test',
-        category: 'Custom',
+        category: 'Activity',
+        summary: 'Test',
         description: 'Test',
         version: '1.0.0',
         inputs: [],
         outputs: [
           {
             key: 'result',
-            type: 'score_map',
+            type: 'csv',
           },
         ],
         runtime: {
@@ -171,17 +215,31 @@ describe('Build: Schema Validation', () => {
     });
 
     it('should accept valid categories', () => {
-      const categories = ['Engagement', 'Quality', 'Activity', 'Custom'];
+      const categories = ['Engagement', 'Activity'];
 
       for (const category of categories) {
         const valid = {
           key: 'test_algo',
           name: 'Test',
           category,
+          summary: 'Test',
           description: 'Test',
           version: '1.0.0',
           inputs: [],
-          outputs: [{ key: 'result', type: 'score_map', entity: 'user' }],
+          outputs: [
+            {
+              key: 'result',
+              type: 'csv',
+              csv: {
+                hasHeader: true,
+                delimiter: ',',
+                columns: [
+                  { key: 'collection_id', type: 'string', description: 'User identifier' },
+                  { key: 'result', type: 'number', description: 'Result score' },
+                ],
+              },
+            },
+          ],
           runtime: {
             taskQueue: 'typescript-worker',
             activity: 'test_algo',
@@ -199,11 +257,25 @@ describe('Build: Schema Validation', () => {
       const valid = {
         key: 'test_algo',
         name: 'Test',
-        category: 'Custom',
+        category: 'Activity',
+        summary: 'Test',
         description: 'Test',
         version: '1.0.0',
         inputs: [],
-        outputs: [{ key: 'result', type: 'score_map', entity: 'user' }],
+        outputs: [
+          {
+            key: 'result',
+            type: 'csv',
+            csv: {
+              hasHeader: true,
+              delimiter: ',',
+              columns: [
+                { key: 'collection_id', type: 'string', description: 'User identifier' },
+                { key: 'result', type: 'number', description: 'Result score' },
+              ],
+            },
+          },
+        ],
         runtime: {
           taskQueue: 'typescript-worker',
           activity: 'test_algo',
@@ -219,11 +291,25 @@ describe('Build: Schema Validation', () => {
       const invalid = {
         key: 'test_algo',
         name: 'Test',
-        category: 'Custom',
+        category: 'Activity',
+        summary: 'Test',
         description: 'Test',
         version: '1.0.0',
         inputs: [],
-        outputs: [{ key: 'result', type: 'score_map', entity: 'user' }],
+        outputs: [
+          {
+            key: 'result',
+            type: 'csv',
+            csv: {
+              hasHeader: true,
+              delimiter: ',',
+              columns: [
+                { key: 'collection_id', type: 'string', description: 'User identifier' },
+                { key: 'result', type: 'number', description: 'Result score' },
+              ],
+            },
+          },
+        ],
       };
 
       const result = validator.validate(invalid);
@@ -235,11 +321,25 @@ describe('Build: Schema Validation', () => {
       const invalid = {
         key: 'test_algo',
         name: 'Test',
-        category: 'Custom',
+        category: 'Activity',
+        summary: 'Test',
         description: 'Test',
         version: '1.0.0',
         inputs: [],
-        outputs: [{ key: 'result', type: 'score_map', entity: 'user' }],
+        outputs: [
+          {
+            key: 'result',
+            type: 'csv',
+            csv: {
+              hasHeader: true,
+              delimiter: ',',
+              columns: [
+                { key: 'collection_id', type: 'string', description: 'User identifier' },
+                { key: 'result', type: 'number', description: 'Result score' },
+              ],
+            },
+          },
+        ],
         runtime: {
           activity: 'test_algo',
         },
@@ -254,11 +354,25 @@ describe('Build: Schema Validation', () => {
       const invalid = {
         key: 'test_algo',
         name: 'Test',
-        category: 'Custom',
+        category: 'Activity',
+        summary: 'Test',
         description: 'Test',
         version: '1.0.0',
         inputs: [],
-        outputs: [{ key: 'result', type: 'score_map', entity: 'user' }],
+        outputs: [
+          {
+            key: 'result',
+            type: 'csv',
+            csv: {
+              hasHeader: true,
+              delimiter: ',',
+              columns: [
+                { key: 'collection_id', type: 'string', description: 'User identifier' },
+                { key: 'result', type: 'number', description: 'Result score' },
+              ],
+            },
+          },
+        ],
         runtime: {
           taskQueue: 'typescript-worker',
         },
@@ -273,11 +387,25 @@ describe('Build: Schema Validation', () => {
       const invalid = {
         key: 'test_algo',
         name: 'Test',
-        category: 'Custom',
+        category: 'Activity',
+        summary: 'Test',
         description: 'Test',
         version: '1.0.0',
         inputs: [],
-        outputs: [{ key: 'result', type: 'score_map', entity: 'user' }],
+        outputs: [
+          {
+            key: 'result',
+            type: 'csv',
+            csv: {
+              hasHeader: true,
+              delimiter: ',',
+              columns: [
+                { key: 'collection_id', type: 'string', description: 'User identifier' },
+                { key: 'result', type: 'number', description: 'Result score' },
+              ],
+            },
+          },
+        ],
         runtime: {
           taskQueue: '',
           activity: 'test_algo',
@@ -293,11 +421,25 @@ describe('Build: Schema Validation', () => {
       const invalid = {
         key: 'test_algo',
         name: 'Test',
-        category: 'Custom',
+        category: 'Activity',
+        summary: 'Test',
         description: 'Test',
         version: '1.0.0',
         inputs: [],
-        outputs: [{ key: 'result', type: 'score_map', entity: 'user' }],
+        outputs: [
+          {
+            key: 'result',
+            type: 'csv',
+            csv: {
+              hasHeader: true,
+              delimiter: ',',
+              columns: [
+                { key: 'collection_id', type: 'string', description: 'User identifier' },
+                { key: 'result', type: 'number', description: 'Result score' },
+              ],
+            },
+          },
+        ],
         runtime: {
           taskQueue: 'typescript-worker',
           activity: '',
@@ -313,11 +455,25 @@ describe('Build: Schema Validation', () => {
       const invalid = {
         key: 'test_algo',
         name: 'Test',
-        category: 'Custom',
+        category: 'Activity',
+        summary: 'Test',
         description: 'Test',
         version: '1.0.0',
         inputs: [],
-        outputs: [{ key: 'result', type: 'score_map', entity: 'user' }],
+        outputs: [
+          {
+            key: 'result',
+            type: 'csv',
+            csv: {
+              hasHeader: true,
+              delimiter: ',',
+              columns: [
+                { key: 'collection_id', type: 'string', description: 'User identifier' },
+                { key: 'result', type: 'number', description: 'Result score' },
+              ],
+            },
+          },
+        ],
         runtime: {
           taskQueue: 'typescript-worker',
           activity: 'test_algo',
@@ -337,11 +493,25 @@ describe('Build: Schema Validation', () => {
         const valid = {
           key: 'test_algo',
           name: 'Test',
-          category: 'Custom',
+          category: 'Activity',
+          summary: 'Test',
           description: 'Test',
           version: '1.0.0',
           inputs: [],
-          outputs: [{ key: 'result', type: 'score_map', entity: 'user' }],
+          outputs: [
+            {
+              key: 'result',
+              type: 'csv',
+              csv: {
+                hasHeader: true,
+                delimiter: ',',
+                columns: [
+                  { key: 'collection_id', type: 'string', description: 'User identifier' },
+                  { key: 'result', type: 'number', description: 'Result score' },
+                ],
+              },
+            },
+          ],
           runtime: {
             taskQueue,
             activity: 'test_algo',

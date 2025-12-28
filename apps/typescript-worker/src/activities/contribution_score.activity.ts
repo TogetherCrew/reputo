@@ -1,26 +1,14 @@
-import { generateSnapshotOutputKey, type Storage } from '@reputo/storage';
-import pino from 'pino';
 import type { WorkerAlgorithmPayload, WorkerAlgorithmResult } from '../types/algorithm.js';
-import { getInputLocation } from './utils.js';
-
-// Extend global type to include storage
-declare global {
-  // eslint-disable-next-line no-var
-  var storage: Storage | undefined;
-}
-
-// Create activity-specific logger
-const logger = pino().child({ activity: 'contribution_score' });
 
 /**
  * Activity implementation for the contribution_score algorithm.
  *
  * TODO: Add algorithm description and documentation.
  *
- * @param payload - Workflow payload containing snapshot and input locations
+ * @param _payload - Workflow payload containing snapshot and input locations
  * @returns Output locations for computed results
  */
-export async function contribution_score(payload: WorkerAlgorithmPayload): Promise<WorkerAlgorithmResult> {
+export async function contribution_score(_payload: WorkerAlgorithmPayload): Promise<WorkerAlgorithmResult> {
   // const { snapshotId, algorithmKey, algorithmVersion, inputLocations } =
   //   payload;
 
