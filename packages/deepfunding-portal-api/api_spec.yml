@@ -1,0 +1,735 @@
+openapi: 3.0.0
+info:
+    title: Voting Portal API
+    description: API for retrieving funding rounds, pools, users, proposals, milestones, reviews, comments, and comment votes.
+    version: 1.0.3
+servers:
+    - url: https://deepfunding.ai/wp-json/deepfunding/v1
+
+components:
+    schemas:
+        Pagination:
+            type: object
+            properties:
+                total_records:
+                    type: integer
+                current_page:
+                    type: integer
+                total_pages:
+                    type: integer
+                next_page:
+                    type: integer
+                    nullable: true
+                prev_page:
+                    type: integer
+                    nullable: true
+            required:
+                [total_records, current_page, total_pages, next_page, prev_page]
+            additionalProperties: false
+
+        IdNumericString:
+            type: string
+            pattern: '^[0-9]+$'
+            example: '11870'
+
+        IdFlexible:
+            description: Identifier returned inconsistently as integer, numeric string, or empty string in current API responses.
+            oneOf:
+                - type: integer
+                  example: 9387
+                - type: string
+                  pattern: '^[0-9]*$'
+                  example: ''
+
+        RatingString:
+            type: string
+            description: Rating returned as a string (may include decimals).
+            example: '4.2'
+            pattern: "^[0-9]+(\\.[0-9]+)?$"
+
+        PoolRef:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    description: Pool ID
+            required: [id]
+            additionalProperties: false
+
+        Round:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    description: Unique identifier for the round.
+                name:
+                    type: string
+                    description: Name of the round.
+                slug:
+                    type: string
+                    description: Slug of the round.
+                description:
+                    type: string
+                    description: Description of the round.
+                pool_id:
+                    type: array
+                    description: List of pool references associated with the round. May contain duplicates in current API responses.
+                    items:
+                        $ref: '#/components/schemas/PoolRef'
+            required: [id, name, slug, description, pool_id]
+            additionalProperties: true
+
+        Pool:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    description: Unique identifier for the pool.
+                name:
+                    type: string
+                    description: Name of the pool.
+                slug:
+                    type: string
+                    description: Slug of the pool.
+                max_funding_amount:
+                    type: string
+                    description: Maximum funding allowed in the pool (returned as string; may include comma separators).
+                    example: '120,000'
+                description:
+                    type: string
+                    description: Description of the pool.
+            required: [id, name, slug, max_funding_amount, description]
+            additionalProperties: true
+
+        UserListItem:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    description: User ID.
+                collection_id:
+                    type: string
+                    description: Collection ID associated with the user (may be "N/A").
+                user_name:
+                    type: string
+                    description: Display name of the user.
+                email:
+                    type: string
+                    description: Email address of the user.
+                total_proposals:
+                    type: integer
+                    description: Total number of proposals created by this user.
+            required: [id, collection_id, user_name, email, total_proposals]
+            additionalProperties: true
+
+        Proposal:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    description: Unique identifier for the proposal.
+                    example: 6338
+                pool_id:
+                    type: integer
+                    description: Id of the pool related to the proposal.
+                    example: 38
+                proposer_id:
+                    type: string
+                    description: ID of the proposer (returned as string).
+                    example: '48'
+                team_members:
+                    type: array
+                    description: List of user IDs who are team members. May or may not include the proposer.
+                    items:
+                        type: integer
+                title:
+                    type: string
+                    description: Title of the proposal.
+                content:
+                    type: string
+                    description: Content of the proposal (may contain HTML and/or HTML entities).
+                link:
+                    type: string
+                    description: URL link to the proposal.
+                feature_image:
+                    type: string
+                    description: URL of the featured image for the proposal.
+                requested_amount:
+                    type: string
+                    description: Amount requested in the proposal (returned as string).
+                awarded_amount:
+                    type: string
+                    description: Amount awarded in the proposal (returned as string).
+                is_awarded:
+                    type: boolean
+                    description: Indicates whether the proposal is awarded.
+                is_completed:
+                    type: boolean
+                    description: Indicates whether the proposal is completed.
+                created_at:
+                    type: string
+                    description: Creation timestamp (non-ISO format in current API responses).
+                    example: '2024-05-20 11:07:28'
+                updated_at:
+                    type: string
+                    description: Timestamp when the proposal was last updated (may be absent depending on endpoint/version).
+            required:
+                - id
+                - pool_id
+                - proposer_id
+                - team_members
+                - title
+                - content
+                - link
+                - feature_image
+                - requested_amount
+                - awarded_amount
+                - is_awarded
+                - is_completed
+                - created_at
+            additionalProperties: true
+
+        MilestoneStatus:
+            type: string
+            enum: [not_started, pending, in_progress, completed]
+
+        ProposalMilestone:
+            type: object
+            properties:
+                title:
+                    type: string
+                status:
+                    $ref: '#/components/schemas/MilestoneStatus'
+                description:
+                    type: string
+                    description: May contain HTML entities.
+                development_description:
+                    type: string
+                    description: May contain HTML entities.
+                budget:
+                    type: string
+                    description: Budget allocated for the milestone (returned as string).
+            required:
+                [title, status, description, development_description, budget]
+            additionalProperties: true
+
+        Milestone:
+            type: object
+            properties:
+                id:
+                    $ref: '#/components/schemas/IdFlexible'
+                proposal_id:
+                    type: integer
+                title:
+                    type: string
+                status:
+                    $ref: '#/components/schemas/MilestoneStatus'
+                description:
+                    type: string
+                development_description:
+                    type: string
+                budget:
+                    type: string
+                created_at:
+                    type: string
+                    description: May be empty string in current API responses.
+                    example: ''
+                updated_at:
+                    type: string
+                    description: May be empty string in current API responses.
+                    example: ''
+            required:
+                - id
+                - proposal_id
+                - title
+                - status
+                - description
+                - development_description
+                - budget
+                - created_at
+                - updated_at
+            additionalProperties: true
+
+        Review:
+            type: object
+            properties:
+                review_id:
+                    $ref: '#/components/schemas/IdFlexible'
+                proposal_id:
+                    $ref: '#/components/schemas/IdFlexible'
+                reviewer_id:
+                    $ref: '#/components/schemas/IdFlexible'
+                review_type:
+                    type: string
+                    enum: [expert, community]
+                overall_rating:
+                    $ref: '#/components/schemas/RatingString'
+                feasibility_rating:
+                    $ref: '#/components/schemas/RatingString'
+                viability_rating:
+                    $ref: '#/components/schemas/RatingString'
+                desirability_rating:
+                    $ref: '#/components/schemas/RatingString'
+                usefulness_rating:
+                    $ref: '#/components/schemas/RatingString'
+                created_at:
+                    type: string
+                    description: Timestamp (non-ISO) or empty string in current API responses.
+                    example: '2025-10-13 13:21:56'
+            required:
+                - review_id
+                - proposal_id
+                - reviewer_id
+                - review_type
+                - overall_rating
+                - feasibility_rating
+                - viability_rating
+                - desirability_rating
+                - usefulness_rating
+                - created_at
+            additionalProperties: true
+
+        Comment:
+            type: object
+            properties:
+                comment_id:
+                    type: string
+                    description: ID of the comment (returned as string).
+                    example: '937'
+                parent_id:
+                    type: string
+                    description: Parent comment ID (0 means top-level).
+                    example: '0'
+                is_reply:
+                    type: boolean
+                    description: Whether this comment is a reply.
+                user_id:
+                    type: string
+                    description: ID of the user who made the comment (returned as string).
+                proposal_id:
+                    type: string
+                    description: ID of the proposal associated with the comment (returned as string).
+                content:
+                    type: string
+                    description: Content of the comment (may contain HTML and HTML entities).
+                comment_votes:
+                    type: string
+                    description: Total number of votes this comment received (returned as string).
+                    example: '0'
+                created_at:
+                    type: string
+                    description: Creation timestamp (non-ISO format in current API responses).
+                updated_at:
+                    type: string
+                    description: Update timestamp (non-ISO format in current API responses).
+            required:
+                - comment_id
+                - parent_id
+                - is_reply
+                - user_id
+                - proposal_id
+                - content
+                - comment_votes
+                - created_at
+                - updated_at
+            additionalProperties: true
+
+        CommentVoteInline:
+            type: object
+            properties:
+                voter_id:
+                    type: integer
+                    description: ID of the voter.
+                vote_type:
+                    type: string
+                    enum: [upvote, downvote]
+                created_at:
+                    type: string
+                    description: Timestamp when the vote was created (may be absent in this endpoint).
+            required: [voter_id, vote_type]
+            additionalProperties: true
+
+        CommentVote:
+            type: object
+            properties:
+                voter_id:
+                    type: integer
+                    description: ID of the voter.
+                comment_id:
+                    type: string
+                    description: Comment ID (returned as string).
+                    example: '869'
+                vote_type:
+                    type: string
+                    enum: [upvote, downvote]
+                created_at:
+                    type: string
+                    example: '2025-03-19 12:54:37'
+            required: [voter_id, comment_id, vote_type, created_at]
+            additionalProperties: true
+
+paths:
+    /rounds:
+        get:
+            summary: Retrieves a list of funding rounds.
+            parameters:
+                - in: query
+                  name: page
+                  required: false
+                  schema:
+                      type: integer
+                      default: 1
+                  description: Page number for pagination.
+                - in: query
+                  name: limit
+                  required: false
+                  schema:
+                      type: integer
+                      default: 25
+                  description: Maximum number of rounds per page.
+            responses:
+                '200':
+                    description: A paginated list of funding rounds.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    rounds:
+                                        type: array
+                                        items:
+                                            $ref: '#/components/schemas/Round'
+                                    pagination:
+                                        $ref: '#/components/schemas/Pagination'
+                                required: [rounds, pagination]
+                                additionalProperties: true
+
+    /pools:
+        get:
+            summary: Retrieves a list of funding pools.
+            parameters:
+                - in: query
+                  name: page
+                  required: false
+                  schema:
+                      type: integer
+                      default: 1
+                  description: Page number for pagination.
+                - in: query
+                  name: limit
+                  required: false
+                  schema:
+                      type: integer
+                      default: 25
+                  description: Maximum number of pools per page.
+            responses:
+                '200':
+                    description: A paginated list of funding pools.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    pools:
+                                        type: array
+                                        items:
+                                            $ref: '#/components/schemas/Pool'
+                                    pagination:
+                                        $ref: '#/components/schemas/Pagination'
+                                required: [pools, pagination]
+                                additionalProperties: true
+
+    /users:
+        get:
+            summary: Retrieves details of subscriber users.
+            parameters:
+                - in: query
+                  name: page
+                  required: false
+                  schema:
+                      type: integer
+                      default: 1
+                  description: Page number for pagination.
+                - in: query
+                  name: limit
+                  required: false
+                  schema:
+                      type: integer
+                      default: 25
+                  description: Maximum number of users per page.
+            responses:
+                '200':
+                    description: Details of subscriber users.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    users:
+                                        type: array
+                                        items:
+                                            $ref: '#/components/schemas/UserListItem'
+                                    pagination:
+                                        $ref: '#/components/schemas/Pagination'
+                                required: [users, pagination]
+                                additionalProperties: true
+
+    /rounds/{round_id}/proposals:
+        get:
+            summary: Retrieves proposals for a specific funding round.
+            parameters:
+                - in: path
+                  name: round_id
+                  required: true
+                  schema:
+                      type: integer
+                  description: ID of the round for which proposals are requested.
+                - in: query
+                  name: pool_id
+                  required: false
+                  schema:
+                      type: integer
+                  description: ID of the pool for which proposals are requested.
+                - in: query
+                  name: page
+                  required: false
+                  schema:
+                      type: integer
+                      default: 1
+                  description: Page number for pagination.
+                - in: query
+                  name: limit
+                  required: false
+                  schema:
+                      type: integer
+                      default: 25
+                  description: Maximum number of proposals per page.
+            responses:
+                '200':
+                    description: Proposals for the specified funding round.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    proposals:
+                                        type: array
+                                        items:
+                                            $ref: '#/components/schemas/Proposal'
+                                    pagination:
+                                        $ref: '#/components/schemas/Pagination'
+                                required: [proposals, pagination]
+                                additionalProperties: true
+
+    /milestones:
+        get:
+            summary: Retrieves milestones based on filter criteria.
+            description: If no parameters are provided, all milestones will be returned.
+            parameters:
+                - in: query
+                  name: proposal_id
+                  required: false
+                  schema:
+                      type: integer
+                  description: ID of the proposal for which milestones are requested.
+                - in: query
+                  name: status
+                  required: false
+                  schema:
+                      $ref: '#/components/schemas/MilestoneStatus'
+                  description: Filter for milestone status.
+                - in: query
+                  name: page
+                  required: false
+                  schema:
+                      type: integer
+                      default: 1
+                  description: Page number for pagination.
+                - in: query
+                  name: limit
+                  required: false
+                  schema:
+                      type: integer
+                      default: 25
+                  description: Maximum number of milestones per page.
+            responses:
+                '200':
+                    description: Milestones based on filter criteria.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    milestones:
+                                        type: array
+                                        items:
+                                            $ref: '#/components/schemas/Milestone'
+                                    pagination:
+                                        $ref: '#/components/schemas/Pagination'
+                                required: [milestones, pagination]
+                                additionalProperties: true
+
+    # NOTE: Per-proposal reviews should be fetched via /reviews with proposal_id filter.
+    # /proposals/{proposal_id}/reviews has been deprecated in favor of /reviews.
+
+    /reviews:
+        get:
+            summary: Retrieves reviews based on filter criteria.
+            description: If no parameters are provided, all reviews will be returned.
+            parameters:
+                - in: query
+                  name: reviewer_id
+                  required: false
+                  schema:
+                      oneOf:
+                          - type: integer
+                          - $ref: '#/components/schemas/IdNumericString'
+                  description: ID of the user who created the review.
+                - in: query
+                  name: proposal_id
+                  required: false
+                  schema:
+                      oneOf:
+                          - type: integer
+                          - $ref: '#/components/schemas/IdNumericString'
+                  description: ID of the proposal for which reviews are requested.
+                - in: query
+                  name: type
+                  required: false
+                  schema:
+                      type: string
+                      enum: [expert, community]
+                  description: Filter for review type (expert or community).
+                - in: query
+                  name: page
+                  required: false
+                  schema:
+                      type: integer
+                      default: 1
+                  description: Page number for pagination.
+                - in: query
+                  name: limit
+                  required: false
+                  schema:
+                      type: integer
+                      default: 25
+                  description: Maximum number of reviews per page.
+            responses:
+                '200':
+                    description: Reviews based on filter criteria.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    reviews:
+                                        type: array
+                                        items:
+                                            $ref: '#/components/schemas/Review'
+                                    pagination:
+                                        $ref: '#/components/schemas/Pagination'
+                                required: [reviews, pagination]
+                                additionalProperties: true
+
+    # NOTE: Per-comment votes should be fetched via /comment_votes with comment_id filter.
+    # /comments/{comment_id}/votes has been deprecated in favor of /comment_votes.
+
+    /comments:
+        get:
+            summary: Retrieves comments based on filter criteria.
+            description: If no parameters are provided, all comments will be returned.
+            parameters:
+                - in: query
+                  name: user_id
+                  required: false
+                  schema:
+                      $ref: '#/components/schemas/IdNumericString'
+                  description: ID of the user for whom comments are requested.
+                - in: query
+                  name: proposal_id
+                  required: false
+                  schema:
+                      $ref: '#/components/schemas/IdNumericString'
+                  description: ID of the proposal for which comments are requested.
+                - in: query
+                  name: page
+                  required: false
+                  schema:
+                      type: integer
+                      default: 1
+                  description: Page number for pagination.
+                - in: query
+                  name: limit
+                  required: false
+                  schema:
+                      type: integer
+                      default: 25
+                  description: Maximum number of comments per page.
+            responses:
+                '200':
+                    description: Comments based on filter criteria.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    comments:
+                                        type: array
+                                        items:
+                                            $ref: '#/components/schemas/Comment'
+                                    pagination:
+                                        $ref: '#/components/schemas/Pagination'
+                                required: [comments, pagination]
+                                additionalProperties: true
+
+    /comment_votes:
+        get:
+            summary: Retrieves comment votes based on filter criteria.
+            description: If no parameters are provided, all comment votes will be returned.
+            parameters:
+                - in: query
+                  name: voter_id
+                  required: false
+                  schema:
+                      oneOf:
+                          - type: integer
+                          - $ref: '#/components/schemas/IdNumericString'
+                  description: ID of the user who voted on the comment.
+                - in: query
+                  name: comment_id
+                  required: false
+                  schema:
+                      oneOf:
+                          - type: integer
+                          - $ref: '#/components/schemas/IdNumericString'
+                  description: ID of the comment for which votes are requested.
+                - in: query
+                  name: page
+                  required: false
+                  schema:
+                      type: integer
+                      default: 1
+                  description: Page number for pagination.
+                - in: query
+                  name: limit
+                  required: false
+                  schema:
+                      type: integer
+                      default: 25
+                  description: Maximum number of comment votes per page.
+            responses:
+                '200':
+                    description: Comment votes based on filter criteria.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    votes:
+                                        type: array
+                                        items:
+                                            $ref: '#/components/schemas/CommentVote'
+                                    pagination:
+                                        $ref: '#/components/schemas/Pagination'
+                                required: [votes, pagination]
+                                additionalProperties: true
