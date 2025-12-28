@@ -1,0 +1,127 @@
+{
+    "key": "contribution_score",
+    "name": "Contribution Score",
+    "category": "Activity",
+    "summary": "Scores how much value a user adds through comments, boosting community-endorsed contributions and reducing self-serving behavior. Recent, upvoted comments count more than old or self-related ones.",
+    "description": "### Contribution Engagement (Comments)\nThis algorithm scores users based on how they contribute through **comments**.\n\n**How it works (simple):**\n- Each comment starts with a **base score**: `commentBaseScore`.\n- Votes adjust it:\n  - Upvotes add points: `commentUpvoteWeight`\n  - Downvotes subtract points: `commentDownvoteWeight`\n- Self-serving activity is discounted with a **penalty factor**: `selfInteractionPenaltyFactor`\n  - commenting on your own project\n  - replying to yourself\n- A **time decay policy** makes recent comments matter more:\n  - `engagementWindowMonths` (older than this → weight 0)\n  - `monthlyDecayRatePercent` (drops each month bucket)\n- Optional bonus: if the **project owner upvoted** the comment, apply `projectOwnerUpvoteBonusMultiplier`.\n\n**Inputs:**\n- No manual file upload.\n- Data is fetched from DeepFunding Portal APIs.\n\n**Output:**\n- Per-user contribution engagement score (higher = more valuable, recent, community-endorsed commenting).",
+    "version": "1.0.0",
+    "inputs": [
+        {
+            "key": "comment_base_score",
+            "label": "Comment Base Score",
+            "description": "Baseline points for creating a comment.",
+            "type": "integer",
+            "min": 0,
+            "max": 100,
+            "default": 10,
+            "step": 1,
+            "required": true
+        },
+        {
+            "key": "comment_upvote_weight",
+            "label": "Comment Upvote Weight",
+            "description": "Points added per upvote on a comment.",
+            "type": "number",
+            "min": 0,
+            "max": 10,
+            "default": 1,
+            "step": 0.1,
+            "required": true
+        },
+        {
+            "key": "comment_downvote_weight",
+            "label": "Comment Downvote Weight",
+            "description": "Points subtracted per downvote on a comment.",
+            "type": "number",
+            "min": 0,
+            "max": 10,
+            "default": 1,
+            "step": 0.1,
+            "required": true
+        },
+        {
+            "key": "self_interaction_penalty_factor",
+            "label": "Self Interaction Penalty Factor",
+            "description": "Penalty multiplier applied when a comment is self-related (own project) and/or a same-user reply chain.",
+            "type": "number",
+            "min": 0,
+            "max": 1,
+            "default": 1,
+            "step": 0.1,
+            "uiHint": {
+                "widget": "slider"
+            },
+            "required": true
+        },
+        {
+            "key": "project_owner_upvote_bonus_multiplier",
+            "label": "Project Owner Upvote Bonus Multiplier",
+            "description": "Bonus multiplier applied only if the project owner upvoted the comment.",
+            "type": "number",
+            "min": 1,
+            "max": 10,
+            "default": 1.2,
+            "step": 0.1,
+            "required": true
+        },
+        {
+            "key": "engagement_window_months",
+            "label": "Engagement Window (Months)",
+            "description": "Engagement window in months; items older than this contribute 0.",
+            "type": "integer",
+            "min": 1,
+            "max": 12,
+            "default": 12,
+            "step": 1,
+            "required": true
+        },
+        {
+            "key": "monthly_decay_rate_percent",
+            "label": "Monthly Decay Rate (%)",
+            "description": "Decay rate per month bucket (%). Each month reduces weight by this percentage.",
+            "type": "integer",
+            "min": 0,
+            "max": 100,
+            "default": 10,
+            "step": 1,
+            "required": true
+        },
+        {
+            "key": "decay_bucket_size_months",
+            "label": "Decay Bucket Size (Months)",
+            "description": "Fixed bucket size used for time decay calculations.",
+            "type": "integer",
+            "default": 1,
+            "step": 1,
+            "required": false
+        }
+    ],
+    "outputs": [
+        {
+            "key": "contribution_score",
+            "label": "Contribution Score by User",
+            "description": "Contribution score for each user",
+            "type": "csv",
+            "csv": {
+                "hasHeader": true,
+                "delimiter": ",",
+                "columns": [
+                    {
+                        "key": "collection_id",
+                        "type": "string",
+                        "description": "Unique user identifier"
+                    },
+                    {
+                        "key": "contribution_score",
+                        "type": "number",
+                        "description": "Contribution score"
+                    }
+                ]
+            }
+        }
+    ],
+    "runtime": {
+        "taskQueue": "typescript-worker",
+        "activity": "contribution_score"
+    }
+}

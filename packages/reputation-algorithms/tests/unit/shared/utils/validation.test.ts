@@ -154,7 +154,8 @@ describe('Validation Utils', () => {
       const validDefinition = {
         key: 'test_algorithm',
         name: 'Test Algorithm',
-        category: 'Custom',
+        category: 'Activity',
+        summary: 'A test algorithm',
         description: 'A test algorithm',
         version: '1.0.0',
         inputs: [
@@ -178,9 +179,15 @@ describe('Validation Utils', () => {
         outputs: [
           {
             key: 'result',
-            label: 'Result',
-            type: 'score_map',
-            entity: 'user',
+            type: 'csv',
+            csv: {
+              hasHeader: true,
+              delimiter: ',',
+              columns: [
+                { key: 'collection_id', type: 'string', description: 'User identifier' },
+                { key: 'result', type: 'number', description: 'Result score' },
+              ],
+            },
           },
         ],
         runtime: {
@@ -218,15 +225,23 @@ describe('Validation Utils', () => {
       const validDefinition = {
         key: 'test_algorithm',
         name: 'Test Algorithm',
-        category: 'Custom',
+        category: 'Activity',
+        summary: 'A test algorithm',
         description: 'A test algorithm',
         version: '1.0.0',
         inputs: [],
         outputs: [
           {
             key: 'result',
-            type: 'score_map',
-            entity: 'user',
+            type: 'csv',
+            csv: {
+              hasHeader: true,
+              delimiter: ',',
+              columns: [
+                { key: 'collection_id', type: 'string', description: 'User identifier' },
+                { key: 'result', type: 'number', description: 'Result score' },
+              ],
+            },
           },
         ],
         runtime: {
@@ -254,11 +269,25 @@ describe('Validation Utils', () => {
       const result = validator.validate({
         key: 'test',
         name: 'Test',
-        category: 'Custom',
+        category: 'Activity',
+        summary: 'Test',
         description: 'Test',
         version: '1.0.0',
         inputs: [],
-        outputs: [{ key: 'result', type: 'score_map', entity: 'user' }],
+        outputs: [
+          {
+            key: 'result',
+            type: 'csv',
+            csv: {
+              hasHeader: true,
+              delimiter: ',',
+              columns: [
+                { key: 'collection_id', type: 'string', description: 'User identifier' },
+                { key: 'result', type: 'number', description: 'Result score' },
+              ],
+            },
+          },
+        ],
         runtime: {
           taskQueue: 'typescript-worker',
           activity: 'test',

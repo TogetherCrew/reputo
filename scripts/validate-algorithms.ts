@@ -4,8 +4,13 @@
  * Validation script for checking algorithm definitions and activities are in sync.
  *
  * This script verifies:
- * 1. Every algorithm definition has a corresponding activity export
- * 2. Every activity has a corresponding algorithm definition (optional warning)
+ * 1. JSON syntax validity of all algorithm definition files
+ * 2. Every algorithm definition has a corresponding activity export
+ * 3. Every activity has a corresponding algorithm definition (optional warning)
+ *
+ * Note: This script focuses on cross-package sync validation. For registry integrity
+ * validation (JSON schema, key/version matching, duplicates), use:
+ *   pnpm --filter @reputo/reputation-algorithms registry:validate
  *
  * Usage:
  *   pnpm algorithm:validate
@@ -44,15 +49,22 @@ interface AlgorithmDefinitionInfo {
     runtimeTaskQueue: string | null
 }
 
+interface RegistryDiscoveryResult {
+    algorithms: Map<string, AlgorithmDefinitionInfo>
+    jsonErrors: string[]
+}
+
 /**
  * Discover all algorithm definitions from the registry directory.
+ * Validates JSON syntax and collects parse errors.
  */
-function discoverRegistryAlgorithms(): Map<string, AlgorithmDefinitionInfo> {
+function discoverRegistryAlgorithms(): RegistryDiscoveryResult {
     const algorithms = new Map<string, AlgorithmDefinitionInfo>()
+    const jsonErrors: string[] = []
 
     if (!existsSync(REGISTRY_PATH)) {
         console.error(`✗ Registry path not found: ${REGISTRY_PATH}`)
-        return algorithms
+        return { algorithms, jsonErrors }
     }
 
     const entries = readdirSync(REGISTRY_PATH)
@@ -81,21 +93,31 @@ function discoverRegistryAlgorithms(): Map<string, AlgorithmDefinitionInfo> {
 
         for (const versionFile of versionFiles) {
             const version = versionFile.replace('.json', '')
-            versions.push(version)
+            const filePath = join(entryPath, versionFile)
 
-            // Parse the definition to get runtime info (use latest version)
+            // Validate JSON syntax before attempting to parse
             try {
-                const content = readFileSync(
-                    join(entryPath, versionFile),
-                    'utf8'
-                )
+                const content = readFileSync(filePath, 'utf8')
                 const definition = JSON.parse(content)
+
+                // Only add version if JSON is valid
+                versions.push(version)
+
+                // Extract runtime info (use latest version)
                 if (definition.runtime) {
                     runtimeActivity = definition.runtime.activity || null
                     runtimeTaskQueue = definition.runtime.taskQueue || null
                 }
-            } catch {
-                // Ignore parse errors, just skip runtime extraction
+            } catch (error) {
+                // Report JSON parse errors instead of silently ignoring them
+                const errorMessage =
+                    error instanceof SyntaxError
+                        ? error.message
+                        : error instanceof Error
+                        ? error.message
+                        : String(error)
+
+                jsonErrors.push(`Invalid JSON in ${filePath}: ${errorMessage}`)
             }
         }
 
@@ -109,7 +131,7 @@ function discoverRegistryAlgorithms(): Map<string, AlgorithmDefinitionInfo> {
         }
     }
 
-    return algorithms
+    return { algorithms, jsonErrors }
 }
 
 // ============================================================================
@@ -184,10 +206,15 @@ function validateAlgorithms(): ValidationReport {
         info: [],
     }
 
-    // Discover algorithms and activities
-    const registryAlgorithms = discoverRegistryAlgorithms()
+    // Discover algorithms and activities (includes JSON syntax validation)
+    const discoveryResult = discoverRegistryAlgorithms()
+    const registryAlgorithms = discoveryResult.algorithms
+    const jsonErrors = discoveryResult.jsonErrors
     const activityExports = discoverActivityExports()
     const activityFiles = discoverActivityFiles()
+
+    // Add JSON syntax errors first (critical errors)
+    report.errors.push(...jsonErrors)
 
     report.info.push(
         `Found ${registryAlgorithms.size} algorithm definition(s) in registry`
@@ -313,7 +340,8 @@ function printUsage(): void {
         'Validates that algorithm definitions and activities are in sync.'
     )
     console.log('')
-    console.log('Checks:')
+    console.log('This script performs cross-package sync validation:')
+    console.log('  - JSON syntax validity of algorithm definition files')
     console.log(
         '  - Every algorithm definition has a corresponding activity file'
     )
@@ -323,6 +351,13 @@ function printUsage(): void {
     console.log('  - Every activity file is exported in index.ts')
     console.log(
         '  - Every activity file has a corresponding definition (warning)'
+    )
+    console.log('')
+    console.log(
+        'Note: For registry integrity validation (JSON schema, key/version'
+    )
+    console.log(
+        '      matching, duplicates), run: pnpm --filter @reputo/reputation-algorithms registry:validate'
     )
     console.log('')
 }

@@ -7,6 +7,7 @@
         "key",
         "name",
         "category",
+        "summary",
         "description",
         "version",
         "inputs",
@@ -22,8 +23,9 @@
         "name": { "type": "string", "minLength": 1 },
         "category": {
             "type": "string",
-            "enum": ["Engagement", "Quality", "Activity", "Custom"]
+            "enum": ["Engagement", "Activity"]
         },
+        "summary": { "type": "string", "minLength": 1 },
         "description": { "type": "string", "minLength": 1 },
         "version": {
             "type": "string",
@@ -31,27 +33,28 @@
         },
         "inputs": {
             "type": "array",
-            "items": { "$ref": "#/$defs/ioItem" }
+            "items": { "$ref": "#/$defs/inputItem" }
         },
         "outputs": {
             "type": "array",
             "minItems": 1,
-            "items": { "$ref": "#/$defs/ioItem" }
+            "items": { "$ref": "#/$defs/outputItem" }
         },
-        "$schemaRef": {
-            "type": "string",
-            "format": "uri",
-            "description": "Optional backpointer to the schema $id used during authoring."
-        },
-        "runtime": {
-            "$ref": "#/$defs/runtime"
-        }
+        "runtime": { "$ref": "#/$defs/runtime" }
     },
     "$defs": {
-        "ioItem": {
+        "inputItem": {
+            "oneOf": [
+                { "$ref": "#/$defs/csvIOItem" },
+                { "$ref": "#/$defs/numericParamItem" }
+            ]
+        },
+        "outputItem": { "$ref": "#/$defs/csvIOItem" },
+
+        "csvIOItem": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["key", "type"],
+            "required": ["key", "type", "csv"],
             "properties": {
                 "key": {
                     "type": "string",
@@ -60,42 +63,64 @@
                 },
                 "label": { "type": "string" },
                 "description": { "type": "string" },
-                "type": {
-                    "type": "string",
-                    "enum": [
-                        "csv",
-                        "number",
-                        "boolean",
-                        "array",
-                        "score_map",
-                        "string",
-                        "object"
-                    ]
-                },
-                "csv": { "$ref": "#/$defs/csvMeta" },
-                "entity": {
+                "type": { "const": "csv" },
+                "csv": { "$ref": "#/$defs/csvMeta" }
+            }
+        },
+
+        "numericParamItem": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "key",
+                "label",
+                "description",
+                "type",
+                "default",
+                "required"
+            ],
+            "properties": {
+                "key": {
                     "type": "string",
                     "pattern": "^[a-z][a-z0-9_]*$",
-                    "description": "Entity key for score maps (e.g., 'user')."
-                }
+                    "minLength": 2
+                },
+                "label": { "type": "string", "minLength": 1 },
+                "description": { "type": "string", "minLength": 1 },
+                "type": {
+                    "type": "string",
+                    "enum": ["number", "integer"]
+                },
+                "min": { "type": "number" },
+                "max": { "type": "number" },
+                "default": { "type": "number" },
+                "step": { "type": "number" },
+                "uiHint": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "widget": {
+                            "type": "string",
+                            "enum": ["slider"]
+                        }
+                    },
+                    "required": ["widget"]
+                },
+                "required": { "type": "boolean" }
             },
             "allOf": [
                 {
-                    "if": {
-                        "properties": { "type": { "const": "csv" } },
-                        "required": ["type"]
-                    },
-                    "then": { "required": ["csv"] }
-                },
-                {
-                    "if": {
-                        "properties": { "type": { "const": "score_map" } },
-                        "required": ["type"]
-                    },
-                    "then": { "required": ["entity"] }
+                    "if": { "required": ["min", "max"] },
+                    "then": {
+                        "properties": {
+                            "min": { "type": "number" },
+                            "max": { "type": "number" }
+                        }
+                    }
                 }
             ]
         },
+
         "csvMeta": {
             "type": "object",
             "additionalProperties": false,
@@ -116,6 +141,7 @@
                 }
             }
         },
+
         "csvColumn": {
             "type": "object",
             "additionalProperties": false,
@@ -152,21 +178,14 @@
                 }
             ]
         },
+
         "runtime": {
             "type": "object",
             "additionalProperties": false,
             "required": ["taskQueue", "activity"],
             "properties": {
-                "taskQueue": {
-                    "type": "string",
-                    "minLength": 1,
-                    "description": "Task queue name for executing this reputation algorithm version."
-                },
-                "activity": {
-                    "type": "string",
-                    "minLength": 1,
-                    "description": "Activity name used by the runtime to execute this reputation algorithm."
-                }
+                "taskQueue": { "type": "string", "minLength": 1 },
+                "activity": { "type": "string", "minLength": 1 }
             }
         }
     }
