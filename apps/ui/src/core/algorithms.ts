@@ -10,6 +10,7 @@ export interface Algorithm {
   id: string
   title: string
   category: string
+  summary: string
   description: string
   duration: string
   dependencies: string
@@ -31,6 +32,7 @@ function transformAlgorithm(definition: AlgorithmDefinition): Algorithm {
         : definition.category === "Activity"
           ? "Core Engagement"
           : "Custom",
+    summary: definition.summary,
     description: definition.description,
     duration: "~2-5 min", // Default duration since it's not in the definition
     dependencies: `${definition.inputs.length} input${

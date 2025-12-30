@@ -141,7 +141,7 @@ export default function Home() {
                     <div
                       className={
                         viewMode === "grid"
-                          ? "grid gap-4 sm:grid-cols-2"
+                          ? "grid gap-4 sm:grid-cols-2 [&>*]:h-full"
                           : "flex flex-col gap-4"
                       }
                     >
@@ -150,12 +150,12 @@ export default function Home() {
                           key={algo.id}
                           href={`/dashboard/algorithms/${algo.id}`}
                         >
-                          <Card
+                        <Card
                             key={algo.id}
                             className={
                               viewMode === "list"
                                 ? "flex flex-row items-start gap-4"
-                                : ""
+                                : "flex flex-col h-full"
                             }
                           >
                             <CardHeader
@@ -195,7 +195,7 @@ export default function Home() {
                               }
                             >
                               <CardDescription>
-                                {algo.description}
+                                {algo.summary}
                               </CardDescription>
                               <div className="mt-4 flex flex-wrap items-center gap-4 text-sm">
                                 <span className="inline-flex items-center gap-2 text-muted-foreground">

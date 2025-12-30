@@ -99,6 +99,8 @@ export interface AlgorithmDefinition {
   name: string;
   /** Category classification for organizing algorithms */
   category: AlgorithmCategory;
+  /** Short summary of the algorithm for card displays */
+  summary: string;
   /** Detailed description of what the algorithm does and how it works */
   description: string;
   /** Semantic version of the algorithm definition */
