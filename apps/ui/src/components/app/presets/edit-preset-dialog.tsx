@@ -130,28 +130,19 @@ export function EditPresetDialog({
       description: preset.description || "",
     }
 
-    // Map preset inputs to form field values using the full definition
-    // The preset stores original keys (e.g., "votes"), but the form uses label-derived keys (e.g., "votes_csv")
+    // Map preset inputs to form field values.
+    // The form schema uses algorithm input keys (e.g. "votes") directly.
     preset.inputs.forEach((presetInput) => {
-      // Find the input in full definition by original key
-      const fullDefInput = fullDefinition?.inputs.find(
-        (input) => input.key === presetInput.key
-      )
+      // Normal path: preset keys should match algorithm input keys.
+      defaults[presetInput.key] = presetInput.value
 
-      if (fullDefInput?.label) {
-        // The form key is derived from the label
-        const formKey = fullDefInput.label.toLowerCase().replace(/\s+/g, "_")
-        defaults[formKey] = presetInput.value
-      } else {
-        // Fallback: try matching by the preset key directly (for backwards compatibility)
-        const algoInput = algorithm.inputs.find(
-          (input) =>
-            input.label.toLowerCase().replace(/\s+/g, "_") ===
-            presetInput.key.toLowerCase()
+      // Backwards compatibility fallback: if preset used label-derived keys, try mapping.
+      if (defaults[presetInput.key] == null || defaults[presetInput.key] === "") {
+        const fullDefInput = fullDefinition?.inputs.find(
+          (input) => input.label && input.label.toLowerCase().replace(/\s+/g, "_") === presetInput.key
         )
-        if (algoInput) {
-          const formKey = algoInput.label.toLowerCase().replace(/\s+/g, "_")
-          defaults[formKey] = presetInput.value
+        if (fullDefInput?.key) {
+          defaults[fullDefInput.key] = presetInput.value
         }
       }
     })
@@ -180,8 +171,7 @@ export function EditPresetDialog({
         name: data.name as string | undefined,
         description: data.description as string | undefined,
         inputs: algorithm.inputs.map((input, index) => {
-          const formKey = input.label.toLowerCase().replace(/\s+/g, "_")
-          const value = data[formKey]
+          const value = data[input.key]
 
           // Get the original key from the full definition
           const originalKey =
@@ -189,12 +179,12 @@ export function EditPresetDialog({
               (defInput) => defInput.label === input.label
             )?.key ||
             fullDefinition?.inputs[index]?.key ||
-            formKey
+            input.key
 
           // Convert File object to filename string
           let inputValue: unknown
           if (value instanceof File) {
-            inputValue = value.name
+            inputValue = ""
           } else {
             inputValue = value || ""
           }

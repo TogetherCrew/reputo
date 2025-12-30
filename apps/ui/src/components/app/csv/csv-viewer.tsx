@@ -22,20 +22,34 @@ export interface CSVViewerProps {
   hasHeader?: boolean
   delimiter?: string
   fillHeight?: boolean
+  /**
+   * Safety limits to avoid blowing up browser RAM for huge CSVs.
+   * We'll only download up to `maxPreviewBytes` and parse up to `maxPreviewRows`.
+   */
+  maxPreviewRows?: number
+  maxPreviewBytes?: number
+  pageSize?: number
 }
 
 interface ParsedCSV {
   headers: string[]
   rows: string[][]
+  truncated: boolean
 }
 
-function parseCSV(text: string, delimiter = ","): ParsedCSV {
+function parseCSV(
+  text: string,
+  delimiter = ",",
+  maxRows?: number
+): ParsedCSV {
   // Normalize newlines
   const src = text.replace(/\r\n/g, "\n").replace(/\r/g, "\n")
   const rows: string[][] = []
   let current: string[] = []
   let field = ""
   let inQuotes = false
+  let truncated = false
+  const maxTotalRows = maxRows != null ? Math.max(0, maxRows) + 1 : null // +1 for header row
 
   for (let i = 0; i < src.length; i++) {
     const ch = src[i]
@@ -62,19 +76,25 @@ function parseCSV(text: string, delimiter = ","): ParsedCSV {
         rows.push(current)
         current = []
         field = ""
+        if (maxTotalRows != null && rows.length >= maxTotalRows) {
+          truncated = true
+          break
+        }
       } else {
         field += ch
       }
     }
   }
   // Flush last field/row
-  current.push(field)
-  if (current.length > 1 || (current.length === 1 && current[0] !== "")) {
-    rows.push(current)
+  if (!truncated) {
+    current.push(field)
+    if (current.length > 1 || (current.length === 1 && current[0] !== "")) {
+      rows.push(current)
+    }
   }
 
   if (rows.length === 0) {
-    return { headers: [], rows: [] }
+    return { headers: [], rows: [], truncated: false }
   }
 
   const headers = rows[0].map((h) =>
@@ -92,7 +112,7 @@ function parseCSV(text: string, delimiter = ","): ParsedCSV {
       return [...r, ...Array(headers.length - r.length).fill("")]
     return r.slice(0, headers.length)
   })
-  return { headers, rows: normalizedRows }
+  return { headers, rows: normalizedRows, truncated }
 }
 
 function isNumeric(value: string): boolean {
@@ -103,31 +123,97 @@ function isNumeric(value: string): boolean {
   return Number.isFinite(n)
 }
 
+async function readTextUpToBytes(
+  res: Response,
+  maxBytes: number
+): Promise<{ text: string; truncated: boolean }> {
+  const reader = res.body?.getReader()
+  if (!reader) {
+    const text = await res.text()
+    if (text.length <= maxBytes) return { text, truncated: false }
+    return { text: text.slice(0, maxBytes), truncated: true }
+  }
+
+  const decoder = new TextDecoder("utf-8")
+  let received = 0
+  let out = ""
+  let truncated = false
+
+  while (true) {
+    const { done, value } = await reader.read()
+    if (done) break
+    if (!value) continue
+
+    const remaining = maxBytes - received
+    if (remaining <= 0) {
+      truncated = true
+      break
+    }
+
+    if (value.byteLength <= remaining) {
+      out += decoder.decode(value, { stream: true })
+      received += value.byteLength
+    } else {
+      out += decoder.decode(value.slice(0, remaining), { stream: true })
+      received += remaining
+      truncated = true
+      break
+    }
+  }
+
+  out += decoder.decode()
+  try {
+    await reader.cancel()
+  } catch {
+    // ignore
+  }
+  return { text: out, truncated }
+}
+
 export function CSVViewer({
   href,
   className,
   hasHeader = true,
   delimiter = ",",
   fillHeight = false,
+  maxPreviewRows = 250_000,
+  maxPreviewBytes = 100_000_000,
+  pageSize: pageSizeProp = 50,
 }: CSVViewerProps) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [csv, setCsv] = useState<ParsedCSV>({ headers: [], rows: [] })
+  const [csv, setCsv] = useState<ParsedCSV>({
+    headers: [],
+    rows: [],
+    truncated: false,
+  })
   const [query, setQuery] = useState("")
   const [sortCol, setSortCol] = useState<number | null>(null)
   const [sortDir, setSortDir] = useState<SortDirection>(null)
   const [lastRefreshedAt, setLastRefreshedAt] = useState<number>(0)
+  const [page, setPage] = useState(1)
+  const pageSize = Math.max(10, pageSizeProp)
 
   const load = useCallback(async () => {
     setLoading(true)
     setError(null)
     try {
-      const res = await fetch(href, { cache: "no-store" })
+      // Try a range request first (S3 supports this); if the server ignores it,
+      // we still cap the bytes we read from the stream.
+      const res = await fetch(href, {
+        cache: "no-store",
+        headers: {
+          Range: `bytes=0-${Math.max(0, maxPreviewBytes - 1)}`,
+        },
+      })
       if (!res.ok) {
         throw new Error(`Failed to fetch CSV (${res.status})`)
       }
-      const text = await res.text()
-      const parsed = parseCSV(text, delimiter)
+      const { text, truncated: bytesTruncated } = await readTextUpToBytes(
+        res,
+        maxPreviewBytes
+      )
+      const parsed = parseCSV(text, delimiter, maxPreviewRows)
       // If file has no header but hasHeader=false, synthesize headers
       let finalParsed = parsed
       if (!hasHeader && parsed.rows.length > 0) {
@@ -138,16 +224,21 @@ export function CSVViewer({
             (_, idx) => `Column ${idx + 1}`
           ),
           rows: parsed.rows,
+          truncated: parsed.truncated,
         }
       }
-      setCsv(finalParsed)
+      setCsv({
+        ...finalParsed,
+        truncated: finalParsed.truncated || bytesTruncated,
+      })
       setLastRefreshedAt(Date.now())
+      setPage(1)
     } catch (e) {
       setError(e instanceof Error ? e.message : "Unknown error")
     } finally {
       setLoading(false)
     }
-  }, [href, delimiter, hasHeader])
+  }, [href, delimiter, hasHeader, maxPreviewBytes, maxPreviewRows])
 
   useEffect(() => {
     void load()
@@ -191,6 +282,25 @@ export function CSVViewer({
     return withIndex.map((x) => x.r)
   }, [filteredRows, sortCol, sortDir])
 
+  const pageCount = useMemo(() => {
+    return Math.max(1, Math.ceil(sortedRows.length / pageSize))
+  }, [sortedRows.length, pageSize])
+
+  const pageRows = useMemo(() => {
+    const safePage = Math.min(Math.max(1, page), pageCount)
+    const start = (safePage - 1) * pageSize
+    return {
+      start,
+      rows: sortedRows.slice(start, start + pageSize),
+      page: safePage,
+    }
+  }, [sortedRows, page, pageCount, pageSize])
+
+  // Keep page in range when filters change
+  useEffect(() => {
+    setPage((p) => Math.min(Math.max(1, p), pageCount))
+  }, [pageCount])
+
   const handleHeaderClick = (index: number) => {
     if (sortCol !== index) {
       setSortCol(index)
@@ -230,8 +340,50 @@ export function CSVViewer({
                 }
               )}`
             : ""}
+          {csv.truncated
+            ? ` • Preview limited to ${maxPreviewRows} rows / ${Math.round(
+                maxPreviewBytes / 1_000_000
+              )}MB`
+            : ""}
         </div>
         <div className="flex-1" />
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setPage(1)}
+            disabled={loading || pageRows.page <= 1}
+          >
+            First
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={loading || pageRows.page <= 1}
+          >
+            Prev
+          </Button>
+          <div className="text-xs text-muted-foreground whitespace-nowrap">
+            Page {pageRows.page} / {pageCount}
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setPage((p) => Math.min(pageCount, p + 1))}
+            disabled={loading || pageRows.page >= pageCount}
+          >
+            Next
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setPage(pageCount)}
+            disabled={loading || pageRows.page >= pageCount}
+          >
+            Last
+          </Button>
+        </div>
         <Button
           variant="outline"
           size="sm"
@@ -310,15 +462,13 @@ export function CSVViewer({
                   </TableCell>
                 </TableRow>
               ) : (
-                sortedRows.map((row) => {
-                  const rowKey =
-                    row.join("|").slice(0, 100) || `empty-row-${Math.random()}`
+                pageRows.rows.map((row, rowIdx) => {
+                  const rowKey = `row-${pageRows.start + rowIdx}`
                   return (
                     <TableRow key={rowKey}>
-                      {csv.headers.map((headerName) => {
-                        const colIndex = csv.headers.indexOf(headerName)
+                      {csv.headers.map((headerName, colIndex) => {
                         const value = row[colIndex] ?? ""
-                        const cellKey = `${headerName}-${value}`
+                        const cellKey = `${colIndex}-${headerName}-${value}`
                         return (
                           <TableCell key={cellKey}>
                             <div className="min-w-0 whitespace-pre-wrap wrap-break-word">
