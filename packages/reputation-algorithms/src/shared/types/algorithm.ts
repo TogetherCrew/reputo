@@ -75,9 +75,60 @@ export interface CsvIoItem extends BaseIoItem {
 }
 
 /**
+ * Numeric input item configuration for algorithm definitions.
+ */
+export interface NumericIoItem extends BaseIoItem {
+  /** Type identifier for numeric data */
+  type: 'number' | 'integer';
+  /** Minimum allowed value */
+  min?: number;
+  /** Maximum allowed value */
+  max?: number;
+  /** Default value */
+  default?: number;
+  /** Step increment for the input */
+  step?: number;
+  /** Whether this input is required */
+  required?: boolean;
+  /** UI rendering hints */
+  uiHint?: {
+    /** Widget type for rendering (e.g., 'slider', 'input') */
+    widget?: 'slider' | 'input' | string;
+  };
+}
+
+/**
+ * Boolean input item configuration for algorithm definitions.
+ */
+export interface BooleanIoItem extends BaseIoItem {
+  /** Type identifier for boolean data */
+  type: 'boolean';
+  /** Default value */
+  default?: boolean;
+  /** Whether this input is required */
+  required?: boolean;
+}
+
+/**
+ * String input item configuration for algorithm definitions.
+ */
+export interface StringIoItem extends BaseIoItem {
+  /** Type identifier for string data */
+  type: 'string';
+  /** Default value */
+  default?: string;
+  /** Whether this input is required */
+  required?: boolean;
+  /** Minimum length for the string */
+  minLength?: number;
+  /** Maximum length for the string */
+  maxLength?: number;
+}
+
+/**
  * Union type for all supported input/output item types.
  */
-export type IoItem = CsvIoItem;
+export type IoItem = CsvIoItem | NumericIoItem | BooleanIoItem | StringIoItem;
 
 /**
  * Runtime metadata for algorithm execution by orchestration layers.

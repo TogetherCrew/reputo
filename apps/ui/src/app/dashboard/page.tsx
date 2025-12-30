@@ -9,9 +9,9 @@ import {
   Target,
   Users,
 } from "lucide-react"
-import Image from "next/image"
 import Link from "next/link"
 import { useMemo, useState } from "react"
+import { InputTypeBadge } from "@/components/app/input-type-badge"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -32,6 +32,13 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty"
 import { Input } from "@/components/ui/input"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { type Algorithm, searchAlgorithms } from "@/core/algorithms"
 
 // algorithms imported from shared file
@@ -43,10 +50,16 @@ const categories: {
   icon: React.ReactNode
 }[] = [
   {
-    key: "Core Engagement",
-    title: "Core Engagement",
-    description: "Fundamental algorithms for measuring user participation",
+    key: "Engagement",
+    title: "Engagement",
+    description: "Algorithms measuring user participation and interaction quality",
     icon: <Target className="size-4 text-primary" />,
+  },
+  {
+    key: "Activity",
+    title: "Activity",
+    description: "Algorithms tracking user contribution patterns and behavior",
+    icon: <Users className="size-4 text-primary" />,
   },
 ]
 
@@ -55,11 +68,16 @@ type ViewMode = "grid" | "list"
 export default function Home() {
   const [viewMode, setViewMode] = useState<ViewMode>("grid")
   const [searchQuery, setSearchQuery] = useState("")
+  const [categoryFilter, setCategoryFilter] = useState<string>("all")
 
-  // Filter algorithms using registry search
+  // Filter algorithms using registry search and category filter
   const filteredAlgorithms = useMemo(() => {
-    return searchAlgorithms(searchQuery)
-  }, [searchQuery])
+    const searchResults = searchAlgorithms(searchQuery)
+    if (categoryFilter === "all") {
+      return searchResults
+    }
+    return searchResults.filter((algo) => algo.category === categoryFilter)
+  }, [searchQuery, categoryFilter])
 
   return (
     <div className="min-h-screen w-full">
@@ -79,6 +97,19 @@ export default function Home() {
                   aria-hidden="true"
                 />
               </div>
+              <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                <SelectTrigger className="w-[160px]">
+                  <SelectValue placeholder="Category" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Categories</SelectItem>
+                  {categories.map((cat) => (
+                    <SelectItem key={cat.key} value={cat.key}>
+                      {cat.title}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <div className="hidden sm:flex items-center gap-1">
                 <Button
                   variant={viewMode === "grid" ? "secondary" : "ghost"}
@@ -215,26 +246,18 @@ export default function Home() {
                               className={
                                 viewMode === "list"
                                   ? "flex-col items-start gap-2 pt-0"
-                                  : ""
+                                  : "flex-col items-start gap-2"
                               }
                             >
-                              <span
-                                className={
-                                  viewMode === "list"
-                                    ? "text-sm font-medium"
-                                    : ""
-                                }
-                              >
+                              <span className="text-sm font-medium">
                                 Inputs:
                               </span>
-                              <div className="flex flex-wrap gap-2 px-2">
-                                {algo.inputs.map((t) => (
-                                  <Image
-                                    width={24}
-                                    height={24}
-                                    key={t.type}
-                                    src={`/icons/${t.type}.png`}
-                                    alt={t.type}
+                              <div className="flex flex-wrap gap-1.5">
+                                {algo.inputs.map((input) => (
+                                  <InputTypeBadge
+                                    key={input.key}
+                                    type={input.type}
+                                    label={input.label}
                                   />
                                 ))}
                               </div>

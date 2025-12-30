@@ -16,6 +16,7 @@ export interface Algorithm {
   dependencies: string
   level: string
   inputs: Array<{
+    key: string
     type: string
     label: string
   }>
@@ -26,12 +27,7 @@ function transformAlgorithm(definition: AlgorithmDefinition): Algorithm {
   return {
     id: definition.key,
     title: definition.name,
-    category:
-      definition.category === "Engagement"
-        ? "Core Engagement"
-        : definition.category === "Activity"
-          ? "Core Engagement"
-          : "Custom",
+    category: definition.category, // Preserve original category
     summary: definition.summary,
     description: definition.description,
     duration: "~2-5 min", // Default duration since it's not in the definition
@@ -40,6 +36,7 @@ function transformAlgorithm(definition: AlgorithmDefinition): Algorithm {
     }`,
     level: "Intermediate", // Default level since it's not in the definition
     inputs: definition.inputs.map((input) => ({
+      key: input.key,
       type: input.type,
       label: input.label || input.key,
     })),
