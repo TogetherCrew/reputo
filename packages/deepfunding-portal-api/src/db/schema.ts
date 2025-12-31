@@ -14,6 +14,5 @@ export * from '../resources/milestones/schema.js';
 export * from '../resources/pools/schema.js';
 export * from '../resources/proposals/schema.js';
 export * from '../resources/reviews/schema.js';
-// Re-export all resource schemas
 export * from '../resources/rounds/schema.js';
 export * from '../resources/users/schema.js';

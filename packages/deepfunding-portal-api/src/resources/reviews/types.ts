@@ -1,17 +1,17 @@
 import type { Pagination, PaginationOptions } from '../../shared/types/index.js';
 
 /**
- * Review type
+ * Review type enum
  */
 export type ReviewType = 'expert' | 'community';
 
 /**
- * Review
+ * Review entity from API response
  */
 export type Review = {
-  review_id: number | string;
-  proposal_id: number | string;
-  reviewer_id: number | string;
+  review_id: number;
+  proposal_id: number;
+  reviewer_id: number;
   review_type: ReviewType;
   overall_rating: string;
   feasibility_rating: string;
@@ -25,19 +25,36 @@ export type Review = {
 /**
  * Reviews API response
  */
-export type ReviewsResponse = {
+export type ReviewApiResponse = {
   reviews: Review[];
   pagination: Pagination;
 };
 
 /**
+ * Review database record
+ */
+export type ReviewRecord = {
+  reviewId: number;
+  proposalId: number | null;
+  reviewerId: number | null;
+  reviewType: string;
+  overallRating: string;
+  feasibilityRating: string;
+  viabilityRating: string;
+  desirabilityRating: string;
+  usefulnessRating: string;
+  createdAt: string | null;
+  rawJson: string;
+};
+
+/**
  * Options for fetching reviews
  */
-export type ReviewsFetchOptions = PaginationOptions & {
+export type ReviewFetchOptions = PaginationOptions & {
   /** Filter by reviewer ID */
-  reviewerId?: number | string;
+  reviewerId?: number;
   /** Filter by proposal ID */
-  proposalId?: number | string;
+  proposalId?: number;
   /** Filter by review type */
   type?: ReviewType;
 };

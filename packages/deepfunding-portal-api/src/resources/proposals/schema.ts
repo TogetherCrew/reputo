@@ -9,7 +9,7 @@ export const proposals = sqliteTable(
     id: integer('id').primaryKey(),
     roundId: integer('round_id').notNull(),
     poolId: integer('pool_id').notNull(),
-    proposerId: text('proposer_id').notNull(),
+    proposerId: integer('proposer_id').notNull(),
     title: text('title').notNull(),
     content: text('content').notNull(),
     link: text('link').notNull(),

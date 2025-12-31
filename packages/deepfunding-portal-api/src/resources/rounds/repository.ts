@@ -1,41 +1,49 @@
 import { eq } from 'drizzle-orm';
-import type { DeepFundingPortalDb } from '../../shared/types/db.js';
+import { getDb } from '../../db/client.js';
+import { type CreateManyOptions, chunkArray, DEFAULT_CHUNK_SIZE } from '../../shared/utils/index.js';
+import { normalizeRoundToRecord } from './normalize.js';
 import * as schema from './schema.js';
 import type { Round } from './types.js';
 
 /**
  * Create a round in the database
  */
-export function create(db: DeepFundingPortalDb, data: Round): void {
-  const drizzle = db.drizzle;
+export function create(data: Round): void {
+  const db = getDb();
+  db.drizzle.insert(schema.rounds).values(normalizeRoundToRecord(data)).run();
+}
 
-  // Extract pool IDs from pool_id array
-  const poolIds = data.pool_id && Array.isArray(data.pool_id) ? data.pool_id.map((p) => p.id) : [];
+/**
+ * Create multiple rounds in the database with chunking and transaction support
+ *
+ * @param items - Array of rounds to insert
+ * @param options - Optional configuration for chunk size
+ */
+export function createMany(items: Round[], options?: CreateManyOptions): void {
+  const db = getDb();
+  const chunkSize = options?.chunkSize ?? DEFAULT_CHUNK_SIZE;
+  const chunks = chunkArray(items, chunkSize);
 
-  drizzle
-    .insert(schema.rounds)
-    .values({
-      id: data.id,
-      name: data.name,
-      slug: data.slug,
-      description: data.description,
-      poolIds: JSON.stringify(poolIds),
-      rawJson: JSON.stringify(data),
-    })
-    .run();
+  db.sqlite.transaction(() => {
+    for (const chunk of chunks) {
+      db.drizzle.insert(schema.rounds).values(chunk.map(normalizeRoundToRecord)).run();
+    }
+  })();
 }
 
 /**
  * Find all rounds
  */
-export function findAll(db: DeepFundingPortalDb) {
+export function findAll() {
+  const db = getDb();
   return db.drizzle.select().from(schema.rounds).all();
 }
 
 /**
  * Find a round by ID
  */
-export function findById(db: DeepFundingPortalDb, id: number) {
+export function findById(id: number) {
+  const db = getDb();
   return db.drizzle.select().from(schema.rounds).where(eq(schema.rounds.id, id)).get();
 }
 
@@ -44,6 +52,7 @@ export function findById(db: DeepFundingPortalDb, id: number) {
  */
 export const roundsRepo = {
   create,
+  createMany,
   findAll,
   findById,
 };

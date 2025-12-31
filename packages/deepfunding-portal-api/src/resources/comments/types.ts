@@ -1,16 +1,20 @@
 import type { Pagination, PaginationOptions } from '../../shared/types/index.js';
 
 /**
- * Comment
+ * Comment entity from API response
  */
 export type Comment = {
-  comment_id: string;
-  parent_id: string;
+  comment_id: number;
+  parent_id: number;
   is_reply: boolean;
-  user_id: string;
-  proposal_id: string;
+  user_id: number;
+  proposal_id: number;
   content: string;
-  comment_votes: string;
+  comment_votes: number | string;
+  votes: {
+    up: number;
+    down: number;
+  };
   created_at: string;
   updated_at: string;
   [key: string]: unknown;
@@ -19,17 +23,33 @@ export type Comment = {
 /**
  * Comments API response
  */
-export type CommentsResponse = {
+export type CommentApiResponse = {
   comments: Comment[];
   pagination: Pagination;
 };
 
 /**
+ * Comment database record
+ */
+export type CommentRecord = {
+  commentId: number;
+  parentId: number;
+  isReply: boolean;
+  userId: number;
+  proposalId: number;
+  content: string;
+  commentVotes: string;
+  createdAt: string;
+  updatedAt: string;
+  rawJson: string;
+};
+
+/**
  * Options for fetching comments
  */
-export type CommentsFetchOptions = PaginationOptions & {
+export type CommentFetchOptions = PaginationOptions & {
   /** Filter by user ID */
-  userId?: string;
+  userId?: number;
   /** Filter by proposal ID */
-  proposalId?: string;
+  proposalId?: number;
 };

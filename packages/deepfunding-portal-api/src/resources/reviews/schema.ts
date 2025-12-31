@@ -1,4 +1,4 @@
-import { index, sqliteTable, text } from 'drizzle-orm/sqlite-core';
+import { index, integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 
 /**
  * Reviews table
@@ -6,9 +6,9 @@ import { index, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 export const reviews = sqliteTable(
   'reviews',
   {
-    reviewId: text('review_id').primaryKey(),
-    proposalId: text('proposal_id'),
-    reviewerId: text('reviewer_id'),
+    reviewId: integer('review_id').primaryKey(),
+    proposalId: integer('proposal_id'),
+    reviewerId: integer('reviewer_id'),
     reviewType: text('review_type').notNull(),
     overallRating: text('overall_rating').notNull(),
     feasibilityRating: text('feasibility_rating').notNull(),

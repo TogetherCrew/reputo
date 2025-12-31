@@ -7,7 +7,7 @@ export const commentVotes = sqliteTable(
   'comment_votes',
   {
     voterId: integer('voter_id').notNull(),
-    commentId: text('comment_id').notNull(),
+    commentId: integer('comment_id').notNull(),
     voteType: text('vote_type').notNull(),
     createdAt: text('created_at'),
     rawJson: text('raw_json').notNull(),

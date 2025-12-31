@@ -1,12 +1,10 @@
-import type { Pagination } from '../../shared/types/index.js';
-
 /**
- * Proposal
+ * Proposal entity from API response
  */
 export type Proposal = {
   id: number;
   pool_id: number;
-  proposer_id: string;
+  proposer_id: number;
   team_members: number[];
   title: string;
   content: string;
@@ -24,23 +22,41 @@ export type Proposal = {
 /**
  * Proposals API response
  */
-export type ProposalsResponse = {
+export type ProposalApiResponse = {
   proposals: Proposal[];
-  pagination: Pagination;
+};
+
+/**
+ * Proposal database record
+ */
+export type ProposalRecord = {
+  id: number;
+  roundId: number;
+  poolId: number;
+  proposerId: number;
+  title: string;
+  content: string;
+  link: string;
+  featureImage: string;
+  requestedAmount: string;
+  awardedAmount: string;
+  isAwarded: boolean;
+  isCompleted: boolean;
+  createdAt: string;
+  updatedAt: string | null;
+  teamMembers: string;
+  rawJson: string;
 };
 
 /**
  * Options for fetching proposals
  */
-export type ProposalsFetchOptions = {
+export type ProposalFetchOptions = {
   /** Filter by pool ID */
   poolId?: number;
 };
 
 /**
- * Context for ingesting proposals
+ * Proposal with round context for normalization
  */
-export type IngestProposalsContext = {
-  /** Round ID for the proposals */
-  round_id: number;
-};
+export type ProposalWithRound = Proposal & { round_id: number };

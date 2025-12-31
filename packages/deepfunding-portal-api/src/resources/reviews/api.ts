@@ -1,14 +1,14 @@
 import type { DeepFundingClient } from '../../api/client.js';
 import { endpoints } from '../../api/endpoints.js';
 import type { PaginatedFetcher } from '../../shared/types/index.js';
-import type { Review, ReviewsFetchOptions, ReviewsResponse } from './types.js';
+import type { Review, ReviewApiResponse, ReviewFetchOptions } from './types.js';
 
 /**
  * Fetch reviews with pagination
  */
 export async function* fetchReviews(
   client: DeepFundingClient,
-  options: ReviewsFetchOptions = {},
+  options: ReviewFetchOptions = {},
 ): PaginatedFetcher<Review> {
   let page = options.page ?? 1;
   const limit = options.limit ?? client.config.defaultPageLimit;
@@ -24,8 +24,7 @@ export async function* fetchReviews(
     if (options.type !== undefined) {
       params.type = options.type;
     }
-
-    const response = await client.get<ReviewsResponse>(endpoints.reviews(), params);
+    const response = await client.get<ReviewApiResponse>(endpoints.reviews(), params);
     yield { data: response.reviews, pagination: response.pagination };
 
     if (response.pagination.next_page === null) {

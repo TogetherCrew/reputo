@@ -1,20 +1,17 @@
 import type { DeepFundingClient } from '../../api/client.js';
 import { endpoints } from '../../api/endpoints.js';
-import type { PaginatedFetcher, PaginationOptions } from '../../shared/types/index.js';
-import type { UserListItem, UsersResponse } from './types.js';
+import type { PaginatedFetcher } from '../../shared/types/index.js';
+import type { User, UserApiResponse, UserFetchOptions } from './types.js';
 
 /**
  * Fetch all users with pagination
  */
-export async function* fetchUsers(
-  client: DeepFundingClient,
-  options: PaginationOptions = {},
-): PaginatedFetcher<UserListItem> {
+export async function* fetchUsers(client: DeepFundingClient, options: UserFetchOptions = {}): PaginatedFetcher<User> {
   let page = options.page ?? 1;
   const limit = options.limit ?? client.config.defaultPageLimit;
 
   while (true) {
-    const response = await client.get<UsersResponse>(endpoints.users(), {
+    const response = await client.get<UserApiResponse>(endpoints.users(), {
       page,
       limit,
     });

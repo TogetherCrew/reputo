@@ -1,35 +1,46 @@
 import type { Pagination, PaginationOptions } from '../../shared/types/index.js';
 
 /**
- * Vote type
+ * Vote type enum
  */
 export type VoteType = 'upvote' | 'downvote';
 
 /**
- * Comment vote
+ * CommentVote entity from API response
  */
 export type CommentVote = {
   voter_id: number;
-  comment_id: string;
+  comment_id: number;
   vote_type: VoteType;
   created_at: string;
   [key: string]: unknown;
 };
 
 /**
- * Comment votes API response
+ * CommentVotes API response
  */
-export type CommentVotesResponse = {
+export type CommentVoteApiResponse = {
   votes: CommentVote[];
   pagination: Pagination;
 };
 
 /**
+ * CommentVote database record
+ */
+export type CommentVoteRecord = {
+  voterId: number;
+  commentId: number;
+  voteType: string;
+  createdAt: string | null;
+  rawJson: string;
+};
+
+/**
  * Options for fetching comment votes
  */
-export type CommentVotesFetchOptions = PaginationOptions & {
+export type CommentVoteFetchOptions = PaginationOptions & {
   /** Filter by voter ID */
-  voterId?: number | string;
+  voterId?: number;
   /** Filter by comment ID */
-  commentId?: number | string;
+  commentId?: number;
 };

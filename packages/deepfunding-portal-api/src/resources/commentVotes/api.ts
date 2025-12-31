@@ -1,14 +1,14 @@
 import type { DeepFundingClient } from '../../api/client.js';
 import { endpoints } from '../../api/endpoints.js';
 import type { PaginatedFetcher } from '../../shared/types/index.js';
-import type { CommentVote, CommentVotesFetchOptions, CommentVotesResponse } from './types.js';
+import type { CommentVote, CommentVoteApiResponse, CommentVoteFetchOptions } from './types.js';
 
 /**
  * Fetch comment votes with pagination
  */
 export async function* fetchCommentVotes(
   client: DeepFundingClient,
-  options: CommentVotesFetchOptions = {},
+  options: CommentVoteFetchOptions = {},
 ): PaginatedFetcher<CommentVote> {
   let page = options.page ?? 1;
   const limit = options.limit ?? client.config.defaultPageLimit;
@@ -21,8 +21,7 @@ export async function* fetchCommentVotes(
     if (options.commentId !== undefined) {
       params.comment_id = options.commentId;
     }
-
-    const response = await client.get<CommentVotesResponse>(endpoints.commentVotes(), params);
+    const response = await client.get<CommentVoteApiResponse>(endpoints.commentVotes(), params);
     yield { data: response.votes, pagination: response.pagination };
 
     if (response.pagination.next_page === null) {

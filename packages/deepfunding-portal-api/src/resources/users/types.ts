@@ -1,9 +1,9 @@
-import type { Pagination } from '../../shared/types/index.js';
+import type { Pagination, PaginationOptions } from '../../shared/types/index.js';
 
 /**
- * User list item
+ * User entity from API response
  */
-export type UserListItem = {
+export type User = {
   id: number;
   collection_id: string;
   user_name: string;
@@ -15,7 +15,24 @@ export type UserListItem = {
 /**
  * Users API response
  */
-export type UsersResponse = {
-  users: UserListItem[];
+export type UserApiResponse = {
+  users: User[];
   pagination: Pagination;
 };
+
+/**
+ * User database record
+ */
+export type UserRecord = {
+  id: number;
+  collectionId: string;
+  userName: string;
+  email: string;
+  totalProposals: number;
+  rawJson: string;
+};
+
+/**
+ * Options for fetching users
+ */
+export type UserFetchOptions = PaginationOptions;

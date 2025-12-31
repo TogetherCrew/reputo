@@ -7,4 +7,10 @@ export type {
   DeepFundingPortalDb,
 } from '../shared/types/db.js';
 export { BOOTSTRAP_SQL } from './bootstrap.js';
-export { closeDeepFundingDb, createNewDeepFundingDb } from './client.js';
+export {
+  closeDb,
+  closeDeepFundingDb,
+  createNewDeepFundingDb,
+  getDb,
+  initializeDb,
+} from './client.js';
