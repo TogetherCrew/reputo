@@ -41,7 +41,7 @@ export interface ScaffoldResult {
 export function generateActivityScaffold(algorithmKey: string): string {
   const functionName = algorithmKey.replace(/-/g, '_');
 
-  return `import { generateSnapshotOutputKey, type Storage } from '@reputo/storage';
+  return `import { generateKey, type Storage } from '@reputo/storage';
 import pino from 'pino';
 import type {
   WorkerAlgorithmPayload,
@@ -108,7 +108,9 @@ export async function ${functionName}(
     const contentType = 'text/csv'; // or 'application/json', etc.
 
     // Upload output to storage using shared key generator
-    const outputKey = generateSnapshotOutputKey(snapshotId, algorithmKey);
+    // Extract extension from content type or default to csv
+    const ext = contentType === 'application/json' ? 'json' : 'csv';
+    const outputKey = generateKey('snapshot', snapshotId, \`\${algorithmKey}.\${ext}\`);
     await storage.putObject(outputKey, outputContent, contentType);
 
     logger.info('Uploaded ${algorithmKey} results', { outputKey });

@@ -4,6 +4,7 @@
  * Framework-agnostic S3 storage abstraction.
  */
 
+import { randomUUID } from 'node:crypto';
 import { GetObjectCommand, HeadObjectCommand, PutObjectCommand, type S3Client } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import {
@@ -19,7 +20,7 @@ import type {
   StorageConfig,
   StorageMetadata,
 } from './shared/types/index.js';
-import { detectKeyType, generateUploadKey, parseStorageKey } from './shared/utils/keys.js';
+import { detectKeyType, generateKey, parseStorageKey } from './shared/utils/keys.js';
 
 /**
  * Main storage class that wraps an S3Client instance.
@@ -89,7 +90,7 @@ export class Storage {
    * The client can use this URL to upload the file directly to S3
    * without going through your application server.
    *
-   * @param filename - Original filename (will be sanitized)
+   * @param filename - Original filename
    * @param contentType - MIME type of the file
    * @returns Upload information including the key and presigned URL
    * @throws {InvalidContentTypeError} If content type is not in allowlist
@@ -97,7 +98,7 @@ export class Storage {
    * @example
    * ```typescript
    * const result = await storage.presignPut('votes.csv', 'text/csv');
-   * // result.key: 'uploads/1732147200/votes.csv'
+   * // result.key: 'uploads/{uuid}/votes.csv'
    * // result.url: 'https://bucket.s3.amazonaws.com/...'
    * // result.expiresIn: 3600
    * ```
@@ -105,7 +106,8 @@ export class Storage {
   async presignPut(filename: string, contentType: string): Promise<PresignedUpload> {
     this.validateContentType(contentType);
 
-    const key = generateUploadKey(filename, contentType);
+    const uuid = randomUUID();
+    const key = generateKey('upload', uuid, filename);
 
     const command = new PutObjectCommand({
       Bucket: this.bucket,
@@ -141,10 +143,10 @@ export class Storage {
    * @example
    * ```typescript
    * // Verify an upload (validates content type)
-   * const result = await storage.verify('uploads/1732147200/votes.csv');
+   * const result = await storage.verify('uploads/{uuid}/votes.csv');
    *
-   * // Verify a snapshot output (skips content type validation)
-   * const result = await storage.verify('snapshots/abc123/outputs/voting_engagement.csv');
+   * // Verify a snapshot (skips content type validation)
+   * const result = await storage.verify('snapshots/abc123/voting_engagement.csv');
    * ```
    */
   async verify(key: string): Promise<{ key: string; metadata: StorageMetadata }> {
@@ -188,12 +190,10 @@ export class Storage {
    * Generates a presigned URL for downloading a file.
    *
    * Supports all key patterns:
-   * - Upload keys: `uploads/{timestamp}/{filename}.{ext}`
-   * - Snapshot inputs: `snapshots/{snapshotId}/inputs/{inputName}.{ext}`
-   * - Snapshot outputs: `snapshots/{snapshotId}/outputs/{algorithmKey}.{ext}`
+   * - Upload keys: `uploads/{uuid}/{filename}.{ext}`
+   * - Snapshot keys: `snapshots/{snapshotId}/{filename}.{ext}`
    *
-   * For upload keys, the timestamp is extracted from the key path.
-   * For snapshot keys, the timestamp is set to the current Unix timestamp.
+   * The timestamp in metadata is set to the current Unix timestamp for all key types.
    *
    * @param key - S3 key of the object to download
    * @returns Download information including presigned URL and metadata
@@ -203,10 +203,10 @@ export class Storage {
    * @example
    * ```typescript
    * // Download an upload
-   * const result = await storage.presignGet('uploads/1732147200/votes.csv');
+   * const result = await storage.presignGet('uploads/{uuid}/votes.csv');
    *
-   * // Download a snapshot output
-   * const result = await storage.presignGet('snapshots/abc123/outputs/voting_engagement.csv');
+   * // Download a snapshot
+   * const result = await storage.presignGet('snapshots/abc123/voting_engagement.csv');
    * ```
    */
   async presignGet(key: string): Promise<PresignedDownload> {
@@ -259,7 +259,7 @@ export class Storage {
    *
    * @example
    * ```typescript
-   * const buffer = await storage.getObject('uploads/1732147200/votes.csv');
+   * const buffer = await storage.getObject('uploads/{uuid}/votes.csv');
    * const text = buffer.toString('utf-8');
    * console.log(text);
    * ```
@@ -313,12 +313,12 @@ export class Storage {
    * ```typescript
    * // Upload with content type validation
    * const csvData = 'name,score\nAlice,100\nBob,95';
-   * const key = 'uploads/1732147200/results.csv';
+   * const key = 'uploads/{uuid}/results.csv';
    * await storage.putObject(key, csvData, 'text/csv');
    *
-   * // Snapshot output (skips content type validation)
-   * const outputKey = 'snapshots/abc123/outputs/voting_engagement.csv';
-   * await storage.putObject(outputKey, csvData, 'text/csv');
+   * // Snapshot (skips content type validation)
+   * const snapshotKey = 'snapshots/abc123/voting_engagement.csv';
+   * await storage.putObject(snapshotKey, csvData, 'text/csv');
    * ```
    */
   async putObject(key: string, body: Buffer | Uint8Array | string, contentType?: string): Promise<string> {
@@ -369,22 +369,17 @@ export class Storage {
   }
 
   /**
-   * Extracts timestamp from a parsed storage key.
+   * Gets timestamp for metadata.
    *
-   * For upload keys, returns the timestamp from the key path.
-   * For snapshot keys, returns the current Unix timestamp.
+   * Returns the current Unix timestamp for all key types.
    *
-   * @param parsed - Parsed storage key
+   * @param _parsed - Parsed storage key (unused, kept for API consistency)
    * @returns Unix timestamp in seconds
    *
    * @private
    */
-  private getTimestampFromParsedKey(parsed: ParsedStorageKey): number {
-    if (parsed.type === 'upload') {
-      return parsed.timestamp;
-    }
-
-    // For snapshot keys, use current timestamp
+  private getTimestampFromParsedKey(_parsed: ParsedStorageKey): number {
+    // Use current timestamp for all key types
     return Math.floor(Date.now() / 1000);
   }
 

@@ -48,15 +48,15 @@ voter3,proposal1,10`;
       snapshotId: 'test-snapshot-123',
       algorithmKey: 'voting_engagement',
       algorithmVersion: '1.0.0',
-      inputLocations: [{ key: 'votes', value: 'snapshots/123/inputs/votes.csv' }],
+      inputLocations: [{ key: 'votes', value: 'snapshots/123/votes.csv' }],
     };
 
     const result: WorkerAlgorithmResult = await voting_engagement(payload);
 
     // Verify storage operations
-    expect(mockStorage.getObject).toHaveBeenCalledWith('snapshots/123/inputs/votes.csv');
+    expect(mockStorage.getObject).toHaveBeenCalledWith('snapshots/123/votes.csv');
     expect(mockStorage.putObject).toHaveBeenCalledWith(
-      'snapshots/test-snapshot-123/outputs/voting_engagement.csv',
+      'snapshots/test-snapshot-123/voting_engagement.csv',
       expect.stringContaining('collection_id,voting_engagement'),
       'text/csv',
     );
@@ -64,7 +64,7 @@ voter3,proposal1,10`;
     // Verify result structure
     expect(result).toEqual({
       outputs: {
-        voting_engagement: 'snapshots/test-snapshot-123/outputs/voting_engagement.csv',
+        voting_engagement: 'snapshots/test-snapshot-123/voting_engagement.csv',
       },
     });
 
@@ -94,7 +94,7 @@ voter3,proposal1,10`;
       snapshotId: 'test-snapshot-123',
       algorithmKey: 'voting_engagement',
       algorithmVersion: '1.0.0',
-      inputLocations: [{ key: 'votes', value: 'snapshots/123/inputs/votes.csv' }],
+      inputLocations: [{ key: 'votes', value: 'snapshots/123/votes.csv' }],
     };
 
     await expect(voting_engagement(payload)).rejects.toThrow('S3 connection failed');
@@ -115,7 +115,7 @@ voter2,proposal1,3`;
       snapshotId: 'test-snapshot-123',
       algorithmKey: 'voting_engagement',
       algorithmVersion: '1.0.0',
-      inputLocations: [{ key: 'votes', value: 'snapshots/123/inputs/votes.csv' }],
+      inputLocations: [{ key: 'votes', value: 'snapshots/123/votes.csv' }],
     };
 
     const result = await voting_engagement(payload);
@@ -123,7 +123,7 @@ voter2,proposal1,3`;
     // Verify the function completes successfully
     expect(result).toEqual({
       outputs: {
-        voting_engagement: 'snapshots/test-snapshot-123/outputs/voting_engagement.csv',
+        voting_engagement: 'snapshots/test-snapshot-123/voting_engagement.csv',
       },
     });
 

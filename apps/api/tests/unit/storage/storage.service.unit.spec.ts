@@ -64,7 +64,7 @@ describe('StorageService', () => {
       expect(result).toHaveProperty('expiresIn');
       expect(result.url).toBe(mockUrl);
       expect(result.expiresIn).toBe(3600);
-      expect(result.key).toMatch(/^uploads\/\d+\/votes\.csv$/);
+      expect(result.key).toMatch(/^uploads\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/votes\.csv$/);
       expect(getSignedUrl).toHaveBeenCalledOnce();
     });
 
@@ -80,10 +80,10 @@ describe('StorageService', () => {
 
       expect(result.url).toBe(mockUrl);
       expect(result.expiresIn).toBe(3600);
-      expect(result.key).toMatch(/^uploads\/\d+\/notes\.txt$/);
+      expect(result.key).toMatch(/^uploads\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/notes\.txt$/);
     });
 
-    it('should sanitize filename in key', async () => {
+    it('should use filename as-is in key', async () => {
       const filename = 'my file with spaces.csv';
       const contentType = 'text/csv';
       const mockUrl = 'https://s3.amazonaws.com/presigned-put-url';
@@ -93,7 +93,9 @@ describe('StorageService', () => {
 
       const result = await service.presignPut(filename, contentType);
 
-      expect(result.key).toMatch(/^uploads\/\d+\/my-file-with-spaces\.csv$/);
+      expect(result.key).toMatch(
+        /^uploads\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/my file with spaces\.csv$/,
+      );
     });
 
     it('should throw InvalidContentTypeException for disallowed content type', async () => {
@@ -118,7 +120,8 @@ describe('StorageService', () => {
 
   describe('verifyUpload', () => {
     it('should return metadata when object exists and is valid', async () => {
-      const key = 'uploads/1699123456/test-file.csv';
+      const uuid = '550e8400-e29b-41d4-a716-446655440000';
+      const key = `uploads/${uuid}/test-file.csv`;
       const mockHeadResponse = {
         ContentLength: 5242880,
         ContentType: 'text/csv',
@@ -129,20 +132,17 @@ describe('StorageService', () => {
       const result = await service.verifyUpload(key);
 
       expect(mockS3Client.send).toHaveBeenCalledOnce();
-      expect(result).toEqual({
-        key,
-        metadata: {
-          filename: 'test-file.csv',
-          ext: 'csv',
-          size: 5242880,
-          contentType: 'text/csv',
-          timestamp: 1699123456,
-        },
-      });
+      expect(result.key).toBe(key);
+      expect(result.metadata.filename).toBe('test-file.csv');
+      expect(result.metadata.ext).toBe('csv');
+      expect(result.metadata.size).toBe(5242880);
+      expect(result.metadata.contentType).toBe('text/csv');
+      expect(result.metadata.timestamp).toBeGreaterThan(0);
     });
 
     it('should handle text/plain content type', async () => {
-      const key = 'uploads/1699123457/test-file.txt';
+      const uuid = '550e8400-e29b-41d4-a716-446655440000';
+      const key = `uploads/${uuid}/test-file.txt`;
       const mockHeadResponse = {
         ContentLength: 1024,
         ContentType: 'text/plain',
@@ -152,20 +152,17 @@ describe('StorageService', () => {
 
       const result = await service.verifyUpload(key);
 
-      expect(result).toEqual({
-        key,
-        metadata: {
-          filename: 'test-file.txt',
-          ext: 'txt',
-          size: 1024,
-          contentType: 'text/plain',
-          timestamp: 1699123457,
-        },
-      });
+      expect(result.key).toBe(key);
+      expect(result.metadata.filename).toBe('test-file.txt');
+      expect(result.metadata.ext).toBe('txt');
+      expect(result.metadata.size).toBe(1024);
+      expect(result.metadata.contentType).toBe('text/plain');
+      expect(result.metadata.timestamp).toBeGreaterThan(0);
     });
 
     it('should throw ObjectNotFoundException when object does not exist (404)', async () => {
-      const key = 'uploads/1699123458/non-existent.csv';
+      const uuid = '550e8400-e29b-41d4-a716-446655440000';
+      const key = `uploads/${uuid}/non-existent.csv`;
       const mockError = {
         name: 'NotFound',
         message: 'Not Found',
@@ -186,7 +183,8 @@ describe('StorageService', () => {
     });
 
     it('should throw ObjectNotFoundException when error name is NotFound', async () => {
-      const key = 'uploads/1699123459/missing.csv';
+      const uuid = '550e8400-e29b-41d4-a716-446655440000';
+      const key = `uploads/${uuid}/missing.csv`;
       const mockError = {
         name: 'NotFound',
         message: 'The specified key does not exist',
@@ -200,7 +198,8 @@ describe('StorageService', () => {
     });
 
     it('should throw FileTooLargeException when file exceeds maxSizeBytes', async () => {
-      const key = 'uploads/1699123460/large-file.csv';
+      const uuid = '550e8400-e29b-41d4-a716-446655440000';
+      const key = `uploads/${uuid}/large-file.csv`;
       const mockHeadResponse = {
         ContentLength: 20971520,
         ContentType: 'text/csv',
@@ -215,7 +214,8 @@ describe('StorageService', () => {
     });
 
     it('should throw InvalidContentTypeException when content type not allowed', async () => {
-      const key = 'uploads/1699123461/file.csv';
+      const uuid = '550e8400-e29b-41d4-a716-446655440000';
+      const key = `uploads/${uuid}/file.csv`;
       const mockHeadResponse = {
         ContentLength: 1024,
         ContentType: 'application/pdf',
@@ -230,7 +230,8 @@ describe('StorageService', () => {
     });
 
     it('should throw HeadObjectFailedException on other S3 errors', async () => {
-      const key = 'uploads/1699123462/error-file.csv';
+      const uuid = '550e8400-e29b-41d4-a716-446655440000';
+      const key = `uploads/${uuid}/error-file.csv`;
       const mockError = {
         name: 'InternalError',
         message: 'Internal Server Error',
@@ -248,7 +249,8 @@ describe('StorageService', () => {
     });
 
     it('should default to 0 size when ContentLength is undefined', async () => {
-      const key = 'uploads/1699123463/file.csv';
+      const uuid = '550e8400-e29b-41d4-a716-446655440000';
+      const key = `uploads/${uuid}/file.csv`;
       const mockHeadResponse = {
         ContentType: 'text/csv',
       };
@@ -261,7 +263,8 @@ describe('StorageService', () => {
     });
 
     it('should default to application/octet-stream when ContentType is undefined', async () => {
-      const key = 'uploads/1699123464/file.csv';
+      const uuid = '550e8400-e29b-41d4-a716-446655440000';
+      const key = `uploads/${uuid}/file.csv`;
       const mockHeadResponse = {
         ContentLength: 1024,
       };
@@ -276,7 +279,8 @@ describe('StorageService', () => {
 
   describe('presignGet', () => {
     it('should generate presigned download URL when object exists', async () => {
-      const key = 'uploads/1699123465/file.csv';
+      const uuid = '550e8400-e29b-41d4-a716-446655440000';
+      const key = `uploads/${uuid}/file.csv`;
       const mockHeadResponse = {
         ContentLength: 1024,
         ContentType: 'text/csv',
@@ -291,22 +295,19 @@ describe('StorageService', () => {
       const result = await service.presignGet(key);
 
       expect(mockS3Client.send).toHaveBeenCalledOnce();
-      expect(result).toEqual({
-        url: mockUrl,
-        expiresIn: 900,
-        metadata: {
-          filename: 'file.csv',
-          ext: 'csv',
-          size: 1024,
-          contentType: 'text/csv',
-          timestamp: 1699123465,
-        },
-      });
+      expect(result.url).toBe(mockUrl);
+      expect(result.expiresIn).toBe(900);
+      expect(result.metadata.filename).toBe('file.csv');
+      expect(result.metadata.ext).toBe('csv');
+      expect(result.metadata.size).toBe(1024);
+      expect(result.metadata.contentType).toBe('text/csv');
+      expect(result.metadata.timestamp).toBeGreaterThan(0);
       expect(getSignedUrl).toHaveBeenCalledOnce();
     });
 
     it('should verify object exists before generating download URL', async () => {
-      const key = 'uploads/1699123466/verified-file.txt';
+      const uuid = '550e8400-e29b-41d4-a716-446655440000';
+      const key = `uploads/${uuid}/verified-file.txt`;
       const mockHeadResponse = {
         ContentLength: 2048,
         ContentType: 'text/plain',
@@ -322,17 +323,16 @@ describe('StorageService', () => {
 
       expect(result.url).toBe(mockUrl);
       expect(result.expiresIn).toBe(900);
-      expect(result.metadata).toEqual({
-        filename: 'verified-file.txt',
-        ext: 'txt',
-        size: 2048,
-        contentType: 'text/plain',
-        timestamp: 1699123466,
-      });
+      expect(result.metadata.filename).toBe('verified-file.txt');
+      expect(result.metadata.ext).toBe('txt');
+      expect(result.metadata.size).toBe(2048);
+      expect(result.metadata.contentType).toBe('text/plain');
+      expect(result.metadata.timestamp).toBeGreaterThan(0);
     });
 
     it('should throw ObjectNotFoundException when object does not exist (404)', async () => {
-      const key = 'uploads/1699123467/missing-file.csv';
+      const uuid = '550e8400-e29b-41d4-a716-446655440000';
+      const key = `uploads/${uuid}/missing-file.csv`;
       const mockError = {
         name: 'NotFound',
         message: 'Not Found',
@@ -353,7 +353,8 @@ describe('StorageService', () => {
     });
 
     it('should throw ObjectNotFoundException when error name is NotFound', async () => {
-      const key = 'uploads/1699123468/not-found.csv';
+      const uuid = '550e8400-e29b-41d4-a716-446655440000';
+      const key = `uploads/${uuid}/not-found.csv`;
       const mockError = {
         name: 'NotFound',
       } as Error & { name?: string };
@@ -366,7 +367,8 @@ describe('StorageService', () => {
     });
 
     it('should throw HeadObjectFailedException on other S3 errors', async () => {
-      const key = 'uploads/1699123469/error-file.csv';
+      const uuid = '550e8400-e29b-41d4-a716-446655440000';
+      const key = `uploads/${uuid}/error-file.csv`;
       const mockError = {
         name: 'ServiceUnavailable',
         message: 'Service is temporarily unavailable',
@@ -384,7 +386,8 @@ describe('StorageService', () => {
     });
 
     it('should throw HeadObjectFailedException on network errors', async () => {
-      const key = 'uploads/1699123470/network-error.csv';
+      const uuid = '550e8400-e29b-41d4-a716-446655440000';
+      const key = `uploads/${uuid}/network-error.csv`;
       const mockError = new Error('Network timeout');
 
       mockS3Client.send = vi.fn().mockRejectedValue(mockError);

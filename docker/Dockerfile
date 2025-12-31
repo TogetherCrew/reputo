@@ -19,6 +19,7 @@ COPY packages/database/package.json packages/database/
 COPY packages/reputation-algorithms/package.json packages/reputation-algorithms/
 COPY packages/storage/package.json packages/storage/
 COPY packages/algorithm-validator/package.json packages/algorithm-validator/
+COPY packages/deepfunding-portal-api/package.json packages/deepfunding-portal-api/
 
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
     pnpm install --frozen-lockfile

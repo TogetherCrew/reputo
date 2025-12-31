@@ -271,7 +271,7 @@ export async function proposal_engagement(
 
     // 3. Serialize and upload output
     const outputCsv = stringify(scores, { header: true })
-    const outputKey = generateSnapshotOutputKey(snapshotId, algorithmKey)
+    const outputKey = generateKey('snapshot', snapshotId, `${algorithmKey}.csv`)
     await storage.putObject(outputKey, outputCsv, 'text/csv')
 
     // 4. Return output locations
