@@ -59,7 +59,7 @@ export const BOOTSTRAP_SQL: string[] = [
    );`,
 
   `CREATE TABLE IF NOT EXISTS milestones (
-      id INTEGER PRIMARY KEY,
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
       proposal_id INTEGER NOT NULL,
       title TEXT NOT NULL,
       status TEXT NOT NULL,
@@ -72,7 +72,7 @@ export const BOOTSTRAP_SQL: string[] = [
    );`,
 
   `CREATE TABLE IF NOT EXISTS reviews (
-      review_id INTEGER PRIMARY KEY,
+      review_id INTEGER PRIMARY KEY AUTOINCREMENT,
       proposal_id INTEGER,
       reviewer_id INTEGER,
       review_type TEXT NOT NULL,

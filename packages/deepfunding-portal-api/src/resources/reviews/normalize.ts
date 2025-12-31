@@ -8,10 +8,10 @@ import type { Review, ReviewRecord } from './types.js';
  *
  * @param data - The review data from the API
  * @returns The normalized review record for database insertion
+ * @note The reviewId is not included - the database will auto-generate it
  */
-export function normalizeReviewToRecord(data: Review): ReviewRecord {
+export function normalizeReviewToRecord(data: Review): Omit<ReviewRecord, 'reviewId'> {
   return {
-    reviewId: data.review_id,
     proposalId: data.proposal_id ?? null,
     reviewerId: data.reviewer_id ?? null,
     reviewType: data.review_type,

@@ -6,7 +6,7 @@ import { index, integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 export const reviews = sqliteTable(
   'reviews',
   {
-    reviewId: integer('review_id').primaryKey(),
+    reviewId: integer('review_id').primaryKey({ autoIncrement: true }),
     proposalId: integer('proposal_id'),
     reviewerId: integer('reviewer_id'),
     reviewType: text('review_type').notNull(),

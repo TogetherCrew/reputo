@@ -8,10 +8,10 @@ import type { Milestone, MilestoneRecord } from './types.js';
  *
  * @param data - The milestone data from the API
  * @returns The normalized milestone record for database insertion
+ * @note The ID is not included - the database will auto-generate it
  */
-export function normalizeMilestoneToRecord(data: Milestone): MilestoneRecord {
+export function normalizeMilestoneToRecord(data: Milestone): Omit<MilestoneRecord, 'id'> {
   return {
-    id: data.id,
     proposalId: data.proposal_id,
     title: data.title,
     status: data.status,

@@ -4,7 +4,7 @@ import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
  * Milestones table
  */
 export const milestones = sqliteTable('milestones', {
-  id: integer('id').primaryKey(),
+  id: integer('id').primaryKey({ autoIncrement: true }),
   proposalId: integer('proposal_id').notNull(),
   title: text('title').notNull(),
   status: text('status').notNull(),
