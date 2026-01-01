@@ -47,9 +47,4 @@ export type CommentRecord = {
 /**
  * Options for fetching comments
  */
-export type CommentFetchOptions = PaginationOptions & {
-  /** Filter by user ID */
-  userId?: number;
-  /** Filter by proposal ID */
-  proposalId?: number;
-};
+export type CommentFetchOptions = PaginationOptions;

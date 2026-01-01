@@ -27,7 +27,6 @@ describe('Database Client', () => {
       expect(tableExists(db, 'reviews')).toBe(true);
       expect(tableExists(db, 'comments')).toBe(true);
       expect(tableExists(db, 'comment_votes')).toBe(true);
-      expect(tableExists(db, 'meta')).toBe(true);
     });
 
     it('should close existing connection when re-initializing', () => {

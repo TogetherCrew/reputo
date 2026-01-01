@@ -31,7 +31,7 @@ export const API_CONFIG = {
  */
 export const S3_CONFIG = {
   /** S3 bucket name */
-  bucket: 'r',
+  bucket: '',
   /** AWS region */
   region: 'eu-central-1',
   /** AWS credentials - replace with your actual credentials */

@@ -37,11 +37,7 @@ interface ParsedCSV {
   truncated: boolean
 }
 
-function parseCSV(
-  text: string,
-  delimiter = ",",
-  maxRows?: number
-): ParsedCSV {
+function parseCSV(text: string, delimiter = ",", maxRows?: number): ParsedCSV {
   // Normalize newlines
   const src = text.replace(/\r\n/g, "\n").replace(/\r/g, "\n")
   const rows: string[][] = []

@@ -50,11 +50,4 @@ export type ReviewRecord = {
 /**
  * Options for fetching reviews
  */
-export type ReviewFetchOptions = PaginationOptions & {
-  /** Filter by reviewer ID */
-  reviewerId?: number;
-  /** Filter by proposal ID */
-  proposalId?: number;
-  /** Filter by review type */
-  type?: ReviewType;
-};
+export type ReviewFetchOptions = PaginationOptions;

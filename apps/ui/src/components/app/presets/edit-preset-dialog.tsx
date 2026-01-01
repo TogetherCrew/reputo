@@ -137,9 +137,14 @@ export function EditPresetDialog({
       defaults[presetInput.key] = presetInput.value
 
       // Backwards compatibility fallback: if preset used label-derived keys, try mapping.
-      if (defaults[presetInput.key] == null || defaults[presetInput.key] === "") {
+      if (
+        defaults[presetInput.key] == null ||
+        defaults[presetInput.key] === ""
+      ) {
         const fullDefInput = fullDefinition?.inputs.find(
-          (input) => input.label && input.label.toLowerCase().replace(/\s+/g, "_") === presetInput.key
+          (input) =>
+            input.label &&
+            input.label.toLowerCase().replace(/\s+/g, "_") === presetInput.key
         )
         if (fullDefInput?.key) {
           defaults[fullDefInput.key] = presetInput.value

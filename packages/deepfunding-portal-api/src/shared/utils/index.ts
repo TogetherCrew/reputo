@@ -2,6 +2,8 @@
  * Shared utility functions
  */
 
+export * from './pagination.js';
+
 /**
  * Default chunk size for batch operations
  */

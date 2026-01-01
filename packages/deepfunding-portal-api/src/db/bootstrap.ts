@@ -7,11 +7,6 @@ export const SCHEMA_VERSION = '1.0.0';
  * SQL statements to bootstrap the database schema
  */
 export const BOOTSTRAP_SQL: string[] = [
-  `CREATE TABLE IF NOT EXISTS meta (
-      key TEXT PRIMARY KEY,
-      value TEXT NOT NULL
-   );`,
-
   `CREATE TABLE IF NOT EXISTS rounds (
       id INTEGER PRIMARY KEY,
       name TEXT NOT NULL,

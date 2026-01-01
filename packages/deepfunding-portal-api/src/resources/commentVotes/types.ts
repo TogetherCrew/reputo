@@ -38,9 +38,4 @@ export type CommentVoteRecord = {
 /**
  * Options for fetching comment votes
  */
-export type CommentVoteFetchOptions = PaginationOptions & {
-  /** Filter by voter ID */
-  voterId?: number;
-  /** Filter by comment ID */
-  commentId?: number;
-};
+export type CommentVoteFetchOptions = PaginationOptions;

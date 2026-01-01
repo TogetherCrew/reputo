@@ -1,6 +1,7 @@
 import type { DeepFundingClient } from '../../api/client.js';
 import { endpoints } from '../../api/endpoints.js';
 import type { PaginatedFetcher } from '../../shared/types/index.js';
+import { validatePaginationOptions } from '../../shared/utils/index.js';
 import type { Milestone, MilestoneApiResponse, MilestoneFetchOptions } from './types.js';
 
 /**
@@ -14,11 +15,17 @@ export async function* fetchMilestones(
   client: DeepFundingClient,
   options: MilestoneFetchOptions = {},
 ): PaginatedFetcher<Milestone> {
-  let page = options.page ?? 1;
+  validatePaginationOptions(options);
+
+  let nextPage: number | null = options.page ?? 1;
   const limit = options.limit ?? client.config.defaultPageLimit;
 
-  while (true) {
-    const params: Record<string, string | number> = { page, limit };
+  while (nextPage !== null) {
+    const page = nextPage;
+    const params: Record<string, string | number> = {
+      page,
+      limit,
+    };
     const response = await client.get<MilestoneApiResponse>(endpoints.milestones(), params);
 
     // Flatten the nested structure: extract milestones from each group
@@ -37,10 +44,6 @@ export async function* fetchMilestones(
     }
 
     yield { data: flattenedMilestones, pagination: response.pagination };
-
-    if (response.pagination.next_page === null) {
-      break;
-    }
-    page = response.pagination.next_page;
+    nextPage = response.pagination.next_page;
   }
 }

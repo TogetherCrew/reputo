@@ -22,7 +22,6 @@ describe('Database Bootstrap', () => {
     it('should create all required tables', () => {
       const tableNames = getTableNames(db);
       const expectedTables = [
-        'meta',
         'rounds',
         'pools',
         'proposals',
@@ -37,10 +36,6 @@ describe('Database Bootstrap', () => {
         expect(tableExists(db, tableName)).toBe(true);
         expect(tableNames).toContain(tableName);
       }
-    });
-
-    it('should create meta table', () => {
-      expect(tableExists(db, 'meta')).toBe(true);
     });
 
     it('should create rounds table with correct structure', () => {
