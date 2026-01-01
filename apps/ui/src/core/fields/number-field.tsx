@@ -39,7 +39,7 @@ export function NumberField({ input, control }: NumberFieldProps) {
               {...field}
               onChange={(e) => {
                 const value = e.target.value
-                field.onChange(value === "" ? undefined : parseFloat(value))
+                field.onChange(value === "" ? "" : parseFloat(value))
               }}
               value={field.value ?? ""}
             />
