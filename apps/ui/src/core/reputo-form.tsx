@@ -27,6 +27,7 @@ interface ReputoFormProps {
   showResetButton?: boolean
   className?: string
   hiddenFields?: string[] // Field keys to hide from UI but keep in validation
+  compact?: boolean // Use compact vertical spacing
 }
 
 export function ReputoForm(props: ReputoFormProps) {
@@ -46,6 +47,7 @@ function ReputoFormInner({
   showResetButton = false,
   className = "",
   hiddenFields = [],
+  compact = false,
 }: ReputoFormProps) {
   // Build Zod schema from AlgorithmDefinition (if it has the right structure)
   const zodSchema =
@@ -130,7 +132,7 @@ function ReputoFormInner({
   return (
     <div className={className}>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <form onSubmit={form.handleSubmit(onSubmit)} className={compact ? "space-y-4" : "space-y-6"}>
           {visibleInputs.map((input) => renderField(input))}
 
           <div className="flex justify-end gap-2 pt-4">
