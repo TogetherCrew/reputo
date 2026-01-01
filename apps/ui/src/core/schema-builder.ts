@@ -121,15 +121,34 @@ export function buildSchemaFromAlgorithm(
  * Transforms an algorithm input to a form input
  */
 function transformInputToFormInput(
-    algoInput: { type: string; label: string },
+    algoInput: { key: string; type: string; label: string },
     fullDefinition: AlgorithmDefinition | null
 ): FormInput {
-    const inputKey = algoInput.label.toLowerCase().replace(/\s+/g, '_')
+    // Use the key from algoInput directly since we now pass it through
+    const inputKey = algoInput.key
 
-    // Try to find matching input in full definition for CSV config
+    // Try to find matching input in full definition for additional config
     const fullInput = fullDefinition?.inputs.find(
         (input) => input.key === inputKey || input.label === algoInput.label
     )
+
+    // Helper to extract common numeric props from a numeric input
+    const getNumericProps = () => {
+        if (fullInput && (fullInput.type === 'number' || fullInput.type === 'integer')) {
+            // Type assertion after narrowing - we know it's a NumericIoItem
+            const numInput = fullInput as { min?: number; max?: number; step?: number; default?: number; required?: boolean; uiHint?: { widget?: string }; description?: string }
+            return {
+                min: numInput.min,
+                max: numInput.max,
+                step: numInput.step,
+                default: numInput.default,
+                required: numInput.required !== false,
+                uiHint: numInput.uiHint,
+                description: numInput.description,
+            }
+        }
+        return { required: true }
+    }
 
     switch (algoInput.type) {
         case 'csv': {
@@ -167,19 +186,45 @@ function transformInputToFormInput(
         }
 
         case 'number':
+        case 'integer': {
+            const numericProps = getNumericProps()
+            
+            // Check if this should be rendered as a slider
+            if (numericProps.uiHint?.widget === 'slider') {
+                return {
+                    key: inputKey,
+                    label: algoInput.label,
+                    type: 'slider',
+                    description: numericProps.description,
+                    min: numericProps.min,
+                    max: numericProps.max,
+                    step: numericProps.step,
+                    default: numericProps.default,
+                    required: numericProps.required,
+                }
+            }
+
             return {
                 key: inputKey,
                 label: algoInput.label,
                 type: 'number',
-                required: true,
+                description: numericProps.description,
+                min: numericProps.min,
+                max: numericProps.max,
+                step: numericProps.step,
+                default: numericProps.default,
+                required: numericProps.required,
             }
+        }
 
         case 'boolean':
             return {
                 key: inputKey,
                 label: algoInput.label,
                 type: 'boolean',
-                required: true,
+                description: fullInput?.description,
+                required: fullInput && 'required' in fullInput ? fullInput.required !== false : true,
+                default: fullInput && 'default' in fullInput ? fullInput.default : false,
             }
 
         case 'string':
@@ -187,7 +232,8 @@ function transformInputToFormInput(
                 key: inputKey,
                 label: algoInput.label,
                 type: 'text',
-                required: true,
+                description: fullInput?.description,
+                required: fullInput && 'required' in fullInput ? fullInput.required !== false : true,
             }
 
         default:
