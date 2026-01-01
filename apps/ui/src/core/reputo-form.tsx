@@ -169,6 +169,9 @@ function getDefaultValues(
   schema.inputs.forEach((input) => {
     if (userDefaults[input.key] !== undefined) {
       defaults[input.key] = userDefaults[input.key]
+    } else if ("default" in input && input.default !== undefined) {
+      // Use the default value from the input definition
+      defaults[input.key] = input.default
     } else {
       // Set type-appropriate defaults
       const isRequired = "required" in input ? input.required !== false : true
@@ -177,10 +180,10 @@ function getDefaultValues(
           defaults[input.key] = false
           break
         case "number":
-          defaults[input.key] = "min" in input ? (input.min ?? 0) : 0
-          break
         case "slider":
-          defaults[input.key] = "min" in input ? input.min : 0
+          // Start empty - don't assume 0 or min value
+          // Validation will show error if required field is empty
+          defaults[input.key] = ""
           break
         case "text":
         case "enum":

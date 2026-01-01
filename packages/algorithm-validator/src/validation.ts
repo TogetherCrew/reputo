@@ -150,7 +150,9 @@ function buildFieldSchema(input: any): z.ZodType {
     case 'integer':
     case 'slider': {
       // 'slider' is a UI alias for number - used when uiHint.widget is 'slider'
-      let numSchema = z.number();
+      let numSchema = z.number({
+        error: `${label} must be a valid number`,
+      });
 
       if (input.min !== undefined) {
         numSchema = numSchema.min(input.min, `${label} must be at least ${input.min}`);
@@ -162,7 +164,49 @@ function buildFieldSchema(input: any): z.ZodType {
         numSchema = numSchema.int(`${label} must be a whole number`);
       }
 
-      schema = input.required === false ? numSchema.optional() : numSchema;
+      // Use preprocess to handle empty strings from form inputs
+      const preprocessedSchema = z.preprocess(
+        (val) => {
+          // Empty string means field was cleared
+          if (val === '' || val === null || val === undefined) {
+            return undefined;
+          }
+          // If it's already a number, return as-is
+          if (typeof val === 'number') {
+            return val;
+          }
+          // Try to parse string to number
+          if (typeof val === 'string') {
+            const num = parseFloat(val);
+            return Number.isNaN(num) ? undefined : num;
+          }
+          return val;
+        },
+        input.required === false ? numSchema.optional() : numSchema,
+      );
+
+      // For required fields, we need to ensure empty values show proper error
+      if (input.required !== false) {
+        schema = z
+          .preprocess((val) => {
+            if (val === '' || val === null || val === undefined) {
+              return undefined;
+            }
+            if (typeof val === 'number') {
+              return val;
+            }
+            if (typeof val === 'string') {
+              const num = parseFloat(val);
+              return Number.isNaN(num) ? undefined : num;
+            }
+            return val;
+          }, numSchema)
+          .refine((val) => val !== undefined, {
+            message: `${label} is required`,
+          });
+      } else {
+        schema = preprocessedSchema;
+      }
       break;
     }
 
