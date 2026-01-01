@@ -43,7 +43,7 @@ export default async function AlgorithmPage({ params }: PageProps) {
       <section className="grid gap-4">
         <div className="flex flex-col gap-2">
           <h1 className="text-2xl font-semibold">{algo.title}</h1>
-          <p className="text-muted-foreground max-w-2xl">{algo.description}</p>
+          <p className="text-muted-foreground max-w-2xl">{algo.summary}</p>
           <div className="flex flex-wrap items-center gap-4 text-sm">
             <span className="inline-flex items-center gap-2 text-muted-foreground">
               <Clock className="size-4" /> {algo.duration}

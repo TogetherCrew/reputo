@@ -131,23 +131,26 @@ export function CreatePresetDialog({
         name: data.name as string | undefined,
         description: data.description as string | undefined,
         inputs: algo.inputs.map((input, index) => {
-          const formFieldKey = input.label.toLowerCase().replace(/\s+/g, "_")
-          const value = data[formFieldKey]
-
-          formFieldKey
+          // IMPORTANT:
+          // The form schema uses the algorithm input key (e.g. "votes") as the field name.
+          // Do NOT derive keys from labels (e.g. "votes_csv") or you'll miss the real value
+          // and fallback to placeholders.
+          const value = data[input.key]
           const originalInputKey =
             fullDefinition?.inputs.find(
               (defInput) => defInput.label === input.label
             )?.key ||
             fullDefinition?.inputs[index]?.key ||
-            formFieldKey
+            input.key
 
           // Convert File object to filename string
           let inputValue: unknown
           if (value instanceof File) {
-            inputValue = value.name
+            // If we ever see a File here, it means the async upload hasn't completed yet.
+            // ReputoForm should block submission in that state, but keep this safe.
+            inputValue = ""
           } else {
-            inputValue = value || `placeholder_${originalInputKey}.csv`
+            inputValue = value || ""
           }
 
           return {

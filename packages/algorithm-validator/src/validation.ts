@@ -115,37 +115,80 @@ export function buildZodSchema(definition: AlgorithmDefinition): z.ZodObject<Rec
 /**
  * Builds a Zod schema for a single input field based on its type.
  *
- * Currently supports CSV input types. The function handles optional fields
- * and applies type-specific validations based on the IoItem type.
+ * Supports CSV, numeric (number/integer/slider), boolean, and string input types.
+ * 'slider' is a UI alias for number type used when uiHint.widget is 'slider'.
+ * The function handles optional fields and applies type-specific validations.
  *
- * @param input - The input field definition from AlgorithmDefinition
+ * @param input - The input field definition from AlgorithmDefinition or FormSchema
  * @returns A Zod schema for the input field
  *
  * @internal
  */
-function buildFieldSchema(input: CsvIoItem): z.ZodType {
+// biome-ignore lint/suspicious/noExplicitAny: Input type varies between AlgorithmDefinition and FormSchema
+function buildFieldSchema(input: any): z.ZodType {
   let schema: z.ZodType;
+  const label = input.label ?? input.key;
 
-  // Handle CSV input type
-  if (input.type === 'csv') {
-    // For server validation, CSV is validated as a string (storage key)
-    // Client-side uses File object validation
-    const isBrowser =
-      typeof globalThis !== 'undefined' && typeof (globalThis as { window?: unknown }).window !== 'undefined';
+  switch (input.type) {
+    case 'csv': {
+      // For server validation, CSV is validated as a string (storage key)
+      // Client-side uses File object validation
+      const isBrowser =
+        typeof globalThis !== 'undefined' && typeof (globalThis as { window?: unknown }).window !== 'undefined';
 
-    if (!isBrowser) {
-      // Server-side: validate as string (storage key)
-      schema = z.string().min(1, `${input.label ?? input.key} is required`);
-    } else {
-      // Client-side: accept either a File (for local validation) OR a string storage key (after upload)
-      schema = z.union([
-        buildCSVSchema(input.csv, input.label ?? input.key),
-        z.string().min(1, `${input.label ?? input.key} is required`),
-      ]);
+      if (!isBrowser) {
+        // Server-side: validate as string (storage key)
+        schema = z.string().min(1, `${label} is required`);
+      } else {
+        // Client-side: accept either a File (for local validation) OR a string storage key (after upload)
+        schema = z.union([buildCSVSchema(input.csv, label), z.string().min(1, `${label} is required`)]);
+      }
+      break;
     }
-  } else {
-    // Default to string for other types (extensible for future IoItem types)
-    schema = z.string();
+
+    case 'number':
+    case 'integer':
+    case 'slider': {
+      // 'slider' is a UI alias for number - used when uiHint.widget is 'slider'
+      let numSchema = z.number();
+
+      if (input.min !== undefined) {
+        numSchema = numSchema.min(input.min, `${label} must be at least ${input.min}`);
+      }
+      if (input.max !== undefined) {
+        numSchema = numSchema.max(input.max, `${label} must be at most ${input.max}`);
+      }
+      if (input.type === 'integer') {
+        numSchema = numSchema.int(`${label} must be a whole number`);
+      }
+
+      schema = input.required === false ? numSchema.optional() : numSchema;
+      break;
+    }
+
+    case 'boolean': {
+      const boolSchema = z.boolean();
+      schema = input.required === false ? boolSchema.optional() : boolSchema;
+      break;
+    }
+
+    case 'string': {
+      let strSchema = z.string();
+
+      if (typeof input.minLength === 'number') {
+        strSchema = strSchema.min(input.minLength, `${label} must be at least ${input.minLength} characters`);
+      }
+      if (typeof input.maxLength === 'number') {
+        strSchema = strSchema.max(input.maxLength, `${label} must be at most ${input.maxLength} characters`);
+      }
+
+      schema = input.required === false ? strSchema.optional() : strSchema;
+      break;
+    }
+
+    default:
+      // Default to string for unknown types
+      schema = z.string();
   }
 
   return schema;

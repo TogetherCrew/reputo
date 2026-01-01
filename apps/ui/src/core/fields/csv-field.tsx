@@ -1,7 +1,7 @@
 "use client"
 
 import { validateCSVContent } from "@reputo/algorithm-validator"
-import { AlertCircle, CheckCircle2 } from "lucide-react"
+import { AlertCircle, CheckCircle2, Download } from "lucide-react"
 import { useEffect, useState } from "react"
 import type { Control, FieldValues } from "react-hook-form"
 import { useFormContext } from "react-hook-form"
@@ -231,23 +231,39 @@ export function CSVField({ input, control }: CSVFieldProps) {
             )}
 
             {input.csv?.columns && input.csv.columns.length > 0 && (
-              <div className="space-y-2">
-                <div className="text-sm font-medium">Expected Columns:</div>
-                <div className="flex flex-wrap gap-2">
+              <div className="space-y-3">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Download className="size-3.5" />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const columns = input.csv?.columns || []
+                      const headers = columns.map((col: { key: string }) => col.key).join(",")
+                      const blob = new Blob([headers + "\n"], { type: "text/csv" })
+                      const url = URL.createObjectURL(blob)
+                      const a = document.createElement("a")
+                      a.href = url
+                      a.download = `${input.key}_sample.csv`
+                      document.body.appendChild(a)
+                      a.click()
+                      document.body.removeChild(a)
+                      URL.revokeObjectURL(url)
+                    }}
+                    className="hover:text-foreground hover:underline transition-colors"
+                  >
+                    Download sample template
+                  </button>
+                </div>
+                <div className="flex flex-wrap gap-1.5">
                   {input.csv.columns.map((column: any) => (
                     <Badge
                       key={column.key}
-                      variant="secondary"
-                      className="text-xs"
+                      variant="outline"
+                      className="text-xs font-mono"
                     >
                       {column.key}
-                      {column.aliases && column.aliases.length > 0 && (
-                        <span className="text-muted-foreground ml-1">
-                          (or {column.aliases.join(", ")})
-                        </span>
-                      )}
                       {column.required !== false && (
-                        <span className="text-destructive ml-1">*</span>
+                        <span className="text-destructive ml-0.5">*</span>
                       )}
                     </Badge>
                   ))}

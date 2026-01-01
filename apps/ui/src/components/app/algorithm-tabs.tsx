@@ -1,6 +1,7 @@
 "use client"
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
+import ReactMarkdown from "react-markdown"
 import { AlgorithmPresets } from "@/components/app/presets/algorithm-presets"
 import { AlgorithmSnapshots } from "@/components/app/snapshots/algorithm-snapshots"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -11,7 +12,7 @@ export function AlgorithmTabs({ algo }: { algo: Algorithm }) {
   const pathname = usePathname()
   const router = useRouter()
 
-  const selected = searchParams.get("tab") ?? "presets"
+  const selected = searchParams.get("tab") ?? "description"
 
   const handleChange = (value: string) => {
     const params = new URLSearchParams(searchParams.toString())
@@ -22,9 +23,15 @@ export function AlgorithmTabs({ algo }: { algo: Algorithm }) {
   return (
     <Tabs value={selected} onValueChange={handleChange} className="mt-4">
       <TabsList>
+        <TabsTrigger value="description">Description</TabsTrigger>
         <TabsTrigger value="presets">Presets</TabsTrigger>
         <TabsTrigger value="snapshots">Snapshots</TabsTrigger>
       </TabsList>
+      <TabsContent value="description" className="mt-6">
+        <div className="prose prose-sm dark:prose-invert max-w-none">
+          <ReactMarkdown>{algo.description}</ReactMarkdown>
+        </div>
+      </TabsContent>
       <TabsContent value="presets" className="mt-6">
         <AlgorithmPresets algo={algo} />
       </TabsContent>

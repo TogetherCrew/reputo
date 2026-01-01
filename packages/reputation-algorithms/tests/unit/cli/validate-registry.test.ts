@@ -141,11 +141,25 @@ describe('CLI: validateRegistry', () => {
         content: {
           key: 'test_algorithm',
           name: 'Test Algorithm',
-          category: 'Custom',
+          category: 'Activity',
+          summary: 'Test',
           description: 'Test',
           version: '1.0.0',
           inputs: [],
-          outputs: [{ key: 'result', type: 'score_map', entity: 'user' }],
+          outputs: [
+            {
+              key: 'result',
+              type: 'csv',
+              csv: {
+                hasHeader: true,
+                delimiter: ',',
+                columns: [
+                  { key: 'collection_id', type: 'string', description: 'User identifier' },
+                  { key: 'result', type: 'number', description: 'Result score' },
+                ],
+              },
+            },
+          ],
           runtime: {
             taskQueue: 'typescript-worker',
             activity: 'test_algorithm',
@@ -338,15 +352,23 @@ describe('CLI: validateRegistry', () => {
       const algorithmDef = {
         key: 'test_algorithm',
         name: 'Test Algorithm',
-        category: 'Custom',
+        category: 'Activity',
+        summary: 'A test algorithm',
         description: 'A test algorithm',
         version: '1.0.0',
         inputs: [],
         outputs: [
           {
             key: 'result',
-            type: 'score_map',
-            entity: 'user',
+            type: 'csv',
+            csv: {
+              hasHeader: true,
+              delimiter: ',',
+              columns: [
+                { key: 'collection_id', type: 'string', description: 'User identifier' },
+                { key: 'result', type: 'number', description: 'Result score' },
+              ],
+            },
           },
         ],
         runtime: {
@@ -420,11 +442,25 @@ describe('CLI: validateRegistry', () => {
       const algorithmDef = {
         key: 'test_algorithm',
         name: 'Test Algorithm',
-        category: 'Custom',
+        category: 'Activity',
+        summary: 'Test',
         description: 'Test',
         version: '1.0.0',
         inputs: [],
-        outputs: [{ key: 'result', type: 'score_map', entity: 'user' }],
+        outputs: [
+          {
+            key: 'result',
+            type: 'csv',
+            csv: {
+              hasHeader: true,
+              delimiter: ',',
+              columns: [
+                { key: 'collection_id', type: 'string', description: 'User identifier' },
+                { key: 'result', type: 'number', description: 'Result score' },
+              ],
+            },
+          },
+        ],
         runtime: {
           taskQueue: 'typescript-worker',
           activity: 'test_algorithm',
@@ -452,11 +488,25 @@ describe('CLI: validateRegistry', () => {
         const algorithmDef = {
           key: algo.key,
           name: algo.key.replace(/_/g, ' '),
-          category: 'Custom',
+          category: 'Activity',
+          summary: 'Test algorithm',
           description: 'Test algorithm',
           version: algo.version,
           inputs: [],
-          outputs: [{ key: 'result', type: 'score_map', entity: 'user' }],
+          outputs: [
+            {
+              key: 'result',
+              type: 'csv',
+              csv: {
+                hasHeader: true,
+                delimiter: ',',
+                columns: [
+                  { key: 'collection_id', type: 'string', description: 'User identifier' },
+                  { key: 'result', type: 'number', description: 'Result score' },
+                ],
+              },
+            },
+          ],
           runtime: {
             taskQueue: 'typescript-worker',
             activity: algo.key,
