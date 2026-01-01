@@ -124,6 +124,12 @@
                     }
                 ]
             }
+        },
+        {
+            "key": "contribution_score_details",
+            "label": "Contribution Score Details (JSON)",
+            "description": "Full per-user contribution score breakdown including per-comment scoring components and intermediate values.",
+            "type": "json"
         }
     ],
     "runtime": {

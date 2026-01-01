@@ -21,3 +21,19 @@ TEMPORAL_ADDRESS=localhost:7233
 TEMPORAL_NAMESPACE=default
 TEMPORAL_TASK_QUEUE=typescript-worker
 
+# DeepFunding Portal API Configuration
+# Base URL of the DeepFunding Portal API
+DEEPFUNDING_API_BASE_URL=https://deepfunding.ai/wp-json/deepfunding/v1
+# API key for authentication
+DEEPFUNDING_API_KEY=your-api-key
+# Request timeout in milliseconds
+DEEPFUNDING_API_REQUEST_TIMEOUT_MS=45000
+# Maximum concurrent requests
+DEEPFUNDING_API_CONCURRENCY=4
+# Default page limit for paginated requests
+DEEPFUNDING_API_DEFAULT_PAGE_LIMIT=500
+# Retry configuration
+DEEPFUNDING_API_RETRY_MAX_ATTEMPTS=7
+DEEPFUNDING_API_RETRY_BASE_DELAY_MS=500
+DEEPFUNDING_API_RETRY_MAX_DELAY_MS=20000
+

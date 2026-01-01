@@ -21,6 +21,7 @@
     },
     "dependencies": {
         "@aws-sdk/client-s3": "^3.922.0",
+        "@reputo/deepfunding-portal-api": "workspace:*",
         "@reputo/storage": "workspace:*",
         "@temporalio/activity": "^1.11.3",
         "@temporalio/worker": "^1.11.3",

@@ -7,7 +7,7 @@ export default registerAs('mongoDB', () => ({
   user: process.env.MONGODB_USER,
   password: process.env.MONGODB_PASSWORD,
   dbName: process.env.MONGODB_DB_NAME,
-  uri: `mongodb://${process.env.MONGODB_USER}:${process.env.MONGODB_PASSWORD}@${process.env.MONGODB_HOST}:${process.env.MONGODB_PORT}/${process.env.MONGODB_DB_NAME}?authSource=admin&replicaSet=rs0`,
+  uri: `mongodb://${process.env.MONGODB_USER}:${process.env.MONGODB_PASSWORD}@${process.env.MONGODB_HOST}:${process.env.MONGODB_PORT}/${process.env.MONGODB_DB_NAME}?authSource=admin&replicaSet=rs0&directConnection=true`,
 }));
 
 export const mongoDBConfigSchema = {

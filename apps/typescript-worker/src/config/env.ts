@@ -45,6 +45,28 @@ export interface TemporalConfig {
 }
 
 /**
+ * DeepFunding Portal API configuration.
+ */
+export interface DeepFundingConfig {
+  /** Base URL of the DeepFunding Portal API */
+  baseUrl: string;
+  /** API key for authentication */
+  apiKey: string;
+  /** Request timeout in milliseconds */
+  requestTimeoutMs: number;
+  /** Maximum concurrent requests */
+  concurrency: number;
+  /** Default page limit for paginated requests */
+  defaultPageLimit: number;
+  /** Retry configuration */
+  retry: {
+    maxAttempts: number;
+    baseDelayMs: number;
+    maxDelayMs: number;
+  };
+}
+
+/**
  * Complete configuration object.
  */
 export interface Config {
@@ -54,6 +76,8 @@ export interface Config {
   storage: StorageConfig;
   /** Temporal configuration */
   temporal: TemporalConfig;
+  /** DeepFunding Portal API configuration */
+  deepFunding: DeepFundingConfig;
 }
 
 /**
@@ -96,6 +120,21 @@ export function loadConfig(): Config {
     throw new Error('TEMPORAL_ADDRESS environment variable is required');
   }
 
+  // DeepFunding Portal API configuration
+  const deepFundingBaseUrl = process.env.DEEPFUNDING_API_BASE_URL || 'https://deepfunding.ai/wp-json/deepfunding/v1';
+  const deepFundingApiKey = process.env.DEEPFUNDING_API_KEY;
+  if (!deepFundingApiKey) {
+    throw new Error('DEEPFUNDING_API_KEY environment variable is required');
+  }
+
+  const deepFundingRequestTimeoutMs = Number(process.env.DEEPFUNDING_API_REQUEST_TIMEOUT_MS || 45_000);
+  const deepFundingConcurrency = Number(process.env.DEEPFUNDING_API_CONCURRENCY || 4);
+  const deepFundingDefaultPageLimit = Number(process.env.DEEPFUNDING_API_DEFAULT_PAGE_LIMIT || 500);
+
+  const deepFundingRetryMaxAttempts = Number(process.env.DEEPFUNDING_API_RETRY_MAX_ATTEMPTS || 7);
+  const deepFundingRetryBaseDelayMs = Number(process.env.DEEPFUNDING_API_RETRY_BASE_DELAY_MS || 500);
+  const deepFundingRetryMaxDelayMs = Number(process.env.DEEPFUNDING_API_RETRY_MAX_DELAY_MS || 20_000);
+
   return {
     app: {
       nodeEnv,
@@ -113,6 +152,18 @@ export function loadConfig(): Config {
       address: temporalAddress,
       namespace: temporalNamespace,
       taskQueue: temporalTaskQueue,
+    },
+    deepFunding: {
+      baseUrl: deepFundingBaseUrl,
+      apiKey: deepFundingApiKey,
+      requestTimeoutMs: deepFundingRequestTimeoutMs,
+      concurrency: deepFundingConcurrency,
+      defaultPageLimit: deepFundingDefaultPageLimit,
+      retry: {
+        maxAttempts: deepFundingRetryMaxAttempts,
+        baseDelayMs: deepFundingRetryBaseDelayMs,
+        maxDelayMs: deepFundingRetryMaxDelayMs,
+      },
     },
   };
 }

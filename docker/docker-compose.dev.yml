@@ -47,9 +47,9 @@ services:
             - ../apps/api/src:/prod/api/src:ro
         depends_on:
             mongodb:
-                condition: service_started
+                condition: service_healthy
             temporal:
-                condition: service_started
+                condition: service_healthy
         env_file:
             - ./env/api.env
 
@@ -143,7 +143,7 @@ services:
             - ../apps/typescript-worker/src:/prod/typescript-worker/src:ro
         depends_on:
             temporal:
-                condition: service_started
+                condition: service_healthy
         env_file:
             - ./env/typescript-worker.env
 
@@ -159,8 +159,8 @@ services:
             - ../apps/workflows/src:/prod/workflows/src:ro
         depends_on:
             mongodb:
-                condition: service_started
+                condition: service_healthy
             temporal:
-                condition: service_started
+                condition: service_healthy
         env_file:
             - ./env/workflows.env

@@ -229,6 +229,9 @@ importers:
       '@aws-sdk/client-s3':
         specifier: ^3.922.0
         version: 3.933.0
+      '@reputo/deepfunding-portal-api':
+        specifier: workspace:*
+        version: link:../../packages/deepfunding-portal-api
       '@reputo/storage':
         specifier: workspace:*
         version: link:../../packages/storage
@@ -618,7 +621,7 @@ importers:
         version: 5.9.2
       vitest:
         specifier: 3.2.4
-        version: 3.2.4(@types/node@22.19.1)(@vitest/ui@3.2.4)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1)
+        version: 3.2.4(@types/debug@4.1.12)(@types/node@22.19.1)(@vitest/ui@3.2.4)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1)
 
   packages/reputation-algorithms:
     devDependencies:
