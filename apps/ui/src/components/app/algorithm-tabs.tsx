@@ -28,8 +28,10 @@ export function AlgorithmTabs({ algo }: { algo: Algorithm }) {
         <TabsTrigger value="snapshots">Snapshots</TabsTrigger>
       </TabsList>
       <TabsContent value="description" className="mt-6">
-        <div className="prose prose-sm dark:prose-invert max-w-none">
-          <ReactMarkdown>{algo.description}</ReactMarkdown>
+        <div className="bg-muted/50 rounded-lg border p-6">
+          <div className="prose prose-sm dark:prose-invert max-w-none prose-headings:mt-4 prose-headings:mb-2 prose-p:my-2 prose-ul:my-2 prose-li:my-0.5">
+            <ReactMarkdown>{algo.description}</ReactMarkdown>
+          </div>
         </div>
       </TabsContent>
       <TabsContent value="presets" className="mt-6">

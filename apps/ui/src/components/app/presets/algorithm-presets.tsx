@@ -48,6 +48,16 @@ import { EditPresetDialog } from "./edit-preset-dialog"
 import { PresetDeleteDialog } from "./preset-delete-dialog"
 import { PresetDetailsDialog } from "./preset-details-dialog"
 
+/**
+ * Convert snake_case or camelCase to Title Case
+ */
+function toTitleCase(str: string): string {
+  return str
+    .replace(/_/g, " ")
+    .replace(/([a-z])([A-Z])/g, "$1 $2")
+    .replace(/\b\w/g, (c) => c.toUpperCase())
+}
+
 export function AlgorithmPresets({ algo }: { algo?: Algorithm }) {
   const router = useRouter()
   const pathname = usePathname()
@@ -167,7 +177,6 @@ export function AlgorithmPresets({ algo }: { algo?: Algorithm }) {
           algo={algo}
           onCreatePreset={handleCreatePreset}
           isLoading={createPresetMutation.isPending}
-          error={createPresetMutation.error}
         />
       </div>
 
@@ -241,7 +250,7 @@ export function AlgorithmPresets({ algo }: { algo?: Algorithm }) {
                   </TableCell>
                   <TableCell className="max-w-[250px]">
                     <div className="flex flex-col">
-                      <div className="font-medium truncate">{preset.key}</div>
+                      <div className="font-medium truncate">{toTitleCase(preset.key)}</div>
                       <div className="text-muted-foreground text-xs truncate">
                         {preset.description || `Algorithm preset`}
                       </div>

@@ -27,6 +27,7 @@ interface ReputoFormProps {
   showResetButton?: boolean
   className?: string
   hiddenFields?: string[] // Field keys to hide from UI but keep in validation
+  compact?: boolean // Use compact vertical spacing
 }
 
 export function ReputoForm(props: ReputoFormProps) {
@@ -46,6 +47,7 @@ function ReputoFormInner({
   showResetButton = false,
   className = "",
   hiddenFields = [],
+  compact = false,
 }: ReputoFormProps) {
   // Build Zod schema from AlgorithmDefinition (if it has the right structure)
   const zodSchema =
@@ -130,7 +132,7 @@ function ReputoFormInner({
   return (
     <div className={className}>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <form onSubmit={form.handleSubmit(onSubmit)} className={compact ? "space-y-4" : "space-y-6"}>
           {visibleInputs.map((input) => renderField(input))}
 
           <div className="flex justify-end gap-2 pt-4">
@@ -169,6 +171,9 @@ function getDefaultValues(
   schema.inputs.forEach((input) => {
     if (userDefaults[input.key] !== undefined) {
       defaults[input.key] = userDefaults[input.key]
+    } else if ("default" in input && input.default !== undefined) {
+      // Use the default value from the input definition
+      defaults[input.key] = input.default
     } else {
       // Set type-appropriate defaults
       const isRequired = "required" in input ? input.required !== false : true
@@ -177,10 +182,10 @@ function getDefaultValues(
           defaults[input.key] = false
           break
         case "number":
-          defaults[input.key] = "min" in input ? (input.min ?? 0) : 0
-          break
         case "slider":
-          defaults[input.key] = "min" in input ? input.min : 0
+          // Start empty - don't assume 0 or min value
+          // Validation will show error if required field is empty
+          defaults[input.key] = ""
           break
         case "text":
         case "enum":

@@ -4,9 +4,9 @@ import {
   type AlgorithmDefinition,
   getAlgorithmDefinition,
 } from "@reputo/reputation-algorithms"
-import { AlertCircle, Plus } from "lucide-react"
+import { Plus } from "lucide-react"
 import { useMemo, useState } from "react"
-import { Alert, AlertDescription } from "@/components/ui/alert"
+import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -25,7 +25,6 @@ interface CreatePresetDialogProps {
   algo?: Algorithm
   onCreatePreset: (data: CreateAlgorithmPresetDto) => Promise<void>
   isLoading: boolean
-  error?: unknown
 }
 
 interface BackendError {
@@ -40,15 +39,13 @@ interface BackendError {
 }
 
 /**
- * Parse backend error response to extract field errors
+ * Parse backend error response to extract error messages
  */
-function parseBackendError(
-  error: unknown
-): { field: string; message: string }[] {
-  const errors: { field: string; message: string }[] = []
+function parseBackendErrorMessages(error: unknown): string[] {
+  const messages: string[] = []
 
   if (!error || typeof error !== "object") {
-    return errors
+    return messages
   }
 
   const backendError = error as BackendError
@@ -56,7 +53,7 @@ function parseBackendError(
   // Handle nested message structure
   if (backendError.message) {
     if (typeof backendError.message === "string") {
-      errors.push({ field: "_general", message: backendError.message })
+      messages.push(backendError.message)
     } else if (
       typeof backendError.message === "object" &&
       backendError.message.message
@@ -67,29 +64,21 @@ function parseBackendError(
 
       messageArray.forEach((msg) => {
         if (typeof msg === "string") {
-          // Try to extract field name from error message
-          // Format: "fieldName must be..."
-          const fieldMatch = msg.match(/^(\w+)\s+/)
-          const field = fieldMatch ? fieldMatch[1] : "_general"
-          errors.push({ field, message: msg })
+          messages.push(msg)
         }
       })
     }
   }
 
-  return errors
+  return messages
 }
 
 export function CreatePresetDialog({
   algo,
   onCreatePreset,
   isLoading,
-  error,
 }: CreatePresetDialogProps) {
   const [isOpen, setIsOpen] = useState(false)
-  const [formErrors, setFormErrors] = useState<
-    { field: string; message: string }[]
-  >([])
 
   // Generate schema from algorithm
   const schema = useMemo(() => {
@@ -109,19 +98,8 @@ export function CreatePresetDialog({
     }
   }, [algo])
 
-  // Parse backend errors
-  const backendErrors = useMemo(() => {
-    if (!error) return []
-    return parseBackendError(error)
-  }, [error])
-
-  // Combine form errors and backend errors
-  const allErrors = [...formErrors, ...backendErrors]
-
   const handleSubmit = async (data: Record<string, unknown>) => {
     if (!algo) return
-
-    setFormErrors([])
 
     try {
       // Transform form data to CreateAlgorithmPresetDto format
@@ -164,17 +142,17 @@ export function CreatePresetDialog({
 
       // Close dialog on success
       setIsOpen(false)
+      toast.success("Preset created successfully")
     } catch (err) {
-      // Don't close dialog on error - errors will be displayed
-      const parsedErrors = parseBackendError(err)
-      setFormErrors(parsedErrors)
-    }
-  }
-
-  const handleOpenChange = (open: boolean) => {
-    setIsOpen(open)
-    if (!open) {
-      setFormErrors([])
+      // Show errors as toasts instead of in-modal alerts
+      const errorMessages = parseBackendErrorMessages(err)
+      if (errorMessages.length > 0) {
+        errorMessages.forEach((msg) => {
+          toast.error(msg)
+        })
+      } else {
+        toast.error("Failed to create preset. Please try again.")
+      }
     }
   }
 
@@ -183,47 +161,36 @@ export function CreatePresetDialog({
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button size="sm">
           <Plus className="mr-2 size-4" /> Create New Preset
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-lg max-h-[85vh] flex flex-col p-0">
+        <DialogHeader className="flex-shrink-0 px-6 pt-6 pb-4 border-b">
           <DialogTitle>Create New Preset</DialogTitle>
           <DialogDescription>
-            Name your preset and configure the required inputs for {algo.title}.
+            Configure the inputs for {algo.title}
           </DialogDescription>
         </DialogHeader>
 
-        {/* Display general errors */}
-        {allErrors.filter((e) => e.field === "_general").length > 0 && (
-          <Alert variant="destructive">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>
-              {allErrors
-                .filter((e) => e.field === "_general")
-                .map((e) => (
-                  <div key={e.message}>{e.message}</div>
-                ))}
-            </AlertDescription>
-          </Alert>
-        )}
-
-        {/* Dynamic form */}
-        <ReputoForm
-          schema={schema}
-          onSubmit={handleSubmit}
-          submitLabel="Create Preset"
-          defaultValues={{
-            key: algo.id,
-            version: "1.0.0",
-          }}
-          hiddenFields={["key", "version"]}
-          className="mt-4"
-        />
+        {/* Scrollable form area */}
+        <div className="flex-1 overflow-y-auto px-6 py-4">
+          <ReputoForm
+            schema={schema}
+            onSubmit={handleSubmit}
+            submitLabel="Create Preset"
+            defaultValues={{
+              key: algo.id,
+              version: "1.0.0",
+            }}
+            hiddenFields={["key", "version"]}
+            compact
+          />
+        </div>
       </DialogContent>
     </Dialog>
   )
 }
+
