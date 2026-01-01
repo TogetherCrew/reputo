@@ -241,7 +241,7 @@ export function CSVField({ input, control }: CSVFieldProps) {
                       const headers = columns
                         .map((col: { key: string }) => col.key)
                         .join(",")
-                      const blob = new Blob([headers + "\n"], {
+                      const blob = new Blob([`${headers}\n`], {
                         type: "text/csv",
                       })
                       const url = URL.createObjectURL(blob)
