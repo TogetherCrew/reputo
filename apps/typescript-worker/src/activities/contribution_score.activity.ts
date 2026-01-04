@@ -96,7 +96,7 @@ interface ContributionScoreParams {
  * Output record for contribution_score algorithm
  */
 interface ContributionScoreResult {
-  collection_id: string;
+  user_id: number;
   contribution_score: number;
 }
 
@@ -460,35 +460,44 @@ function computeContributionScore(
     allCommentDetails.push(detail);
   }
 
-  const usersDetails: ContributionScoreUserDetail[] = [];
-  // Include all users who made comments (even if all were skipped)
-  for (const [userId, commentsForUser] of userCommentDetails.entries()) {
-    const score = userScores.get(userId) ?? 0;
-    const collectionId = userCollectionMap.get(userId) ?? String(userId);
-    commentsForUser.sort((a, b) => {
-      const t = a.created_at.localeCompare(b.created_at);
-      if (t !== 0) return t;
-      return a.comment_id - b.comment_id;
-    });
-    const commentsScoredCount = commentsForUser.filter((c) => c.scored).length;
-    usersDetails.push({
-      user_id: userId,
-      collection_id: collectionId,
-      contribution_score: score,
-      comment_count: commentsForUser.length,
-      comments_scored_count: commentsScoredCount,
-      comments: commentsForUser,
-    });
-  }
-  usersDetails.sort((a, b) => a.collection_id.localeCompare(b.collection_id));
+  // Per-user details + score.
+  // IMPORTANT: don't rely solely on the users table. Some snapshots may have comments/votes
+  // populated while the users table is empty or incomplete.
+  const userIds = new Set<number>();
+  for (const u of users) userIds.add(u.id);
+  for (const userId of userCommentDetails.keys()) userIds.add(userId);
+  for (const userId of userScores.keys()) userIds.add(userId);
 
-  // Keep CSV output stable: include only users who actually scored (non-zero Tw contributions)
-  const csv: ContributionScoreResult[] = Array.from(userScores.entries())
-    .map(([userId, score]) => ({
-      collection_id: userCollectionMap.get(userId) ?? String(userId),
-      contribution_score: score,
-    }))
-    .sort((a, b) => a.collection_id.localeCompare(b.collection_id));
+  const usersDetails: ContributionScoreUserDetail[] = Array.from(userIds)
+    .sort((a, b) => a - b)
+    .map((userId) => {
+      const commentsForUser = userCommentDetails.get(userId) ?? [];
+      const score = userScores.get(userId) ?? 0;
+
+      commentsForUser.sort((a, b) => {
+        const t = a.created_at.localeCompare(b.created_at);
+        if (t !== 0) return t;
+        return a.comment_id - b.comment_id;
+      });
+      const commentsScoredCount = commentsForUser.filter((c) => c.scored).length;
+
+      return {
+        user_id: userId,
+        collection_id: userCollectionMap.get(userId) ?? String(userId),
+        contribution_score: score,
+        comment_count: commentsForUser.length,
+        comments_scored_count: commentsScoredCount,
+        comments: commentsForUser,
+      };
+    });
+
+  // CSV output: include only users with at least one scored comment
+  const csv: ContributionScoreResult[] = usersDetails
+    .filter((u) => u.comments_scored_count > 0)
+    .map((u) => ({
+      user_id: u.user_id,
+      contribution_score: u.contribution_score,
+    }));
 
   allCommentDetails.sort((a, b) => {
     const aValid = a.skip_reason !== 'invalid_created_at';
@@ -617,7 +626,7 @@ export async function contribution_score(payload: WorkerAlgorithmPayload): Promi
       // 7. Serialize results to CSV
       const outputCsv = stringify(computed.csv, {
         header: true,
-        columns: ['collection_id', 'contribution_score'],
+        columns: ['user_id', 'contribution_score'],
       });
 
       // 8. Upload output to storage

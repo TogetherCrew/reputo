@@ -76,7 +76,7 @@
             "description": "Engagement window in months; items older than this contribute 0.",
             "type": "integer",
             "min": 1,
-            "max": 12,
+            "max": 60,
             "default": 12,
             "step": 1,
             "required": true
@@ -113,9 +113,9 @@
                 "delimiter": ",",
                 "columns": [
                     {
-                        "key": "collection_id",
-                        "type": "string",
-                        "description": "Unique user identifier"
+                        "key": "user_id",
+                        "type": "integer",
+                        "description": "DeepFunding user ID"
                     },
                     {
                         "key": "contribution_score",
