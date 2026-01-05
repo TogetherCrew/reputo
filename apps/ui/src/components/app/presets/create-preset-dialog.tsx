@@ -128,7 +128,9 @@ export function CreatePresetDialog({
             // ReputoForm should block submission in that state, but keep this safe.
             inputValue = ""
           } else {
-            inputValue = value || ""
+            // Use explicit null/undefined check to preserve numeric 0 values
+            // (value || "") would convert 0 to "" because 0 is falsy
+            inputValue = value !== undefined && value !== null ? value : ""
           }
 
           return {

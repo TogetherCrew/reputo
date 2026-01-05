@@ -52,8 +52,9 @@ export function AlgorithmSnapshots({ algo }: { algo?: Algorithm }) {
   // Get preset filter from URL params
   const presetFilter = searchParams.get("preset");
   
-  // API hooks - filter by algorithmPreset ID if preset is selected
+  // API hooks - filter by algorithmPreset ID if preset is selected, and by algorithm key
   const { data: snapshotsData, isLoading, error } = useSnapshots({
+    key: algo?.id,
     algorithmPreset: presetFilter ?? undefined,
     status: selectedStatus !== "all" ? selectedStatus as 'queued' | 'running' | 'completed' | 'failed' | 'cancelled' : undefined,
     limit: 50,
