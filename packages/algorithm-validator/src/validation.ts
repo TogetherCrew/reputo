@@ -216,8 +216,16 @@ function buildFieldSchema(input: any): z.ZodType {
       break;
     }
 
+    case 'text':
     case 'string': {
-      let strSchema = z.string();
+      // Use .trim() to strip leading/trailing whitespace before validation
+      // This ensures "   " is treated as empty and fails required check
+      let strSchema = z.string().trim();
+
+      // For required fields, add min(1) to show "is required" message for empty strings
+      if (input.required !== false) {
+        strSchema = strSchema.min(1, `${label} is required`);
+      }
 
       if (typeof input.minLength === 'number') {
         strSchema = strSchema.min(input.minLength, `${label} must be at least ${input.minLength} characters`);
