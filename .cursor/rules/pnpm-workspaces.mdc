@@ -9,19 +9,19 @@ alwaysApply: true
 Overview
 This monorepo uses pnpm workspaces. Current codebases:
 • apps/api — NestJS backend service
-• apps/ui — Vite/TypeScript web client
-• apps/workflows — Temporal TypeScript workflow orchestrations
-• apps/typescript-worker — Temporal worker/activities runtime
+• apps/ui — Next.js (React/TypeScript) web client
+• apps/workflows — Temporal TypeScript workers (orchestrator + algorithm worker) and activities
 • packages/reputation-algorithms — ranking and scoring logic
 • packages/database — Mongo models/schemas and data helpers
 • packages/storage — storage abstraction and helpers
 • packages/algorithm-validator — algorithm schema validation utilities
+• packages/deepfunding-portal-api — DeepFunding Portal API client/resources (TypeScript)
 
 Tooling and Infrastructure
-• pnpm for workspace management; dependency scripts run with filters.
+• pnpm for workspace management; dependency scripts run with `pnpm --filter ...` across `apps/*` and `packages/*`.
 • Containerization for every service; Docker images drive all environments.
 • CI/CD via GitHub Actions to build/push images and promote between envs.
-• Biome for lint/format, Vitest for testing, lefthook for git hooks.
+• Biome for lint/format, Vitest for testing, lefthook for git hooks, semantic-release for automated releases.
 
 Quality Bar
 • Code must stay clean, modular, and follow best practices by default.
