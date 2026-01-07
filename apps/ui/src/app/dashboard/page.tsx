@@ -40,6 +40,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { type Algorithm, searchAlgorithms } from "@/core/algorithms"
+import { cn } from "@/lib/utils"
 
 // algorithms imported from shared file
 
@@ -111,11 +112,12 @@ export default function Home() {
                   ))}
                 </SelectContent>
               </Select>
-              <div className="hidden sm:flex items-center gap-1">
+              <div className="hidden sm:flex items-center border rounded-md">
                 <Button
                   variant={viewMode === "grid" ? "secondary" : "ghost"}
                   size="icon"
                   aria-label="Grid view"
+                  className="rounded-r-none border-0"
                   onClick={() => setViewMode("grid")}
                 >
                   <LayoutGrid className="size-4" />
@@ -124,6 +126,7 @@ export default function Home() {
                   variant={viewMode === "list" ? "secondary" : "ghost"}
                   size="icon"
                   aria-label="List view"
+                  className="rounded-l-none border-0"
                   onClick={() => setViewMode("list")}
                 >
                   <List className="size-4" />
@@ -184,18 +187,13 @@ export default function Home() {
                         >
                           <Card
                             key={algo.id}
-                            className={
-                              viewMode === "list"
-                                ? "flex flex-row items-start gap-4"
-                                : "flex flex-col h-full"
-                            }
+                            className={cn(
+                              "flex flex-col h-full transition-colors hover:border-foreground/20",
+                              viewMode === "list" && "max-w-none"
+                            )}
                           >
                             <CardHeader
-                              className={
-                                viewMode === "list"
-                                  ? "flex-1 grid grid-cols-[1fr_auto] gap-2 pb-0"
-                                  : "grid grid-cols-[1fr_auto] gap-2"
-                              }
+                              className="grid grid-cols-[1fr_auto] gap-2"
                             >
                               <div className="flex flex-col gap-2 min-w-0">
                                 <Badge variant="outline" className="w-fit">
@@ -219,14 +217,10 @@ export default function Home() {
                               </CardAction>
                             </CardHeader>
 
-                            <CardContent
-                              className={
-                                viewMode === "list"
-                                  ? "flex-1 -mt-3 pb-0"
-                                  : "-mt-3"
-                              }
-                            >
-                              <CardDescription>{algo.summary}</CardDescription>
+                            <CardContent className="-mt-3">
+                              <CardDescription>
+                                {algo.summary}
+                              </CardDescription>
                               <div className="mt-4 flex flex-wrap items-center gap-4 text-sm">
                                 <span className="inline-flex items-center gap-2 text-muted-foreground">
                                   <Clock className="size-4" /> {algo.duration}
@@ -241,13 +235,7 @@ export default function Home() {
                               </div>
                             </CardContent>
 
-                            <CardFooter
-                              className={
-                                viewMode === "list"
-                                  ? "flex-col items-start gap-2 pt-0"
-                                  : "flex-col items-start gap-2"
-                              }
-                            >
+                            <CardFooter className="flex-col items-start gap-2">
                               <span className="text-sm font-medium">
                                 Inputs:
                               </span>
