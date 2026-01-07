@@ -14,11 +14,15 @@ import {
   ObjectNotFoundError,
 } from './shared/errors/index.js';
 import type {
+  GetObjectOptions,
   ParsedStorageKey,
   PresignedDownload,
   PresignedUpload,
-  StorageConfig,
+  PresignGetOptions,
+  PresignPutOptions,
+  PutObjectOptions,
   StorageMetadata,
+  VerifyOptions,
 } from './shared/types/index.js';
 import { detectKeyType, generateKey, parseStorageKey } from './shared/utils/keys.js';
 
@@ -30,6 +34,9 @@ import { detectKeyType, generateKey, parseStorageKey } from './shared/utils/keys
  * - Verifying uploaded files against size and content-type policies
  * - Reading and writing objects directly
  *
+ * Each method accepts operation-specific options, allowing callers to
+ * specify bucket, TTLs, size limits, and content type constraints per call.
+ *
  * The Storage instance does NOT create its own S3Client.
  * Applications must inject a configured S3Client instance.
  *
@@ -39,50 +46,44 @@ import { detectKeyType, generateKey, parseStorageKey } from './shared/utils/keys
  * import { Storage } from '@reputo/storage';
  *
  * const s3Client = new S3Client({ region: 'us-east-1' });
- * const storage = new Storage({
- *   bucket: 'my-bucket',
- *   presignPutTtl: 3600,
- *   presignGetTtl: 900,
- *   maxSizeBytes: 104857600, // 100 MB
- *   contentTypeAllowlist: ['text/csv', 'application/json'],
- * }, s3Client);
+ * const storage = new Storage(s3Client);
  *
- * // Generate upload URL
- * const upload = await storage.presignPut('data.csv', 'text/csv');
+ * // Generate upload URL with per-call options
+ * const upload = await storage.presignPut({
+ *   bucket: 'my-bucket',
+ *   filename: 'data.csv',
+ *   contentType: 'text/csv',
+ *   ttl: 3600,
+ *   maxSizeBytes: 104857600,
+ *   contentTypeAllowlist: ['text/csv', 'application/json'],
+ * });
  * console.log(upload.key, upload.url);
  *
- * // Verify upload and get metadata
- * const result = await storage.verifyUpload(upload.key);
+ * // Verify upload with per-call options
+ * const result = await storage.verify({
+ *   bucket: 'my-bucket',
+ *   key: upload.key,
+ *   maxSizeBytes: 104857600,
+ *   contentTypeAllowlist: ['text/csv', 'application/json'],
+ * });
  * console.log(result.metadata);
  *
- * // Generate download URL
- * const download = await storage.presignGet(upload.key);
+ * // Generate download URL with per-call options
+ * const download = await storage.presignGet({
+ *   bucket: 'my-bucket',
+ *   key: upload.key,
+ *   ttl: 900,
+ * });
  * console.log(download.url);
  * ```
  */
 export class Storage {
-  private readonly bucket: string;
-  private readonly presignPutTtl: number;
-  private readonly presignGetTtl: number;
-  private readonly maxSizeBytes: number;
-  private readonly contentTypeAllowlist: Set<string>;
-
   /**
    * Creates a new Storage instance.
    *
-   * @param config - Storage configuration options
    * @param s3Client - Configured S3Client instance to use for all operations
    */
-  constructor(
-    config: StorageConfig,
-    private readonly s3Client: S3Client,
-  ) {
-    this.bucket = config.bucket;
-    this.presignPutTtl = config.presignPutTtl;
-    this.presignGetTtl = config.presignGetTtl;
-    this.maxSizeBytes = config.maxSizeBytes;
-    this.contentTypeAllowlist = new Set(config.contentTypeAllowlist);
-  }
+  constructor(private readonly s3Client: S3Client) {}
 
   /**
    * Generates a presigned URL for uploading a file.
@@ -90,39 +91,47 @@ export class Storage {
    * The client can use this URL to upload the file directly to S3
    * without going through your application server.
    *
-   * @param filename - Original filename
-   * @param contentType - MIME type of the file
+   * @param options - Upload operation options
    * @returns Upload information including the key and presigned URL
    * @throws {InvalidContentTypeError} If content type is not in allowlist
    *
    * @example
    * ```typescript
-   * const result = await storage.presignPut('votes.csv', 'text/csv');
+   * const result = await storage.presignPut({
+   *   bucket: 'my-bucket',
+   *   filename: 'votes.csv',
+   *   contentType: 'text/csv',
+   *   ttl: 3600,
+   *   maxSizeBytes: 104857600,
+   *   contentTypeAllowlist: ['text/csv'],
+   * });
    * // result.key: 'uploads/{uuid}/votes.csv'
    * // result.url: 'https://bucket.s3.amazonaws.com/...'
    * // result.expiresIn: 3600
    * ```
    */
-  async presignPut(filename: string, contentType: string): Promise<PresignedUpload> {
-    this.validateContentType(contentType);
+  async presignPut(options: PresignPutOptions): Promise<PresignedUpload> {
+    const { bucket, filename, contentType, ttl, contentTypeAllowlist } = options;
+
+    this.validateContentType(contentType, contentTypeAllowlist);
 
     const uuid = randomUUID();
     const key = generateKey('upload', uuid, filename);
 
     const command = new PutObjectCommand({
-      Bucket: this.bucket,
+      Bucket: bucket,
       Key: key,
       ContentType: contentType,
     });
 
     const url = await getSignedUrl(this.s3Client, command, {
-      expiresIn: this.presignPutTtl,
+      expiresIn: ttl,
     });
 
     return {
       key,
       url,
-      expiresIn: this.presignPutTtl,
+      expiresIn: ttl,
     };
   }
 
@@ -133,7 +142,7 @@ export class Storage {
    * - Upload keys (`uploads/...`): validates size AND content type against allowlist
    * - Snapshot keys (`snapshots/...`): validates size only (internal use)
    *
-   * @param key - S3 key of the object to verify
+   * @param options - Verify operation options
    * @returns Verification result with metadata
    * @throws {ObjectNotFoundError} If the object doesn't exist
    * @throws {HeadObjectFailedError} If metadata retrieval fails
@@ -143,25 +152,36 @@ export class Storage {
    * @example
    * ```typescript
    * // Verify an upload (validates content type)
-   * const result = await storage.verify('uploads/{uuid}/votes.csv');
+   * const result = await storage.verify({
+   *   bucket: 'my-bucket',
+   *   key: 'uploads/{uuid}/votes.csv',
+   *   maxSizeBytes: 104857600,
+   *   contentTypeAllowlist: ['text/csv'],
+   * });
    *
    * // Verify a snapshot (skips content type validation)
-   * const result = await storage.verify('snapshots/abc123/voting_engagement.csv');
+   * const result = await storage.verify({
+   *   bucket: 'my-bucket',
+   *   key: 'snapshots/abc123/voting_engagement.csv',
+   *   maxSizeBytes: 104857600,
+   * });
    * ```
    */
-  async verify(key: string): Promise<{ key: string; metadata: StorageMetadata }> {
-    const head = await this.getObjectMetadata(key);
+  async verify(options: VerifyOptions): Promise<{ key: string; metadata: StorageMetadata }> {
+    const { bucket, key, maxSizeBytes, contentTypeAllowlist } = options;
+
+    const head = await this.getObjectMetadata(bucket, key);
 
     const size = head.ContentLength ?? 0;
     const contentType = head.ContentType ?? 'application/octet-stream';
 
     // Always validate file size
-    this.validateFileSize(size);
+    this.validateFileSize(size, maxSizeBytes);
 
     // Only validate content type for user uploads (not internal snapshot files)
     const keyType = detectKeyType(key);
-    if (keyType === 'upload') {
-      this.validateContentType(contentType);
+    if (keyType === 'upload' && contentTypeAllowlist) {
+      this.validateContentType(contentType, contentTypeAllowlist);
     }
 
     const parsed = parseStorageKey(key);
@@ -180,13 +200,6 @@ export class Storage {
   }
 
   /**
-   * @deprecated Use {@link verify} instead. This method is kept for backward compatibility.
-   */
-  async verifyUpload(key: string): Promise<{ key: string; metadata: StorageMetadata }> {
-    return this.verify(key);
-  }
-
-  /**
    * Generates a presigned URL for downloading a file.
    *
    * Supports all key patterns:
@@ -195,7 +208,7 @@ export class Storage {
    *
    * The timestamp in metadata is set to the current Unix timestamp for all key types.
    *
-   * @param key - S3 key of the object to download
+   * @param options - Download operation options
    * @returns Download information including presigned URL and metadata
    * @throws {ObjectNotFoundError} If the object doesn't exist
    * @throws {HeadObjectFailedError} If metadata retrieval fails
@@ -203,14 +216,24 @@ export class Storage {
    * @example
    * ```typescript
    * // Download an upload
-   * const result = await storage.presignGet('uploads/{uuid}/votes.csv');
+   * const result = await storage.presignGet({
+   *   bucket: 'my-bucket',
+   *   key: 'uploads/{uuid}/votes.csv',
+   *   ttl: 900,
+   * });
    *
    * // Download a snapshot
-   * const result = await storage.presignGet('snapshots/abc123/voting_engagement.csv');
+   * const result = await storage.presignGet({
+   *   bucket: 'my-bucket',
+   *   key: 'snapshots/abc123/voting_engagement.csv',
+   *   ttl: 900,
+   * });
    * ```
    */
-  async presignGet(key: string): Promise<PresignedDownload> {
-    const head = await this.getObjectMetadata(key);
+  async presignGet(options: PresignGetOptions): Promise<PresignedDownload> {
+    const { bucket, key, ttl } = options;
+
+    const head = await this.getObjectMetadata(bucket, key);
 
     const size = head.ContentLength ?? 0;
     const contentType = head.ContentType ?? 'application/octet-stream';
@@ -219,17 +242,17 @@ export class Storage {
     const timestamp = this.getTimestampFromParsedKey(parsed);
 
     const command = new GetObjectCommand({
-      Bucket: this.bucket,
+      Bucket: bucket,
       Key: key,
     });
 
     const url = await getSignedUrl(this.s3Client, command, {
-      expiresIn: this.presignGetTtl,
+      expiresIn: ttl,
     });
 
     return {
       url,
-      expiresIn: this.presignGetTtl,
+      expiresIn: ttl,
       metadata: {
         filename: parsed.filename,
         ext: parsed.ext,
@@ -241,34 +264,32 @@ export class Storage {
   }
 
   /**
-   * @deprecated Use {@link presignGet} instead. This method is kept for backward compatibility.
-   */
-  async presignGetForKey(key: string): Promise<PresignedDownload> {
-    return this.presignGet(key);
-  }
-
-  /**
    * Reads an object from S3 and returns its contents as a Buffer.
    *
    * Use this for server-side object reads. For client downloads,
    * use presignGet() to generate a download URL instead.
    *
-   * @param key - S3 key of the object to read
+   * @param options - Read operation options
    * @returns Object contents as a Buffer
    * @throws {ObjectNotFoundError} If the object doesn't exist
    *
    * @example
    * ```typescript
-   * const buffer = await storage.getObject('uploads/{uuid}/votes.csv');
+   * const buffer = await storage.getObject({
+   *   bucket: 'my-bucket',
+   *   key: 'uploads/{uuid}/votes.csv',
+   * });
    * const text = buffer.toString('utf-8');
    * console.log(text);
    * ```
    */
-  async getObject(key: string): Promise<Buffer> {
+  async getObject(options: GetObjectOptions): Promise<Buffer> {
+    const { bucket, key } = options;
+
     try {
       const result = await this.s3Client.send(
         new GetObjectCommand({
-          Bucket: this.bucket,
+          Bucket: bucket,
           Key: key,
         }),
       );
@@ -303,9 +324,7 @@ export class Storage {
    * Content type validation is only applied for upload keys (`uploads/...`).
    * Snapshot keys (`snapshots/...`) bypass content type validation for internal use.
    *
-   * @param key - S3 key where the object should be stored
-   * @param body - Object contents (Buffer, Uint8Array, or string)
-   * @param contentType - Optional MIME type (validated for upload keys only)
+   * @param options - Write operation options
    * @returns The key of the stored object
    * @throws {InvalidContentTypeError} If content type is not allowed (upload keys only)
    *
@@ -313,24 +332,35 @@ export class Storage {
    * ```typescript
    * // Upload with content type validation
    * const csvData = 'name,score\nAlice,100\nBob,95';
-   * const key = 'uploads/{uuid}/results.csv';
-   * await storage.putObject(key, csvData, 'text/csv');
+   * await storage.putObject({
+   *   bucket: 'my-bucket',
+   *   key: 'uploads/{uuid}/results.csv',
+   *   body: csvData,
+   *   contentType: 'text/csv',
+   *   contentTypeAllowlist: ['text/csv'],
+   * });
    *
    * // Snapshot (skips content type validation)
-   * const snapshotKey = 'snapshots/abc123/voting_engagement.csv';
-   * await storage.putObject(snapshotKey, csvData, 'text/csv');
+   * await storage.putObject({
+   *   bucket: 'my-bucket',
+   *   key: 'snapshots/abc123/voting_engagement.csv',
+   *   body: csvData,
+   *   contentType: 'text/csv',
+   * });
    * ```
    */
-  async putObject(key: string, body: Buffer | Uint8Array | string, contentType?: string): Promise<string> {
+  async putObject(options: PutObjectOptions): Promise<string> {
+    const { bucket, key, body, contentType, contentTypeAllowlist } = options;
+
     // Only validate content type for user uploads (not internal snapshot files)
     const keyType = detectKeyType(key);
-    if (contentType && keyType === 'upload') {
-      this.validateContentType(contentType);
+    if (contentType && keyType === 'upload' && contentTypeAllowlist) {
+      this.validateContentType(contentType, contentTypeAllowlist);
     }
 
     await this.s3Client.send(
       new PutObjectCommand({
-        Bucket: this.bucket,
+        Bucket: bucket,
         Key: key,
         Body: body,
         ContentType: contentType,
@@ -344,13 +374,14 @@ export class Storage {
    * Validates that a file size is within the allowed maximum.
    *
    * @param size - File size in bytes
+   * @param maxSizeBytes - Maximum allowed size in bytes
    * @throws {FileTooLargeError} If size exceeds maxSizeBytes
    *
    * @private
    */
-  private validateFileSize(size: number): void {
-    if (size > this.maxSizeBytes) {
-      throw new FileTooLargeError(this.maxSizeBytes);
+  private validateFileSize(size: number, maxSizeBytes: number): void {
+    if (size > maxSizeBytes) {
+      throw new FileTooLargeError(maxSizeBytes);
     }
   }
 
@@ -358,13 +389,15 @@ export class Storage {
    * Validates that a content type is in the allowlist.
    *
    * @param contentType - MIME type to validate
+   * @param allowlist - List of allowed content types
    * @throws {InvalidContentTypeError} If content type is not allowed
    *
    * @private
    */
-  private validateContentType(contentType: string): void {
-    if (!this.contentTypeAllowlist.has(contentType)) {
-      throw new InvalidContentTypeError(contentType, [...this.contentTypeAllowlist]);
+  private validateContentType(contentType: string, allowlist: string[]): void {
+    const allowedSet = new Set(allowlist);
+    if (!allowedSet.has(contentType)) {
+      throw new InvalidContentTypeError(contentType, allowlist);
     }
   }
 
@@ -386,6 +419,7 @@ export class Storage {
   /**
    * Retrieves object metadata using a HEAD request.
    *
+   * @param bucket - S3 bucket name
    * @param key - S3 key of the object
    * @returns S3 HeadObject response
    * @throws {ObjectNotFoundError} If object doesn't exist
@@ -393,11 +427,11 @@ export class Storage {
    *
    * @private
    */
-  private async getObjectMetadata(key: string) {
+  private async getObjectMetadata(bucket: string, key: string) {
     try {
       return await this.s3Client.send(
         new HeadObjectCommand({
-          Bucket: this.bucket,
+          Bucket: bucket,
           Key: key,
         }),
       );

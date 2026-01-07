@@ -40,7 +40,11 @@
             "minItems": 1,
             "items": { "$ref": "#/$defs/outputItem" }
         },
-        "runtime": { "$ref": "#/$defs/runtime" }
+        "runtime": { "$ref": "#/$defs/runtime" },
+        "dependencies": {
+            "type": "array",
+            "items": { "$ref": "#/$defs/dependencyItem" }
+        }
     },
     "$defs": {
         "inputItem": {
@@ -201,12 +205,19 @@
         },
 
         "runtime": {
+            "type": "string",
+            "enum": ["typescript", "python"]
+        },
+
+        "dependencyItem": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["taskQueue", "activity"],
+            "required": ["key"],
             "properties": {
-                "taskQueue": { "type": "string", "minLength": 1 },
-                "activity": { "type": "string", "minLength": 1 }
+                "key": {
+                    "type": "string",
+                    "minLength": 1
+                }
             }
         }
     }

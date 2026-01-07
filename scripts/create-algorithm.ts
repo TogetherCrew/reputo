@@ -5,7 +5,7 @@
  *
  * This script orchestrates both:
  * 1. Creating an algorithm definition in packages/reputation-algorithms
- * 2. Scaffolding an activity implementation in apps/typescript-worker
+ * 2. Scaffolding an activity implementation in apps/workflows
  *
  * Usage:
  *   pnpm algorithm:create <key> <version>
@@ -23,7 +23,6 @@ import {
     validateVersion,
 } from '../packages/reputation-algorithms/src/shared/utils/validation.js'
 import { createAlgorithmTemplate } from '../packages/reputation-algorithms/src/shared/utils/templates.js'
-import { generateActivityScaffold } from '../apps/typescript-worker/src/scripts/scaffold-algorithm.js'
 
 // Get monorepo root directory
 const __filename = fileURLToPath(import.meta.url)
@@ -36,7 +35,28 @@ const REPUTATION_ALGORITHMS_PATH = join(
     'packages',
     'reputation-algorithms'
 )
-const TYPESCRIPT_WORKER_PATH = join(MONOREPO_ROOT, 'apps', 'typescript-worker')
+const WORKFLOWS_PATH = join(MONOREPO_ROOT, 'apps', 'workflows')
+
+// ============================================================================
+// Utility Functions
+// ============================================================================
+
+/**
+ * Convert snake_case to kebab-case for folder names.
+ */
+function toKebabCase(key: string): string {
+    return key.replace(/_/g, '-')
+}
+
+/**
+ * Convert snake_case to PascalCase for function names.
+ */
+function toPascalCase(key: string): string {
+    return key
+        .split('_')
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join('')
+}
 
 // ============================================================================
 // Algorithm Definition Creation
@@ -69,52 +89,281 @@ function createAlgorithmDefinition(
     return { filePath, created: true }
 }
 
+// ============================================================================
+// Activity Scaffold Generation
+// ============================================================================
+
 interface CreateActivityResult {
-    activityFile: string
+    algorithmDir: string
+    computeFile: string
     indexFile: string
-    indexAction: 'created' | 'updated' | 'unchanged'
+    dispatcherUpdated: boolean
+    algorithmsIndexUpdated: boolean
 }
 
-function createActivityScaffold(algorithmKey: string): CreateActivityResult {
-    const activitiesDir = join(TYPESCRIPT_WORKER_PATH, 'src', 'activities')
-    const activityFile = join(activitiesDir, `${algorithmKey}.activity.ts`)
-    const indexFile = join(activitiesDir, 'index.ts')
+/**
+ * Generate the compute.ts scaffold content for a new algorithm.
+ */
+function generateComputeScaffold(algorithmKey: string): string {
+    const pascalName = toPascalCase(algorithmKey)
+    const functionName = `compute${pascalName}`
 
-    if (existsSync(activityFile)) {
-        throw new Error(`Activity file already exists: ${activityFile}`)
+    return `import type { Snapshot } from '@reputo/database'
+import { generateKey, type Storage } from '@reputo/storage'
+import { Context } from '@temporalio/activity'
+import { parse } from 'csv-parse/sync'
+import { stringify } from 'csv-stringify/sync'
+
+import config from '../../../../config/index.js'
+import type { AlgorithmResult } from '../../../../shared/types/index.js'
+import { getInputValue } from '../../../../shared/utils/algorithm-input.utils.js'
+
+/**
+ * Computes ${algorithmKey.replace(/_/g, ' ')} scores.
+ *
+ * @param snapshot - Snapshot document with algorithm configuration
+ * @param storage - Storage client for file operations
+ * @returns Algorithm result with output file locations
+ */
+export async function ${functionName}(
+    snapshot: Snapshot,
+    storage: Storage
+): Promise<AlgorithmResult> {
+    const snapshotId = String((snapshot as unknown as { _id: string })._id)
+    const {
+        key: algorithmKey,
+        version: algorithmVersion,
+        inputs,
+    } = snapshot.algorithmPresetFrozen
+    const logger = Context.current().log
+
+    logger.info('Starting ${algorithmKey} algorithm', {
+        snapshotId,
+        algorithmKey,
+        algorithmVersion,
+    })
+
+    const { bucket } = config.storage
+
+    // TODO: Get input file location from inputs
+    // const inputKey = getInputValue(inputs, 'input_data')
+    // logger.debug('Resolved input location', { inputKey })
+
+    // TODO: Download and parse input data
+    // const buffer = await storage.getObject({ bucket, key: inputKey })
+    // const csvText = buffer.toString('utf8')
+    // const rows = parse(csvText, {
+    //     columns: true,
+    //     skip_empty_lines: true,
+    //     trim: true,
+    // })
+
+    // TODO: Implement algorithm logic
+    const results: Array<{ id: string; score: number }> = []
+
+    logger.info('Computed ${algorithmKey} scores', {
+        resultCount: results.length,
+    })
+
+    // Generate and upload CSV output
+    const outputCsv = stringify(results, {
+        header: true,
+        columns: ['id', 'score'],
+    })
+
+    const outputKey = generateKey('snapshot', snapshotId, \`\${algorithmKey}.csv\`)
+    await storage.putObject({
+        bucket,
+        key: outputKey,
+        body: outputCsv,
+        contentType: 'text/csv',
+    })
+
+    logger.info('Uploaded ${algorithmKey} results', { outputKey })
+
+    return {
+        outputs: {
+            result: outputKey,
+        },
+    }
+}
+`
+}
+
+/**
+ * Generate the index.ts content for a new algorithm.
+ */
+function generateIndexScaffold(algorithmKey: string): string {
+    const pascalName = toPascalCase(algorithmKey)
+    const functionName = `compute${pascalName}`
+
+    return `export { ${functionName} } from './compute.js';
+`
+}
+
+/**
+ * Update the dispatcher to include the new algorithm.
+ */
+function updateDispatcher(algorithmKey: string): boolean {
+    const dispatcherPath = join(
+        WORKFLOWS_PATH,
+        'src',
+        'activities',
+        'typescript',
+        'dispatchAlgorithm.activity.ts'
+    )
+
+    if (!existsSync(dispatcherPath)) {
+        throw new Error(`Dispatcher file not found: ${dispatcherPath}`)
     }
 
-    // Generate and write activity scaffold
-    const scaffold = generateActivityScaffold(algorithmKey)
-    writeFileSync(activityFile, scaffold, 'utf8')
+    const content = readFileSync(dispatcherPath, 'utf-8')
+    const kebabName = toKebabCase(algorithmKey)
+    const pascalName = toPascalCase(algorithmKey)
+    const functionName = `compute${pascalName}`
 
-    // Update index file
-    const exportLine = `export * from './${algorithmKey}.activity.js';`
-    let indexAction: 'created' | 'updated' | 'unchanged'
+    // Check if already registered
+    if (content.includes(`${algorithmKey}:`)) {
+        return false
+    }
 
-    if (!existsSync(indexFile)) {
-        const content = `/**
- * Export all algorithm activities.
- *
- * Each exported function should match an AlgorithmDefinition.runtime.activity value.
- */
-${exportLine}
-`
-        writeFileSync(indexFile, content, 'utf8')
-        indexAction = 'created'
+    // Add import statement
+    const importLine = `import { ${functionName} } from './algorithms/${kebabName}/compute.js'`
+    const lastImportMatch = content.match(
+        /^import .* from ['"]\.\/algorithms\/.*['"]$/gm
+    )
+
+    let updatedContent: string
+    if (lastImportMatch && lastImportMatch.length > 0) {
+        const lastImport = lastImportMatch[lastImportMatch.length - 1]
+        updatedContent = content.replace(
+            lastImport,
+            `${lastImport}\n${importLine}`
+        )
     } else {
-        const indexContent = readFileSync(indexFile, 'utf8')
-
-        if (indexContent.includes(exportLine)) {
-            indexAction = 'unchanged'
+        // Find the imports block and add after it
+        const importsEndMatch = content.match(
+            /^import .* from ['"][^'"]+['"]$/gm
+        )
+        if (importsEndMatch && importsEndMatch.length > 0) {
+            const lastImport = importsEndMatch[importsEndMatch.length - 1]
+            updatedContent = content.replace(
+                lastImport,
+                `${lastImport}\n${importLine}`
+            )
         } else {
-            const updatedContent = `${indexContent.trimEnd()}\n${exportLine}\n`
-            writeFileSync(indexFile, updatedContent, 'utf8')
-            indexAction = 'updated'
+            throw new Error('Could not find import statements in dispatcher')
         }
     }
 
-    return { activityFile, indexFile, indexAction }
+    // Add registry entry
+    const registryMatch = updatedContent.match(
+        /const registry: Record<string, AlgorithmComputeFunction> = \{([^}]*)\}/
+    )
+    if (!registryMatch) {
+        throw new Error('Could not find registry object in dispatcher')
+    }
+
+    const registryContent = registryMatch[1]
+    const entries = registryContent
+        .trim()
+        .split(',')
+        .filter((e) => e.trim())
+    const lastEntry = entries[entries.length - 1]
+
+    if (lastEntry) {
+        const newEntry = `    ${algorithmKey}: ${functionName},`
+        updatedContent = updatedContent.replace(
+            registryMatch[0],
+            registryMatch[0].replace(lastEntry, `${lastEntry}\n${newEntry}`)
+        )
+    }
+
+    writeFileSync(dispatcherPath, updatedContent, 'utf-8')
+    return true
+}
+
+/**
+ * Update the algorithms index to export the new algorithm.
+ */
+function updateAlgorithmsIndex(algorithmKey: string): boolean {
+    const indexPath = join(
+        WORKFLOWS_PATH,
+        'src',
+        'activities',
+        'typescript',
+        'algorithms',
+        'index.ts'
+    )
+
+    const kebabName = toKebabCase(algorithmKey)
+    const pascalName = toPascalCase(algorithmKey)
+    const functionName = `compute${pascalName}`
+    const exportLine = `export { ${functionName} } from './${kebabName}/index.js';`
+
+    if (!existsSync(indexPath)) {
+        // Create the index file
+        writeFileSync(indexPath, `${exportLine}\n`, 'utf-8')
+        return true
+    }
+
+    const content = readFileSync(indexPath, 'utf-8')
+
+    if (content.includes(exportLine)) {
+        return false
+    }
+
+    const updatedContent = `${content.trimEnd()}\n${exportLine}\n`
+    writeFileSync(indexPath, updatedContent, 'utf-8')
+    return true
+}
+
+/**
+ * Create activity scaffold for a TypeScript runtime algorithm.
+ */
+function createTypescriptActivityScaffold(
+    algorithmKey: string
+): CreateActivityResult {
+    const algorithmsDir = join(
+        WORKFLOWS_PATH,
+        'src',
+        'activities',
+        'typescript',
+        'algorithms'
+    )
+    const kebabName = toKebabCase(algorithmKey)
+    const algorithmDir = join(algorithmsDir, kebabName)
+    const computeFile = join(algorithmDir, 'compute.ts')
+    const indexFile = join(algorithmDir, 'index.ts')
+
+    if (existsSync(algorithmDir)) {
+        throw new Error(`Algorithm directory already exists: ${algorithmDir}`)
+    }
+
+    // Create algorithm directory
+    mkdirSync(algorithmDir, { recursive: true })
+
+    // Generate compute.ts scaffold
+    const computeContent = generateComputeScaffold(algorithmKey)
+    writeFileSync(computeFile, computeContent, 'utf-8')
+
+    // Generate index.ts
+    const indexContent = generateIndexScaffold(algorithmKey)
+    writeFileSync(indexFile, indexContent, 'utf-8')
+
+    // Update dispatcher
+    const dispatcherUpdated = updateDispatcher(algorithmKey)
+
+    // Update algorithms index
+    const algorithmsIndexUpdated = updateAlgorithmsIndex(algorithmKey)
+
+    return {
+        algorithmDir,
+        computeFile,
+        indexFile,
+        dispatcherUpdated,
+        algorithmsIndexUpdated,
+    }
 }
 
 // ============================================================================
@@ -143,15 +392,18 @@ function runPreflightChecks(key: string, version: string): PreflightResult {
         errors.push(`Algorithm definition already exists: ${definitionPath}`)
     }
 
-    // Check if activity would already exist
+    // Check if activity directory would already exist
+    const kebabName = toKebabCase(key)
     const activityPath = join(
-        TYPESCRIPT_WORKER_PATH,
+        WORKFLOWS_PATH,
         'src',
         'activities',
-        `${key}.activity.ts`
+        'typescript',
+        'algorithms',
+        kebabName
     )
     if (existsSync(activityPath)) {
-        errors.push(`Activity file already exists: ${activityPath}`)
+        errors.push(`Activity directory already exists: ${activityPath}`)
     }
 
     // Check if required directories exist
@@ -159,8 +411,8 @@ function runPreflightChecks(key: string, version: string): PreflightResult {
         errors.push(`Package not found: ${REPUTATION_ALGORITHMS_PATH}`)
     }
 
-    if (!existsSync(TYPESCRIPT_WORKER_PATH)) {
-        errors.push(`Package not found: ${TYPESCRIPT_WORKER_PATH}`)
+    if (!existsSync(WORKFLOWS_PATH)) {
+        errors.push(`Package not found: ${WORKFLOWS_PATH}`)
     }
 
     return {
@@ -262,15 +514,19 @@ async function main(): Promise<void> {
         process.exit(1)
     }
 
-    // Create activity scaffold
+    // Create activity scaffold (TypeScript runtime by default)
     try {
-        const activityResult = createActivityScaffold(key)
+        const activityResult = createTypescriptActivityScaffold(key)
         console.log(`✓ Created activity scaffold:`)
-        console.log(`    ${activityResult.activityFile}`)
-        if (activityResult.indexAction === 'updated') {
-            console.log(`✓ Updated activities index`)
-        } else if (activityResult.indexAction === 'created') {
-            console.log(`✓ Created activities index`)
+        console.log(`    ${activityResult.computeFile}`)
+        console.log(`    ${activityResult.indexFile}`)
+
+        if (activityResult.dispatcherUpdated) {
+            console.log(`✓ Updated dispatcher registry`)
+        }
+
+        if (activityResult.algorithmsIndexUpdated) {
+            console.log(`✓ Updated algorithms index`)
         }
     } catch (error) {
         console.error(
@@ -290,13 +546,17 @@ async function main(): Promise<void> {
     )
     console.log('')
     console.log(`  2. Implement the algorithm logic in the activity:`)
-    console.log(`     apps/typescript-worker/src/activities/${key}.activity.ts`)
+    console.log(
+        `     apps/workflows/src/activities/typescript/algorithms/${toKebabCase(
+            key
+        )}/compute.ts`
+    )
     console.log('')
     console.log('  3. Build and validate:')
     console.log(
         '     pnpm --filter @reputo/reputation-algorithms registry:validate'
     )
-    console.log('     pnpm --filter @reputo/reputation-algorithms build')
+    console.log('     pnpm --filter @reputo/workflows build')
     console.log('')
 }
 

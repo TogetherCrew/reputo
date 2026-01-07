@@ -19,6 +19,7 @@ const SnapshotSchema = new Schema<Snapshot, SnapshotModel>(
         workflowId: { type: String },
         runId: { type: String },
         taskQueue: { type: String },
+        algorithmTaskQueue: { type: String },
       },
       { _id: false, versionKey: false, strict: true },
     ),
@@ -29,6 +30,13 @@ const SnapshotSchema = new Schema<Snapshot, SnapshotModel>(
     },
     algorithmPresetFrozen: AlgorithmPresetFrozenSchema,
     outputs: new Schema<Snapshot['outputs']>({}, { _id: false, versionKey: false, strict: false }),
+    error: new Schema<Snapshot['error']>(
+      {
+        message: { type: String, required: true },
+        timestamp: { type: String },
+      },
+      { _id: false, versionKey: false, strict: false },
+    ),
     startedAt: { type: Date },
     completedAt: { type: Date },
   },

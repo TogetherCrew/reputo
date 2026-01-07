@@ -12,40 +12,135 @@
  */
 export type StorageKeyType = 'upload' | 'snapshot';
 
+// ============================================================================
+// Operation-Specific Option Types
+// ============================================================================
+
 /**
- * Configuration options for the Storage instance.
+ * Options for generating a presigned PUT URL.
  */
-export interface StorageConfig {
+export interface PresignPutOptions {
   /**
-   * S3 bucket name where objects will be stored.
+   * S3 bucket name where the object will be stored.
    */
   bucket: string;
 
   /**
-   * Time-to-live for presigned PUT URLs in seconds.
-   * Controls how long upload URLs remain valid.
+   * Original filename for the upload.
    */
-  presignPutTtl: number;
+  filename: string;
 
   /**
-   * Time-to-live for presigned GET URLs in seconds.
-   * Controls how long download URLs remain valid.
+   * MIME type of the file being uploaded.
    */
-  presignGetTtl: number;
+  contentType: string;
 
   /**
-   * Maximum allowed object size in bytes.
-   * Files exceeding this size will be rejected.
+   * Time-to-live for the presigned URL in seconds.
+   */
+  ttl: number;
+
+  /**
+   * Maximum allowed file size in bytes.
    */
   maxSizeBytes: number;
 
   /**
    * Allowed content types (MIME types) for uploads.
-   * Only files with these content types will be accepted.
-   *
-   * @example ['text/csv', 'application/json']
    */
   contentTypeAllowlist: string[];
+}
+
+/**
+ * Options for generating a presigned GET URL.
+ */
+export interface PresignGetOptions {
+  /**
+   * S3 bucket name where the object is stored.
+   */
+  bucket: string;
+
+  /**
+   * S3 key of the object to download.
+   */
+  key: string;
+
+  /**
+   * Time-to-live for the presigned URL in seconds.
+   */
+  ttl: number;
+}
+
+/**
+ * Options for verifying an uploaded object.
+ */
+export interface VerifyOptions {
+  /**
+   * S3 bucket name where the object is stored.
+   */
+  bucket: string;
+
+  /**
+   * S3 key of the object to verify.
+   */
+  key: string;
+
+  /**
+   * Maximum allowed file size in bytes.
+   */
+  maxSizeBytes: number;
+
+  /**
+   * Allowed content types (MIME types).
+   * Optional - only validated for upload keys, not snapshot keys.
+   */
+  contentTypeAllowlist?: string[];
+}
+
+/**
+ * Options for reading an object from S3.
+ */
+export interface GetObjectOptions {
+  /**
+   * S3 bucket name where the object is stored.
+   */
+  bucket: string;
+
+  /**
+   * S3 key of the object to read.
+   */
+  key: string;
+}
+
+/**
+ * Options for writing an object to S3.
+ */
+export interface PutObjectOptions {
+  /**
+   * S3 bucket name where the object will be stored.
+   */
+  bucket: string;
+
+  /**
+   * S3 key where the object should be stored.
+   */
+  key: string;
+
+  /**
+   * Object contents to write.
+   */
+  body: Buffer | Uint8Array | string;
+
+  /**
+   * Optional MIME type for the object.
+   */
+  contentType?: string;
+
+  /**
+   * Optional allowed content types for validation.
+   * Only validated for upload keys, not snapshot keys.
+   */
+  contentTypeAllowlist?: string[];
 }
 
 /**

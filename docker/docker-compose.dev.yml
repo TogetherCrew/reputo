@@ -131,28 +131,13 @@ services:
         volumes:
             - temporal_postgresql_data:/var/lib/postgresql/data
 
-    typescript-worker:
-        container_name: typescript-worker
-        build:
-            context: ..
-            dockerfile: docker/Dockerfile
-            target: typescript-worker
-        restart: unless-stopped
-        networks: [dev]
-        volumes:
-            - ../apps/typescript-worker/src:/prod/typescript-worker/src:ro
-        depends_on:
-            temporal:
-                condition: service_healthy
-        env_file:
-            - ./env/typescript-worker.env
-
-    workflows:
-        container_name: workflows
+    orchestrator-worker:
+        container_name: orchestrator-worker
         build:
             context: ..
             dockerfile: docker/Dockerfile
             target: workflows
+        command: ['pnpm', 'start:orchestrator']
         restart: unless-stopped
         networks: [dev]
         volumes:
@@ -160,6 +145,23 @@ services:
         depends_on:
             mongodb:
                 condition: service_healthy
+            temporal:
+                condition: service_healthy
+        env_file:
+            - ./env/workflows.env
+
+    typescript-worker:
+        container_name: typescript-worker
+        build:
+            context: ..
+            dockerfile: docker/Dockerfile
+            target: workflows
+        command: ['pnpm', 'start:algorithm-typescript']
+        restart: unless-stopped
+        networks: [dev]
+        volumes:
+            - ../apps/workflows/src:/prod/workflows/src:ro
+        depends_on:
             temporal:
                 condition: service_healthy
         env_file:

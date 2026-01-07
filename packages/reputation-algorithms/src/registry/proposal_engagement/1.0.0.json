@@ -66,6 +66,7 @@
             "required": false
         }
     ],
+    "dependencies": [{ "key": "deepfunding-portal-api" }],
     "outputs": [
         {
             "key": "proposal_engagement",
@@ -96,8 +97,5 @@
             "type": "json"
         }
     ],
-    "runtime": {
-        "taskQueue": "typescript-worker",
-        "activity": "proposal_engagement"
-    }
+    "runtime": "typescript"
 }

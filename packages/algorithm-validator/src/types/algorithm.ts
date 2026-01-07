@@ -153,14 +153,9 @@ export interface StringIoItem extends BaseIoItem {
 export type IoItem = CsvIoItem | JsonIoItem | NumericIoItem | BooleanIoItem | StringIoItem;
 
 /**
- * Runtime metadata for algorithm execution by orchestration layers.
+ * Supported runtimes (languages) for algorithm execution.
  */
-export interface AlgorithmRuntimeMetadata {
-  /** Task queue name where this reputation algorithm should be executed */
-  taskQueue: string;
-  /** Activity name used by the worker to execute this reputation algorithm */
-  activity: string;
-}
+export type AlgorithmRuntime = 'typescript' | 'python';
 
 /**
  * Complete algorithm definition structure.
@@ -184,6 +179,6 @@ export interface AlgorithmDefinition {
   inputs: IoItem[];
   /** Array of output data specifications */
   outputs: IoItem[];
-  /** Runtime execution metadata for orchestration layers */
-  runtime: AlgorithmRuntimeMetadata;
+  /** Runtime (language) used for execution routing */
+  runtime: AlgorithmRuntime;
 }

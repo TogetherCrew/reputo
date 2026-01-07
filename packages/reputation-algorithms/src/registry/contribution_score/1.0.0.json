@@ -102,6 +102,7 @@
             "required": false
         }
     ],
+    "dependencies": [{ "key": "deepfunding-portal-api" }],
     "outputs": [
         {
             "key": "contribution_score",
@@ -132,8 +133,5 @@
             "type": "json"
         }
     ],
-    "runtime": {
-        "taskQueue": "typescript-worker",
-        "activity": "contribution_score"
-    }
+    "runtime": "typescript"
 }
