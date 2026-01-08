@@ -43,7 +43,7 @@ services:
             start_period: 40s
 
     traefik:
-        image: traefik:v3.4
+        image: traefik:v3.5.0
         container_name: traefik
         ports:
             - '80:80'
@@ -79,10 +79,12 @@ services:
         networks: [preview]
         environment:
             - NEXT_PUBLIC_API_URL=http://api.${PULLPREVIEW_PUBLIC_DNS}/api/v1
+            - PORT=8080
         labels:
             - traefik.enable=true
             - traefik.http.routers.ui.rule=Host(`${PULLPREVIEW_PUBLIC_DNS}`)
             - traefik.http.routers.ui.entrypoints=web
+            - traefik.http.services.ui.loadbalancer.server.port=8080
 
     api:
         container_name: api
@@ -124,7 +126,7 @@ services:
             - STORAGE_PRESIGN_PUT_TTL=120
             - STORAGE_PRESIGN_GET_TTL=300
             - STORAGE_MAX_SIZE_BYTES=52428800
-            - STORAGE_CONTENT_TYPE_ALLOWLIST=text/csv,text/plain
+            - STORAGE_CONTENT_TYPE_ALLOWLIST=text/csv,text/plain,application/json
             - TEMPORAL_ADDRESS=temporal:7233
             - TEMPORAL_NAMESPACE=default
             - TEMPORAL_ORCHESTRATOR_TASK_QUEUE=orchestrator-worker
@@ -221,6 +223,8 @@ services:
         restart: unless-stopped
         networks: [preview]
         environment:
+            - NODE_ENV=development
+            - LOG_LEVEL=info
             - TEMPORAL_ADDRESS=temporal:7233
             - TEMPORAL_NAMESPACE=default
             - TEMPORAL_ORCHESTRATOR_TASK_QUEUE=orchestrator-worker
@@ -231,9 +235,15 @@ services:
             - MONGODB_DB_NAME=reputo_preview
             - MONGODB_USER=admin
             - MONGODB_PASSWORD=preview_password
+              -STORAGE_BUCKET=reputo-pullpreview
+            - STORAGE_PRESIGN_PUT_TTL=120
+            - STORAGE_PRESIGN_GET_TTL=300
+            - STORAGE_MAX_SIZE_BYTES=52428800
+            - STORAGE_CONTENT_TYPE_ALLOWLIST=text/csv,text/plain,application/json
             - DEEPFUNDING_API_BASE_URL=https://api.deepfunding.xyz
-            - DEEPFUNDING_API_KEY=
-
+            - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+            - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+            - AWS_REGION=eu-central-1
     typescript-worker:
         container_name: typescript-worker
         depends_on:
@@ -249,18 +259,22 @@ services:
         environment:
             - NODE_ENV=development
             - LOG_LEVEL=info
-            - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
-            - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-            - AWS_REGION=eu-central-1
-            - STORAGE_BUCKET=reputo-pullpreview
-            - STORAGE_PRESIGN_PUT_TTL=120
-            - STORAGE_PRESIGN_GET_TTL=300
-            - STORAGE_MAX_SIZE_BYTES=52428800
-            - STORAGE_CONTENT_TYPE_ALLOWLIST=text/csv,text/plain
             - TEMPORAL_ADDRESS=temporal:7233
             - TEMPORAL_NAMESPACE=default
             - TEMPORAL_ORCHESTRATOR_TASK_QUEUE=orchestrator-worker
             - TEMPORAL_ALGORITHM_TYPESCRIPT_TASK_QUEUE=algorithm-typescript-worker
             - TEMPORAL_ALGORITHM_PYTHON_TASK_QUEUE=algorithm-python-worker
+            - MONGODB_HOST=mongodb
+            - MONGODB_PORT=27017
+            - MONGODB_DB_NAME=reputo_preview
+            - MONGODB_USER=admin
+            - MONGODB_PASSWORD=preview_password
+              -STORAGE_BUCKET=reputo-pullpreview
+            - STORAGE_PRESIGN_PUT_TTL=120
+            - STORAGE_PRESIGN_GET_TTL=300
+            - STORAGE_MAX_SIZE_BYTES=52428800
+            - STORAGE_CONTENT_TYPE_ALLOWLIST=text/csv,text/plain,application/json
             - DEEPFUNDING_API_BASE_URL=https://api.deepfunding.xyz
-            - DEEPFUNDING_API_KEY=
+            - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+            - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+            - AWS_REGION=eu-central-1
