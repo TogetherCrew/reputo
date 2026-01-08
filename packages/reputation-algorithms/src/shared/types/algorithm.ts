@@ -131,13 +131,20 @@ export interface StringIoItem extends BaseIoItem {
 export type IoItem = CsvIoItem | NumericIoItem | BooleanIoItem | StringIoItem;
 
 /**
- * Runtime metadata for algorithm execution by orchestration layers.
+ * Supported runtimes (languages) for algorithm execution.
+ *
+ * Orchestration layers use this field to route algorithm activities to the correct language-specific worker.
  */
-export interface AlgorithmRuntimeMetadata {
-  /** Task queue name where this reputation algorithm should be executed */
-  taskQueue: string;
-  /** Activity name used by the worker to execute this reputation algorithm */
-  activity: string;
+export type AlgorithmRuntime = 'typescript' | 'python';
+
+/**
+ * Describes an external dependency that an algorithm requires.
+ * Dependencies are resolved before algorithm execution.
+ * Algorithms fetch the data using predictable S3 key patterns.
+ */
+export interface AlgorithmDependency {
+  /** Unique identifier for the dependency (e.g., 'deepfunding-portal-api') */
+  key: string;
 }
 
 /**
@@ -160,8 +167,10 @@ export interface AlgorithmDefinition {
   inputs: IoItem[];
   /** Array of output data specifications */
   outputs: IoItem[];
-  /** Runtime execution metadata for orchestration layers */
-  runtime: AlgorithmRuntimeMetadata;
+  /** Runtime (language) used for execution routing */
+  runtime: AlgorithmRuntime;
+  /** Optional array of external dependencies required by this algorithm */
+  dependencies?: AlgorithmDependency[];
 }
 
 /**

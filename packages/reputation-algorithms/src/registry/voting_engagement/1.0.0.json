@@ -115,8 +115,5 @@
             }
         }
     ],
-    "runtime": {
-        "taskQueue": "typescript-worker",
-        "activity": "voting_engagement"
-    }
+    "runtime": "typescript"
 }

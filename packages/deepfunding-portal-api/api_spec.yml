@@ -1,0 +1,661 @@
+openapi: 3.0.3
+info:
+    title: DeepFunding API
+    version: '1.0.0'
+servers:
+    - url: https://deepfunding.ai
+components:
+    securitySchemes:
+        AuthenticationKey:
+            type: apiKey
+            in: header
+            name: authententicaion-key
+    schemas:
+        Error:
+            type: object
+            additionalProperties: true
+security:
+    - AuthenticationKey: []
+paths:
+    /wp-json/deepfunding/v1/rounds:
+        get:
+            summary: Retrieves a list of funding rounds.
+            security:
+                - AuthenticationKey: []
+            responses:
+                '200':
+                    description: OK
+                    content:
+                        application/json:
+                            example:
+                                - id: 107
+                                  name: BGI Nexus 1
+                                  slug: bgi-nexus-1
+                                  description: ''
+                                  pool_id:
+                                      - id: 108
+                                - id: 15
+                                  name: Round 1
+                                  slug: round-1
+                                  description: ''
+                                  pool_id:
+                                      - id: 24
+                                      - id: 25
+                                - id: 16
+                                  name: Round 2
+                                  slug: round-2
+                                  description: ''
+                                  pool_id:
+                                      - id: 18
+                                      - id: 19
+                                      - id: 20
+                                      - id: 17
+                                      - id: 21
+                                - id: 30
+                                  name: Round 3
+                                  slug: round-3
+                                  description: ''
+                                  pool_id:
+                                      - id: 19
+                                      - id: 20
+                                      - id: 17
+                                      - id: 29
+                                      - id: 21
+                                - id: 36
+                                  name: Round 4
+                                  slug: round-4
+                                  description: ''
+                                  pool_id:
+                                      - id: 35
+                                      - id: 19
+                                      - id: 20
+                                      - id: 37
+                                      - id: 17
+                                      - id: 38
+                                - id: 31
+                                  name: Round 4 - Beta
+                                  slug: round_4_beta
+                                  description: "Before opening the gates for Deep Funding Round 4, we have invited a small number of proposers to help us test our new platform. Apart from some limitations, everything is real! Real awards, real community feedback, and a real voting round.\r\n\r\nJoin us in testing all features of the first version of this great new portal!"
+                                  pool_id:
+                                      - id: 19
+                                      - id: 17
+                                      - id: 29
+                '403':
+                    description: Forbidden
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                '500':
+                    description: Server Error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+
+    /wp-json/deepfunding/v1/pools:
+        get:
+            summary: Retrieves a list of funding pools.
+            security:
+                - AuthenticationKey: []
+            responses:
+                '200':
+                    description: OK
+                    content:
+                        application/json:
+                            example:
+                                - id: 108
+                                  name: Beneficial AI Solutions
+                                  slug: beneficial-ai-solutions
+                                  max_funding_amount: 50000
+                                  description: ''
+                                - id: 35
+                                  name: Community RFPs
+                                  slug: community-rfp
+                                  max_funding_amount: 120000
+                                  description: "Request for proposals (RFPs) offer a targeted way to define desired project proposals. By making RFPs we are -to some extent- seperating the definition process from the development process.\r\n\r\nIn this pool you can select an RFP and create a proposal for that RFP.\r\nImportant:\r\n- Each RFP has very specific requirements and each proposal has to comply with all 'must have' requirements of the RFP.\r\n- The DF team will filter out proposals that do not comply to these requirements and, reserves the right to subjectively reject proposals/teams that offer low confidence in their capability to deliver.\r\n\r\nBefore preparing a proposal, ensure that you have carefully read the full text and conditions of the RFP. You can find all active RFP's on https://deepfunding.ai/all-rfps"
+                                - id: 18
+                                  name: Existing AI services
+                                  slug: existing-ai-services
+                                  max_funding_amount: 125000
+                                  description: Aimed at onboarding existing AI services onto the platform. The pool supports the whole process of finding, adapting and onboarding services that have already been developed.
+                                - id: 19
+                                  name: Ideation-phase
+                                  slug: ideation-phase-projects
+                                  max_funding_amount: 25000
+                                  description: Designed to support the preliminary stages of AI project development. This pool serves as a springboard for refining ideas and preparing them for more substantial funding rounds in the New Projects pool.
+                                - id: 20
+                                  name: Marketing initiatives
+                                  slug: marketing-initiatives
+                                  max_funding_amount: 25000
+                                  description: Designed to enhance the visibility and education of the platform among AI developers, AI consumers, and to foster a Community of Builders. This pool supports efforts that increase exposure and user engagement on the platform.
+                                - id: 37
+                                  name: Miscellaneous
+                                  slug: miscellaneous
+                                  max_funding_amount: 150000
+                                  description: Designed for innovative projects that don't fit neatly into the specific categories of other funding pools. This flexibility encourages a broad range of creative ideas that might otherwise be overlooked but have the potential to significantly benefit the SingularityNET ecosystem.
+                                - id: 17
+                                  name: New projects
+                                  slug: new-projects
+                                  max_funding_amount: 250000
+                                  description: Designed to populate the decentralized AI platform by introducing innovative AI services that are aligned with SingularityNET’s mission of creating a democratic, decentralized, and beneficial AI ecosystem.
+                                - id: 24
+                                  name: Projects from 40K - 150K
+                                  slug: project-between-40k-and-150k-in-agix
+                                  max_funding_amount: 500000
+                                  description: This mission is best suited for larger projects related to multiple AI services or feature a front-end application that utilizes new or existing services on the platform.
+                                - id: 25
+                                  name: Projects under 40K
+                                  slug: project-with-a-max-of-40k-in-agix
+                                  max_funding_amount: 500000
+                                  description: This mission is best suited for smaller projects, such as the development of a single service, refactoring an existing service, or creating a Proof of Concept for a larger project.
+                                - id: 38
+                                  name: RFP Design
+                                  slug: rfp-design
+                                  max_funding_amount: 25000
+                                  description: "Select this Pool if you have a great idea and want to get funded for making detailed specifications (RFPs - Requests For Proposal) that will allow any development team to submit a realistic proposal.\r\n\r\nDeep Funding is developing a new proposal creation and selection process based on 'Request For Proposals' (RFPs). This inlcudes the option to get rewarded for making RFPs; high quality specifications for projects that are desired by our community. \r\n\r\n\r\n\r\nThis pool enables the community to select a MAX of *3* proposals. Awarded teams will get funded for the creation of an RFP according to the template provided by DF. \r\n\r\n\r\nAfter completion, the DF team will allocate a Max budget and the RFP will be published on the DF website and opened for proposals from development teams. "
+                                - id: 29
+                                  name: SingularityNET RFPs
+                                  slug: snet-request-for-proposal
+                                  max_funding_amount: 530000
+                                  description: This pool is designed to invite community teams to collaborate on specific features required by the SingularityNET team. 'Pool SNET Request For Proposal' will focus on specific features requested by the internal team.
+                                - id: 21
+                                  name: Tooling
+                                  slug: tooling
+                                  max_funding_amount: 75000
+                                  description: AImed at projects that offer tooling to support the decentralized AI platform or the processes around Deep Funding itself.
+                '403':
+                    description: Forbidden
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                '500':
+                    description: Server Error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+
+    /wp-json/deepfunding/v1/users:
+        get:
+            summary: Retrieves details of subscriber users.
+            security:
+                - AuthenticationKey: []
+            parameters:
+                - in: query
+                  name: page
+                  required: false
+                  schema:
+                      type: integer
+                      default: 1
+                  description: Page number for pagination.
+                - in: query
+                  name: limit
+                  required: false
+                  schema:
+                      type: integer
+                      default: 25
+                  description: Maximum number of pools per page.
+            responses:
+                '200':
+                    description: OK
+                    content:
+                        application/json:
+                            example:
+                                users:
+                                    - id: 1190
+                                      collection_id: 'N/A'
+                                      user_name: 'Антон Куклев'
+                                      email: 'antonkuklev777@gmail.com'
+                                      total_proposals: 0
+                                    - id: 1735
+                                      collection_id: 'N/A'
+                                      user_name: 'برزخی ها 1001'
+                                      email: 'reza.zola.1349@gmail.com'
+                                      total_proposals: 0
+                                    - id: 3332
+                                      collection_id: 'N/A'
+                                      user_name: 'احمد الصافي'
+                                      email: 'alsafya180@gmail.com'
+                                      total_proposals: 0
+                                    - id: 2396
+                                      collection_id: 'N/A'
+                                      user_name: 'علی امامی'
+                                      email: 'aly644868@gmail.com'
+                                      total_proposals: 0
+                                    - id: 1499
+                                      collection_id: 'N/A'
+                                      user_name: 'Александр Б.'
+                                      email: 'allexxir@gmail.com'
+                                      total_proposals: 0
+                                    - id: 3614
+                                      collection_id: 'N/A'
+                                      user_name: 'Іван Халамендик'
+                                      email: 'robotreider1@gmail.com'
+                                      total_proposals: 0
+                                    - id: 2153
+                                      collection_id: 'N/A'
+                                      user_name: "Катерина D'яченко"
+                                      email: 'krazvn15@gmail.com'
+                                      total_proposals: 0
+                                    - id: 1616
+                                      collection_id: 'N/A'
+                                      user_name: 'Яна Куличенко'
+                                      email: 'kulichenkoiana@gmail.com'
+                                      total_proposals: 0
+                                    - id: 2979
+                                      collection_id: 'N/A'
+                                      user_name: 'Валерий Рогачев'
+                                      email: 'genagenar123@gmail.com'
+                                      total_proposals: 0
+                                    - id: 1827
+                                      collection_id: 'N/A'
+                                      user_name: 'Артем Артем'
+                                      email: 'temik.89.89@gmail.com'
+                                      total_proposals: 0
+                                    - id: 2904
+                                      collection_id: 'N/A'
+                                      user_name: 'กิตติพล จูงกลาง'
+                                      email: 'kallapl21@gmail.com'
+                                      total_proposals: 0
+                                    - id: 3566
+                                      collection_id: 'N/A'
+                                      user_name: 'محمد حاجت خواه'
+                                      email: 'payamhajatkhah3136@gmail.com'
+                                      total_proposals: 0
+                                    - id: 1619
+                                      collection_id: 'N/A'
+                                      user_name: 'Дмитро Кутепов'
+                                      email: 'dr12071980@gmail.com'
+                                      total_proposals: 0
+                                    - id: 1712
+                                      collection_id: 'N/A'
+                                      user_name: 'Timur Sadekov'
+                                      email: 'sadekovt@gmail.com'
+                                      total_proposals: 0
+                                    - id: 3322
+                                      collection_id: 'N/A'
+                                      user_name: 'Кирило Осадчий'
+                                      email: 'ko@miks.ae'
+                                      total_proposals: 0
+                                    - id: 1601
+                                      collection_id: 'N/A'
+                                      user_name: 'Atuona'
+                                      email: 'elena.revicheva2016@gmail.com'
+                                      total_proposals: 0
+                                    - id: 1466
+                                      collection_id: 'N/A'
+                                      user_name: 'Роман-Мартин Грищук'
+                                      email: 'romanmartyngryshchuk@gmail.com'
+                                      total_proposals: 0
+                                    - id: 2207
+                                      collection_id: 'N/A'
+                                      user_name: 'Аз Съм'
+                                      email: 'greenmiro@gmail.com'
+                                      total_proposals: 0
+                                    - id: 1282
+                                      collection_id: 'N/A'
+                                      user_name: 'Shakhno Aleh'
+                                      email: 'shakhnoov@gmail.com'
+                                      total_proposals: 0
+                                    - id: 1365
+                                      collection_id: 'N/A'
+                                      user_name: 'Anneza Bardani'
+                                      email: 'annampard@gmail.com'
+                                      total_proposals: 0
+                                    - id: 3784
+                                      collection_id: 'N/A'
+                                      user_name: '_9985822'
+                                      email: 'ali10235alieee@gmail.com'
+                                      total_proposals: 0
+                                    - id: 2982
+                                      collection_id: 'N/A'
+                                      user_name: 'Данила Ленский (lsd_pls)'
+                                      email: 'metallpeace@gmail.com'
+                                      total_proposals: 0
+                                    - id: 2165
+                                      collection_id: 'N/A'
+                                      user_name: 'ø “S87” d'
+                                      email: 'dondeveci@gmail.com'
+                                      total_proposals: 0
+                                    - id: 3043
+                                      collection_id: 'N/A'
+                                      user_name: '* “‪Sitotaw Ashagre‬”'
+                                      email: 'yotorcoder@gmail.com'
+                                      total_proposals: 0
+                                    - id: 464
+                                      collection_id: 'N/A'
+                                      user_name: 'Do Viet Cuong'
+                                      email: 'cuongcan.ls@gmail.com'
+                                      total_proposals: 0
+                                pagination:
+                                    total_records: 3725
+                                    current_page: 1
+                                    total_pages: 149
+                                    next_page: 2
+                                    prev_page: null
+                '403':
+                    description: Forbidden
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                '500':
+                    description: Server Error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+
+    /wp-json/deepfunding/v1/rounds/{round_id}/proposals:
+        get:
+            summary: Retrieves proposals for a specific funding round.
+            security:
+                - AuthenticationKey: []
+            parameters:
+                - in: path
+                  name: round_id
+                  required: true
+                  schema:
+                      type: integer
+                  description: ID of the round for which proposals are requested.
+                - in: query
+                  name: pool_id
+                  required: false
+                  schema:
+                      type: integer
+                  description: ID of the pool for which proposals are requested.
+            responses:
+                '200':
+                    description: OK
+                    content:
+                        application/json:
+                            example:
+                                proposals:
+                                    - id: 6338
+                                      pool_id: 38
+                                      proposer_id: 48
+                                      team_members:
+                                          [48, 738, 739, 737, 740, 744, 847]
+                                      title: Improved Reputation Sytem for Governance RFP
+                                      content: "<p>We plan to build on top of the existing research and work we’ve done:<br />\r\n- Mapping Reputation Types https://docsend.com/view/chiq9nt84qvpv8g4<br />\r\n- building data ingestion pipelines for Discord, Discourse, Github, Telegram, etc<br />\r\n- building a Knowledge Graph of interactions between participants<br />\r\n- creating an RFP for a knowledge graph that builds on top of the above</p>\r\n<p>The next step is to disseminate all of this research and facilitate a series of workshops with SingulairtyNET ecosystem actors and co-design how we can better apply reputation in governance using what already exists and building on top. Thus ensuring scalability, transparency, and fairness in community-driven decision-making processes.</p>"
+                                      link: https://deepfunding.ai/proposal/improved-reputation-sytem-for-governance-rfp/
+                                      feature_image: https://deepfunding.ai/wp-content/uploads/2024/05/f78d56753fa6418562dc5a0154e9425e_deepfund-1.png
+                                      requested_amount: '19000'
+                                      awarded_amount: '19000'
+                                      is_awarded: true
+                                      is_completed: true
+                                      created_at: '2024-05-20 11:07:28'
+                '403':
+                    description: Forbidden
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                '500':
+                    description: Server Error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+
+    /wp-json/deepfunding/v1/milestones:
+        get:
+            summary: Retrieves milestones based on filter criteria.
+            description: If no parameters are provided, all milestones will be returned.
+            security:
+                - AuthenticationKey: []
+            parameters:
+                - in: query
+                  name: proposal_id
+                  required: false
+                  schema:
+                      type: integer
+                  description: ID of the proposal for which milestones are requested.
+                - in: query
+                  name: status
+                  required: false
+                  schema:
+                      type: string
+                  description: Filter for milestone status.
+                - in: query
+                  name: page
+                  required: false
+                  schema:
+                      type: integer
+                      default: 1
+                  description: Page number for pagination.
+                - in: query
+                  name: limit
+                  required: false
+                  schema:
+                      type: integer
+                      default: 25
+                  description: Maximum number of milestones per page.
+            responses:
+                '200':
+                    description: OK
+                    content:
+                        application/json:
+                            example: {}
+                '403':
+                    description: Forbidden
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                '500':
+                    description: Server Error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+
+    /wp-json/deepfunding/v1/reviews:
+        get:
+            summary: Retrieves reviews based on filter criteria.
+            description: If no parameters are provided, all reviews will be returned.
+            security:
+                - AuthenticationKey: []
+            parameters:
+                - in: query
+                  name: reviewer_id
+                  required: false
+                  schema:
+                      type: integer
+                  description: ID of the user who created the review.
+                - in: query
+                  name: proposal_id
+                  required: false
+                  schema:
+                      type: integer
+                  description: ID of the proposal for which reviews are requested.
+                - in: query
+                  name: type
+                  required: false
+                  schema:
+                      type: string
+                      enum: [expert, community]
+                  description: Filter for review type (expert or community).
+                - in: query
+                  name: page
+                  required: false
+                  schema:
+                      type: integer
+                      default: 1
+                  description: Page number for pagination.
+                - in: query
+                  name: limit
+                  required: false
+                  schema:
+                      type: integer
+                      default: 25
+                  description: Maximum number of reviews per page.
+            responses:
+                '200':
+                    description: OK
+                    content:
+                        application/json:
+                            example:
+                                reviews:
+                                    - review_id: 2843
+                                      proposal_id: 11829
+                                      reviewer_id: 1174
+                                      review_type: community
+                                      overall_rating: 5
+                                      feasibility_rating: 5
+                                      viability_rating: 0
+                                      desirability_rating: 5
+                                      usefulness_rating: 5
+                                      created_at: '2025-10-13 13:24:08'
+                                pagination:
+                                    total_records: 481
+                                    current_page: 1
+                                    total_pages: 20
+                                    next_page: 2
+                                    prev_page: null
+                '403':
+                    description: Forbidden
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                '500':
+                    description: Server Error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+
+    /wp-json/deepfunding/v1/comments:
+        get:
+            summary: Retrieves comments based on filter criteria.
+            description: If no parameters are provided, all comments will be returned.
+            security:
+                - AuthenticationKey: []
+            parameters:
+                - in: query
+                  name: user_id
+                  required: false
+                  schema:
+                      type: string
+                  description: ID of the user for whom comments are requested.
+                - in: query
+                  name: proposal_id
+                  required: false
+                  schema:
+                      type: string
+                  description: ID of the proposal for which comments are requested.
+                - in: query
+                  name: page
+                  required: false
+                  schema:
+                      type: integer
+                      default: 1
+                  description: Page number for pagination.
+                - in: query
+                  name: limit
+                  required: false
+                  schema:
+                      type: integer
+                      default: 25
+                  description: Maximum number of comments per page.
+            responses:
+                '200':
+                    description: OK
+                    content:
+                        application/json:
+                            example:
+                                comments:
+                                    - comment_id: 937
+                                      parent_id: 0
+                                      is_reply: false
+                                      user_id: 1606
+                                      proposal_id: 10053
+                                      content: '<p>interesting !!</p>'
+                                      comment_votes: 0
+                                      votes: { up: 0, down: 0 }
+                                      created_at: '2025-11-10'
+                                      updated_at: '1970-01-01'
+                                pagination:
+                                    total_records: 858
+                                    current_page: 1
+                                    total_pages: 35
+                                    next_page: 2
+                                    prev_page: null
+                '403':
+                    description: Forbidden
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                '500':
+                    description: Server Error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+
+    /wp-json/deepfunding/v1/comment_votes:
+        get:
+            summary: Retrieves comment votes based on filter criteria.
+            description: If no parameters are provided, all comment votes will be returned.
+            security:
+                - AuthenticationKey: []
+            parameters:
+                - in: query
+                  name: voter_id
+                  required: false
+                  schema:
+                      type: integer
+                  description: ID of the user who voted on the comment.
+                - in: query
+                  name: comment_id
+                  required: false
+                  schema:
+                      - type: integer
+                  description: ID of the comment for which votes are requested.
+                - in: query
+                  name: page
+                  required: false
+                  schema:
+                      type: integer
+                      default: 1
+                  description: Page number for pagination.
+                - in: query
+                  name: limit
+                  required: false
+                  schema:
+                      type: integer
+                      default: 25
+                  description: Maximum number of comment votes per page.
+            responses:
+                '200':
+                    description: OK
+                    content:
+                        application/json:
+                            example:
+                                votes:
+                                    - voter_id: 1399
+                                      comment_id: 869
+                                      vote_type: upvote
+                                      created_at: '2025-03-19 12:54:37'
+                                pagination:
+                                    total_records: 141
+                                    current_page: 1
+                                    total_pages: 6
+                                    next_page: 2
+                                    prev_page: null
+                '403':
+                    description: Forbidden
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                '500':
+                    description: Server Error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'

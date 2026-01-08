@@ -190,10 +190,7 @@ describe('Validation Utils', () => {
             },
           },
         ],
-        runtime: {
-          taskQueue: 'typescript-worker',
-          activity: 'test_algorithm',
-        },
+        runtime: 'typescript',
       };
 
       const result = validator.validate(validDefinition);
@@ -244,10 +241,7 @@ describe('Validation Utils', () => {
             },
           },
         ],
-        runtime: {
-          taskQueue: 'typescript-worker',
-          activity: 'test_algorithm',
-        },
+        runtime: 'typescript',
       };
 
       const result = validator.validateAndThrow(validDefinition);
@@ -288,10 +282,7 @@ describe('Validation Utils', () => {
             },
           },
         ],
-        runtime: {
-          taskQueue: 'typescript-worker',
-          activity: 'test',
-        },
+        runtime: 'typescript',
       });
 
       expect(result.isValid).toBe(true);

@@ -63,9 +63,6 @@ export function createAlgorithmTemplate(key: string, version: string, config: Te
     version,
     inputs,
     outputs,
-    runtime: {
-      taskQueue: 'typescript-worker',
-      activity: key,
-    },
+    runtime: 'typescript',
   };
 }

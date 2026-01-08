@@ -1,3 +1,4 @@
+import { resolve } from 'path'
 import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
@@ -9,6 +10,11 @@ export default defineConfig({
             provider: 'v8',
             reporter: ['text', 'html', 'lcov'],
             exclude: ['**/dist/**', '**/node_modules/**'],
+        },
+    },
+    resolve: {
+        alias: {
+            '@': resolve(__dirname, './src'),
         },
     },
 })

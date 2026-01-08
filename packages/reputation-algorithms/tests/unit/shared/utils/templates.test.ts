@@ -66,10 +66,7 @@ describe('Template Utils', () => {
             description: 'TODO: Describe output',
           },
         ],
-        runtime: {
-          taskQueue: 'typescript-worker',
-          activity: 'test_algorithm',
-        },
+        runtime: 'typescript',
       });
     });
 
@@ -83,10 +80,7 @@ describe('Template Utils', () => {
         name: 'Voting Power',
         category: 'Engagement',
         version: '2.1.0',
-        runtime: {
-          taskQueue: 'typescript-worker',
-          activity: 'voting_power',
-        },
+        runtime: 'typescript',
       });
     });
 
@@ -135,10 +129,7 @@ describe('Template Utils', () => {
         version: '1.0.0',
         inputs: [],
         outputs: [],
-        runtime: {
-          taskQueue: 'typescript-worker',
-          activity: 'minimal_algo',
-        },
+        runtime: 'typescript',
       });
     });
 
@@ -166,10 +157,7 @@ describe('Template Utils', () => {
             description: 'TODO: Describe output',
           },
         ],
-        runtime: {
-          taskQueue: 'typescript-worker',
-          activity: 'custom_algo',
-        },
+        runtime: 'typescript',
       });
     });
 
@@ -202,25 +190,22 @@ describe('Template Utils', () => {
       expect(typeof template.version).toBe('string');
       expect(Array.isArray(template.inputs)).toBe(true);
       expect(Array.isArray(template.outputs)).toBe(true);
-      expect(typeof template.runtime).toBe('object');
+      expect(typeof template.runtime).toBe('string');
     });
 
-    it('should include runtime metadata with default taskQueue', () => {
+    it('should include runtime with default value', () => {
       const template = createAlgorithmTemplate('user_activity', '1.0.0');
 
       expect(template).toHaveProperty('runtime');
-      expect(template.runtime).toEqual({
-        taskQueue: 'typescript-worker',
-        activity: 'user_activity',
-      });
+      expect(template.runtime).toBe('typescript');
     });
 
-    it('should use algorithm key as activity name', () => {
+    it('should set runtime to typescript by default', () => {
       const keys = ['voting_power', 'content_quality', 'user_engagement'];
 
       for (const key of keys) {
         const template = createAlgorithmTemplate(key, '1.0.0');
-        expect(template.runtime.activity).toBe(key);
+        expect(template.runtime).toBe('typescript');
       }
     });
   });

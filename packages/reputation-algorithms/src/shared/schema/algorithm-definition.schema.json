@@ -40,7 +40,11 @@
             "minItems": 1,
             "items": { "$ref": "#/$defs/outputItem" }
         },
-        "runtime": { "$ref": "#/$defs/runtime" }
+        "runtime": { "$ref": "#/$defs/runtime" },
+        "dependencies": {
+            "type": "array",
+            "items": { "$ref": "#/$defs/dependencyItem" }
+        }
     },
     "$defs": {
         "inputItem": {
@@ -49,7 +53,12 @@
                 { "$ref": "#/$defs/numericParamItem" }
             ]
         },
-        "outputItem": { "$ref": "#/$defs/csvIOItem" },
+        "outputItem": {
+            "oneOf": [
+                { "$ref": "#/$defs/csvIOItem" },
+                { "$ref": "#/$defs/jsonIOItem" }
+            ]
+        },
 
         "csvIOItem": {
             "type": "object",
@@ -65,6 +74,22 @@
                 "description": { "type": "string" },
                 "type": { "const": "csv" },
                 "csv": { "$ref": "#/$defs/csvMeta" }
+            }
+        },
+
+        "jsonIOItem": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "type"],
+            "properties": {
+                "key": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_]*$",
+                    "minLength": 2
+                },
+                "label": { "type": "string", "minLength": 1 },
+                "description": { "type": "string", "minLength": 1 },
+                "type": { "const": "json" }
             }
         },
 
@@ -180,12 +205,19 @@
         },
 
         "runtime": {
+            "type": "string",
+            "enum": ["typescript", "python"]
+        },
+
+        "dependencyItem": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["taskQueue", "activity"],
+            "required": ["key"],
             "properties": {
-                "taskQueue": { "type": "string", "minLength": 1 },
-                "activity": { "type": "string", "minLength": 1 }
+                "key": {
+                    "type": "string",
+                    "minLength": 1
+                }
             }
         }
     }

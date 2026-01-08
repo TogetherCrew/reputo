@@ -5,8 +5,9 @@
  *
  * This script verifies:
  * 1. JSON syntax validity of all algorithm definition files
- * 2. Every algorithm definition has a corresponding activity export
- * 3. Every activity has a corresponding algorithm definition (optional warning)
+ * 2. Every algorithm definition has a corresponding activity implementation
+ * 3. Every algorithm is registered in the dispatcher
+ * 4. Every activity is exported in the algorithms index
  *
  * Note: This script focuses on cross-package sync validation. For registry integrity
  * validation (JSON schema, key/version matching, duplicates), use:
@@ -31,12 +32,46 @@ const REPUTATION_ALGORITHMS_PATH = join(
     'packages',
     'reputation-algorithms'
 )
-const TYPESCRIPT_WORKER_PATH = join(MONOREPO_ROOT, 'apps', 'typescript-worker')
+const WORKFLOWS_PATH = join(MONOREPO_ROOT, 'apps', 'workflows')
 
 // Registry and activities paths
 const REGISTRY_PATH = join(REPUTATION_ALGORITHMS_PATH, 'src', 'registry')
-const ACTIVITIES_DIR = join(TYPESCRIPT_WORKER_PATH, 'src', 'activities')
-const ACTIVITIES_INDEX = join(ACTIVITIES_DIR, 'index.ts')
+const ALGORITHMS_DIR = join(
+    WORKFLOWS_PATH,
+    'src',
+    'activities',
+    'typescript',
+    'algorithms'
+)
+const ALGORITHMS_INDEX = join(ALGORITHMS_DIR, 'index.ts')
+const DISPATCHER_PATH = join(
+    WORKFLOWS_PATH,
+    'src',
+    'activities',
+    'typescript',
+    'dispatchAlgorithm.activity.ts'
+)
+
+// ============================================================================
+// Utility Functions
+// ============================================================================
+
+/**
+ * Convert snake_case to kebab-case for folder names.
+ */
+function toKebabCase(key: string): string {
+    return key.replace(/_/g, '-')
+}
+
+/**
+ * Convert snake_case to PascalCase for function names.
+ */
+function toPascalCase(key: string): string {
+    return key
+        .split('_')
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join('')
+}
 
 // ============================================================================
 // Registry Discovery
@@ -45,8 +80,7 @@ const ACTIVITIES_INDEX = join(ACTIVITIES_DIR, 'index.ts')
 interface AlgorithmDefinitionInfo {
     key: string
     versions: string[]
-    runtimeActivity: string | null
-    runtimeTaskQueue: string | null
+    runtime: string | null
 }
 
 interface RegistryDiscoveryResult {
@@ -83,8 +117,7 @@ function discoverRegistryAlgorithms(): RegistryDiscoveryResult {
         }
 
         const versions: string[] = []
-        let runtimeActivity: string | null = null
-        let runtimeTaskQueue: string | null = null
+        let runtime: string | null = null
 
         // Find all version files in the directory
         const versionFiles = readdirSync(entryPath).filter((f) =>
@@ -105,8 +138,10 @@ function discoverRegistryAlgorithms(): RegistryDiscoveryResult {
 
                 // Extract runtime info (use latest version)
                 if (definition.runtime) {
-                    runtimeActivity = definition.runtime.activity || null
-                    runtimeTaskQueue = definition.runtime.taskQueue || null
+                    runtime =
+                        typeof definition.runtime === 'string'
+                            ? definition.runtime
+                            : definition.runtime.type || 'typescript'
                 }
             } catch (error) {
                 // Report JSON parse errors instead of silently ignoring them
@@ -125,8 +160,7 @@ function discoverRegistryAlgorithms(): RegistryDiscoveryResult {
             algorithms.set(entry, {
                 key: entry,
                 versions: versions.sort(),
-                runtimeActivity,
-                runtimeTaskQueue,
+                runtime: runtime || 'typescript',
             })
         }
     }
@@ -139,27 +173,58 @@ function discoverRegistryAlgorithms(): RegistryDiscoveryResult {
 // ============================================================================
 
 /**
- * Discover all activity exports from the activities index file.
+ * Discover all algorithm directories in the algorithms folder.
  */
-function discoverActivityExports(): Set<string> {
+function discoverAlgorithmDirectories(): Set<string> {
+    const algorithms = new Set<string>()
+
+    if (!existsSync(ALGORITHMS_DIR)) {
+        console.error(`✗ Algorithms directory not found: ${ALGORITHMS_DIR}`)
+        return algorithms
+    }
+
+    const entries = readdirSync(ALGORITHMS_DIR)
+
+    for (const entry of entries) {
+        const entryPath = join(ALGORITHMS_DIR, entry)
+
+        // Skip non-directories and index.ts
+        if (!statSync(entryPath).isDirectory()) {
+            continue
+        }
+
+        // Check if compute.ts exists in the directory
+        const computePath = join(entryPath, 'compute.ts')
+        if (existsSync(computePath)) {
+            algorithms.add(entry)
+        }
+    }
+
+    return algorithms
+}
+
+/**
+ * Discover all algorithm exports from the algorithms index file.
+ */
+function discoverAlgorithmExports(): Set<string> {
     const exports = new Set<string>()
 
-    if (!existsSync(ACTIVITIES_INDEX)) {
-        console.error(`✗ Activities index not found: ${ACTIVITIES_INDEX}`)
+    if (!existsSync(ALGORITHMS_INDEX)) {
+        console.error(`✗ Algorithms index not found: ${ALGORITHMS_INDEX}`)
         return exports
     }
 
-    const content = readFileSync(ACTIVITIES_INDEX, 'utf8')
+    const content = readFileSync(ALGORITHMS_INDEX, 'utf8')
 
-    // Match export statements like: export * from './voting_engagement.activity.js';
+    // Match export statements like: export { computeVotingEngagement } from './voting-engagement/index.js';
     const exportPattern =
-        /export\s+\*\s+from\s+['"]\.\/([^'"/]+)\.activity\.js['"]/g
+        /export\s+\{\s*\w+\s*\}\s+from\s+['"]\.\/([^'"/]+)\/index\.js['"]/g
     const matches = content.matchAll(exportPattern)
 
     for (const match of matches) {
-        const activityKey = match[1]
-        if (activityKey) {
-            exports.add(activityKey)
+        const algorithmDir = match[1]
+        if (algorithmDir) {
+            exports.add(algorithmDir)
         }
     }
 
@@ -167,26 +232,40 @@ function discoverActivityExports(): Set<string> {
 }
 
 /**
- * Discover all activity files in the activities directory.
+ * Discover all algorithms registered in the dispatcher.
  */
-function discoverActivityFiles(): Set<string> {
-    const activities = new Set<string>()
+function discoverDispatcherRegistry(): Set<string> {
+    const registered = new Set<string>()
 
-    if (!existsSync(ACTIVITIES_DIR)) {
-        console.error(`✗ Activities directory not found: ${ACTIVITIES_DIR}`)
-        return activities
+    if (!existsSync(DISPATCHER_PATH)) {
+        console.error(`✗ Dispatcher not found: ${DISPATCHER_PATH}`)
+        return registered
     }
 
-    const files = readdirSync(ACTIVITIES_DIR)
+    const content = readFileSync(DISPATCHER_PATH, 'utf8')
 
-    for (const file of files) {
-        if (file.endsWith('.activity.ts')) {
-            const activityKey = file.replace('.activity.ts', '')
-            activities.add(activityKey)
+    // Match registry entries like: voting_engagement: computeVotingEngagement,
+    const registryMatch = content.match(
+        /const registry: Record<string, AlgorithmComputeFunction> = \{([^}]*)\}/s
+    )
+
+    if (!registryMatch) {
+        console.error('✗ Could not find registry object in dispatcher')
+        return registered
+    }
+
+    const registryContent = registryMatch[1]
+    const entryPattern = /(\w+)\s*:/g
+    const matches = registryContent.matchAll(entryPattern)
+
+    for (const match of matches) {
+        const algorithmKey = match[1]
+        if (algorithmKey) {
+            registered.add(algorithmKey)
         }
     }
 
-    return activities
+    return registered
 }
 
 // ============================================================================
@@ -210,8 +289,9 @@ function validateAlgorithms(): ValidationReport {
     const discoveryResult = discoverRegistryAlgorithms()
     const registryAlgorithms = discoveryResult.algorithms
     const jsonErrors = discoveryResult.jsonErrors
-    const activityExports = discoverActivityExports()
-    const activityFiles = discoverActivityFiles()
+    const algorithmDirs = discoverAlgorithmDirectories()
+    const algorithmExports = discoverAlgorithmExports()
+    const dispatcherRegistry = discoverDispatcherRegistry()
 
     // Add JSON syntax errors first (critical errors)
     report.errors.push(...jsonErrors)
@@ -220,67 +300,79 @@ function validateAlgorithms(): ValidationReport {
         `Found ${registryAlgorithms.size} algorithm definition(s) in registry`
     )
     report.info.push(
-        `Found ${activityExports.size} activity export(s) in index`
+        `Found ${algorithmDirs.size} algorithm directory/directories in workflows`
     )
     report.info.push(
-        `Found ${activityFiles.size} activity file(s) in directory`
+        `Found ${algorithmExports.size} algorithm export(s) in index`
+    )
+    report.info.push(
+        `Found ${dispatcherRegistry.size} algorithm(s) registered in dispatcher`
     )
 
-    // Check: Every algorithm definition should have a corresponding activity
+    // Check: Every TypeScript algorithm definition should have a corresponding implementation
     for (const [key, info] of registryAlgorithms) {
-        const expectedActivity = info.runtimeActivity || key
+        // Only validate TypeScript runtime algorithms
+        if (info.runtime !== 'typescript') {
+            report.info.push(
+                `Algorithm "${key}" uses runtime "${info.runtime}" - skipping TypeScript validation`
+            )
+            continue
+        }
 
-        // Check if activity file exists
-        if (!activityFiles.has(expectedActivity)) {
+        const kebabName = toKebabCase(key)
+        const pascalName = toPascalCase(key)
+        const functionName = `compute${pascalName}`
+
+        // Check if algorithm directory exists with compute.ts
+        if (!algorithmDirs.has(kebabName)) {
             report.errors.push(
-                `Missing activity file for algorithm "${key}" (expected: ${expectedActivity}.activity.ts)`
+                `Missing algorithm implementation for "${key}" (expected: algorithms/${kebabName}/compute.ts)`
             )
         }
 
-        // Check if activity is exported
-        if (!activityExports.has(expectedActivity)) {
+        // Check if algorithm is exported in index
+        if (!algorithmExports.has(kebabName)) {
             report.errors.push(
-                `Missing activity export for algorithm "${key}" (expected export from: ./${expectedActivity}.activity.js)`
+                `Missing algorithm export for "${key}" (expected export from: ./${kebabName}/index.js)`
             )
         }
 
-        // Warn if runtime.activity doesn't match key
-        if (info.runtimeActivity && info.runtimeActivity !== key) {
-            report.warnings.push(
-                `Algorithm "${key}" has different runtime.activity "${info.runtimeActivity}" - ensure activity function is named correctly`
+        // Check if algorithm is registered in dispatcher
+        if (!dispatcherRegistry.has(key)) {
+            report.errors.push(
+                `Missing dispatcher registration for "${key}" (expected: ${key}: ${functionName})`
             )
         }
     }
 
-    // Check: Every activity file should have a corresponding definition (warning only)
-    for (const activityKey of activityFiles) {
-        // Skip utility files
-        if (activityKey === 'utils' || activityKey === 'index') {
-            continue
-        }
+    // Check: Every algorithm directory should have a corresponding definition
+    for (const algorithmDir of algorithmDirs) {
+        // Convert kebab-case back to snake_case
+        const snakeKey = algorithmDir.replace(/-/g, '_')
 
-        const hasDefinition = Array.from(registryAlgorithms.values()).some(
-            (info) =>
-                info.key === activityKey || info.runtimeActivity === activityKey
-        )
+        const hasDefinition = registryAlgorithms.has(snakeKey)
 
         if (!hasDefinition) {
             report.warnings.push(
-                `Activity file "${activityKey}.activity.ts" has no corresponding algorithm definition`
+                `Algorithm directory "${algorithmDir}" has no corresponding algorithm definition`
             )
         }
     }
 
-    // Check: Every activity file should be exported
-    for (const activityKey of activityFiles) {
-        // Skip utility files
-        if (activityKey === 'utils' || activityKey === 'index') {
-            continue
-        }
-
-        if (!activityExports.has(activityKey)) {
+    // Check: Every exported algorithm should have a directory
+    for (const exportDir of algorithmExports) {
+        if (!algorithmDirs.has(exportDir)) {
             report.errors.push(
-                `Activity file "${activityKey}.activity.ts" is not exported in index.ts`
+                `Exported algorithm "${exportDir}" has no corresponding directory`
+            )
+        }
+    }
+
+    // Check: Every registered algorithm should have a definition
+    for (const registeredKey of dispatcherRegistry) {
+        if (!registryAlgorithms.has(registeredKey)) {
+            report.warnings.push(
+                `Registered algorithm "${registeredKey}" has no corresponding algorithm definition`
             )
         }
     }
@@ -343,14 +435,12 @@ function printUsage(): void {
     console.log('This script performs cross-package sync validation:')
     console.log('  - JSON syntax validity of algorithm definition files')
     console.log(
-        '  - Every algorithm definition has a corresponding activity file'
+        '  - Every algorithm definition has a corresponding algorithm directory'
     )
+    console.log('  - Every algorithm is registered in the dispatcher')
+    console.log('  - Every algorithm is exported in the algorithms index')
     console.log(
-        '  - Every algorithm definition has a corresponding activity export'
-    )
-    console.log('  - Every activity file is exported in index.ts')
-    console.log(
-        '  - Every activity file has a corresponding definition (warning)'
+        '  - Every algorithm directory has a corresponding definition (warning)'
     )
     console.log('')
     console.log(

@@ -250,7 +250,9 @@ export function AlgorithmPresets({ algo }: { algo?: Algorithm }) {
                   </TableCell>
                   <TableCell className="max-w-[250px]">
                     <div className="flex flex-col">
-                      <div className="font-medium truncate">{toTitleCase(preset.key)}</div>
+                      <div className="font-medium truncate">
+                        {toTitleCase(preset.key)}
+                      </div>
                       <div className="text-muted-foreground text-xs truncate">
                         {preset.description || `Algorithm preset`}
                       </div>

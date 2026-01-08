@@ -32,11 +32,11 @@
 | `apps/api`                       | ![nestjs](https://img.shields.io/badge/-NestJS-E0234E?logo=nestjs&logoColor=white&style=flat)                                                                                                                   | ✅ Ready | [📚 README](apps/api/README.md) · [📖 API Docs](https://api-staging.logid.xyz/reference) |
 | `apps/ui`                        | ![next](https://img.shields.io/badge/-Next.js-000000?logo=nextdotjs&logoColor=white&style=flat)                                                                                                                 | ✅ Ready | [📚 README](apps/ui/README.md) · [🌐 App](https://staging.logid.xyz)                     |
 | `apps/workflows`                 | ![temporal](https://img.shields.io/badge/-Temporal-000000?logo=temporal&logoColor=white&style=flat) + ![typescript](https://img.shields.io/badge/-TypeScript-3178C6?logo=typescript&logoColor=white&style=flat) | ✅ Ready | [📚 README](apps/workflows/README.md)                                                    |
-| `apps/typescript-worker`         | ![temporal](https://img.shields.io/badge/-Temporal-000000?logo=temporal&logoColor=white&style=flat) + ![typescript](https://img.shields.io/badge/-TypeScript-3178C6?logo=typescript&logoColor=white&style=flat) | ✅ Ready | [📚 README](apps/typescript-worker/README.md)                                            |
 | `packages/reputation-algorithms` | ![typescript](https://img.shields.io/badge/-TypeScript-3178C6?logo=typescript&logoColor=white&style=flat)                                                                                                       | ✅ Ready | [📚 README](packages/reputation-algorithms/README.md)                                    |
 | `packages/algorithm-validator`   | ![typescript](https://img.shields.io/badge/-TypeScript-3178C6?logo=typescript&logoColor=white&style=flat)                                                                                                       | ✅ Ready | [📚 README](packages/algorithm-validator/README.md)                                      |
 | `packages/database`              | ![mongoose](https://img.shields.io/badge/-Mongoose-880000?logo=mongoose&logoColor=white&style=flat) + ![typescript](https://img.shields.io/badge/-TypeScript-3178C6?logo=typescript&logoColor=white&style=flat) | ✅ Ready | [📚 README](packages/database/README.md)                                                 |
 | `packages/storage`               | ![typescript](https://img.shields.io/badge/-TypeScript-3178C6?logo=typescript&logoColor=white&style=flat)                                                                                                       | ✅ Ready | [📚 README](packages/storage/README.md)                                                  |
+| `packages/deepfunding-portal-api`| ![typescript](https://img.shields.io/badge/-TypeScript-3178C6?logo=typescript&logoColor=white&style=flat)                                                                                                       | ✅ Ready | [📚 README](packages/deepfunding-portal-api/README.md)                                   |
 
 ---
 
@@ -94,8 +94,7 @@ reputo/
 ├── apps/
 │   ├── api/                        # NestJS API server
 │   ├── ui/                         # Next.js frontend
-│   ├── workflows/                  # Temporal workflows
-│   └── typescript-worker/          # Algorithm execution worker
+│   └── workflows/                  # Temporal workflows & algorithm workers
 ├── packages/
 │   ├── algorithm-validator/        # Shared Zod validation library
 │   ├── reputation-algorithms/      # Algorithm definitions registry
@@ -165,7 +164,7 @@ Algorithms in Reputo consist of two parts:
 
 1. **Algorithm Definition** - A JSON schema that describes the algorithm's metadata, inputs, outputs, and runtime configuration. Located in `packages/reputation-algorithms/src/registry/`.
 
-2. **Activity Implementation** - TypeScript code that executes the algorithm logic. Located in `apps/typescript-worker/src/activities/`.
+2. **Activity Implementation** - TypeScript code that executes the algorithm logic. Located in `apps/workflows/src/activities/typescript/algorithms/`.
 
 ### Step 1: Create a New Algorithm
 
@@ -184,7 +183,8 @@ pnpm algorithm:create proposal_engagement 1.0.0
 This creates:
 
 -   `packages/reputation-algorithms/src/registry/proposal_engagement/1.0.0.json` - Algorithm definition
--   `apps/typescript-worker/src/activities/proposal_engagement.activity.ts` - Activity scaffold
+-   `apps/workflows/src/activities/typescript/algorithms/proposal-engagement/compute.ts` - Activity implementation
+-   `apps/workflows/src/activities/typescript/algorithms/proposal-engagement/index.ts` - Activity export
 
 **Requirements:**
 
@@ -234,36 +234,34 @@ Edit the generated JSON file to define your algorithm's schema:
             }
         }
     ],
-    "runtime": {
-        "taskQueue": "typescript-worker",
-        "activity": "proposal_engagement"
-    }
+    "runtime": "typescript"
 }
 ```
 
 **Key fields:**
 
-| Field              | Description                                                         |
-| ------------------ | ------------------------------------------------------------------- |
-| `inputs`           | Define expected input data schema (CSV columns, types, constraints) |
-| `outputs`          | Define output data schema                                           |
-| `runtime.activity` | Must match the exported function name in the activity file          |
+| Field     | Description                                                         |
+| --------- | ------------------------------------------------------------------- |
+| `inputs`  | Define expected input data schema (CSV columns, types, constraints) |
+| `outputs` | Define output data schema                                           |
+| `runtime` | The runtime environment for the algorithm (e.g., `typescript`)      |
 
 ### Step 3: Implement the Activity Logic
 
 Edit the generated activity file to implement your algorithm:
 
 ```typescript
-// apps/typescript-worker/src/activities/proposal_engagement.activity.ts
+// apps/workflows/src/activities/typescript/algorithms/proposal-engagement/compute.ts
 
-export async function proposal_engagement(
-    payload: WorkerAlgorithmPayload
-): Promise<WorkerAlgorithmResult> {
-    const { snapshotId, algorithmKey, inputLocations } = payload
+export async function computeProposalEngagement(
+    snapshot: Snapshot,
+    storage: Storage
+): Promise<AlgorithmResult> {
+    const { inputs } = snapshot.algorithmPresetFrozen
 
     // 1. Get input data
-    const inputKey = getInputLocation(inputLocations, 'proposals')
-    const buffer = await storage.getObject(inputKey)
+    const inputKey = getInputValue(inputs, 'proposals')
+    const buffer = await storage.getObject({ bucket, key: inputKey })
     const rows = parse(buffer.toString('utf8'), { columns: true })
 
     // 2. Implement your algorithm logic
@@ -271,8 +269,13 @@ export async function proposal_engagement(
 
     // 3. Serialize and upload output
     const outputCsv = stringify(scores, { header: true })
-    const outputKey = generateSnapshotOutputKey(snapshotId, algorithmKey)
-    await storage.putObject(outputKey, outputCsv, 'text/csv')
+    const outputKey = generateKey('snapshot', snapshotId, `${algorithmKey}.csv`)
+    await storage.putObject({
+        bucket,
+        key: outputKey,
+        body: outputCsv,
+        contentType: 'text/csv',
+    })
 
     // 4. Return output locations
     return {
@@ -293,9 +296,9 @@ pnpm algorithm:validate
 
 This checks:
 
--   Every definition has a matching activity file
--   Every definition has a matching activity export
--   Every activity file is exported in the index
+-   Every definition has a matching algorithm directory with `compute.ts`
+-   Every algorithm is registered in the dispatcher
+-   Every algorithm is exported in the algorithms index
 
 ### Step 5: Build and Test
 
@@ -303,8 +306,8 @@ This checks:
 # Validate and build the algorithms package
 pnpm --filter @reputo/reputation-algorithms build
 
-# Build the worker
-pnpm --filter @reputo/typescript-worker build
+# Build the workflows package
+pnpm --filter @reputo/workflows build
 
 # Run tests
 pnpm test
@@ -327,7 +330,6 @@ This creates a new version file. The activity implementation is shared across ve
 | `pnpm algorithm:create <key> <version>`                                        | Create algorithm definition + activity scaffold |
 | `pnpm algorithm:validate`                                                      | Validate definitions and activities are in sync |
 | `pnpm --filter @reputo/reputation-algorithms algorithm:create <key> <version>` | Create definition only                          |
-| `pnpm --filter @reputo/typescript-worker algorithm:new <key>`                  | Create activity only                            |
 
 ---
 

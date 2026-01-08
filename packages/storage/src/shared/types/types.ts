@@ -7,46 +7,140 @@
 /**
  * Types of storage keys supported by the system.
  *
- * - 'upload': User-uploaded files (`uploads/{timestamp}/{filename}.{ext}`)
- * - 'snapshot-input': Snapshot input files (`snapshots/{snapshotId}/inputs/{inputName}.{ext}`)
- * - 'snapshot-output': Snapshot output files (`snapshots/{snapshotId}/outputs/{algorithmKey}.{ext}`)
+ * - 'upload': User-uploaded files (`uploads/{uuid}/{filename}.{ext}`)
+ * - 'snapshot': Snapshot files (`snapshots/{snapshotId}/{filename}.{ext}`)
  */
-export type StorageKeyType = 'upload' | 'snapshot-input' | 'snapshot-output';
+export type StorageKeyType = 'upload' | 'snapshot';
+
+// ============================================================================
+// Operation-Specific Option Types
+// ============================================================================
 
 /**
- * Configuration options for the Storage instance.
+ * Options for generating a presigned PUT URL.
  */
-export interface StorageConfig {
+export interface PresignPutOptions {
   /**
-   * S3 bucket name where objects will be stored.
+   * S3 bucket name where the object will be stored.
    */
   bucket: string;
 
   /**
-   * Time-to-live for presigned PUT URLs in seconds.
-   * Controls how long upload URLs remain valid.
+   * Original filename for the upload.
    */
-  presignPutTtl: number;
+  filename: string;
 
   /**
-   * Time-to-live for presigned GET URLs in seconds.
-   * Controls how long download URLs remain valid.
+   * MIME type of the file being uploaded.
    */
-  presignGetTtl: number;
+  contentType: string;
 
   /**
-   * Maximum allowed object size in bytes.
-   * Files exceeding this size will be rejected.
+   * Time-to-live for the presigned URL in seconds.
+   */
+  ttl: number;
+
+  /**
+   * Maximum allowed file size in bytes.
    */
   maxSizeBytes: number;
 
   /**
    * Allowed content types (MIME types) for uploads.
-   * Only files with these content types will be accepted.
-   *
-   * @example ['text/csv', 'application/json']
    */
   contentTypeAllowlist: string[];
+}
+
+/**
+ * Options for generating a presigned GET URL.
+ */
+export interface PresignGetOptions {
+  /**
+   * S3 bucket name where the object is stored.
+   */
+  bucket: string;
+
+  /**
+   * S3 key of the object to download.
+   */
+  key: string;
+
+  /**
+   * Time-to-live for the presigned URL in seconds.
+   */
+  ttl: number;
+}
+
+/**
+ * Options for verifying an uploaded object.
+ */
+export interface VerifyOptions {
+  /**
+   * S3 bucket name where the object is stored.
+   */
+  bucket: string;
+
+  /**
+   * S3 key of the object to verify.
+   */
+  key: string;
+
+  /**
+   * Maximum allowed file size in bytes.
+   */
+  maxSizeBytes: number;
+
+  /**
+   * Allowed content types (MIME types).
+   * Optional - only validated for upload keys, not snapshot keys.
+   */
+  contentTypeAllowlist?: string[];
+}
+
+/**
+ * Options for reading an object from S3.
+ */
+export interface GetObjectOptions {
+  /**
+   * S3 bucket name where the object is stored.
+   */
+  bucket: string;
+
+  /**
+   * S3 key of the object to read.
+   */
+  key: string;
+}
+
+/**
+ * Options for writing an object to S3.
+ */
+export interface PutObjectOptions {
+  /**
+   * S3 bucket name where the object will be stored.
+   */
+  bucket: string;
+
+  /**
+   * S3 key where the object should be stored.
+   */
+  key: string;
+
+  /**
+   * Object contents to write.
+   */
+  body: Buffer | Uint8Array | string;
+
+  /**
+   * Optional MIME type for the object.
+   */
+  contentType?: string;
+
+  /**
+   * Optional allowed content types for validation.
+   * Only validated for upload keys, not snapshot keys.
+   */
+  contentTypeAllowlist?: string[];
 }
 
 /**
@@ -70,58 +164,35 @@ interface ParsedStorageKeyBase {
 
 /**
  * Parsed upload key components.
- * Pattern: `uploads/{timestamp}/{filename}.{ext}`
+ * Pattern: `uploads/{uuid}/{filename}.{ext}`
  */
 export interface ParsedUploadKey extends ParsedStorageKeyBase {
   type: 'upload';
 
   /**
-   * Unix timestamp (seconds since epoch) when the key was generated.
+   * UUID v4 identifier for the upload.
    */
-  timestamp: number;
+  uuid: string;
 }
 
 /**
- * Parsed snapshot input key components.
- * Pattern: `snapshots/{snapshotId}/inputs/{inputName}.{ext}`
+ * Parsed snapshot key components.
+ * Pattern: `snapshots/{snapshotId}/{filename}.{ext}`
  */
-export interface ParsedSnapshotInputKey extends ParsedStorageKeyBase {
-  type: 'snapshot-input';
+export interface ParsedSnapshotKey extends ParsedStorageKeyBase {
+  type: 'snapshot';
 
   /**
    * Unique identifier of the snapshot.
    */
   snapshotId: string;
-
-  /**
-   * Logical input name (e.g., 'votes', 'users').
-   */
-  inputName: string;
-}
-
-/**
- * Parsed snapshot output key components.
- * Pattern: `snapshots/{snapshotId}/outputs/{algorithmKey}.{ext}`
- */
-export interface ParsedSnapshotOutputKey extends ParsedStorageKeyBase {
-  type: 'snapshot-output';
-
-  /**
-   * Unique identifier of the snapshot.
-   */
-  snapshotId: string;
-
-  /**
-   * Algorithm key that produced this output (e.g., 'voting_engagement').
-   */
-  algorithmKey: string;
 }
 
 /**
  * Parsed components of a storage key.
  * Discriminated union based on the `type` field.
  */
-export type ParsedStorageKey = ParsedUploadKey | ParsedSnapshotInputKey | ParsedSnapshotOutputKey;
+export type ParsedStorageKey = ParsedUploadKey | ParsedSnapshotKey;
 
 /**
  * @deprecated Use ParsedStorageKey with type discrimination instead.
@@ -175,7 +246,8 @@ export interface StorageMetadata {
   contentType: string;
 
   /**
-   * Unix timestamp (seconds since epoch) when the key was generated.
+   * Unix timestamp (seconds since epoch) when the metadata was retrieved.
+   * For uploads, this is typically the current time. For snapshots, this is also the current time.
    */
   timestamp: number;
 }

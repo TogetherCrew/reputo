@@ -62,10 +62,7 @@ describe('CLI: validateRegistry', () => {
             entity: 'user',
           },
         ],
-        runtime: {
-          taskQueue: 'typescript-worker',
-          activity: 'test_algorithm',
-        },
+        runtime: 'typescript',
       };
 
       const filePath = join(algoDir, '1.0.0.json');
@@ -107,10 +104,7 @@ describe('CLI: validateRegistry', () => {
                 entity: 'user',
               },
             ],
-            runtime: {
-              taskQueue: 'typescript-worker',
-              activity: algo.key,
-            },
+            runtime: 'typescript',
           };
 
           writeFileSync(join(algoDir, `${version}.json`), JSON.stringify(algorithmDef));
@@ -160,10 +154,7 @@ describe('CLI: validateRegistry', () => {
               },
             },
           ],
-          runtime: {
-            taskQueue: 'typescript-worker',
-            activity: 'test_algorithm',
-          },
+          runtime: 'typescript',
         },
       };
 
@@ -371,10 +362,7 @@ describe('CLI: validateRegistry', () => {
             },
           },
         ],
-        runtime: {
-          taskQueue: 'typescript-worker',
-          activity: 'test_algorithm',
-        },
+        runtime: 'typescript',
       };
 
       writeFileSync(join(algoDir, '1.0.0.json'), JSON.stringify(algorithmDef));
@@ -461,10 +449,7 @@ describe('CLI: validateRegistry', () => {
             },
           },
         ],
-        runtime: {
-          taskQueue: 'typescript-worker',
-          activity: 'test_algorithm',
-        },
+        runtime: 'typescript',
       };
 
       writeFileSync(join(algoDir1, '1.0.0.json'), JSON.stringify(algorithmDef));
@@ -507,10 +492,7 @@ describe('CLI: validateRegistry', () => {
               },
             },
           ],
-          runtime: {
-            taskQueue: 'typescript-worker',
-            activity: algo.key,
-          },
+          runtime: 'typescript',
         };
 
         writeFileSync(join(algoDir, `${algo.version}.json`), JSON.stringify(algorithmDef));
