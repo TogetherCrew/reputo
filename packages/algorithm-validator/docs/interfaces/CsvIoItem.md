@@ -6,7 +6,7 @@
 
 # Interface: CsvIoItem
 
-Defined in: [packages/algorithm-validator/src/types/algorithm.ts:48](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/algorithm-validator/src/types/algorithm.ts#L48)
+Defined in: [packages/algorithm-validator/src/types/algorithm.ts:48](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/algorithm-validator/src/types/algorithm.ts#L48)
 
 CSV input/output item configuration for algorithm definitions.
 
@@ -20,7 +20,7 @@ CSV input/output item configuration for algorithm definitions.
 
 > **key**: `string`
 
-Defined in: [packages/algorithm-validator/src/types/algorithm.ts:38](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/algorithm-validator/src/types/algorithm.ts#L38)
+Defined in: [packages/algorithm-validator/src/types/algorithm.ts:38](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/algorithm-validator/src/types/algorithm.ts#L38)
 
 Unique identifier for the I/O item
 
@@ -34,7 +34,7 @@ Unique identifier for the I/O item
 
 > `optional` **label**: `string`
 
-Defined in: [packages/algorithm-validator/src/types/algorithm.ts:40](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/algorithm-validator/src/types/algorithm.ts#L40)
+Defined in: [packages/algorithm-validator/src/types/algorithm.ts:40](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/algorithm-validator/src/types/algorithm.ts#L40)
 
 Human-readable label for display purposes
 
@@ -48,7 +48,7 @@ Human-readable label for display purposes
 
 > `optional` **description**: `string`
 
-Defined in: [packages/algorithm-validator/src/types/algorithm.ts:42](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/algorithm-validator/src/types/algorithm.ts#L42)
+Defined in: [packages/algorithm-validator/src/types/algorithm.ts:42](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/algorithm-validator/src/types/algorithm.ts#L42)
 
 Detailed description of the I/O item's purpose and usage
 
@@ -62,7 +62,7 @@ Detailed description of the I/O item's purpose and usage
 
 > **type**: `"csv"`
 
-Defined in: [packages/algorithm-validator/src/types/algorithm.ts:50](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/algorithm-validator/src/types/algorithm.ts#L50)
+Defined in: [packages/algorithm-validator/src/types/algorithm.ts:50](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/algorithm-validator/src/types/algorithm.ts#L50)
 
 Type identifier for CSV data
 
@@ -72,7 +72,7 @@ Type identifier for CSV data
 
 > **csv**: `object`
 
-Defined in: [packages/algorithm-validator/src/types/algorithm.ts:52](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/algorithm-validator/src/types/algorithm.ts#L52)
+Defined in: [packages/algorithm-validator/src/types/algorithm.ts:52](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/algorithm-validator/src/types/algorithm.ts#L52)
 
 CSV parsing and validation configuration
 
@@ -112,6 +112,6 @@ Column definitions for data validation and processing
 
 > `optional` **entity**: `string`
 
-Defined in: [packages/algorithm-validator/src/types/algorithm.ts:84](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/algorithm-validator/src/types/algorithm.ts#L84)
+Defined in: [packages/algorithm-validator/src/types/algorithm.ts:84](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/algorithm-validator/src/types/algorithm.ts#L84)
 
 Entity type that this CSV data represents (e.g., 'user', 'post', 'comment')

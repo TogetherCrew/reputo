@@ -8,7 +8,7 @@
 
 > **CreateDbOptions** = `object`
 
-Defined in: [packages/deepfunding-portal-api/src/shared/types/db.ts:6](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/deepfunding-portal-api/src/shared/types/db.ts#L6)
+Defined in: [packages/deepfunding-portal-api/src/shared/types/db.ts:6](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/deepfunding-portal-api/src/shared/types/db.ts#L6)
 
 Options for creating a new database
 
@@ -18,6 +18,6 @@ Options for creating a new database
 
 > **path**: `string`
 
-Defined in: [packages/deepfunding-portal-api/src/shared/types/db.ts:8](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/deepfunding-portal-api/src/shared/types/db.ts#L8)
+Defined in: [packages/deepfunding-portal-api/src/shared/types/db.ts:8](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/deepfunding-portal-api/src/shared/types/db.ts#L8)
 
 Path to the SQLite database file

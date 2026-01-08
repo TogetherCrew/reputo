@@ -8,7 +8,7 @@
 
 > **connect**(`uri`): `Promise`\<`void`\>
 
-Defined in: packages/database/src/connection.ts:17
+Defined in: [packages/database/src/connection.ts:17](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/database/src/connection.ts#L17)
 
 Connects to MongoDB using the provided connection URI.
 

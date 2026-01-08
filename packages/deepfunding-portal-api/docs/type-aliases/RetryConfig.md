@@ -8,7 +8,7 @@
 
 > **RetryConfig** = `object`
 
-Defined in: [packages/deepfunding-portal-api/src/shared/types/api-config.ts:4](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/deepfunding-portal-api/src/shared/types/api-config.ts#L4)
+Defined in: [packages/deepfunding-portal-api/src/shared/types/api-config.ts:4](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/deepfunding-portal-api/src/shared/types/api-config.ts#L4)
 
 Retry configuration for HTTP requests
 
@@ -18,7 +18,7 @@ Retry configuration for HTTP requests
 
 > **maxAttempts**: `number`
 
-Defined in: [packages/deepfunding-portal-api/src/shared/types/api-config.ts:6](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/deepfunding-portal-api/src/shared/types/api-config.ts#L6)
+Defined in: [packages/deepfunding-portal-api/src/shared/types/api-config.ts:6](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/deepfunding-portal-api/src/shared/types/api-config.ts#L6)
 
 Maximum number of retry attempts
 
@@ -28,7 +28,7 @@ Maximum number of retry attempts
 
 > **baseDelayMs**: `number`
 
-Defined in: [packages/deepfunding-portal-api/src/shared/types/api-config.ts:8](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/deepfunding-portal-api/src/shared/types/api-config.ts#L8)
+Defined in: [packages/deepfunding-portal-api/src/shared/types/api-config.ts:8](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/deepfunding-portal-api/src/shared/types/api-config.ts#L8)
 
 Base delay in milliseconds for exponential backoff
 
@@ -38,6 +38,6 @@ Base delay in milliseconds for exponential backoff
 
 > **maxDelayMs**: `number`
 
-Defined in: [packages/deepfunding-portal-api/src/shared/types/api-config.ts:10](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/deepfunding-portal-api/src/shared/types/api-config.ts#L10)
+Defined in: [packages/deepfunding-portal-api/src/shared/types/api-config.ts:10](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/deepfunding-portal-api/src/shared/types/api-config.ts#L10)
 
 Maximum delay in milliseconds between retries

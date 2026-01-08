@@ -8,7 +8,7 @@
 
 > **AlgorithmPresetInputType** = `z.infer`\<*typeof* [`algorithmPresetInputSchema`](../variables/algorithmPresetInputSchema.md)\>
 
-Defined in: [packages/algorithm-validator/src/schemas/algorithm-preset.ts:69](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/algorithm-validator/src/schemas/algorithm-preset.ts#L69)
+Defined in: [packages/algorithm-validator/src/schemas/algorithm-preset.ts:69](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/algorithm-validator/src/schemas/algorithm-preset.ts#L69)
 
 TypeScript type for a single algorithm preset input.
 

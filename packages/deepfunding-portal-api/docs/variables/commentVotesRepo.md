@@ -8,7 +8,7 @@
 
 > `const` **commentVotesRepo**: `object`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/commentVotes/repository.ts:61](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/deepfunding-portal-api/src/resources/commentVotes/repository.ts#L61)
+Defined in: [packages/deepfunding-portal-api/src/resources/commentVotes/repository.ts:61](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/deepfunding-portal-api/src/resources/commentVotes/repository.ts#L61)
 
 Comment votes repository
 
@@ -56,17 +56,17 @@ Optional configuration for chunk size
 
 ### findAll()
 
-> **findAll**: () => `object`[]
+> **findAll**: () => [`CommentVoteRecord`](../type-aliases/CommentVoteRecord.md)[]
 
 Find all comment votes
 
 #### Returns
 
-`object`[]
+[`CommentVoteRecord`](../type-aliases/CommentVoteRecord.md)[]
 
 ### findByCommentId()
 
-> **findByCommentId**: (`commentId`) => `object`[]
+> **findByCommentId**: (`commentId`) => [`CommentVoteRecord`](../type-aliases/CommentVoteRecord.md)[]
 
 Find comment votes by comment ID
 
@@ -78,11 +78,11 @@ Find comment votes by comment ID
 
 #### Returns
 
-`object`[]
+[`CommentVoteRecord`](../type-aliases/CommentVoteRecord.md)[]
 
 ### findByVoterId()
 
-> **findByVoterId**: (`voterId`) => `object`[]
+> **findByVoterId**: (`voterId`) => [`CommentVoteRecord`](../type-aliases/CommentVoteRecord.md)[]
 
 Find comment votes by voter ID
 
@@ -94,4 +94,4 @@ Find comment votes by voter ID
 
 #### Returns
 
-`object`[]
+[`CommentVoteRecord`](../type-aliases/CommentVoteRecord.md)[]

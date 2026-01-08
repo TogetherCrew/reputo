@@ -8,7 +8,7 @@
 
 > **CommentRecord** = `object`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/comments/types.ts:34](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/deepfunding-portal-api/src/resources/comments/types.ts#L34)
+Defined in: [packages/deepfunding-portal-api/src/resources/comments/types.ts:34](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/deepfunding-portal-api/src/resources/comments/types.ts#L34)
 
 Comment database record
 
@@ -18,7 +18,7 @@ Comment database record
 
 > **commentId**: `number`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/comments/types.ts:35](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/deepfunding-portal-api/src/resources/comments/types.ts#L35)
+Defined in: [packages/deepfunding-portal-api/src/resources/comments/types.ts:35](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/deepfunding-portal-api/src/resources/comments/types.ts#L35)
 
 ***
 
@@ -26,7 +26,7 @@ Defined in: [packages/deepfunding-portal-api/src/resources/comments/types.ts:35]
 
 > **parentId**: `number`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/comments/types.ts:36](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/deepfunding-portal-api/src/resources/comments/types.ts#L36)
+Defined in: [packages/deepfunding-portal-api/src/resources/comments/types.ts:36](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/deepfunding-portal-api/src/resources/comments/types.ts#L36)
 
 ***
 
@@ -34,7 +34,7 @@ Defined in: [packages/deepfunding-portal-api/src/resources/comments/types.ts:36]
 
 > **isReply**: `boolean`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/comments/types.ts:37](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/deepfunding-portal-api/src/resources/comments/types.ts#L37)
+Defined in: [packages/deepfunding-portal-api/src/resources/comments/types.ts:37](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/deepfunding-portal-api/src/resources/comments/types.ts#L37)
 
 ***
 
@@ -42,7 +42,7 @@ Defined in: [packages/deepfunding-portal-api/src/resources/comments/types.ts:37]
 
 > **userId**: `number`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/comments/types.ts:38](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/deepfunding-portal-api/src/resources/comments/types.ts#L38)
+Defined in: [packages/deepfunding-portal-api/src/resources/comments/types.ts:38](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/deepfunding-portal-api/src/resources/comments/types.ts#L38)
 
 ***
 
@@ -50,7 +50,7 @@ Defined in: [packages/deepfunding-portal-api/src/resources/comments/types.ts:38]
 
 > **proposalId**: `number`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/comments/types.ts:39](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/deepfunding-portal-api/src/resources/comments/types.ts#L39)
+Defined in: [packages/deepfunding-portal-api/src/resources/comments/types.ts:39](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/deepfunding-portal-api/src/resources/comments/types.ts#L39)
 
 ***
 
@@ -58,7 +58,7 @@ Defined in: [packages/deepfunding-portal-api/src/resources/comments/types.ts:39]
 
 > **content**: `string`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/comments/types.ts:40](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/deepfunding-portal-api/src/resources/comments/types.ts#L40)
+Defined in: [packages/deepfunding-portal-api/src/resources/comments/types.ts:40](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/deepfunding-portal-api/src/resources/comments/types.ts#L40)
 
 ***
 
@@ -66,7 +66,7 @@ Defined in: [packages/deepfunding-portal-api/src/resources/comments/types.ts:40]
 
 > **commentVotes**: `string`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/comments/types.ts:41](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/deepfunding-portal-api/src/resources/comments/types.ts#L41)
+Defined in: [packages/deepfunding-portal-api/src/resources/comments/types.ts:41](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/deepfunding-portal-api/src/resources/comments/types.ts#L41)
 
 ***
 
@@ -74,7 +74,7 @@ Defined in: [packages/deepfunding-portal-api/src/resources/comments/types.ts:41]
 
 > **createdAt**: `string`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/comments/types.ts:42](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/deepfunding-portal-api/src/resources/comments/types.ts#L42)
+Defined in: [packages/deepfunding-portal-api/src/resources/comments/types.ts:42](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/deepfunding-portal-api/src/resources/comments/types.ts#L42)
 
 ***
 
@@ -82,7 +82,7 @@ Defined in: [packages/deepfunding-portal-api/src/resources/comments/types.ts:42]
 
 > **updatedAt**: `string`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/comments/types.ts:43](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/deepfunding-portal-api/src/resources/comments/types.ts#L43)
+Defined in: [packages/deepfunding-portal-api/src/resources/comments/types.ts:43](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/deepfunding-portal-api/src/resources/comments/types.ts#L43)
 
 ***
 
@@ -90,4 +90,4 @@ Defined in: [packages/deepfunding-portal-api/src/resources/comments/types.ts:43]
 
 > **rawJson**: `string`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/comments/types.ts:44](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/deepfunding-portal-api/src/resources/comments/types.ts#L44)
+Defined in: [packages/deepfunding-portal-api/src/resources/comments/types.ts:44](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/deepfunding-portal-api/src/resources/comments/types.ts#L44)

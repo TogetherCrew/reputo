@@ -6,7 +6,7 @@
 
 # Interface: AlgorithmPresetFrozen
 
-Defined in: [packages/database/src/shared/types/AlgorithmPresetFrozen.interface.ts:6](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/database/src/shared/types/AlgorithmPresetFrozen.interface.ts#L6)
+Defined in: [packages/database/src/shared/types/AlgorithmPresetFrozen.interface.ts:6](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/database/src/shared/types/AlgorithmPresetFrozen.interface.ts#L6)
 
 Interface representing a frozen snapshot of an AlgorithmPreset.
 
@@ -18,7 +18,7 @@ This immutable copy mirrors the AlgorithmPreset shape and is embedded within a S
 
 > **key**: `string`
 
-Defined in: [packages/database/src/shared/types/AlgorithmPresetFrozen.interface.ts:8](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/database/src/shared/types/AlgorithmPresetFrozen.interface.ts#L8)
+Defined in: [packages/database/src/shared/types/AlgorithmPresetFrozen.interface.ts:8](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/database/src/shared/types/AlgorithmPresetFrozen.interface.ts#L8)
 
 Unique algorithm identifier (e.g., 'voting_engagement')
 
@@ -28,7 +28,7 @@ Unique algorithm identifier (e.g., 'voting_engagement')
 
 > **version**: `string`
 
-Defined in: [packages/database/src/shared/types/AlgorithmPresetFrozen.interface.ts:10](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/database/src/shared/types/AlgorithmPresetFrozen.interface.ts#L10)
+Defined in: [packages/database/src/shared/types/AlgorithmPresetFrozen.interface.ts:10](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/database/src/shared/types/AlgorithmPresetFrozen.interface.ts#L10)
 
 Algorithm version (e.g., '1.0.0')
 
@@ -38,7 +38,7 @@ Algorithm version (e.g., '1.0.0')
 
 > **inputs**: `object`[]
 
-Defined in: [packages/database/src/shared/types/AlgorithmPresetFrozen.interface.ts:12](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/database/src/shared/types/AlgorithmPresetFrozen.interface.ts#L12)
+Defined in: [packages/database/src/shared/types/AlgorithmPresetFrozen.interface.ts:12](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/database/src/shared/types/AlgorithmPresetFrozen.interface.ts#L12)
 
 Array of input parameters for the algorithm
 
@@ -60,7 +60,7 @@ Parameter value (can be any type)
 
 > `optional` **name**: `string`
 
-Defined in: [packages/database/src/shared/types/AlgorithmPresetFrozen.interface.ts:19](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/database/src/shared/types/AlgorithmPresetFrozen.interface.ts#L19)
+Defined in: [packages/database/src/shared/types/AlgorithmPresetFrozen.interface.ts:19](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/database/src/shared/types/AlgorithmPresetFrozen.interface.ts#L19)
 
 Optional human-readable name for the preset (3-100 characters)
 
@@ -70,7 +70,7 @@ Optional human-readable name for the preset (3-100 characters)
 
 > `optional` **description**: `string`
 
-Defined in: [packages/database/src/shared/types/AlgorithmPresetFrozen.interface.ts:21](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/database/src/shared/types/AlgorithmPresetFrozen.interface.ts#L21)
+Defined in: [packages/database/src/shared/types/AlgorithmPresetFrozen.interface.ts:21](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/database/src/shared/types/AlgorithmPresetFrozen.interface.ts#L21)
 
 Optional description of the preset (10-500 characters)
 
@@ -80,7 +80,7 @@ Optional description of the preset (10-500 characters)
 
 > `optional` **createdAt**: `Date`
 
-Defined in: [packages/database/src/shared/types/AlgorithmPresetFrozen.interface.ts:23](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/database/src/shared/types/AlgorithmPresetFrozen.interface.ts#L23)
+Defined in: [packages/database/src/shared/types/AlgorithmPresetFrozen.interface.ts:23](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/database/src/shared/types/AlgorithmPresetFrozen.interface.ts#L23)
 
 Document creation timestamp
 
@@ -90,6 +90,6 @@ Document creation timestamp
 
 > `optional` **updatedAt**: `Date`
 
-Defined in: [packages/database/src/shared/types/AlgorithmPresetFrozen.interface.ts:25](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/database/src/shared/types/AlgorithmPresetFrozen.interface.ts#L25)
+Defined in: [packages/database/src/shared/types/AlgorithmPresetFrozen.interface.ts:25](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/database/src/shared/types/AlgorithmPresetFrozen.interface.ts#L25)
 
 Document last update timestamp

@@ -8,4 +8,4 @@
 
 > **AlgorithmPresetSchema**: `Schema`\<[`AlgorithmPreset`](../interfaces/AlgorithmPreset.md), [`AlgorithmPresetModel`](../interfaces/AlgorithmPresetModel.md), \{ \}, \{ \}, \{ \}, \{ \}, `DefaultSchemaOptions`, [`AlgorithmPreset`](../interfaces/AlgorithmPreset.md), `Document`\<`unknown`, \{ \}, `FlatRecord`\<[`AlgorithmPreset`](../interfaces/AlgorithmPreset.md)\>, \{ \}, `ResolveSchemaOptions`\<`DefaultSchemaOptions`\>\> & `FlatRecord`\<[`AlgorithmPreset`](../interfaces/AlgorithmPreset.md)\> & `object` & `object`\>
 
-Defined in: [packages/database/src/schemas/AlgorithmPreset.schema.ts:43](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/database/src/schemas/AlgorithmPreset.schema.ts#L43)
+Defined in: [packages/database/src/schemas/AlgorithmPreset.schema.ts:43](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/database/src/schemas/AlgorithmPreset.schema.ts#L43)

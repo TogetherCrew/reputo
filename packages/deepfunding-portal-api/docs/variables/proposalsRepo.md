@@ -8,7 +8,7 @@
 
 > `const` **proposalsRepo**: `object`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/proposals/repository.ts:61](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/deepfunding-portal-api/src/resources/proposals/repository.ts#L61)
+Defined in: [packages/deepfunding-portal-api/src/resources/proposals/repository.ts:61](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/deepfunding-portal-api/src/resources/proposals/repository.ts#L61)
 
 Proposals repository
 
@@ -56,17 +56,17 @@ Optional configuration for chunk size
 
 ### findAll()
 
-> **findAll**: () => `object`[]
+> **findAll**: () => [`ProposalRecord`](../type-aliases/ProposalRecord.md)[]
 
 Find all proposals
 
 #### Returns
 
-`object`[]
+[`ProposalRecord`](../type-aliases/ProposalRecord.md)[]
 
 ### findByRoundId()
 
-> **findByRoundId**: (`roundId`) => `object`[]
+> **findByRoundId**: (`roundId`) => [`ProposalRecord`](../type-aliases/ProposalRecord.md)[]
 
 Find proposals by round ID
 
@@ -78,11 +78,11 @@ Find proposals by round ID
 
 #### Returns
 
-`object`[]
+[`ProposalRecord`](../type-aliases/ProposalRecord.md)[]
 
 ### findById()
 
-> **findById**: (`id`) => \{ `id`: `number`; `roundId`: `number`; `poolId`: `number`; `proposerId`: `number`; `title`: `string`; `content`: `string`; `link`: `string`; `featureImage`: `string`; `requestedAmount`: `string`; `awardedAmount`: `string`; `isAwarded`: `boolean`; `isCompleted`: `boolean`; `createdAt`: `string`; `updatedAt`: `string` \| `null`; `teamMembers`: `string`; `rawJson`: `string`; \} \| `undefined`
+> **findById**: (`id`) => [`ProposalRecord`](../type-aliases/ProposalRecord.md) \| `undefined`
 
 Find a proposal by ID
 
@@ -94,4 +94,4 @@ Find a proposal by ID
 
 #### Returns
 
-\{ `id`: `number`; `roundId`: `number`; `poolId`: `number`; `proposerId`: `number`; `title`: `string`; `content`: `string`; `link`: `string`; `featureImage`: `string`; `requestedAmount`: `string`; `awardedAmount`: `string`; `isAwarded`: `boolean`; `isCompleted`: `boolean`; `createdAt`: `string`; `updatedAt`: `string` \| `null`; `teamMembers`: `string`; `rawJson`: `string`; \} \| `undefined`
+[`ProposalRecord`](../type-aliases/ProposalRecord.md) \| `undefined`

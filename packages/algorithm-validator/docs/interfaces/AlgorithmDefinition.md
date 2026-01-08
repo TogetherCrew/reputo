@@ -6,7 +6,7 @@
 
 # Interface: AlgorithmDefinition
 
-Defined in: [packages/algorithm-validator/src/types/algorithm.ts:167](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/algorithm-validator/src/types/algorithm.ts#L167)
+Defined in: [packages/algorithm-validator/src/types/algorithm.ts:167](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/algorithm-validator/src/types/algorithm.ts#L167)
 
 Complete algorithm definition structure.
 
@@ -20,7 +20,7 @@ reputation algorithm.
 
 > **key**: `string`
 
-Defined in: [packages/algorithm-validator/src/types/algorithm.ts:169](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/algorithm-validator/src/types/algorithm.ts#L169)
+Defined in: [packages/algorithm-validator/src/types/algorithm.ts:169](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/algorithm-validator/src/types/algorithm.ts#L169)
 
 Unique identifier for the algorithm
 
@@ -30,7 +30,7 @@ Unique identifier for the algorithm
 
 > **name**: `string`
 
-Defined in: [packages/algorithm-validator/src/types/algorithm.ts:171](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/algorithm-validator/src/types/algorithm.ts#L171)
+Defined in: [packages/algorithm-validator/src/types/algorithm.ts:171](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/algorithm-validator/src/types/algorithm.ts#L171)
 
 Human-readable name of the algorithm
 
@@ -40,7 +40,7 @@ Human-readable name of the algorithm
 
 > **category**: [`AlgorithmCategory`](../type-aliases/AlgorithmCategory.md)
 
-Defined in: [packages/algorithm-validator/src/types/algorithm.ts:173](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/algorithm-validator/src/types/algorithm.ts#L173)
+Defined in: [packages/algorithm-validator/src/types/algorithm.ts:173](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/algorithm-validator/src/types/algorithm.ts#L173)
 
 Category classification for organizing algorithms
 
@@ -50,7 +50,7 @@ Category classification for organizing algorithms
 
 > **description**: `string`
 
-Defined in: [packages/algorithm-validator/src/types/algorithm.ts:175](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/algorithm-validator/src/types/algorithm.ts#L175)
+Defined in: [packages/algorithm-validator/src/types/algorithm.ts:175](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/algorithm-validator/src/types/algorithm.ts#L175)
 
 Detailed description of what the algorithm does and how it works
 
@@ -60,7 +60,7 @@ Detailed description of what the algorithm does and how it works
 
 > **version**: `string`
 
-Defined in: [packages/algorithm-validator/src/types/algorithm.ts:177](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/algorithm-validator/src/types/algorithm.ts#L177)
+Defined in: [packages/algorithm-validator/src/types/algorithm.ts:177](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/algorithm-validator/src/types/algorithm.ts#L177)
 
 Semantic version of the algorithm definition
 
@@ -70,7 +70,7 @@ Semantic version of the algorithm definition
 
 > **inputs**: [`IoItem`](../type-aliases/IoItem.md)[]
 
-Defined in: [packages/algorithm-validator/src/types/algorithm.ts:179](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/algorithm-validator/src/types/algorithm.ts#L179)
+Defined in: [packages/algorithm-validator/src/types/algorithm.ts:179](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/algorithm-validator/src/types/algorithm.ts#L179)
 
 Array of input data specifications
 
@@ -80,7 +80,7 @@ Array of input data specifications
 
 > **outputs**: [`IoItem`](../type-aliases/IoItem.md)[]
 
-Defined in: [packages/algorithm-validator/src/types/algorithm.ts:181](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/algorithm-validator/src/types/algorithm.ts#L181)
+Defined in: [packages/algorithm-validator/src/types/algorithm.ts:181](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/algorithm-validator/src/types/algorithm.ts#L181)
 
 Array of output data specifications
 
@@ -90,6 +90,6 @@ Array of output data specifications
 
 > **runtime**: [`AlgorithmRuntime`](../type-aliases/AlgorithmRuntime.md)
 
-Defined in: [packages/algorithm-validator/src/types/algorithm.ts:183](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/algorithm-validator/src/types/algorithm.ts#L183)
+Defined in: [packages/algorithm-validator/src/types/algorithm.ts:183](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/algorithm-validator/src/types/algorithm.ts#L183)
 
 Runtime (language) used for execution routing

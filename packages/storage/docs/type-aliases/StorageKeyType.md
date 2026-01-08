@@ -8,7 +8,7 @@
 
 > **StorageKeyType** = `"upload"` \| `"snapshot"`
 
-Defined in: [shared/types/types.ts:13](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/storage/src/shared/types/types.ts#L13)
+Defined in: [shared/types/types.ts:13](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/storage/src/shared/types/types.ts#L13)
 
 Types of storage keys supported by the system.
 

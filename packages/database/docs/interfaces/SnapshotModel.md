@@ -6,7 +6,7 @@
 
 # Interface: SnapshotModel
 
-Defined in: [packages/database/src/shared/types/Snapshot.interface.ts:64](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/database/src/shared/types/Snapshot.interface.ts#L64)
+Defined in: [packages/database/src/shared/types/Snapshot.interface.ts:78](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/database/src/shared/types/Snapshot.interface.ts#L78)
 
 Interface extending Mongoose Model with additional methods for Snapshot.
 
@@ -20,7 +20,7 @@ Interface extending Mongoose Model with additional methods for Snapshot.
 
 > **new SnapshotModel**\<`DocType`\>(`doc?`, `fields?`, `options?`): `Document`\<`unknown`, \{ \}, [`Snapshot`](Snapshot.md), \{ \}, \{ \}\> & [`Snapshot`](Snapshot.md) & `object` & `object`
 
-Defined in: [packages/database/src/shared/types/Snapshot.interface.ts:64](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/database/src/shared/types/Snapshot.interface.ts#L64)
+Defined in: [packages/database/src/shared/types/Snapshot.interface.ts:78](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/database/src/shared/types/Snapshot.interface.ts#L78)
 
 #### Parameters
 
@@ -50,7 +50,7 @@ Defined in: [packages/database/src/shared/types/Snapshot.interface.ts:64](https:
 
 > **paginate**: (`filter`, `options`) => `Promise`\<[`PaginateResult`](PaginateResult.md)\<`Document`\<`unknown`, \{ \}, [`Snapshot`](Snapshot.md), \{ \}, \{ \}\> & [`Snapshot`](Snapshot.md) & `object` & `object`\>\>
 
-Defined in: [packages/database/src/shared/types/Snapshot.interface.ts:66](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/database/src/shared/types/Snapshot.interface.ts#L66)
+Defined in: [packages/database/src/shared/types/Snapshot.interface.ts:80](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/database/src/shared/types/Snapshot.interface.ts#L80)
 
 Pagination method for querying snapshots
 

@@ -8,6 +8,6 @@
 
 > **AlgorithmRuntime** = `"typescript"` \| `"python"`
 
-Defined in: [packages/algorithm-validator/src/types/algorithm.ts:158](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/algorithm-validator/src/types/algorithm.ts#L158)
+Defined in: [packages/algorithm-validator/src/types/algorithm.ts:158](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/algorithm-validator/src/types/algorithm.ts#L158)
 
 Supported runtimes (languages) for algorithm execution.

@@ -8,7 +8,7 @@
 
 > `const` **createAlgorithmPresetSchema**: `z.ZodObject`\<\{ `key`: `z.ZodString`; `version`: `z.ZodString`; `inputs`: `z.ZodArray`\<`z.ZodObject`\<\{ `key`: `z.ZodString`; `value`: `z.ZodUnknown`; \}\>\>; `name`: `z.ZodOptional`\<`z.ZodString`\>; `description`: `z.ZodOptional`\<`z.ZodString`\>; \}\>
 
-Defined in: [packages/algorithm-validator/src/schemas/algorithm-preset.ts:35](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/algorithm-validator/src/schemas/algorithm-preset.ts#L35)
+Defined in: [packages/algorithm-validator/src/schemas/algorithm-preset.ts:35](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/algorithm-validator/src/schemas/algorithm-preset.ts#L35)
 
 Zod schema for validating algorithm preset creation payloads.
 

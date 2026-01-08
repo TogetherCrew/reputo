@@ -8,7 +8,7 @@
 
 > **disconnect**(): `Promise`\<`void`\>
 
-Defined in: packages/database/src/connection.ts:44
+Defined in: [packages/database/src/connection.ts:44](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/database/src/connection.ts#L44)
 
 Disconnects from MongoDB.
 

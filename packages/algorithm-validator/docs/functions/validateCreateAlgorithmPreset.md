@@ -8,7 +8,7 @@
 
 > **validateCreateAlgorithmPreset**(`data`): `ZodSafeParseResult`\<\{ `key`: `string`; `version`: `string`; `inputs`: `object`[]; `name?`: `string`; `description?`: `string`; \}\>
 
-Defined in: [packages/algorithm-validator/src/schemas/algorithm-preset.ts:98](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/algorithm-validator/src/schemas/algorithm-preset.ts#L98)
+Defined in: [packages/algorithm-validator/src/schemas/algorithm-preset.ts:98](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/algorithm-validator/src/schemas/algorithm-preset.ts#L98)
 
 Validates algorithm preset creation payload using Zod schema.
 

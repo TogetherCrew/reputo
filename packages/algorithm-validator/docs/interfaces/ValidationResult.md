@@ -6,7 +6,7 @@
 
 # Interface: ValidationResult
 
-Defined in: [packages/algorithm-validator/src/types/index.ts:18](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/algorithm-validator/src/types/index.ts#L18)
+Defined in: [packages/algorithm-validator/src/types/index.ts:18](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/algorithm-validator/src/types/index.ts#L18)
 
 Result of payload validation against an AlgorithmDefinition.
 
@@ -16,7 +16,7 @@ Result of payload validation against an AlgorithmDefinition.
 
 > **success**: `boolean`
 
-Defined in: [packages/algorithm-validator/src/types/index.ts:20](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/algorithm-validator/src/types/index.ts#L20)
+Defined in: [packages/algorithm-validator/src/types/index.ts:20](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/algorithm-validator/src/types/index.ts#L20)
 
 Whether validation succeeded
 
@@ -26,7 +26,7 @@ Whether validation succeeded
 
 > `optional` **data**: `unknown`
 
-Defined in: [packages/algorithm-validator/src/types/index.ts:22](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/algorithm-validator/src/types/index.ts#L22)
+Defined in: [packages/algorithm-validator/src/types/index.ts:22](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/algorithm-validator/src/types/index.ts#L22)
 
 Validated data (only present if success is true)
 
@@ -36,7 +36,7 @@ Validated data (only present if success is true)
 
 > `optional` **errors**: `object`[]
 
-Defined in: [packages/algorithm-validator/src/types/index.ts:24](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/algorithm-validator/src/types/index.ts#L24)
+Defined in: [packages/algorithm-validator/src/types/index.ts:24](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/algorithm-validator/src/types/index.ts#L24)
 
 Array of validation errors (only present if success is false)
 

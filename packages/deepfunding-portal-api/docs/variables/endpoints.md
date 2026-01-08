@@ -8,7 +8,7 @@
 
 > `const` **endpoints**: `object`
 
-Defined in: [packages/deepfunding-portal-api/src/api/endpoints.ts:4](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/deepfunding-portal-api/src/api/endpoints.ts#L4)
+Defined in: [packages/deepfunding-portal-api/src/api/endpoints.ts:4](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/deepfunding-portal-api/src/api/endpoints.ts#L4)
 
 API endpoint path builders for the DeepFunding Portal API
 

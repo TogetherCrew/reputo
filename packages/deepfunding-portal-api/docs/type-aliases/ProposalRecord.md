@@ -8,7 +8,7 @@
 
 > **ProposalRecord** = `object`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/proposals/types.ts:32](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/deepfunding-portal-api/src/resources/proposals/types.ts#L32)
+Defined in: [packages/deepfunding-portal-api/src/resources/proposals/types.ts:32](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/deepfunding-portal-api/src/resources/proposals/types.ts#L32)
 
 Proposal database record
 
@@ -18,7 +18,7 @@ Proposal database record
 
 > **id**: `number`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/proposals/types.ts:33](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/deepfunding-portal-api/src/resources/proposals/types.ts#L33)
+Defined in: [packages/deepfunding-portal-api/src/resources/proposals/types.ts:33](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/deepfunding-portal-api/src/resources/proposals/types.ts#L33)
 
 ***
 
@@ -26,7 +26,7 @@ Defined in: [packages/deepfunding-portal-api/src/resources/proposals/types.ts:33
 
 > **roundId**: `number`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/proposals/types.ts:34](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/deepfunding-portal-api/src/resources/proposals/types.ts#L34)
+Defined in: [packages/deepfunding-portal-api/src/resources/proposals/types.ts:34](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/deepfunding-portal-api/src/resources/proposals/types.ts#L34)
 
 ***
 
@@ -34,7 +34,7 @@ Defined in: [packages/deepfunding-portal-api/src/resources/proposals/types.ts:34
 
 > **poolId**: `number`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/proposals/types.ts:35](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/deepfunding-portal-api/src/resources/proposals/types.ts#L35)
+Defined in: [packages/deepfunding-portal-api/src/resources/proposals/types.ts:35](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/deepfunding-portal-api/src/resources/proposals/types.ts#L35)
 
 ***
 
@@ -42,7 +42,7 @@ Defined in: [packages/deepfunding-portal-api/src/resources/proposals/types.ts:35
 
 > **proposerId**: `number`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/proposals/types.ts:36](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/deepfunding-portal-api/src/resources/proposals/types.ts#L36)
+Defined in: [packages/deepfunding-portal-api/src/resources/proposals/types.ts:36](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/deepfunding-portal-api/src/resources/proposals/types.ts#L36)
 
 ***
 
@@ -50,7 +50,7 @@ Defined in: [packages/deepfunding-portal-api/src/resources/proposals/types.ts:36
 
 > **title**: `string`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/proposals/types.ts:37](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/deepfunding-portal-api/src/resources/proposals/types.ts#L37)
+Defined in: [packages/deepfunding-portal-api/src/resources/proposals/types.ts:37](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/deepfunding-portal-api/src/resources/proposals/types.ts#L37)
 
 ***
 
@@ -58,7 +58,7 @@ Defined in: [packages/deepfunding-portal-api/src/resources/proposals/types.ts:37
 
 > **content**: `string`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/proposals/types.ts:38](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/deepfunding-portal-api/src/resources/proposals/types.ts#L38)
+Defined in: [packages/deepfunding-portal-api/src/resources/proposals/types.ts:38](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/deepfunding-portal-api/src/resources/proposals/types.ts#L38)
 
 ***
 
@@ -66,7 +66,7 @@ Defined in: [packages/deepfunding-portal-api/src/resources/proposals/types.ts:38
 
 > **link**: `string`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/proposals/types.ts:39](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/deepfunding-portal-api/src/resources/proposals/types.ts#L39)
+Defined in: [packages/deepfunding-portal-api/src/resources/proposals/types.ts:39](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/deepfunding-portal-api/src/resources/proposals/types.ts#L39)
 
 ***
 
@@ -74,7 +74,7 @@ Defined in: [packages/deepfunding-portal-api/src/resources/proposals/types.ts:39
 
 > **featureImage**: `string`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/proposals/types.ts:40](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/deepfunding-portal-api/src/resources/proposals/types.ts#L40)
+Defined in: [packages/deepfunding-portal-api/src/resources/proposals/types.ts:40](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/deepfunding-portal-api/src/resources/proposals/types.ts#L40)
 
 ***
 
@@ -82,7 +82,7 @@ Defined in: [packages/deepfunding-portal-api/src/resources/proposals/types.ts:40
 
 > **requestedAmount**: `string`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/proposals/types.ts:41](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/deepfunding-portal-api/src/resources/proposals/types.ts#L41)
+Defined in: [packages/deepfunding-portal-api/src/resources/proposals/types.ts:41](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/deepfunding-portal-api/src/resources/proposals/types.ts#L41)
 
 ***
 
@@ -90,7 +90,7 @@ Defined in: [packages/deepfunding-portal-api/src/resources/proposals/types.ts:41
 
 > **awardedAmount**: `string`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/proposals/types.ts:42](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/deepfunding-portal-api/src/resources/proposals/types.ts#L42)
+Defined in: [packages/deepfunding-portal-api/src/resources/proposals/types.ts:42](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/deepfunding-portal-api/src/resources/proposals/types.ts#L42)
 
 ***
 
@@ -98,7 +98,7 @@ Defined in: [packages/deepfunding-portal-api/src/resources/proposals/types.ts:42
 
 > **isAwarded**: `boolean`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/proposals/types.ts:43](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/deepfunding-portal-api/src/resources/proposals/types.ts#L43)
+Defined in: [packages/deepfunding-portal-api/src/resources/proposals/types.ts:43](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/deepfunding-portal-api/src/resources/proposals/types.ts#L43)
 
 ***
 
@@ -106,7 +106,7 @@ Defined in: [packages/deepfunding-portal-api/src/resources/proposals/types.ts:43
 
 > **isCompleted**: `boolean`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/proposals/types.ts:44](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/deepfunding-portal-api/src/resources/proposals/types.ts#L44)
+Defined in: [packages/deepfunding-portal-api/src/resources/proposals/types.ts:44](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/deepfunding-portal-api/src/resources/proposals/types.ts#L44)
 
 ***
 
@@ -114,7 +114,7 @@ Defined in: [packages/deepfunding-portal-api/src/resources/proposals/types.ts:44
 
 > **createdAt**: `string`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/proposals/types.ts:45](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/deepfunding-portal-api/src/resources/proposals/types.ts#L45)
+Defined in: [packages/deepfunding-portal-api/src/resources/proposals/types.ts:45](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/deepfunding-portal-api/src/resources/proposals/types.ts#L45)
 
 ***
 
@@ -122,7 +122,7 @@ Defined in: [packages/deepfunding-portal-api/src/resources/proposals/types.ts:45
 
 > **updatedAt**: `string` \| `null`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/proposals/types.ts:46](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/deepfunding-portal-api/src/resources/proposals/types.ts#L46)
+Defined in: [packages/deepfunding-portal-api/src/resources/proposals/types.ts:46](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/deepfunding-portal-api/src/resources/proposals/types.ts#L46)
 
 ***
 
@@ -130,7 +130,7 @@ Defined in: [packages/deepfunding-portal-api/src/resources/proposals/types.ts:46
 
 > **teamMembers**: `string`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/proposals/types.ts:47](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/deepfunding-portal-api/src/resources/proposals/types.ts#L47)
+Defined in: [packages/deepfunding-portal-api/src/resources/proposals/types.ts:47](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/deepfunding-portal-api/src/resources/proposals/types.ts#L47)
 
 ***
 
@@ -138,4 +138,4 @@ Defined in: [packages/deepfunding-portal-api/src/resources/proposals/types.ts:47
 
 > **rawJson**: `string`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/proposals/types.ts:48](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/deepfunding-portal-api/src/resources/proposals/types.ts#L48)
+Defined in: [packages/deepfunding-portal-api/src/resources/proposals/types.ts:48](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/deepfunding-portal-api/src/resources/proposals/types.ts#L48)

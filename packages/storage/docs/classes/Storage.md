@@ -6,7 +6,7 @@
 
 # Class: Storage
 
-Defined in: [storage.ts:89](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/storage/src/storage.ts#L89)
+Defined in: [storage.ts:80](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/storage/src/storage.ts#L80)
 
 Main storage class that wraps an S3Client instance.
 
@@ -65,7 +65,7 @@ console.log(download.url);
 
 > **new Storage**(`s3Client`): `Storage`
 
-Defined in: [storage.ts:95](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/storage/src/storage.ts#L95)
+Defined in: [storage.ts:86](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/storage/src/storage.ts#L86)
 
 Creates a new Storage instance.
 
@@ -87,7 +87,7 @@ Configured S3Client instance to use for all operations
 
 > **presignPut**(`options`): `Promise`\<[`PresignedUpload`](../interfaces/PresignedUpload.md)\>
 
-Defined in: [storage.ts:122](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/storage/src/storage.ts#L122)
+Defined in: [storage.ts:113](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/storage/src/storage.ts#L113)
 
 Generates a presigned URL for uploading a file.
 
@@ -134,7 +134,7 @@ const result = await storage.presignPut({
 
 > **verify**(`options`): `Promise`\<\{ `key`: `string`; `metadata`: [`StorageMetadata`](../interfaces/StorageMetadata.md); \}\>
 
-Defined in: [storage.ts:180](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/storage/src/storage.ts#L180)
+Defined in: [storage.ts:170](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/storage/src/storage.ts#L170)
 
 Verifies that a file meets size requirements and optionally content-type policies.
 
@@ -197,7 +197,7 @@ const result = await storage.verify({
 
 > **presignGet**(`options`): `Promise`\<[`PresignedDownload`](../interfaces/PresignedDownload.md)\>
 
-Defined in: [storage.ts:245](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/storage/src/storage.ts#L245)
+Defined in: [storage.ts:233](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/storage/src/storage.ts#L233)
 
 Generates a presigned URL for downloading a file.
 
@@ -253,7 +253,7 @@ const result = await storage.presignGet({
 
 > **getObject**(`options`): `Promise`\<`Buffer`\<`ArrayBufferLike`\>\>
 
-Defined in: [storage.ts:298](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/storage/src/storage.ts#L298)
+Defined in: [storage.ts:286](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/storage/src/storage.ts#L286)
 
 Reads an object from S3 and returns its contents as a Buffer.
 
@@ -295,7 +295,7 @@ console.log(text);
 
 > **putObject**(`options`): `Promise`\<`string`\>
 
-Defined in: [storage.ts:367](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/storage/src/storage.ts#L367)
+Defined in: [storage.ts:352](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/storage/src/storage.ts#L352)
 
 Writes an object to S3.
 

@@ -8,7 +8,7 @@
 
 > **normalizeMilestoneToRecord**(`data`): `Omit`\<[`MilestoneRecord`](../type-aliases/MilestoneRecord.md), `"id"`\>
 
-Defined in: [packages/deepfunding-portal-api/src/resources/milestones/normalize.ts:13](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/deepfunding-portal-api/src/resources/milestones/normalize.ts#L13)
+Defined in: [packages/deepfunding-portal-api/src/resources/milestones/normalize.ts:13](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/deepfunding-portal-api/src/resources/milestones/normalize.ts#L13)
 
 Normalize a Milestone API response to a database record
 

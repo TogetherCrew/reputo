@@ -8,7 +8,7 @@
 
 > **CommentVoteApiResponse** = `object`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/commentVotes/types.ts:22](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/deepfunding-portal-api/src/resources/commentVotes/types.ts#L22)
+Defined in: [packages/deepfunding-portal-api/src/resources/commentVotes/types.ts:22](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/deepfunding-portal-api/src/resources/commentVotes/types.ts#L22)
 
 CommentVotes API response
 
@@ -18,7 +18,7 @@ CommentVotes API response
 
 > **votes**: [`CommentVote`](CommentVote.md)[]
 
-Defined in: [packages/deepfunding-portal-api/src/resources/commentVotes/types.ts:23](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/deepfunding-portal-api/src/resources/commentVotes/types.ts#L23)
+Defined in: [packages/deepfunding-portal-api/src/resources/commentVotes/types.ts:23](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/deepfunding-portal-api/src/resources/commentVotes/types.ts#L23)
 
 ***
 
@@ -26,4 +26,4 @@ Defined in: [packages/deepfunding-portal-api/src/resources/commentVotes/types.ts
 
 > **pagination**: [`Pagination`](Pagination.md)
 
-Defined in: [packages/deepfunding-portal-api/src/resources/commentVotes/types.ts:24](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/deepfunding-portal-api/src/resources/commentVotes/types.ts#L24)
+Defined in: [packages/deepfunding-portal-api/src/resources/commentVotes/types.ts:24](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/deepfunding-portal-api/src/resources/commentVotes/types.ts#L24)

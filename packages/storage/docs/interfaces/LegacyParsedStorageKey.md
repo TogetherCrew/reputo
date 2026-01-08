@@ -6,7 +6,7 @@
 
 # ~~Interface: LegacyParsedStorageKey~~
 
-Defined in: [shared/types/types.ts:201](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/storage/src/shared/types/types.ts#L201)
+Defined in: [shared/types/types.ts:201](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/storage/src/shared/types/types.ts#L201)
 
 ## Deprecated
 
@@ -19,7 +19,7 @@ Legacy interface for backward compatibility.
 
 > **filename**: `string`
 
-Defined in: [shared/types/types.ts:207](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/storage/src/shared/types/types.ts#L207)
+Defined in: [shared/types/types.ts:207](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/storage/src/shared/types/types.ts#L207)
 
 Full filename including extension.
 
@@ -35,7 +35,7 @@ Full filename including extension.
 
 > **ext**: `string`
 
-Defined in: [shared/types/types.ts:214](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/storage/src/shared/types/types.ts#L214)
+Defined in: [shared/types/types.ts:214](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/storage/src/shared/types/types.ts#L214)
 
 File extension without the dot.
 
@@ -51,7 +51,7 @@ File extension without the dot.
 
 > **timestamp**: `number`
 
-Defined in: [shared/types/types.ts:220](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/storage/src/shared/types/types.ts#L220)
+Defined in: [shared/types/types.ts:220](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/storage/src/shared/types/types.ts#L220)
 
 Unix timestamp (seconds since epoch) when the key was generated.
 Only present for upload keys.

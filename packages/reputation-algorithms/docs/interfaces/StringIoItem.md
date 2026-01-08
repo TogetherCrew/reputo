@@ -6,7 +6,7 @@
 
 # Interface: StringIoItem
 
-Defined in: [shared/types/algorithm.ts:115](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/reputation-algorithms/src/shared/types/algorithm.ts#L115)
+Defined in: [shared/types/algorithm.ts:115](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/reputation-algorithms/src/shared/types/algorithm.ts#L115)
 
 String input item configuration for algorithm definitions.
 
@@ -20,7 +20,7 @@ String input item configuration for algorithm definitions.
 
 > **key**: `string`
 
-Defined in: [shared/types/algorithm.ts:28](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/reputation-algorithms/src/shared/types/algorithm.ts#L28)
+Defined in: [shared/types/algorithm.ts:28](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/reputation-algorithms/src/shared/types/algorithm.ts#L28)
 
 Unique identifier for the I/O item
 
@@ -34,7 +34,7 @@ Unique identifier for the I/O item
 
 > `optional` **label**: `string`
 
-Defined in: [shared/types/algorithm.ts:30](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/reputation-algorithms/src/shared/types/algorithm.ts#L30)
+Defined in: [shared/types/algorithm.ts:30](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/reputation-algorithms/src/shared/types/algorithm.ts#L30)
 
 Human-readable label for display purposes
 
@@ -48,7 +48,7 @@ Human-readable label for display purposes
 
 > `optional` **description**: `string`
 
-Defined in: [shared/types/algorithm.ts:32](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/reputation-algorithms/src/shared/types/algorithm.ts#L32)
+Defined in: [shared/types/algorithm.ts:32](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/reputation-algorithms/src/shared/types/algorithm.ts#L32)
 
 Detailed description of the I/O item's purpose and usage
 
@@ -62,7 +62,7 @@ Detailed description of the I/O item's purpose and usage
 
 > **type**: `"string"`
 
-Defined in: [shared/types/algorithm.ts:117](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/reputation-algorithms/src/shared/types/algorithm.ts#L117)
+Defined in: [shared/types/algorithm.ts:117](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/reputation-algorithms/src/shared/types/algorithm.ts#L117)
 
 Type identifier for string data
 
@@ -72,7 +72,7 @@ Type identifier for string data
 
 > `optional` **default**: `string`
 
-Defined in: [shared/types/algorithm.ts:119](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/reputation-algorithms/src/shared/types/algorithm.ts#L119)
+Defined in: [shared/types/algorithm.ts:119](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/reputation-algorithms/src/shared/types/algorithm.ts#L119)
 
 Default value
 
@@ -82,7 +82,7 @@ Default value
 
 > `optional` **required**: `boolean`
 
-Defined in: [shared/types/algorithm.ts:121](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/reputation-algorithms/src/shared/types/algorithm.ts#L121)
+Defined in: [shared/types/algorithm.ts:121](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/reputation-algorithms/src/shared/types/algorithm.ts#L121)
 
 Whether this input is required
 
@@ -92,7 +92,7 @@ Whether this input is required
 
 > `optional` **minLength**: `number`
 
-Defined in: [shared/types/algorithm.ts:123](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/reputation-algorithms/src/shared/types/algorithm.ts#L123)
+Defined in: [shared/types/algorithm.ts:123](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/reputation-algorithms/src/shared/types/algorithm.ts#L123)
 
 Minimum length for the string
 
@@ -102,6 +102,6 @@ Minimum length for the string
 
 > `optional` **maxLength**: `number`
 
-Defined in: [shared/types/algorithm.ts:125](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/reputation-algorithms/src/shared/types/algorithm.ts#L125)
+Defined in: [shared/types/algorithm.ts:125](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/reputation-algorithms/src/shared/types/algorithm.ts#L125)
 
 Maximum length for the string

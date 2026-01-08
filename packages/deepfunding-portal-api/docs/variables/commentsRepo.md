@@ -8,7 +8,7 @@
 
 > `const` **commentsRepo**: `object`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/comments/repository.ts:69](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/deepfunding-portal-api/src/resources/comments/repository.ts#L69)
+Defined in: [packages/deepfunding-portal-api/src/resources/comments/repository.ts:69](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/deepfunding-portal-api/src/resources/comments/repository.ts#L69)
 
 Comments repository
 
@@ -56,17 +56,17 @@ Optional configuration for chunk size
 
 ### findAll()
 
-> **findAll**: () => `object`[]
+> **findAll**: () => [`CommentRecord`](../type-aliases/CommentRecord.md)[]
 
 Find all comments
 
 #### Returns
 
-`object`[]
+[`CommentRecord`](../type-aliases/CommentRecord.md)[]
 
 ### findByProposalId()
 
-> **findByProposalId**: (`proposalId`) => `object`[]
+> **findByProposalId**: (`proposalId`) => [`CommentRecord`](../type-aliases/CommentRecord.md)[]
 
 Find comments by proposal ID
 
@@ -78,11 +78,11 @@ Find comments by proposal ID
 
 #### Returns
 
-`object`[]
+[`CommentRecord`](../type-aliases/CommentRecord.md)[]
 
 ### findByUserId()
 
-> **findByUserId**: (`userId`) => `object`[]
+> **findByUserId**: (`userId`) => [`CommentRecord`](../type-aliases/CommentRecord.md)[]
 
 Find comments by user ID
 
@@ -94,11 +94,11 @@ Find comments by user ID
 
 #### Returns
 
-`object`[]
+[`CommentRecord`](../type-aliases/CommentRecord.md)[]
 
 ### findById()
 
-> **findById**: (`commentId`) => \{ `commentId`: `number`; `parentId`: `number`; `isReply`: `boolean`; `userId`: `number`; `proposalId`: `number`; `content`: `string`; `commentVotes`: `string`; `createdAt`: `string`; `updatedAt`: `string`; `rawJson`: `string`; \} \| `undefined`
+> **findById**: (`commentId`) => [`CommentRecord`](../type-aliases/CommentRecord.md) \| `undefined`
 
 Find a comment by ID
 
@@ -110,4 +110,4 @@ Find a comment by ID
 
 #### Returns
 
-\{ `commentId`: `number`; `parentId`: `number`; `isReply`: `boolean`; `userId`: `number`; `proposalId`: `number`; `content`: `string`; `commentVotes`: `string`; `createdAt`: `string`; `updatedAt`: `string`; `rawJson`: `string`; \} \| `undefined`
+[`CommentRecord`](../type-aliases/CommentRecord.md) \| `undefined`

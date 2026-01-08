@@ -6,7 +6,7 @@
 
 # Interface: CsvIoItem
 
-Defined in: [shared/types/algorithm.ts:38](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/reputation-algorithms/src/shared/types/algorithm.ts#L38)
+Defined in: [shared/types/algorithm.ts:38](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/reputation-algorithms/src/shared/types/algorithm.ts#L38)
 
 CSV input/output item configuration for algorithm definitions.
 
@@ -20,7 +20,7 @@ CSV input/output item configuration for algorithm definitions.
 
 > **key**: `string`
 
-Defined in: [shared/types/algorithm.ts:28](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/reputation-algorithms/src/shared/types/algorithm.ts#L28)
+Defined in: [shared/types/algorithm.ts:28](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/reputation-algorithms/src/shared/types/algorithm.ts#L28)
 
 Unique identifier for the I/O item
 
@@ -34,7 +34,7 @@ Unique identifier for the I/O item
 
 > `optional` **label**: `string`
 
-Defined in: [shared/types/algorithm.ts:30](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/reputation-algorithms/src/shared/types/algorithm.ts#L30)
+Defined in: [shared/types/algorithm.ts:30](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/reputation-algorithms/src/shared/types/algorithm.ts#L30)
 
 Human-readable label for display purposes
 
@@ -48,7 +48,7 @@ Human-readable label for display purposes
 
 > `optional` **description**: `string`
 
-Defined in: [shared/types/algorithm.ts:32](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/reputation-algorithms/src/shared/types/algorithm.ts#L32)
+Defined in: [shared/types/algorithm.ts:32](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/reputation-algorithms/src/shared/types/algorithm.ts#L32)
 
 Detailed description of the I/O item's purpose and usage
 
@@ -62,7 +62,7 @@ Detailed description of the I/O item's purpose and usage
 
 > **type**: `"csv"`
 
-Defined in: [shared/types/algorithm.ts:40](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/reputation-algorithms/src/shared/types/algorithm.ts#L40)
+Defined in: [shared/types/algorithm.ts:40](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/reputation-algorithms/src/shared/types/algorithm.ts#L40)
 
 Type identifier for CSV data
 
@@ -72,7 +72,7 @@ Type identifier for CSV data
 
 > **csv**: `object`
 
-Defined in: [shared/types/algorithm.ts:42](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/reputation-algorithms/src/shared/types/algorithm.ts#L42)
+Defined in: [shared/types/algorithm.ts:42](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/reputation-algorithms/src/shared/types/algorithm.ts#L42)
 
 CSV parsing and validation configuration
 
@@ -112,6 +112,6 @@ Column definitions for data validation and processing
 
 > `optional` **entity**: `string`
 
-Defined in: [shared/types/algorithm.ts:74](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/reputation-algorithms/src/shared/types/algorithm.ts#L74)
+Defined in: [shared/types/algorithm.ts:74](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/reputation-algorithms/src/shared/types/algorithm.ts#L74)
 
 Entity type that this CSV data represents (e.g., 'user', 'post', 'comment')

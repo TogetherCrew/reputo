@@ -8,7 +8,7 @@
 
 > **fetchAllPages**\<`T`\>(`fetcher`): `Promise`\<`T`[]\>
 
-Defined in: [packages/deepfunding-portal-api/src/api/paginate.ts:6](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/deepfunding-portal-api/src/api/paginate.ts#L6)
+Defined in: [packages/deepfunding-portal-api/src/api/paginate.ts:6](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/deepfunding-portal-api/src/api/paginate.ts#L6)
 
 Collect all pages from a paginated fetcher into an array
 

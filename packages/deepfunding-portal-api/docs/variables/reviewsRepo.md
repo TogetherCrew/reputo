@@ -8,7 +8,7 @@
 
 > `const` **reviewsRepo**: `object`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/reviews/repository.ts:69](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/deepfunding-portal-api/src/resources/reviews/repository.ts#L69)
+Defined in: [packages/deepfunding-portal-api/src/resources/reviews/repository.ts:69](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/deepfunding-portal-api/src/resources/reviews/repository.ts#L69)
 
 Reviews repository
 
@@ -56,17 +56,17 @@ Optional configuration for chunk size
 
 ### findAll()
 
-> **findAll**: () => `object`[]
+> **findAll**: () => [`ReviewRecord`](../type-aliases/ReviewRecord.md)[]
 
 Find all reviews
 
 #### Returns
 
-`object`[]
+[`ReviewRecord`](../type-aliases/ReviewRecord.md)[]
 
 ### findByProposalId()
 
-> **findByProposalId**: (`proposalId`) => `object`[]
+> **findByProposalId**: (`proposalId`) => [`ReviewRecord`](../type-aliases/ReviewRecord.md)[]
 
 Find reviews by proposal ID
 
@@ -78,11 +78,11 @@ Find reviews by proposal ID
 
 #### Returns
 
-`object`[]
+[`ReviewRecord`](../type-aliases/ReviewRecord.md)[]
 
 ### findByReviewerId()
 
-> **findByReviewerId**: (`reviewerId`) => `object`[]
+> **findByReviewerId**: (`reviewerId`) => [`ReviewRecord`](../type-aliases/ReviewRecord.md)[]
 
 Find reviews by reviewer ID
 
@@ -94,11 +94,11 @@ Find reviews by reviewer ID
 
 #### Returns
 
-`object`[]
+[`ReviewRecord`](../type-aliases/ReviewRecord.md)[]
 
 ### findById()
 
-> **findById**: (`reviewId`) => \{ `reviewId`: `number`; `proposalId`: `number` \| `null`; `reviewerId`: `number` \| `null`; `reviewType`: `string`; `overallRating`: `string`; `feasibilityRating`: `string`; `viabilityRating`: `string`; `desirabilityRating`: `string`; `usefulnessRating`: `string`; `createdAt`: `string` \| `null`; `rawJson`: `string`; \} \| `undefined`
+> **findById**: (`reviewId`) => [`ReviewRecord`](../type-aliases/ReviewRecord.md) \| `undefined`
 
 Find a review by ID
 
@@ -110,4 +110,4 @@ Find a review by ID
 
 #### Returns
 
-\{ `reviewId`: `number`; `proposalId`: `number` \| `null`; `reviewerId`: `number` \| `null`; `reviewType`: `string`; `overallRating`: `string`; `feasibilityRating`: `string`; `viabilityRating`: `string`; `desirabilityRating`: `string`; `usefulnessRating`: `string`; `createdAt`: `string` \| `null`; `rawJson`: `string`; \} \| `undefined`
+[`ReviewRecord`](../type-aliases/ReviewRecord.md) \| `undefined`

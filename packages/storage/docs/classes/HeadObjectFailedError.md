@@ -6,7 +6,7 @@
 
 # Class: HeadObjectFailedError
 
-Defined in: [shared/errors/errors.ts:109](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/storage/src/shared/errors/errors.ts#L109)
+Defined in: [shared/errors/errors.ts:109](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/storage/src/shared/errors/errors.ts#L109)
 
 Error thrown when a HEAD request to S3 fails for reasons other than 404.
 
@@ -24,7 +24,7 @@ or handle it according to their error handling strategy.
 
 > **new HeadObjectFailedError**(`key?`): `HeadObjectFailedError`
 
-Defined in: [shared/errors/errors.ts:115](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/storage/src/shared/errors/errors.ts#L115)
+Defined in: [shared/errors/errors.ts:115](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/storage/src/shared/errors/errors.ts#L115)
 
 Creates a new HeadObjectFailedError instance.
 

@@ -6,7 +6,7 @@
 
 # Interface: SearchAlgorithmFilters
 
-Defined in: [shared/types/algorithm.ts:179](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/reputation-algorithms/src/shared/types/algorithm.ts#L179)
+Defined in: [shared/types/algorithm.ts:179](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/reputation-algorithms/src/shared/types/algorithm.ts#L179)
 
 Filters for searching algorithm definitions by metadata.
 
@@ -16,7 +16,7 @@ Filters for searching algorithm definitions by metadata.
 
 > `optional` **key**: `string`
 
-Defined in: [shared/types/algorithm.ts:184](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/reputation-algorithms/src/shared/types/algorithm.ts#L184)
+Defined in: [shared/types/algorithm.ts:184](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/reputation-algorithms/src/shared/types/algorithm.ts#L184)
 
 Algorithm key to search for.
 Supports exact and partial (substring) matching, case-insensitive.
@@ -27,7 +27,7 @@ Supports exact and partial (substring) matching, case-insensitive.
 
 > `optional` **name**: `string`
 
-Defined in: [shared/types/algorithm.ts:190](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/reputation-algorithms/src/shared/types/algorithm.ts#L190)
+Defined in: [shared/types/algorithm.ts:190](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/reputation-algorithms/src/shared/types/algorithm.ts#L190)
 
 Human-readable algorithm name to search for.
 Supports exact and partial (substring) matching, case-insensitive.
@@ -38,7 +38,7 @@ Supports exact and partial (substring) matching, case-insensitive.
 
 > `optional` **category**: `string`
 
-Defined in: [shared/types/algorithm.ts:196](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/reputation-algorithms/src/shared/types/algorithm.ts#L196)
+Defined in: [shared/types/algorithm.ts:196](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/reputation-algorithms/src/shared/types/algorithm.ts#L196)
 
 Algorithm category to search for.
 Supports exact and partial (substring) matching, case-insensitive.

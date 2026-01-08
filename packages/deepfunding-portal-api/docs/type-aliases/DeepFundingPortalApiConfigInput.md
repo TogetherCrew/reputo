@@ -8,7 +8,7 @@
 
 > **DeepFundingPortalApiConfigInput** = `object`
 
-Defined in: [packages/deepfunding-portal-api/src/shared/types/api-config.ts:34](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/deepfunding-portal-api/src/shared/types/api-config.ts#L34)
+Defined in: [packages/deepfunding-portal-api/src/shared/types/api-config.ts:34](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/deepfunding-portal-api/src/shared/types/api-config.ts#L34)
 
 Partial configuration for creating a client (baseUrl and apiKey are required)
 
@@ -18,7 +18,7 @@ Partial configuration for creating a client (baseUrl and apiKey are required)
 
 > **baseUrl**: `string`
 
-Defined in: [packages/deepfunding-portal-api/src/shared/types/api-config.ts:35](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/deepfunding-portal-api/src/shared/types/api-config.ts#L35)
+Defined in: [packages/deepfunding-portal-api/src/shared/types/api-config.ts:35](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/deepfunding-portal-api/src/shared/types/api-config.ts#L35)
 
 ***
 
@@ -26,7 +26,7 @@ Defined in: [packages/deepfunding-portal-api/src/shared/types/api-config.ts:35](
 
 > **apiKey**: `string`
 
-Defined in: [packages/deepfunding-portal-api/src/shared/types/api-config.ts:36](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/deepfunding-portal-api/src/shared/types/api-config.ts#L36)
+Defined in: [packages/deepfunding-portal-api/src/shared/types/api-config.ts:36](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/deepfunding-portal-api/src/shared/types/api-config.ts#L36)
 
 ***
 
@@ -34,7 +34,7 @@ Defined in: [packages/deepfunding-portal-api/src/shared/types/api-config.ts:36](
 
 > `optional` **requestTimeoutMs**: `number`
 
-Defined in: [packages/deepfunding-portal-api/src/shared/types/api-config.ts:37](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/deepfunding-portal-api/src/shared/types/api-config.ts#L37)
+Defined in: [packages/deepfunding-portal-api/src/shared/types/api-config.ts:37](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/deepfunding-portal-api/src/shared/types/api-config.ts#L37)
 
 ***
 
@@ -42,7 +42,7 @@ Defined in: [packages/deepfunding-portal-api/src/shared/types/api-config.ts:37](
 
 > `optional` **concurrency**: `number`
 
-Defined in: [packages/deepfunding-portal-api/src/shared/types/api-config.ts:38](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/deepfunding-portal-api/src/shared/types/api-config.ts#L38)
+Defined in: [packages/deepfunding-portal-api/src/shared/types/api-config.ts:38](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/deepfunding-portal-api/src/shared/types/api-config.ts#L38)
 
 ***
 
@@ -50,7 +50,7 @@ Defined in: [packages/deepfunding-portal-api/src/shared/types/api-config.ts:38](
 
 > `optional` **retry**: `Partial`\<[`RetryConfig`](RetryConfig.md)\>
 
-Defined in: [packages/deepfunding-portal-api/src/shared/types/api-config.ts:39](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/deepfunding-portal-api/src/shared/types/api-config.ts#L39)
+Defined in: [packages/deepfunding-portal-api/src/shared/types/api-config.ts:39](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/deepfunding-portal-api/src/shared/types/api-config.ts#L39)
 
 ***
 
@@ -58,4 +58,4 @@ Defined in: [packages/deepfunding-portal-api/src/shared/types/api-config.ts:39](
 
 > `optional` **defaultPageLimit**: `number`
 
-Defined in: [packages/deepfunding-portal-api/src/shared/types/api-config.ts:40](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/deepfunding-portal-api/src/shared/types/api-config.ts#L40)
+Defined in: [packages/deepfunding-portal-api/src/shared/types/api-config.ts:40](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/deepfunding-portal-api/src/shared/types/api-config.ts#L40)

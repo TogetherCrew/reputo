@@ -8,6 +8,6 @@
 
 > **RoundFetchOptions** = `Record`\<`string`, `never`\>
 
-Defined in: [packages/deepfunding-portal-api/src/resources/rounds/types.ts:33](https://github.com/TogetherCrew/reputo/blob/57dfec2effe2c3ced53491692acc5546475eb9d2/packages/deepfunding-portal-api/src/resources/rounds/types.ts#L33)
+Defined in: [packages/deepfunding-portal-api/src/resources/rounds/types.ts:33](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/deepfunding-portal-api/src/resources/rounds/types.ts#L33)
 
 Options for fetching rounds
