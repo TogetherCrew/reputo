@@ -65,10 +65,14 @@ export function AlgorithmSnapshots({ algo }: { algo?: Algorithm }) {
   }, [])
 
   // Get preset filter from URL params
-  const presetFilter = searchParams.get("preset");
-  
+  const presetFilter = searchParams.get("preset")
+
   // API hooks - filter by algorithmPreset ID if preset is selected, and by algorithm key
-  const { data: snapshotsData, isLoading, error } = useSnapshots({
+  const {
+    data: snapshotsData,
+    isLoading,
+    error,
+  } = useSnapshots({
     key: algo?.id,
     algorithmPreset: presetFilter ?? undefined,
     status:

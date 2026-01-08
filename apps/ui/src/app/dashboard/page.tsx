@@ -192,9 +192,7 @@ export default function Home() {
                               viewMode === "list" && "max-w-none"
                             )}
                           >
-                            <CardHeader
-                              className="grid grid-cols-[1fr_auto] gap-2"
-                            >
+                            <CardHeader className="grid grid-cols-[1fr_auto] gap-2">
                               <div className="flex flex-col gap-2 min-w-0">
                                 <Badge variant="outline" className="w-fit">
                                   {algo.category}
@@ -218,9 +216,7 @@ export default function Home() {
                             </CardHeader>
 
                             <CardContent className="-mt-3">
-                              <CardDescription>
-                                {algo.summary}
-                              </CardDescription>
+                              <CardDescription>{algo.summary}</CardDescription>
                               <div className="mt-4 flex flex-wrap items-center gap-4 text-sm">
                                 <span className="inline-flex items-center gap-2 text-muted-foreground">
                                   <Clock className="size-4" /> {algo.duration}

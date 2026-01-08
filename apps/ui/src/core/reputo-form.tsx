@@ -132,7 +132,10 @@ function ReputoFormInner({
   return (
     <div className={className}>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className={compact ? "space-y-4" : "space-y-6"}>
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          className={compact ? "space-y-4" : "space-y-6"}
+        >
           {visibleInputs.map((input) => renderField(input))}
 
           <div className="flex justify-end gap-2 pt-4">
