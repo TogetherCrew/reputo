@@ -12,9 +12,6 @@ jobs:
             - name: Checkout code
               uses: actions/checkout@v4
 
-            - name: Install build dependencies
-              run: sudo apt-get update && sudo apt-get install -y build-essential python3
-
             - name: Setup pnpm
               uses: pnpm/action-setup@v4
               with:
@@ -30,9 +27,6 @@ jobs:
 
             - name: Install dependencies
               run: pnpm install --frozen-lockfile
-
-            - name: Rebuild native modules
-              run: pnpm rebuild better-sqlite3
 
             - name: Run code quality checks
               run: pnpm run check
