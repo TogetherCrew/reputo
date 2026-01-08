@@ -30,6 +30,7 @@ jobs:
               run: |
                   echo "AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID" >> .env
                   echo "AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY" >> .env
+                  echo "DEEPFUNDING_API_KEY=$DEEPFUNDING_API_KEY" >> .env
 
             - name: Generate MongoDB keyfile
               run: |
