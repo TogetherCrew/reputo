@@ -3,7 +3,7 @@ import { getDb } from '../../db/client.js';
 import { type CreateManyOptions, chunkArray, DEFAULT_CHUNK_SIZE } from '../../shared/utils/index.js';
 import { normalizeReviewToRecord } from './normalize.js';
 import * as schema from './schema.js';
-import type { Review } from './types.js';
+import type { Review, ReviewRecord } from './types.js';
 
 /**
  * Create a review in the database
@@ -34,7 +34,7 @@ export function createMany(items: Review[], options?: CreateManyOptions): void {
 /**
  * Find all reviews
  */
-export function findAll() {
+export function findAll(): ReviewRecord[] {
   const db = getDb();
   return db.drizzle.select().from(schema.reviews).all();
 }
@@ -42,7 +42,7 @@ export function findAll() {
 /**
  * Find reviews by proposal ID
  */
-export function findByProposalId(proposalId: number) {
+export function findByProposalId(proposalId: number): ReviewRecord[] {
   const db = getDb();
   return db.drizzle.select().from(schema.reviews).where(eq(schema.reviews.proposalId, proposalId)).all();
 }
@@ -50,7 +50,7 @@ export function findByProposalId(proposalId: number) {
 /**
  * Find reviews by reviewer ID
  */
-export function findByReviewerId(reviewerId: number) {
+export function findByReviewerId(reviewerId: number): ReviewRecord[] {
   const db = getDb();
   return db.drizzle.select().from(schema.reviews).where(eq(schema.reviews.reviewerId, reviewerId)).all();
 }
@@ -58,7 +58,7 @@ export function findByReviewerId(reviewerId: number) {
 /**
  * Find a review by ID
  */
-export function findById(reviewId: number) {
+export function findById(reviewId: number): ReviewRecord | undefined {
   const db = getDb();
   return db.drizzle.select().from(schema.reviews).where(eq(schema.reviews.reviewId, reviewId)).get();
 }

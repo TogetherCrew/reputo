@@ -3,7 +3,7 @@ import { getDb } from '../../db/client.js';
 import { type CreateManyOptions, chunkArray, DEFAULT_CHUNK_SIZE } from '../../shared/utils/index.js';
 import { normalizeProposalToRecord } from './normalize.js';
 import * as schema from './schema.js';
-import type { ProposalWithRound } from './types.js';
+import type { ProposalRecord, ProposalWithRound } from './types.js';
 
 /**
  * Create a proposal in the database
@@ -34,7 +34,7 @@ export function createMany(items: ProposalWithRound[], options?: CreateManyOptio
 /**
  * Find all proposals
  */
-export function findAll() {
+export function findAll(): ProposalRecord[] {
   const db = getDb();
   return db.drizzle.select().from(schema.proposals).all();
 }
@@ -42,7 +42,7 @@ export function findAll() {
 /**
  * Find proposals by round ID
  */
-export function findByRoundId(roundId: number) {
+export function findByRoundId(roundId: number): ProposalRecord[] {
   const db = getDb();
   return db.drizzle.select().from(schema.proposals).where(eq(schema.proposals.roundId, roundId)).all();
 }
@@ -50,7 +50,7 @@ export function findByRoundId(roundId: number) {
 /**
  * Find a proposal by ID
  */
-export function findById(id: number) {
+export function findById(id: number): ProposalRecord | undefined {
   const db = getDb();
   return db.drizzle.select().from(schema.proposals).where(eq(schema.proposals.id, id)).get();
 }

@@ -3,7 +3,7 @@ import { getDb } from '../../db/client.js';
 import { type CreateManyOptions, chunkArray, DEFAULT_CHUNK_SIZE } from '../../shared/utils/index.js';
 import { normalizeUserToRecord } from './normalize.js';
 import * as schema from './schema.js';
-import type { User } from './types.js';
+import type { User, UserRecord } from './types.js';
 
 /**
  * Create a user in the database
@@ -34,7 +34,7 @@ export function createMany(items: User[], options?: CreateManyOptions): void {
 /**
  * Find all users
  */
-export function findAll() {
+export function findAll(): UserRecord[] {
   const db = getDb();
   return db.drizzle.select().from(schema.users).all();
 }
@@ -42,7 +42,7 @@ export function findAll() {
 /**
  * Find a user by ID
  */
-export function findById(id: number) {
+export function findById(id: number): UserRecord | undefined {
   const db = getDb();
   return db.drizzle.select().from(schema.users).where(eq(schema.users.id, id)).get();
 }

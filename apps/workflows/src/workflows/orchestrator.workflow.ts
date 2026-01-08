@@ -71,7 +71,7 @@ export async function OrchestratorWorkflow(input: string | OrchestratorWorkflowI
       },
       error: {
         message,
-        timestamp: new Date(workflow.now).toISOString(),
+        timestamp: Date.now(),
       },
     });
 
@@ -204,7 +204,7 @@ export async function OrchestratorWorkflow(input: string | OrchestratorWorkflowI
       },
       error: {
         message: err.message || 'Unknown error',
-        timestamp: new Date(workflow.now).toISOString(),
+        timestamp: Date.now(),
       },
     });
 

@@ -6,8 +6,10 @@
     "dev": "next dev --turbopack --port 4000",
     "build": "next build --turbopack",
     "start": "next start",
-    "lint": "biome check --write",
+    "check": "biome check --write",
+    "lint": "biome lint --write",
     "format": "biome format --write",
+    "typecheck": "tsc --noEmit",
     "clean": "rm -rf coverage dist docs node_modules tsconfig.tsbuildinfo"
   },
   "dependencies": {

@@ -23,7 +23,7 @@ docker/
 ├── mongo/                      # MongoDB initialization scripts
 │   ├── init.js                 # Database initialization script
 │   ├── healthcheck.js          # Replica set health check
-│   └── replica.key             # Replica set authentication key
+│   └── keyfile.txt             # Replica set authentication key
 └── traefik/                    # Traefik configuration
     └── traefik.yml             # Reverse proxy configuration
 ```
@@ -101,8 +101,8 @@ for f in *.env.example; do cp "$f" "../${f%.example}"; done
 | ------------------------ | ------------------------------------- | ------- |
 | `api`                    | NestJS backend API                    | 3000    |
 | `ui`                     | Next.js frontend                      | 8080    |
-| `workflows`              | Temporal workflow orchestrator        | -       |
-| `workflows-algorithm`    | Temporal algorithm activity worker    | -       |
+| `orchestrator-worker`    | Temporal workflow orchestrator        | -       |
+| `typescript-worker`      | Temporal algorithm activity worker    | -       |
 | `mongodb`                | MongoDB database (replica set)        | 27017   |
 | `temporal`               | Temporal server                       | 7233    |
 | `temporal-ui`            | Temporal web dashboard                | 8088    |
@@ -122,7 +122,7 @@ The `mongo/` folder contains initialization scripts:
 
 -   `init.js` - Creates database user on first startup
 -   `healthcheck.js` - Verifies replica set status
--   `replica.key` - Authentication key for replica set members
+-   `keyfile.txt` - Authentication key for replica set members
 
 ## Traefik Configuration
 

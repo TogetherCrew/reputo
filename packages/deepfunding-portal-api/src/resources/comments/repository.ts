@@ -3,7 +3,7 @@ import { getDb } from '../../db/client.js';
 import { type CreateManyOptions, chunkArray, DEFAULT_CHUNK_SIZE } from '../../shared/utils/index.js';
 import { normalizeCommentToRecord } from './normalize.js';
 import * as schema from './schema.js';
-import type { Comment } from './types.js';
+import type { Comment, CommentRecord } from './types.js';
 
 /**
  * Create a comment in the database
@@ -34,7 +34,7 @@ export function createMany(items: Comment[], options?: CreateManyOptions): void 
 /**
  * Find all comments
  */
-export function findAll() {
+export function findAll(): CommentRecord[] {
   const db = getDb();
   return db.drizzle.select().from(schema.comments).all();
 }
@@ -42,7 +42,7 @@ export function findAll() {
 /**
  * Find comments by proposal ID
  */
-export function findByProposalId(proposalId: number) {
+export function findByProposalId(proposalId: number): CommentRecord[] {
   const db = getDb();
   return db.drizzle.select().from(schema.comments).where(eq(schema.comments.proposalId, proposalId)).all();
 }
@@ -50,7 +50,7 @@ export function findByProposalId(proposalId: number) {
 /**
  * Find comments by user ID
  */
-export function findByUserId(userId: number) {
+export function findByUserId(userId: number): CommentRecord[] {
   const db = getDb();
   return db.drizzle.select().from(schema.comments).where(eq(schema.comments.userId, userId)).all();
 }
@@ -58,7 +58,7 @@ export function findByUserId(userId: number) {
 /**
  * Find a comment by ID
  */
-export function findById(commentId: number) {
+export function findById(commentId: number): CommentRecord | undefined {
   const db = getDb();
   return db.drizzle.select().from(schema.comments).where(eq(schema.comments.commentId, commentId)).get();
 }

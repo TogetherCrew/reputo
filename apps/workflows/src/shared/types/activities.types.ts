@@ -1,5 +1,6 @@
 import type { Snapshot } from '@reputo/database';
 import type { Storage } from '@reputo/storage';
+import type { HydratedDocument } from 'mongoose';
 
 import type { AlgorithmResult, StorageConfig } from './algorithm.types.js';
 import type { ResolveDependencyInput } from './dependency.types.js';
@@ -83,7 +84,10 @@ export interface DeepFundingSyncOutput {
   deepfunding_manifest_key: string;
 }
 
-export type AlgorithmComputeFunction = (snapshot: Snapshot, storage: Storage) => Promise<AlgorithmResult>;
+export type AlgorithmComputeFunction = (
+  snapshot: HydratedDocument<Snapshot>,
+  storage: Storage,
+) => Promise<AlgorithmResult>;
 
 export type TypescriptAlgorithmDispatcherActivities = {
   runTypescriptAlgorithm: (snapshot: Snapshot) => Promise<AlgorithmResult>;

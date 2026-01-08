@@ -3,7 +3,7 @@ import { getDb } from '../../db/client.js';
 import { type CreateManyOptions, chunkArray, DEFAULT_CHUNK_SIZE } from '../../shared/utils/index.js';
 import { normalizeCommentVoteToRecord } from './normalize.js';
 import * as schema from './schema.js';
-import type { CommentVote } from './types.js';
+import type { CommentVote, CommentVoteRecord } from './types.js';
 
 /**
  * Create a comment vote in the database
@@ -34,7 +34,7 @@ export function createMany(items: CommentVote[], options?: CreateManyOptions): v
 /**
  * Find all comment votes
  */
-export function findAll() {
+export function findAll(): CommentVoteRecord[] {
   const db = getDb();
   return db.drizzle.select().from(schema.commentVotes).all();
 }
@@ -42,7 +42,7 @@ export function findAll() {
 /**
  * Find comment votes by comment ID
  */
-export function findByCommentId(commentId: number) {
+export function findByCommentId(commentId: number): CommentVoteRecord[] {
   const db = getDb();
   return db.drizzle.select().from(schema.commentVotes).where(eq(schema.commentVotes.commentId, commentId)).all();
 }
@@ -50,7 +50,7 @@ export function findByCommentId(commentId: number) {
 /**
  * Find comment votes by voter ID
  */
-export function findByVoterId(voterId: number) {
+export function findByVoterId(voterId: number): CommentVoteRecord[] {
   const db = getDb();
   return db.drizzle.select().from(schema.commentVotes).where(eq(schema.commentVotes.voterId, voterId)).all();
 }

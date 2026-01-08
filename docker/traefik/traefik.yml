@@ -34,4 +34,4 @@ certificatesResolvers:
 providers:
     docker:
         exposedByDefault: false
-        network: web
+        network: production
