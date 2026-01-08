@@ -78,6 +78,16 @@ export async function OrchestratorWorkflow(input: string | OrchestratorWorkflowI
     throw new Error(message);
   }
 
+  await updateSnapshot({
+    snapshotId,
+    status: 'running',
+    temporal: {
+      workflowId: workflowInfo.workflowId,
+      runId: workflowInfo.runId,
+      taskQueue: orchestratorTaskQueue,
+    },
+  });
+
   const algorithmKey = snapshot.algorithmPresetFrozen.key;
   const algorithmVersion = snapshot.algorithmPresetFrozen.version;
 
@@ -135,17 +145,6 @@ export async function OrchestratorWorkflow(input: string | OrchestratorWorkflowI
       algorithmKey,
     });
   }
-
-  await updateSnapshot({
-    snapshotId,
-    status: 'running',
-    temporal: {
-      workflowId: workflowInfo.workflowId,
-      runId: workflowInfo.runId,
-      taskQueue: orchestratorTaskQueue,
-      algorithmTaskQueue,
-    },
-  });
 
   workflow.log.info('Snapshot marked as running', {
     snapshotId,
