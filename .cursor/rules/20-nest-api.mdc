@@ -1,0 +1,18 @@
+---
+description: NestJS API rules (controllers thin, DTO validation, errors)
+globs:
+  - "apps/api/**"
+---
+
+# Nest structure
+
+- Controllers: request/response mapping only.
+- Services: business logic.
+- Modules: feature-based grouping.
+- Repositories: data access only (DB queries, persistence)
+
+## Validation
+
+## Errors
+
+## Tests

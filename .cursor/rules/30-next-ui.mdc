@@ -1,0 +1,11 @@
+---
+description: Next.js UI rules (App Router, server-first, route handlers)
+globs:
+  - "apps/ui/**"
+---
+
+# Next.js (App Router)
+
+## Backend calls
+
+## Safety

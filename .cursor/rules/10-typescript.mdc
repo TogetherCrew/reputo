@@ -1,0 +1,13 @@
+---
+description: TypeScript standards for all TS code in the repo
+globs:
+  - "**/*.ts"
+  - "**/*.tsx"
+---
+
+# TypeScript
+
+- Prefer explicit types at module boundaries (public exports, API clients, DTOs).
+- Don’t “any” your way out; fix the type at the source if possible.
+- Keep exports clean: packages should export from a single public entry (e.g., src/index.ts).
+- Avoid cross-importing deep internals of other packages unless explicitly intended.

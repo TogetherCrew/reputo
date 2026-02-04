@@ -1,0 +1,26 @@
+---
+description: Monorepo-wide standards (pnpm workspace, boundaries, quality)
+alwaysApply: true
+---
+
+
+# Repo shape
+
+- apps/
+  - api/ (NestJS)
+  - ui/ (Next.js)
+  - workflows/ (Temporal)
+- packages/ are reusable libraries. apps/* are deployables.
+
+## Workspace conventions
+
+- Prefer running scripts from repo root using pnpm filtering.
+
+## Dependency boundaries
+
+## Quality bar
+
+- Code must stay clean, modular, and follow best practices.
+- If behavior changes, update/add tests.
+- No secrets in logs. No tokens/credentials in code.
+- Prefer small PR-sized changes: keep diffs focused.

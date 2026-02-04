@@ -1,0 +1,13 @@
+---
+description: Shared packages rules (public API, boundaries, versioning)
+globs:
+  - "packages/**"
+---
+
+# Package design
+
+- Keep packages framework-agnostic unless the package is explicitly framework-specific.
+- Avoid hidden coupling: no importing from apps/*.
+- Expose a clean public API (barrel export), keep internals internal.
+
+## Workspace deps

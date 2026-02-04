@@ -1,0 +1,22 @@
+---
+description: Temporal workflows must be deterministic; side effects only via Activities
+globs:
+  - "apps/workflows/**"
+---
+
+# Determinism (non-negotiable)
+
+- Workflow code must be replay-safe and deterministic.
+- No direct I/O, network, DB, filesystem, random, or real time inside workflows.
+- Put side effects in Activities; workflow coordinates and awaits them.
+
+## Allowed patterns
+
+- Use Temporal workflow APIs for time/sleep/timers.
+- Keep workflow state explicit; use signals/queries intentionally.
+- Keep activities small, idempotent, and well-retried.
+
+## Imports
+
+- Workflow code should avoid Node-only libs and side-effectful modules.
+- Shared types are fine; activity implementations can import heavier deps.
