@@ -1,15 +1,14 @@
 import { rm } from 'node:fs/promises';
 import { dirname } from 'node:path';
 
-import type { Snapshot } from '@reputo/database';
 import { closeDb, initializeDb, proposalsRepo, reviewsRepo, usersRepo } from '@reputo/deepfunding-portal-api';
 import { generateKey, type Storage } from '@reputo/storage';
 import { Context } from '@temporalio/activity';
 import { stringify } from 'csv-stringify/sync';
-import type { HydratedDocument } from 'mongoose';
 
 import config from '../../../../config/index.js';
-import type { AlgorithmResult } from '../../../../shared/types/index.js';
+import type { AlgorithmResult, Snapshot } from '../../../../shared/types/index.js';
+import { buildProposalBenchmarkRecord, formatBenchmarkOutput } from './benchmark/index.js';
 import {
   aggregateCommunityRatings,
   classifyProposal,
@@ -17,7 +16,8 @@ import {
   computeProposalScore,
   computeTimeWeightFromString,
 } from './pipeline/index.js';
-import type { ProposalEngagementResult } from './types.js';
+import type { ProposalBenchmarkRecord, ProposalEngagementResult } from './types.js';
+import { roundScore } from './types.js';
 import { buildProposalOwners, createDeepFundingDb, extractInputs } from './utils/index.js';
 
 interface UserScoreAccumulator {
@@ -25,21 +25,16 @@ interface UserScoreAccumulator {
   negativeSum: number;
 }
 
-export async function computeProposalEngagement(
-  snapshot: HydratedDocument<Snapshot>,
-  storage: Storage,
-): Promise<AlgorithmResult> {
+export async function computeProposalEngagement(snapshot: Snapshot, storage: Storage): Promise<AlgorithmResult> {
   const logger = Context.current().log;
+  const snapshotId = snapshot._id;
   const now = new Date();
 
   const inputs = extractInputs(snapshot.algorithmPresetFrozen.inputs);
-  const dbPath = await createDeepFundingDb(snapshot.id, storage);
+  const dbPath = await createDeepFundingDb(snapshotId, storage);
   initializeDb({ path: dbPath });
 
-  logger.info('Starting proposal_engagement algorithm', {
-    snapshotId: snapshot.id,
-  });
-
+  logger.info('Starting proposal_engagement algorithm', { snapshotId });
   logger.info('Algorithm inputs', inputs);
 
   try {
@@ -54,7 +49,11 @@ export async function computeProposalEngagement(
     });
 
     const communityRatings = aggregateCommunityRatings(reviews);
+    const userIdSet = new Set(users.map((u) => u.id));
     const userAccumulators = new Map<number, UserScoreAccumulator>();
+    const benchmarkRecords: ProposalBenchmarkRecord[] = [];
+    let totalProposalsScored = 0;
+    let proposalsSkippedUnsupportedRound = 0;
 
     for (const proposal of proposals) {
       const owners = buildProposalOwners(proposal);
@@ -67,14 +66,37 @@ export async function computeProposalEngagement(
       });
 
       const score = computeProposalScore({
+        roundId: proposal.roundId,
         classification: status.classification,
         communityScore,
         timeWeight,
       });
 
-      if (!score.scored) continue;
+      if (score.skipReason === 'unsupported_round') {
+        proposalsSkippedUnsupportedRound++;
+      }
 
+      benchmarkRecords.push(
+        buildProposalBenchmarkRecord(
+          proposal,
+          {
+            proposerId: proposal.proposerId,
+            teamMembersArray: owners.teamMembersArray,
+            ownersArray: owners.ownersArray,
+          },
+          status,
+          communityScore,
+          timeWeight,
+          score,
+        ),
+      );
+
+      if (!score.scored) continue;
+      totalProposalsScored++;
+
+      // Only accumulate scores for owners present in the users table
       for (const userId of owners.ownersArray) {
+        if (!userIdSet.has(userId)) continue;
         const existing = userAccumulators.get(userId);
         userAccumulators.set(userId, {
           positiveSum: (existing?.positiveSum ?? 0) + score.proposalReward,
@@ -83,19 +105,17 @@ export async function computeProposalEngagement(
       }
     }
 
+    // Build results from accumulators (all users in accumulators are in the users table)
     const results: ProposalEngagementResult[] = [];
 
-    for (const user of users) {
-      const accumulator = userAccumulators.get(user.id);
-      if (!accumulator) continue;
-
+    for (const [userId, accumulator] of userAccumulators) {
       const engagement =
         inputs.fundedConcludedRewardWeight * accumulator.positiveSum -
         inputs.unfundedPenaltyWeight * accumulator.negativeSum;
 
       results.push({
-        user_id: user.id,
-        proposal_engagement: engagement,
+        user_id: userId,
+        proposal_engagement: roundScore(engagement),
       });
     }
 
@@ -105,12 +125,13 @@ export async function computeProposalEngagement(
       userCount: results.length,
     });
 
+    // Generate and upload CSV output
     const csvContent = stringify(results, {
       header: true,
       columns: ['user_id', 'proposal_engagement'],
     });
 
-    const outputKey = generateKey('snapshot', snapshot.id, `${snapshot.algorithmPresetFrozen.key}.csv`);
+    const outputKey = generateKey('snapshot', snapshotId, `${snapshot.algorithmPresetFrozen.key}.csv`);
 
     await storage.putObject({
       bucket: config.storage.bucket,
@@ -121,9 +142,39 @@ export async function computeProposalEngagement(
 
     logger.info('Uploaded proposal engagement results', { outputKey });
 
+    // Generate and upload benchmark details
+    const userIdsInResult = new Set(results.map((r) => r.user_id));
+    const userScoresForBenchmark = new Map(results.map((r) => [r.user_id, r.proposal_engagement]));
+    const allUserIds = users.map((u) => u.id);
+
+    const benchmark = formatBenchmarkOutput({
+      records: benchmarkRecords,
+      snapshotId,
+      userIdsInResult,
+      allUserIds,
+      userScores: userScoresForBenchmark,
+      userAccumulators,
+      params: inputs,
+      totalProposalsProcessed: proposals.length,
+      totalProposalsScored,
+      proposalsSkippedUnsupportedRound,
+    });
+
+    const benchmarkKey = generateKey('snapshot', snapshotId, 'proposal_engagement_details.json');
+
+    await storage.putObject({
+      bucket: config.storage.bucket,
+      key: benchmarkKey,
+      body: JSON.stringify(benchmark, null, 2),
+      contentType: 'application/json',
+    });
+
+    logger.info('Uploaded proposal engagement benchmark', { benchmarkKey });
+
     return {
       outputs: {
         proposal_engagement: outputKey,
+        proposal_engagement_details: benchmarkKey,
       },
     };
   } finally {

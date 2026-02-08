@@ -1,7 +1,12 @@
 import { createRequire } from 'node:module';
 import { connect, disconnect } from '@reputo/database';
+import { createS3Client, Storage } from '@reputo/storage';
 import { NativeConnection, Worker } from '@temporalio/worker';
-import { createAlgorithmLibraryActivities, createDbActivities } from '../../activities/orchestrator/index.js';
+import {
+  createAlgorithmLibraryActivities,
+  createDbActivities,
+  createDependencyResolverActivities,
+} from '../../activities/orchestrator/index.js';
 import config from '../../config/index.js';
 import { logger } from '../../shared/utils/index.js';
 
@@ -11,12 +16,25 @@ async function run(): Promise<void> {
   logger.info('Starting Orchestrator Worker');
 
   await connect(config.mongoDB.uri);
-
   const connection = await NativeConnection.connect({
     address: config.temporal.address,
   });
 
   logger.info('Connected to Temporal server');
+
+  const s3Client = createS3Client(
+    {
+      region: config.aws.region,
+      accessKeyId: config.aws.accessKeyId,
+      secretAccessKey: config.aws.secretAccessKey,
+    },
+    config.app.nodeEnv,
+  );
+  const storage = new Storage(s3Client);
+  const storageConfig = {
+    bucket: config.storage.bucket,
+    maxSizeBytes: config.storage.maxSizeBytes,
+  };
 
   const worker = await Worker.create({
     connection,
@@ -27,6 +45,7 @@ async function run(): Promise<void> {
     activities: {
       ...createDbActivities(),
       ...createAlgorithmLibraryActivities(),
+      ...createDependencyResolverActivities({ storage, storageConfig }),
     },
     bundlerOptions: {
       ignoreModules: ['fs', 'path', 'os', 'crypto'],

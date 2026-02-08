@@ -1,4 +1,4 @@
-# Goal: Fix the issue with minimal correct changes.
+# Goal: Fix the issue with minimal correct changes
 
 Steps:
 

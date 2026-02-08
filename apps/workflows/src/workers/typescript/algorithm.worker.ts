@@ -1,7 +1,6 @@
 import { createS3Client, Storage } from '@reputo/storage';
 import { NativeConnection, Worker } from '@temporalio/worker';
 
-import { createDependencyResolverActivities } from '../../activities/orchestrator/index.js';
 import { dispatchAlgorithm } from '../../activities/typescript/dispatchAlgorithm.activity.js';
 import config from '../../config/index.js';
 import { logger } from '../../shared/utils/index.js';
@@ -28,19 +27,8 @@ async function run(): Promise<void> {
 
   logger.info('Storage initialized');
 
-  const storageConfig = {
-    bucket: config.storage.bucket,
-    maxSizeBytes: config.storage.maxSizeBytes,
-  };
-
-  const dependencyResolverActivities = createDependencyResolverActivities({
-    storage,
-    storageConfig,
-  });
-
   const activities = {
     runTypescriptAlgorithm: dispatchAlgorithm(storage),
-    ...dependencyResolverActivities,
   };
 
   logger.info(`Activities initialized: [${Object.keys(activities).join(', ')}]`);

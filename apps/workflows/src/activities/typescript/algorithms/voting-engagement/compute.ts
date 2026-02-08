@@ -1,11 +1,9 @@
-import type { Snapshot } from '@reputo/database';
 import { generateKey, type Storage } from '@reputo/storage';
 import { Context } from '@temporalio/activity';
 import { stringify } from 'csv-stringify/sync';
-import type { HydratedDocument } from 'mongoose';
 
 import config from '../../../../config/index.js';
-import type { AlgorithmResult } from '../../../../shared/types/index.js';
+import type { AlgorithmResult, Snapshot } from '../../../../shared/types/index.js';
 import { calculateVotingEngagement, groupVotesByVoter } from './pipeline/index.js';
 import type { VotingEngagementResult } from './types.js';
 import { extractVotesKey, loadVotes } from './utils/index.js';
@@ -17,14 +15,11 @@ import { extractVotesKey, loadVotes } from './utils/index.js';
  * @param storage - Storage client for file operations
  * @returns Algorithm result with output file locations
  */
-export async function computeVotingEngagement(
-  snapshot: HydratedDocument<Snapshot>,
-  storage: Storage,
-): Promise<AlgorithmResult> {
+export async function computeVotingEngagement(snapshot: Snapshot, storage: Storage): Promise<AlgorithmResult> {
   const logger = Context.current().log;
 
   logger.info('Starting voting_engagement algorithm', {
-    snapshotId: snapshot.id,
+    snapshotId: snapshot._id,
   });
 
   const { bucket } = config.storage;
@@ -66,7 +61,7 @@ export async function computeVotingEngagement(
     columns: ['collection_id', 'voting_engagement'],
   });
 
-  const outputKey = generateKey('snapshot', snapshot.id, `${snapshot.algorithmPresetFrozen.key}.csv`);
+  const outputKey = generateKey('snapshot', snapshot._id, `${snapshot.algorithmPresetFrozen.key}.csv`);
 
   await storage.putObject({
     bucket,

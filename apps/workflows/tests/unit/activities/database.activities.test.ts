@@ -41,11 +41,13 @@ describe('Database Activities', () => {
   });
 
   describe('getSnapshot', () => {
-    it('should fetch a snapshot successfully', async () => {
-      // Mock snapshot data
-      const mockSnapshot: Snapshot = {
-        status: 'queued',
-        algorithmPreset: '507f1f77bcf86cd799439011',
+    it('should fetch a snapshot successfully and include _id as string', async () => {
+      const snapshotId = '507f1f77bcf86cd799439011';
+      // Mock lean() result with ObjectId-like _id that has toString()
+      const mockLeanSnapshot = {
+        _id: { toString: () => snapshotId },
+        status: 'queued' as const,
+        algorithmPreset: snapshotId,
         algorithmPresetFrozen: {
           key: 'voting_engagement',
           version: '1.0.0',
@@ -53,28 +55,25 @@ describe('Database Activities', () => {
         },
       };
 
-      // Mock Mongoose model chain
+      // Mock Mongoose model chain: findById().lean().exec()
       mockFindById.mockReturnValue({
         lean: vi.fn().mockReturnValue({
-          exec: vi.fn().mockResolvedValue(mockSnapshot),
+          exec: vi.fn().mockResolvedValue(mockLeanSnapshot),
         }),
       });
 
-      // Create activities
       const activities = createDbActivities();
 
-      // Execute activity
-      const result = await activities.getSnapshot({
-        snapshotId: '507f1f77bcf86cd799439011',
-      });
+      const result = await activities.getSnapshot({ snapshotId });
 
-      // Assertions
-      expect(result.snapshot).toEqual(mockSnapshot);
-      expect(mockFindById).toHaveBeenCalledWith('507f1f77bcf86cd799439011');
+      // _id should be serialized as a plain string
+      expect(result.snapshot._id).toBe(snapshotId);
+      expect(result.snapshot.status).toBe('queued');
+      expect(result.snapshot.algorithmPresetFrozen.key).toBe('voting_engagement');
+      expect(mockFindById).toHaveBeenCalledWith(snapshotId);
     });
 
     it('should throw error if snapshot not found', async () => {
-      // Mock Mongoose model to return null
       mockFindById.mockReturnValue({
         lean: vi.fn().mockReturnValue({
           exec: vi.fn().mockResolvedValue(null),
@@ -83,7 +82,6 @@ describe('Database Activities', () => {
 
       const activities = createDbActivities();
 
-      // Execute activity and expect error
       await expect(activities.getSnapshot({ snapshotId: 'nonexistent' })).rejects.toThrow(
         'Snapshot not found: nonexistent',
       );

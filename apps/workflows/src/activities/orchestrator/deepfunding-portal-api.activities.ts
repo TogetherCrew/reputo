@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { generateKey, ObjectNotFoundError } from '@reputo/storage';
 import { Context } from '@temporalio/activity';
-
+import config from '../../config/index.js';
 import type {
   AlgorithmResult,
   DeepFundingSyncInput,
@@ -11,21 +11,6 @@ import type {
   DeepfundingSyncContext,
   PaginatedResponse,
 } from '../../shared/types/index.js';
-
-function getRequiredEnv(name: string): string {
-  const value = process.env[name];
-  if (!value) {
-    throw new Error(`${name} environment variable is required`);
-  }
-  return value;
-}
-
-function getNumberEnv(name: string, fallback: number): number {
-  const raw = process.env[name];
-  if (!raw) return fallback;
-  const n = Number(raw);
-  return Number.isFinite(n) ? n : fallback;
-}
 
 export function createDeepfundingSyncActivity(ctx: DeepfundingSyncContext) {
   const { storage, storageConfig } = ctx;
@@ -54,14 +39,14 @@ export function createDeepfundingSyncActivity(ctx: DeepfundingSyncContext) {
       }
     }
 
-    const baseUrl = process.env.DEEPFUNDING_API_BASE_URL || 'https://deepfunding.ai/wp-json/deepfunding/v1';
-    const apiKey = getRequiredEnv('DEEPFUNDING_API_KEY');
-    const requestTimeoutMs = getNumberEnv('DEEPFUNDING_API_REQUEST_TIMEOUT_MS', 45_000);
-    const concurrency = getNumberEnv('DEEPFUNDING_API_CONCURRENCY', 4);
-    const defaultPageLimit = getNumberEnv('DEEPFUNDING_API_DEFAULT_PAGE_LIMIT', 500);
-    const retryMaxAttempts = getNumberEnv('DEEPFUNDING_API_RETRY_MAX_ATTEMPTS', 7);
-    const retryBaseDelayMs = getNumberEnv('DEEPFUNDING_API_RETRY_BASE_DELAY_MS', 500);
-    const retryMaxDelayMs = getNumberEnv('DEEPFUNDING_API_RETRY_MAX_DELAY_MS', 20_000);
+    const baseUrl = config.deepfundingPortalApi.apiBaseUrl;
+    const apiKey = config.deepfundingPortalApi.apiKey;
+    const requestTimeoutMs = config.deepfundingPortalApi.requestTimeoutMs;
+    const concurrency = config.deepfundingPortalApi.concurrency;
+    const defaultPageLimit = config.deepfundingPortalApi.defaultPageLimit;
+    const retryMaxAttempts = config.deepfundingPortalApi.retryMaxAttempts;
+    const retryBaseDelayMs = config.deepfundingPortalApi.retryBaseDelayMs;
+    const retryMaxDelayMs = config.deepfundingPortalApi.retryMaxDelayMs;
 
     logger.info('Starting DeepFunding portal sync for snapshot', {
       snapshotId,

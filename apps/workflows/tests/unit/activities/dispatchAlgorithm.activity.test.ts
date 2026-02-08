@@ -1,6 +1,6 @@
-import type { Snapshot } from '@reputo/database';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { UnsupportedAlgorithmError } from '../../../src/shared/errors/index.js';
+import type { Snapshot } from '../../../src/shared/types/index.js';
 
 describe('dispatchAlgorithm activity', () => {
   beforeAll(() => {
@@ -17,6 +17,8 @@ describe('dispatchAlgorithm activity', () => {
     process.env.MONGODB_DB_NAME = 'reputo_test';
     process.env.MONGODB_USER = '';
     process.env.MONGODB_PASSWORD = '';
+    process.env.AWS_REGION = 'us-east-1';
+    process.env.STORAGE_BUCKET = 'reputo-test-bucket';
     process.env.DEEPFUNDING_API_BASE_URL = 'https://api.deepfunding.xyz';
     process.env.DEEPFUNDING_API_KEY = '';
   });
@@ -26,6 +28,7 @@ describe('dispatchAlgorithm activity', () => {
     const run = dispatchAlgorithm({} as never);
 
     const snapshot: Snapshot = {
+      _id: '507f1f77bcf86cd799439012',
       status: 'queued',
       algorithmPreset: '507f1f77bcf86cd799439011',
       algorithmPresetFrozen: {

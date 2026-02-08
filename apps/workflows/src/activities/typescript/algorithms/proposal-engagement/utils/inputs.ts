@@ -1,21 +1,42 @@
 import type { AlgorithmPresetFrozen } from '@reputo/database';
 
+import { MissingInputError } from '../../../../../shared/errors/index.js';
 import type { ProposalEngagementParams } from '../types.js';
 
-/**
- * Extract algorithm parameters from snapshot inputs.
- *
- * @param inputs - Raw inputs from the algorithm preset
- * @returns Typed algorithm parameters
- */
-export function extractInputs(inputs: AlgorithmPresetFrozen['inputs']): ProposalEngagementParams {
-  const values = Object.fromEntries((inputs ?? []).map(({ key, value }) => [key, value])) as Record<string, unknown>;
+const REQUIRED_KEYS: (keyof ProposalEngagementParams)[] = [
+  'fundedConcludedRewardWeight',
+  'unfundedPenaltyWeight',
+  'engagementWindowMonths',
+  'monthlyDecayRatePercent',
+  'decayBucketSizeMonths',
+];
 
-  return {
-    fundedConcludedRewardWeight: values.funded_concluded_reward_weight as number,
-    unfundedPenaltyWeight: values.unfunded_penalty_weight as number,
-    engagementWindowMonths: values.engagement_window_months as number,
-    monthlyDecayRatePercent: values.monthly_decay_rate_percent as number,
-    decayBucketSizeMonths: values.decay_bucket_size_months as number,
-  };
+const KEY_MAP: Record<string, keyof ProposalEngagementParams> = {
+  funded_concluded_reward_weight: 'fundedConcludedRewardWeight',
+  unfunded_penalty_weight: 'unfundedPenaltyWeight',
+  engagement_window_months: 'engagementWindowMonths',
+  monthly_decay_rate_percent: 'monthlyDecayRatePercent',
+  decay_bucket_size_months: 'decayBucketSizeMonths',
+};
+
+export function extractInputs(inputs: AlgorithmPresetFrozen['inputs']): ProposalEngagementParams {
+  const raw = Object.fromEntries((inputs ?? []).map(({ key, value }) => [key, value])) as Record<string, unknown>;
+
+  const params = {} as Record<keyof ProposalEngagementParams, number>;
+
+  for (const [snakeKey, camelKey] of Object.entries(KEY_MAP)) {
+    const value = raw[snakeKey];
+    if (value === undefined || value === null) {
+      throw new MissingInputError(snakeKey);
+    }
+    params[camelKey] = value as number;
+  }
+
+  for (const key of REQUIRED_KEYS) {
+    if (params[key] === undefined) {
+      throw new MissingInputError(key);
+    }
+  }
+
+  return params;
 }

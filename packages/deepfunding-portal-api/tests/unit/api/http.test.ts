@@ -240,7 +240,10 @@ describe('HTTP Utils', () => {
 
       vi.mocked(request).mockResolvedValue(mockResponse as never);
 
-      await executeRequest(config, mockLogger, '/test', { page: 1, limit: 10 });
+      await executeRequest(config, mockLogger, '/test', {
+        page: 1,
+        limit: 10,
+      });
 
       const callUrl = vi.mocked(request).mock.calls[0]?.[0] as string;
       expect(callUrl).toContain('page=1');

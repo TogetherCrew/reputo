@@ -20,22 +20,62 @@ const envVarsSchema = Joi.object()
     MONGODB_USER: Joi.string().allow('').description('MongoDB username'),
     MONGODB_PASSWORD: Joi.string().allow('').description('MongoDB password'),
     MONGODB_DB_NAME: Joi.string().required().description('MongoDB database name'),
-    AWS_REGION: Joi.string().description('AWS region for S3 operations'),
+    AWS_REGION: Joi.string().required().description('AWS region for S3 operations'),
     AWS_ACCESS_KEY_ID: Joi.string().allow('').description('AWS access key ID (optional, only used in non-production)'),
     AWS_SECRET_ACCESS_KEY: Joi.string()
       .allow('')
       .description('AWS secret access key (optional, only used in non-production)'),
-    STORAGE_BUCKET: Joi.string().description('S3 bucket name for algorithm inputs and outputs'),
-    STORAGE_MAX_SIZE_BYTES: Joi.number().description('Maximum size for storage objects in bytes'),
+    STORAGE_BUCKET: Joi.string().required().description('S3 bucket name for algorithm inputs and outputs'),
+    STORAGE_PRESIGN_PUT_TTL: Joi.number()
+      .integer()
+      .min(1)
+      .default(120)
+      .description('Default presigned PUT URL TTL in seconds'),
+    STORAGE_PRESIGN_GET_TTL: Joi.number()
+      .integer()
+      .min(1)
+      .default(300)
+      .description('Default presigned GET URL TTL in seconds'),
+    STORAGE_MAX_SIZE_BYTES: Joi.number()
+      .integer()
+      .min(1)
+      .default(52428800)
+      .description('Maximum size for storage objects in bytes'),
     STORAGE_CONTENT_TYPE_ALLOWLIST: Joi.string().description('Comma-separated list of allowed content types'),
     DEEPFUNDING_API_BASE_URL: Joi.string().description('DeepFunding API base URL').required(),
     DEEPFUNDING_API_KEY: Joi.string().allow('').description('DeepFunding API key').required(),
-    DEEPFUNDING_API_REQUEST_TIMEOUT_MS: Joi.number().description('DeepFunding API request timeout in milliseconds'),
-    DEEPFUNDING_API_CONCURRENCY: Joi.number().description('DeepFunding API concurrency limit'),
-    DEEPFUNDING_API_DEFAULT_PAGE_LIMIT: Joi.number().description('DeepFunding API default page limit'),
-    DEEPFUNDING_API_RETRY_MAX_ATTEMPTS: Joi.number().description('DeepFunding API max retry attempts'),
-    DEEPFUNDING_API_RETRY_BASE_DELAY_MS: Joi.number().description('DeepFunding API retry base delay in milliseconds'),
-    DEEPFUNDING_API_RETRY_MAX_DELAY_MS: Joi.number().description('DeepFunding API retry max delay in milliseconds'),
+    DEEPFUNDING_API_REQUEST_TIMEOUT_MS: Joi.number()
+      .integer()
+      .min(1000)
+      .default(45000)
+      .description('DeepFunding API request timeout in milliseconds'),
+    DEEPFUNDING_API_CONCURRENCY: Joi.number()
+      .integer()
+      .min(1)
+      .max(50)
+      .default(4)
+      .description('DeepFunding API concurrency limit'),
+    DEEPFUNDING_API_DEFAULT_PAGE_LIMIT: Joi.number()
+      .integer()
+      .min(1)
+      .default(500)
+      .description('DeepFunding API default page limit'),
+    DEEPFUNDING_API_RETRY_MAX_ATTEMPTS: Joi.number()
+      .integer()
+      .min(1)
+      .max(20)
+      .default(7)
+      .description('DeepFunding API max retry attempts'),
+    DEEPFUNDING_API_RETRY_BASE_DELAY_MS: Joi.number()
+      .integer()
+      .min(0)
+      .default(500)
+      .description('DeepFunding API retry base delay in milliseconds'),
+    DEEPFUNDING_API_RETRY_MAX_DELAY_MS: Joi.number()
+      .integer()
+      .min(0)
+      .default(20000)
+      .description('DeepFunding API retry max delay in milliseconds'),
   })
   .unknown();
 
@@ -71,9 +111,9 @@ export default {
   },
   storage: {
     bucket: envVars.STORAGE_BUCKET,
-    presignPutTtl: Number(envVars.STORAGE_PRESIGN_PUT_TTL ?? 120),
-    presignGetTtl: Number(envVars.STORAGE_PRESIGN_GET_TTL ?? 300),
-    maxSizeBytes: Number(envVars.STORAGE_MAX_SIZE_BYTES ?? 52428800),
+    presignPutTtl: envVars.STORAGE_PRESIGN_PUT_TTL,
+    presignGetTtl: envVars.STORAGE_PRESIGN_GET_TTL,
+    maxSizeBytes: envVars.STORAGE_MAX_SIZE_BYTES,
     contentTypeAllowlist: envVars.STORAGE_CONTENT_TYPE_ALLOWLIST,
   },
   logger: {
@@ -82,11 +122,11 @@ export default {
   deepfundingPortalApi: {
     apiBaseUrl: envVars.DEEPFUNDING_API_BASE_URL,
     apiKey: envVars.DEEPFUNDING_API_KEY,
-    requestTimeoutMs: Number(envVars.DEEPFUNDING_API_REQUEST_TIMEOUT_MS ?? 10000),
-    concurrency: Number(envVars.DEEPFUNDING_API_CONCURRENCY ?? 10),
-    defaultPageLimit: Number(envVars.DEEPFUNDING_API_DEFAULT_PAGE_LIMIT ?? 100),
-    retryMaxAttempts: Number(envVars.DEEPFUNDING_API_RETRY_MAX_ATTEMPTS ?? 3),
-    retryBaseDelayMs: Number(envVars.DEEPFUNDING_API_RETRY_BASE_DELAY_MS ?? 1000),
-    retryMaxDelayMs: Number(envVars.DEEPFUNDING_API_RETRY_MAX_DELAY_MS ?? 10000),
+    requestTimeoutMs: envVars.DEEPFUNDING_API_REQUEST_TIMEOUT_MS,
+    concurrency: envVars.DEEPFUNDING_API_CONCURRENCY,
+    defaultPageLimit: envVars.DEEPFUNDING_API_DEFAULT_PAGE_LIMIT,
+    retryMaxAttempts: envVars.DEEPFUNDING_API_RETRY_MAX_ATTEMPTS,
+    retryBaseDelayMs: envVars.DEEPFUNDING_API_RETRY_BASE_DELAY_MS,
+    retryMaxDelayMs: envVars.DEEPFUNDING_API_RETRY_MAX_DELAY_MS,
   },
 };

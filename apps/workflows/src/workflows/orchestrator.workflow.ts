@@ -88,6 +88,8 @@ export async function OrchestratorWorkflow(input: string | OrchestratorWorkflowI
     },
   });
 
+  workflow.log.info('Snapshot marked as running', { snapshotId });
+
   const algorithmKey = snapshot.algorithmPresetFrozen.key;
   const algorithmVersion = snapshot.algorithmPresetFrozen.version;
 
@@ -107,7 +109,7 @@ export async function OrchestratorWorkflow(input: string | OrchestratorWorkflowI
   const algorithmTaskQueue = getAlgorithmTaskQueueFromRuntime(runtime, taskQueues);
 
   const { resolveDependency } = workflow.proxyActivities<DependencyResolverActivities>({
-    taskQueue: algorithmTaskQueue,
+    taskQueue: orchestratorTaskQueue,
     startToCloseTimeout: DEPENDENCY_RESOLUTION_TIMEOUT,
   });
 
@@ -145,11 +147,6 @@ export async function OrchestratorWorkflow(input: string | OrchestratorWorkflowI
       algorithmKey,
     });
   }
-
-  workflow.log.info('Snapshot marked as running', {
-    snapshotId,
-    algorithmTaskQueue,
-  });
 
   try {
     workflow.log.info('Executing algorithm activity', {

@@ -2,7 +2,14 @@ import type { ProposalClassification } from '../types.js';
 import type { CommunityScoreResult } from './community-scores.js';
 import type { TimeWeightResult } from './time-weight.js';
 
-type ProposalSkipReason =
+/**
+ * Only proposals from these rounds include reliable teamMembers data.
+ * Proposals from other rounds are skipped with 'unsupported_round'.
+ */
+export const SUPPORTED_ROUND_IDS = new Set([31, 36, 107]);
+
+export type ProposalSkipReason =
+  | 'unsupported_round'
   | 'invalid_created_at'
   | 'outside_engagement_window'
   | 'no_community_reviews'
@@ -10,6 +17,7 @@ type ProposalSkipReason =
   | null;
 
 export interface ProposalScoreInput {
+  roundId: number;
   classification: ProposalClassification;
   communityScore: CommunityScoreResult;
   timeWeight: TimeWeightResult;
@@ -40,12 +48,14 @@ export interface ProposalScoreResult {
  * @returns Score result with reward/penalty and skip reason
  */
 export function computeProposalScore(input: ProposalScoreInput): ProposalScoreResult {
-  const { classification, communityScore, timeWeight } = input;
+  const { roundId, classification, communityScore, timeWeight } = input;
 
   // Determine skip reason (in order of precedence)
   let skipReason: ProposalSkipReason = null;
 
-  if (!timeWeight.isValid) {
+  if (!SUPPORTED_ROUND_IDS.has(roundId)) {
+    skipReason = 'unsupported_round';
+  } else if (!timeWeight.isValid) {
     skipReason = 'invalid_created_at';
   } else if (!timeWeight.isWithinWindow) {
     skipReason = 'outside_engagement_window';

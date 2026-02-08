@@ -37,7 +37,12 @@ export function createDbActivities(): DbActivities {
         algorithmKey: snapshot.algorithmPresetFrozen?.key,
       });
 
-      return { snapshot };
+      return {
+        snapshot: {
+          ...snapshot,
+          _id: snapshot._id.toString(),
+        },
+      };
     },
 
     async updateSnapshot(input: UpdateSnapshotInput): Promise<void> {

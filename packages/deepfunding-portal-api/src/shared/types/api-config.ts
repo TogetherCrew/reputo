@@ -44,12 +44,12 @@ export type DeepFundingPortalApiConfigInput = {
  * Default configuration values
  */
 export const DEFAULT_CONFIG: Omit<DeepFundingPortalApiConfig, 'baseUrl' | 'apiKey'> = {
-  requestTimeoutMs: 45_000,
-  concurrency: 4,
+  requestTimeoutMs: 10000,
+  concurrency: 1,
   retry: {
     maxAttempts: 7,
     baseDelayMs: 500,
-    maxDelayMs: 20_000,
+    maxDelayMs: 10000,
   },
   defaultPageLimit: 500,
 };

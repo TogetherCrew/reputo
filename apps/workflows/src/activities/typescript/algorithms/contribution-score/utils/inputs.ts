@@ -1,25 +1,57 @@
 import type { AlgorithmPresetFrozen } from '@reputo/database';
 
+import { MissingInputError } from '../../../../../shared/errors/index.js';
 import type { ContributionScoreParams } from '../types.js';
 
+const REQUIRED_KEYS: (keyof ContributionScoreParams)[] = [
+  'commentBaseScore',
+  'commentUpvoteWeight',
+  'commentDownvoteWeight',
+  'selfInteractionPenaltyFactor',
+  'projectOwnerUpvoteBonusMultiplier',
+  'engagementWindowMonths',
+  'monthlyDecayRatePercent',
+  'decayBucketSizeMonths',
+];
+
+/** Mapping from snake_case input keys to camelCase param keys. */
+const KEY_MAP: Record<string, keyof ContributionScoreParams> = {
+  comment_base_score: 'commentBaseScore',
+  comment_upvote_weight: 'commentUpvoteWeight',
+  comment_downvote_weight: 'commentDownvoteWeight',
+  self_interaction_penalty_factor: 'selfInteractionPenaltyFactor',
+  project_owner_upvote_bonus_multiplier: 'projectOwnerUpvoteBonusMultiplier',
+  engagement_window_months: 'engagementWindowMonths',
+  monthly_decay_rate_percent: 'monthlyDecayRatePercent',
+  decay_bucket_size_months: 'decayBucketSizeMonths',
+};
+
 /**
- * Extract algorithm parameters from snapshot inputs.
- * Data is assumed to be valid (validated at workflow level).
+ * Extract and validate algorithm parameters from snapshot inputs.
+ * All parameters are required — throws {@link MissingInputError} if any are missing.
  *
  * @param inputs - Raw inputs from the algorithm preset
  * @returns Typed algorithm parameters
  */
 export function extractInputs(inputs: AlgorithmPresetFrozen['inputs']): ContributionScoreParams {
-  const values = Object.fromEntries((inputs ?? []).map(({ key, value }) => [key, value])) as Record<string, unknown>;
+  const raw = Object.fromEntries((inputs ?? []).map(({ key, value }) => [key, value])) as Record<string, unknown>;
 
-  return {
-    commentBaseScore: (values.comment_base_score as number) ?? 0,
-    commentUpvoteWeight: (values.comment_upvote_weight as number) ?? 0,
-    commentDownvoteWeight: (values.comment_downvote_weight as number) ?? 0,
-    selfInteractionPenaltyFactor: (values.self_interaction_penalty_factor as number) ?? 0,
-    projectOwnerUpvoteBonusMultiplier: (values.project_owner_upvote_bonus_multiplier as number) ?? 0,
-    engagementWindowMonths: (values.engagement_window_months as number) ?? 0,
-    monthlyDecayRatePercent: (values.monthly_decay_rate_percent as number) ?? 0,
-    decayBucketSizeMonths: (values.decay_bucket_size_months as number) ?? 1,
-  };
+  const params = {} as Record<keyof ContributionScoreParams, number>;
+
+  for (const [snakeKey, camelKey] of Object.entries(KEY_MAP)) {
+    const value = raw[snakeKey];
+    if (value === undefined || value === null) {
+      throw new MissingInputError(snakeKey);
+    }
+    params[camelKey] = value as number;
+  }
+
+  // Sanity check: ensure all required keys are present (guards against KEY_MAP drift)
+  for (const key of REQUIRED_KEYS) {
+    if (params[key] === undefined) {
+      throw new MissingInputError(key);
+    }
+  }
+
+  return params;
 }
