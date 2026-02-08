@@ -20,7 +20,7 @@ jobs:
         strategy:
             matrix:
                 os: [ubuntu-latest]
-                image: [api, ui, workflows, typescript-worker]
+                image: [api, ui, workflows]
         outputs:
             image-tag: ${{ steps.meta.outputs.tags }}
 

@@ -6,9 +6,4 @@ import type { AlgorithmPreset, AlgorithmPresetModel } from '../shared/types/inde
 /**
  * Mongoose model for AlgorithmPreset documents.
  */
-const AlgorithmPresetModel: AlgorithmPresetModel = model<AlgorithmPreset, AlgorithmPresetModel>(
-  MODEL_NAMES.ALGORITHM_PRESET,
-  AlgorithmPresetSchema,
-);
-
-export default AlgorithmPresetModel;
+export default model<AlgorithmPreset, AlgorithmPresetModel>(MODEL_NAMES.ALGORITHM_PRESET, AlgorithmPresetSchema);

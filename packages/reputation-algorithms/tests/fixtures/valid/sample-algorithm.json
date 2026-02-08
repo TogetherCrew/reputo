@@ -45,8 +45,5 @@
             }
         }
     ],
-    "runtime": {
-        "taskQueue": "typescript-worker",
-        "activity": "sample_algorithm"
-    }
+    "runtime": "typescript"
 }

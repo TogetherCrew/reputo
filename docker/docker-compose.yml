@@ -168,7 +168,7 @@ services:
     temporal-elasticsearch:
         container_name: temporal-elasticsearch
         restart: unless-stopped
-        image: elasticsearch:8.16.0
+        image: elasticsearch:7.17.23
         environment:
             - cluster.routing.allocation.disk.threshold_enabled=true
             - cluster.routing.allocation.disk.watermark.low=512mb
@@ -181,7 +181,6 @@ services:
             - temporal_elasticsearch_data:/var/lib/elasticsearch/data
         networks: [production]
 
-
     temporal-postgresql:
         container_name: temporal-postgresql
         image: postgres:12.22
@@ -192,27 +191,29 @@ services:
         volumes:
             - temporal_postgresql_data:/var/lib/postgresql/data
 
-    typescript-worker:
-        container_name: typescript-worker
-        image: ghcr.io/togethercrew/reputo/typescript-worker:${IMAGE_TAG}
-        restart: unless-stopped
-        networks: [production]
-        depends_on:
-            temporal:
-                condition: service_healthy
-        env_file:
-            - ./env/typescript-worker.env
-        labels:
-            - com.centurylinklabs.watchtower.enable=true
-
-    workflows:
-        container_name: workflows
+    orchestrator-worker:
+        container_name: orchestrator-worker
         image: ghcr.io/togethercrew/reputo/workflows:${IMAGE_TAG}
+        command: ['pnpm', 'start:orchestrator']
         restart: unless-stopped
         networks: [production]
         depends_on:
             mongodb:
                 condition: service_healthy
+            temporal:
+                condition: service_healthy
+        env_file:
+            - ./env/workflows.env
+        labels:
+            - com.centurylinklabs.watchtower.enable=true
+
+    typescript-worker:
+        container_name: typescript-worker
+        image: ghcr.io/togethercrew/reputo/workflows:${IMAGE_TAG}
+        command: ['pnpm', 'start:algorithm-typescript']
+        restart: unless-stopped
+        networks: [production]
+        depends_on:
             temporal:
                 condition: service_healthy
         env_file:

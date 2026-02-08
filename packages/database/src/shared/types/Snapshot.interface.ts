@@ -14,6 +14,18 @@ export interface SnapshotOutputs {
 }
 
 /**
+ * Error information captured when a snapshot execution fails.
+ */
+export interface SnapshotError {
+  /** Error message describing what went wrong */
+  message: string;
+  /** Timestamp when the error occurred */
+  timestamp?: string;
+  /** Additional error context */
+  [key: string]: unknown;
+}
+
+/**
  * Interface defining the structure of a Snapshot document.
  *
  * Represents an execution snapshot tracking the status and results
@@ -30,6 +42,12 @@ export interface Snapshot {
     runId?: string;
     /** Temporal task queue name */
     taskQueue?: string;
+    /**
+     * Algorithm task queue used for algorithm activity execution.
+     *
+     * Note: This is intentionally separate from `taskQueue`, which stores the orchestrator workflow task queue.
+     */
+    algorithmTaskQueue?: string;
   };
   /** Reference to the associated AlgorithmPreset */
   algorithmPreset: Types.ObjectId | string;
@@ -37,6 +55,8 @@ export interface Snapshot {
   algorithmPresetFrozen: AlgorithmPresetFrozen;
   /** Algorithm execution outputs/results */
   outputs?: SnapshotOutputs;
+  /** Error information when execution fails */
+  error?: SnapshotError;
   /** Timestamp when execution started (status changed to 'running') */
   startedAt?: Date;
   /** Timestamp when execution completed (status changed to 'completed' or 'failed') */

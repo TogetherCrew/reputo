@@ -18,13 +18,12 @@ docker/
 │   │   ├── temporal.env.example
 │   │   ├── temporal-postgresql.env.example
 │   │   ├── temporal-ui.env.example
-│   │   ├── typescript-worker.env.example
 │   │   ├── ui.env.example
 │   │   └── workflows.env.example
 ├── mongo/                      # MongoDB initialization scripts
 │   ├── init.js                 # Database initialization script
 │   ├── healthcheck.js          # Replica set health check
-│   └── replica.key             # Replica set authentication key
+│   └── keyfile.txt             # Replica set authentication key
 └── traefik/                    # Traefik configuration
     └── traefik.yml             # Reverse proxy configuration
 ```
@@ -83,7 +82,6 @@ Copy these templates and update with your values:
 | `env/examples/temporal.env.example`            | `env/temporal.env`            | Temporal server database settings                  |
 | `env/examples/temporal-postgresql.env.example` | `env/temporal-postgresql.env` | PostgreSQL credentials for Temporal                |
 | `env/examples/temporal-ui.env.example`         | `env/temporal-ui.env`         | Temporal UI settings                               |
-| `env/examples/typescript-worker.env.example`   | `env/typescript-worker.env`   | TypeScript worker configuration                    |
 | `env/examples/ui.env.example`                  | `env/ui.env`                  | UI service settings                                |
 | `env/examples/workflows.env.example`           | `env/workflows.env`           | Workflows service configuration                    |
 
@@ -99,19 +97,19 @@ for f in *.env.example; do cp "$f" "../${f%.example}"; done
 
 ## Services
 
-| Service                  | Description                     | Ports   |
-| ------------------------ | ------------------------------- | ------- |
-| `api`                    | NestJS backend API              | 3000    |
-| `ui`                     | Next.js frontend                | 8080    |
-| `workflows`              | Temporal workflow orchestrator  | -       |
-| `typescript-worker`      | Temporal activity worker        | -       |
-| `mongodb`                | MongoDB database (replica set)  | 27017   |
-| `temporal`               | Temporal server                 | 7233    |
-| `temporal-ui`            | Temporal web dashboard          | 8088    |
-| `temporal-postgresql`    | PostgreSQL for Temporal         | -       |
-| `temporal-elasticsearch` | Elasticsearch for Temporal      | -       |
-| `traefik`                | Reverse proxy (production only) | 80, 443 |
-| `watchtower`             | Auto-updater (production only)  | -       |
+| Service                  | Description                           | Ports   |
+| ------------------------ | ------------------------------------- | ------- |
+| `api`                    | NestJS backend API                    | 3000    |
+| `ui`                     | Next.js frontend                      | 8080    |
+| `orchestrator-worker`    | Temporal workflow orchestrator        | -       |
+| `typescript-worker`      | Temporal algorithm activity worker    | -       |
+| `mongodb`                | MongoDB database (replica set)        | 27017   |
+| `temporal`               | Temporal server                       | 7233    |
+| `temporal-ui`            | Temporal web dashboard                | 8088    |
+| `temporal-postgresql`    | PostgreSQL for Temporal               | -       |
+| `temporal-elasticsearch` | Elasticsearch for Temporal            | -       |
+| `traefik`                | Reverse proxy (production only)       | 80, 443 |
+| `watchtower`             | Auto-updater (production only)        | -       |
 
 ## MongoDB Replica Set
 
@@ -124,7 +122,7 @@ The `mongo/` folder contains initialization scripts:
 
 -   `init.js` - Creates database user on first startup
 -   `healthcheck.js` - Verifies replica set status
--   `replica.key` - Authentication key for replica set members
+-   `keyfile.txt` - Authentication key for replica set members
 
 ## Traefik Configuration
 

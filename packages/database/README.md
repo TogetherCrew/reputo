@@ -4,11 +4,11 @@ Mongoose-based database layer for the Reputo ecosystem. Provides type-safe model
 
 ## Features
 
-- **Type-safe**: Full TypeScript support with comprehensive type definitions
-- **Mongoose integration**: Built on Mongoose ODM for MongoDB
-- **Schema validation**: JSON Schema validation for data integrity
-- **Temporal workflow support**: Built-in support for Temporal workflow tracking
-- **Comprehensive models**: AlgorithmPreset and Snapshot models with full CRUD operations
+-   **Type-safe**: Full TypeScript support with comprehensive type definitions
+-   **Mongoose integration**: Built on Mongoose ODM for MongoDB
+-   **Schema validation**: JSON Schema validation for data integrity
+-   **Temporal workflow support**: Built-in support for Temporal workflow tracking
+-   **Comprehensive models**: AlgorithmPreset and Snapshot models with full CRUD operations
 
 ## Installation
 
@@ -19,6 +19,24 @@ pnpm add @reputo/database
 ## Usage
 
 See the full API reference in [docs](docs/globals.md).
+
+### Connection Management
+
+The package provides utilities for managing MongoDB connections:
+
+```ts
+import { connect, disconnect } from '@reputo/database'
+
+// Connect to MongoDB
+await connect('mongodb://localhost:27017/reputo')
+
+// ... use models ...
+
+// Disconnect when done
+await disconnect()
+```
+
+> **Note**: The connection functions use Mongoose's global connection pool. Once connected, all models in your application will use the same connection. Make sure to call `disconnect()` during application shutdown for a clean exit.
 
 ### Models
 

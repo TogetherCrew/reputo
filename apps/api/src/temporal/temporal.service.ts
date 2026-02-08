@@ -68,7 +68,7 @@ export class TemporalService implements OnModuleInit, OnModuleDestroy {
   }
 
   /**
-   * Starts the RunSnapshotWorkflow for a given snapshot.
+   * Starts the OrchestratorWorkflow for a given snapshot.
    *
    * @param snapshotId - MongoDB ObjectId of the snapshot to execute
    * @returns Promise that resolves when workflow is started
@@ -79,31 +79,48 @@ export class TemporalService implements OnModuleInit, OnModuleDestroy {
       throw new Error('Temporal client is not available. Check TEMPORAL_ADDRESS configuration.');
     }
 
-    const taskQueue = this.configService.get<string>('temporal.taskQueue') || 'workflows';
+    const orchestratorTaskQueue =
+      this.configService.get<string>('temporal.orchestratorTaskQueue') ||
+      this.configService.get<string>('temporal.taskQueue') ||
+      'workflows';
+    const algorithmTypescriptTaskQueue =
+      this.configService.get<string>('temporal.algorithmTypescriptTaskQueue') || 'algorithm-typescript-worker';
+    const algorithmPythonTaskQueue =
+      this.configService.get<string>('temporal.algorithmPythonTaskQueue') || 'algorithm-python-worker';
     const workflowId = `snapshot-${snapshotId}`;
 
     try {
-      this.logger.info(`Starting RunSnapshotWorkflow for snapshot ${snapshotId}`, {
+      this.logger.info(`Starting OrchestratorWorkflow for snapshot ${snapshotId}`, {
         workflowId,
-        taskQueue,
+        taskQueue: orchestratorTaskQueue,
+        algorithmTypescriptTaskQueue,
+        algorithmPythonTaskQueue,
         snapshotId,
       });
 
-      await this.client.workflow.start('RunSnapshotWorkflow', {
-        taskQueue,
+      await this.client.workflow.start('OrchestratorWorkflow', {
+        taskQueue: orchestratorTaskQueue,
         workflowId,
-        args: [{ snapshotId }],
+        args: [
+          {
+            snapshotId,
+            taskQueues: {
+              typescript: algorithmTypescriptTaskQueue,
+              python: algorithmPythonTaskQueue,
+            },
+          },
+        ],
       });
 
-      this.logger.info(`RunSnapshotWorkflow started successfully for snapshot ${snapshotId}`, {
+      this.logger.info(`OrchestratorWorkflow started successfully for snapshot ${snapshotId}`, {
         workflowId,
         snapshotId,
       });
     } catch (error) {
       const err = error as Error;
-      this.logger.error(`Failed to start RunSnapshotWorkflow for snapshot ${snapshotId}: ${err.message}`, err.stack, {
+      this.logger.error(`Failed to start OrchestratorWorkflow for snapshot ${snapshotId}: ${err.message}`, err.stack, {
         workflowId,
-        taskQueue,
+        taskQueue: orchestratorTaskQueue,
         snapshotId,
       });
       throw error;

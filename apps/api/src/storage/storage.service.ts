@@ -22,25 +22,35 @@ import { S3_CLIENT } from './providers';
 @Injectable()
 export class StorageService {
   private readonly storage: Storage;
+  private readonly bucket: string;
+  private readonly presignPutTtl: number;
+  private readonly presignGetTtl: number;
+  private readonly maxSizeBytes: number;
+  private readonly contentTypeAllowlist: string[];
 
   constructor(@Inject(S3_CLIENT) s3Client: S3Client, configService: ConfigService) {
-    this.storage = new Storage(
-      {
-        bucket: configService.get<string>('storage.bucket') as string,
-        presignPutTtl: configService.get<number>('storage.presignPutTtl') as number,
-        presignGetTtl: configService.get<number>('storage.presignGetTtl') as number,
-        maxSizeBytes: configService.get<number>('storage.maxSizeBytes') as number,
-        contentTypeAllowlist: (configService.get<string>('storage.contentTypeAllowlist') as string)
-          .split(',')
-          .map((s) => s.trim()),
-      },
-      s3Client,
-    );
+    this.storage = new Storage(s3Client);
+
+    // Read config values for use in method calls
+    this.bucket = configService.get<string>('storage.bucket') as string;
+    this.presignPutTtl = configService.get<number>('storage.presignPutTtl') as number;
+    this.presignGetTtl = configService.get<number>('storage.presignGetTtl') as number;
+    this.maxSizeBytes = configService.get<number>('storage.maxSizeBytes') as number;
+    this.contentTypeAllowlist = (configService.get<string>('storage.contentTypeAllowlist') as string)
+      .split(',')
+      .map((s) => s.trim());
   }
 
   async presignPut(filename: string, contentType: string): Promise<PresignedUpload> {
     try {
-      return await this.storage.presignPut(filename, contentType);
+      return await this.storage.presignPut({
+        bucket: this.bucket,
+        filename,
+        contentType,
+        ttl: this.presignPutTtl,
+        maxSizeBytes: this.maxSizeBytes,
+        contentTypeAllowlist: this.contentTypeAllowlist,
+      });
     } catch (error) {
       this.handleStorageError(error);
     }
@@ -48,7 +58,12 @@ export class StorageService {
 
   async verify(key: string): Promise<{ key: string; metadata: StorageMetadata }> {
     try {
-      return await this.storage.verify(key);
+      return await this.storage.verify({
+        bucket: this.bucket,
+        key,
+        maxSizeBytes: this.maxSizeBytes,
+        contentTypeAllowlist: this.contentTypeAllowlist,
+      });
     } catch (error) {
       this.handleStorageError(error);
     }
@@ -60,7 +75,11 @@ export class StorageService {
 
   async presignGet(key: string): Promise<PresignedDownload> {
     try {
-      return await this.storage.presignGet(key);
+      return await this.storage.presignGet({
+        bucket: this.bucket,
+        key,
+        ttl: this.presignGetTtl,
+      });
     } catch (error) {
       this.handleStorageError(error);
     }
@@ -68,7 +87,12 @@ export class StorageService {
 
   async getObjectMetadata(key: string): Promise<StorageMetadata> {
     try {
-      const result = await this.storage.verify(key);
+      const result = await this.storage.verify({
+        bucket: this.bucket,
+        key,
+        maxSizeBytes: this.maxSizeBytes,
+        contentTypeAllowlist: this.contentTypeAllowlist,
+      });
       return result.metadata;
     } catch (error) {
       this.handleStorageError(error);
@@ -77,7 +101,10 @@ export class StorageService {
 
   async getObject(key: string): Promise<Buffer> {
     try {
-      return await this.storage.getObject(key);
+      return await this.storage.getObject({
+        bucket: this.bucket,
+        key,
+      });
     } catch (error) {
       this.handleStorageError(error);
     }

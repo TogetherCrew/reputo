@@ -28,7 +28,7 @@ export {
 export type {
   AlgorithmCategory,
   AlgorithmDefinition,
-  AlgorithmRuntimeMetadata,
+  AlgorithmRuntime,
   CSVValidationResult,
   CsvIoItem,
   IoItem,

@@ -1,14 +1,16 @@
 {
     "name": "@reputo/workflows",
     "version": "2.0.0",
-    "description": "Temporal-based workflow orchestration for Reputo algorithms",
+    "description": "Temporal-based workflow orchestration and algorithm workers for Reputo",
     "type": "module",
     "main": "dist/index.js",
     "private": true,
     "scripts": {
         "build": "tsc",
-        "start": "node dist/index.js",
-        "dev": "tsx watch src/index.ts",
+        "start:orchestrator": "node dist/workers/typescript/orchestrator.worker.js",
+        "start:algorithm-typescript": "node dist/workers/typescript/algorithm.worker.js",
+        "dev:orchestrator": "dotenv -e .env -- nodemon src/workers/typescript/orchestrator.worker.ts",
+        "dev:algorithm-typescript": "dotenv -e .env -- nodemon src/workers/typescript/algorithm.worker.ts",
         "clean": "rm -rf coverage dist docs node_modules tsconfig.tsbuildinfo",
         "check": "pnpm exec biome check --write",
         "lint": "pnpm exec biome lint --write",
@@ -20,19 +22,28 @@
         "release": "semantic-release"
     },
     "dependencies": {
+        "@aws-sdk/client-s3": "^3.922.0",
         "@reputo/database": "workspace:*",
+        "@reputo/deepfunding-portal-api": "workspace:*",
         "@reputo/reputation-algorithms": "workspace:*",
+        "@reputo/storage": "workspace:*",
         "@temporalio/activity": "^1.11.3",
         "@temporalio/client": "^1.11.3",
         "@temporalio/worker": "^1.11.3",
         "@temporalio/workflow": "^1.11.3",
+        "csv-parse": "^5.6.0",
+        "csv-stringify": "^6.5.2",
         "dotenv": "^16.4.7",
+        "joi": "^17.13.3",
         "mongoose": "^8.19.1",
         "pino": "^9.8.0",
         "pino-pretty": "^13.1.2"
     },
     "devDependencies": {
+        "@biomejs/biome": "^2.3.7",
         "@types/node": "^22.17.0",
+        "dotenv-cli": "^7.4.2",
+        "nodemon": "^3.1.9",
         "tsx": "^4.7.0",
         "typescript": "5.9.2",
         "vitest": "3.2.4"
@@ -41,7 +52,8 @@
         "temporal",
         "workflow",
         "orchestration",
-        "reputation"
+        "reputation",
+        "algorithms"
     ],
     "author": {
         "name": "Behzad Rabiei",

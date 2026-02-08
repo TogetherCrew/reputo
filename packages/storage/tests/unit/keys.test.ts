@@ -1,216 +1,171 @@
+import { randomUUID } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
 import { InvalidStorageKeyError } from '../../src/shared/errors/index.js';
-import {
-  detectKeyType,
-  generateSnapshotInputKey,
-  generateSnapshotOutputKey,
-  generateUploadKey,
-  parseStorageKey,
-} from '../../src/shared/utils/keys.js';
+import { detectKeyType, generateKey, parseStorageKey } from '../../src/shared/utils/keys.js';
 
-describe('generateUploadKey', () => {
-  it('should generate a valid key with timestamp, sanitized filename, and extension', () => {
-    const now = new Date('2024-01-01T00:00:00Z');
-    const key = generateUploadKey('votes.csv', 'text/csv', now);
+describe('generateKey', () => {
+  describe('upload keys', () => {
+    it('should generate a valid upload key with UUID', () => {
+      const uuid = randomUUID();
+      const key = generateKey('upload', uuid, 'votes.csv');
 
-    expect(key).toBe('uploads/1704067200/votes.csv');
+      expect(key).toBe(`uploads/${uuid}/votes.csv`);
+    });
+
+    it('should handle filenames with extensions', () => {
+      const uuid = randomUUID();
+      const key = generateKey('upload', uuid, 'myfile.csv');
+
+      expect(key).toBe(`uploads/${uuid}/myfile.csv`);
+    });
+
+    it('should handle filenames without extensions', () => {
+      const uuid = randomUUID();
+      const key = generateKey('upload', uuid, 'data');
+
+      expect(key).toBe(`uploads/${uuid}/data`);
+    });
+
+    it('should handle nested paths in filename', () => {
+      const uuid = randomUUID();
+      const key = generateKey('upload', uuid, 'subfolder/data.csv');
+
+      expect(key).toBe(`uploads/${uuid}/subfolder/data.csv`);
+    });
   });
 
-  it('should sanitize filenames by replacing spaces with hyphens', () => {
-    const now = new Date('2024-01-01T00:00:00Z');
-    const key = generateUploadKey('My Data File.csv', 'text/csv', now);
+  describe('snapshot keys', () => {
+    it('should generate a valid snapshot key', () => {
+      const key = generateKey('snapshot', 'abc123', 'voting_engagement.csv');
 
-    expect(key).toBe('uploads/1704067200/My-Data-File.csv');
-  });
+      expect(key).toBe('snapshots/abc123/voting_engagement.csv');
+    });
 
-  it('should remove special characters from filenames', () => {
-    const now = new Date('2024-01-01T00:00:00Z');
-    const key = generateUploadKey('data@2024!.csv', 'text/csv', now);
+    it('should handle filenames with extensions', () => {
+      const key = generateKey('snapshot', 'abc123', 'results.json');
 
-    expect(key).toBe('uploads/1704067200/data2024.csv');
-  });
+      expect(key).toBe('snapshots/abc123/results.json');
+    });
 
-  it('should handle filenames without extensions', () => {
-    const now = new Date('2024-01-01T00:00:00Z');
-    const key = generateUploadKey('myfile', 'text/csv', now);
+    it('should handle filenames without extensions', () => {
+      const key = generateKey('snapshot', 'abc123', 'config');
 
-    expect(key).toBe('uploads/1704067200/myfile.csv');
-  });
+      expect(key).toBe('snapshots/abc123/config');
+    });
 
-  it('should use current time when now is not provided', () => {
-    const before = Math.floor(Date.now() / 1000);
-    const key = generateUploadKey('test.csv', 'text/csv');
-    const after = Math.floor(Date.now() / 1000);
+    it('should handle nested paths in filename', () => {
+      const key = generateKey('snapshot', 'abc123', 'outputs/results.csv');
 
-    const parts = key.split('/');
-    const timestamp = Number.parseInt(parts[1] ?? '0', 10);
-
-    expect(timestamp).toBeGreaterThanOrEqual(before);
-    expect(timestamp).toBeLessThanOrEqual(after);
-  });
-
-  it('should map content types to correct extensions', () => {
-    const now = new Date('2024-01-01T00:00:00Z');
-
-    expect(generateUploadKey('file.csv', 'text/csv', now)).toContain('.csv');
-    expect(generateUploadKey('file.txt', 'text/plain', now)).toContain('.txt');
-    expect(generateUploadKey('file.json', 'application/json', now)).toContain('.json');
-    expect(generateUploadKey('file.bin', 'application/octet-stream', now)).toContain('.bin');
-  });
-
-  it('should use .bin extension for unknown content types', () => {
-    const now = new Date('2024-01-01T00:00:00Z');
-    const key = generateUploadKey('file.xyz', 'application/unknown', now);
-
-    expect(key).toBe('uploads/1704067200/file.bin');
-  });
-
-  it('should truncate long filenames to 200 characters', () => {
-    const longName = 'a'.repeat(250);
-    const now = new Date('2024-01-01T00:00:00Z');
-    const key = generateUploadKey(`${longName}.csv`, 'text/csv', now);
-
-    const parts = key.split('/');
-    const filename = parts[2] ?? '';
-    const nameWithoutExt = filename.replace('.csv', '');
-
-    expect(nameWithoutExt.length).toBe(200);
-  });
-
-  it('should return "file" when filename sanitization results in empty string', () => {
-    const now = new Date('2024-01-01T00:00:00Z');
-    const key = generateUploadKey('!!!.csv', 'text/csv', now);
-
-    expect(key).toBe('uploads/1704067200/file.csv');
-  });
-});
-
-describe('generateSnapshotInputKey', () => {
-  it('should generate a valid snapshot input key', () => {
-    const key = generateSnapshotInputKey('abc123', 'votes');
-    expect(key).toBe('snapshots/abc123/inputs/votes.csv');
-  });
-
-  it('should use custom extension when provided', () => {
-    const key = generateSnapshotInputKey('abc123', 'config', 'json');
-    expect(key).toBe('snapshots/abc123/inputs/config.json');
-  });
-});
-
-describe('generateSnapshotOutputKey', () => {
-  it('should generate a valid snapshot output key', () => {
-    const key = generateSnapshotOutputKey('abc123', 'voting_engagement');
-    expect(key).toBe('snapshots/abc123/outputs/voting_engagement.csv');
-  });
-
-  it('should use custom extension when provided', () => {
-    const key = generateSnapshotOutputKey('abc123', 'results', 'json');
-    expect(key).toBe('snapshots/abc123/outputs/results.json');
+      expect(key).toBe('snapshots/abc123/outputs/results.csv');
+    });
   });
 });
 
 describe('detectKeyType', () => {
   it('should detect upload keys', () => {
-    expect(detectKeyType('uploads/1704067200/votes.csv')).toBe('upload');
+    const uuid = randomUUID();
+    expect(detectKeyType(`uploads/${uuid}/votes.csv`)).toBe('upload');
   });
 
-  it('should detect snapshot input keys', () => {
-    expect(detectKeyType('snapshots/abc123/inputs/votes.csv')).toBe('snapshot-input');
-  });
-
-  it('should detect snapshot output keys', () => {
-    expect(detectKeyType('snapshots/abc123/outputs/voting_engagement.csv')).toBe('snapshot-output');
+  it('should detect snapshot keys', () => {
+    expect(detectKeyType('snapshots/abc123/voting_engagement.csv')).toBe('snapshot');
   });
 
   it('should return null for unrecognized keys', () => {
     expect(detectKeyType('unknown/path/file.txt')).toBeNull();
-    expect(detectKeyType('snapshots/abc123/other/file.csv')).toBeNull();
+    expect(detectKeyType('downloads/uuid/file.csv')).toBeNull();
   });
 });
 
 describe('parseStorageKey', () => {
   describe('upload keys', () => {
     it('should parse a valid upload key correctly', () => {
-      const result = parseStorageKey('uploads/1704067200/votes.csv');
+      const uuid = randomUUID();
+      const result = parseStorageKey(`uploads/${uuid}/votes.csv`);
 
       expect(result).toEqual({
         type: 'upload',
         filename: 'votes.csv',
         ext: 'csv',
-        timestamp: 1704067200,
+        uuid,
       });
     });
 
-    it('should handle nested paths after timestamp', () => {
-      const result = parseStorageKey('uploads/1704067200/subfolder/data.json');
+    it('should handle nested paths after UUID', () => {
+      const uuid = randomUUID();
+      const result = parseStorageKey(`uploads/${uuid}/subfolder/data.json`);
 
       expect(result).toEqual({
         type: 'upload',
         filename: 'subfolder/data.json',
         ext: 'json',
-        timestamp: 1704067200,
+        uuid,
       });
     });
 
     it('should handle filenames with multiple dots', () => {
-      const result = parseStorageKey('uploads/1704067200/file.backup.csv');
+      const uuid = randomUUID();
+      const result = parseStorageKey(`uploads/${uuid}/file.backup.csv`);
 
       expect(result).toEqual({
         type: 'upload',
         filename: 'file.backup.csv',
         ext: 'csv',
-        timestamp: 1704067200,
+        uuid,
       });
     });
 
-    it('should throw InvalidStorageKeyError if timestamp is not a number', () => {
-      expect(() => parseStorageKey('uploads/notanumber/votes.csv')).toThrow(InvalidStorageKeyError);
-      expect(() => parseStorageKey('uploads/notanumber/votes.csv')).toThrow('Invalid timestamp');
+    it('should throw InvalidStorageKeyError if UUID segment is missing', () => {
+      expect(() => parseStorageKey('uploads//votes.csv')).toThrow(InvalidStorageKeyError);
+      expect(() => parseStorageKey('uploads//votes.csv')).toThrow('Missing UUID segment');
     });
   });
 
-  describe('snapshot input keys', () => {
-    it('should parse a valid snapshot input key correctly', () => {
-      const result = parseStorageKey('snapshots/abc123/inputs/votes.csv');
+  describe('snapshot keys', () => {
+    it('should parse a valid snapshot key correctly', () => {
+      const result = parseStorageKey('snapshots/abc123/voting_engagement.csv');
 
       expect(result).toEqual({
-        type: 'snapshot-input',
-        filename: 'votes.csv',
-        ext: 'csv',
-        snapshotId: 'abc123',
-        inputName: 'votes',
-      });
-    });
-  });
-
-  describe('snapshot output keys', () => {
-    it('should parse a valid snapshot output key correctly', () => {
-      const result = parseStorageKey('snapshots/abc123/outputs/voting_engagement.csv');
-
-      expect(result).toEqual({
-        type: 'snapshot-output',
+        type: 'snapshot',
         filename: 'voting_engagement.csv',
         ext: 'csv',
         snapshotId: 'abc123',
-        algorithmKey: 'voting_engagement',
       });
+    });
+
+    it('should handle nested paths in snapshot keys', () => {
+      const result = parseStorageKey('snapshots/abc123/subfolder/results.json');
+
+      expect(result).toEqual({
+        type: 'snapshot',
+        filename: 'subfolder/results.json',
+        ext: 'json',
+        snapshotId: 'abc123',
+      });
+    });
+
+    it('should throw InvalidStorageKeyError if snapshotId segment is missing', () => {
+      expect(() => parseStorageKey('snapshots//voting_engagement.csv')).toThrow(InvalidStorageKeyError);
+      expect(() => parseStorageKey('snapshots//voting_engagement.csv')).toThrow('Missing snapshotId segment');
     });
   });
 
   describe('error handling', () => {
     it('should throw InvalidStorageKeyError for unrecognized key patterns', () => {
-      expect(() => parseStorageKey('downloads/1704067200/votes.csv')).toThrow(InvalidStorageKeyError);
+      expect(() => parseStorageKey('downloads/uuid/votes.csv')).toThrow(InvalidStorageKeyError);
     });
 
     it('should throw InvalidStorageKeyError if key has insufficient segments', () => {
-      expect(() => parseStorageKey('uploads/1704067200')).toThrow(InvalidStorageKeyError);
+      const uuid = randomUUID();
+      expect(() => parseStorageKey(`uploads/${uuid}`)).toThrow(InvalidStorageKeyError);
       expect(() => parseStorageKey('uploads')).toThrow(InvalidStorageKeyError);
-      expect(() => parseStorageKey('snapshots/abc123/inputs')).toThrow(InvalidStorageKeyError);
+      expect(() => parseStorageKey('snapshots/abc123')).toThrow(InvalidStorageKeyError);
     });
 
     it('should throw InvalidStorageKeyError if filename has no extension', () => {
-      expect(() => parseStorageKey('uploads/1704067200/filenoext')).toThrow(InvalidStorageKeyError);
-      expect(() => parseStorageKey('uploads/1704067200/filenoext')).toThrow('No file extension found');
+      const uuid = randomUUID();
+      expect(() => parseStorageKey(`uploads/${uuid}/filenoext`)).toThrow(InvalidStorageKeyError);
+      expect(() => parseStorageKey(`uploads/${uuid}/filenoext`)).toThrow('No file extension found');
     });
 
     it('should preserve the invalid key in the error', () => {

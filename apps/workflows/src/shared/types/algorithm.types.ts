@@ -1,44 +1,25 @@
 /**
- * Payload sent to algorithm worker activities for execution.
+ * Types for algorithm worker activities.
  *
- * Contains all necessary information for an algorithm worker to:
- * - Identify the snapshot being processed
- * - Determine which algorithm version to execute
- * - Access input data locations (e.g., S3 keys)
+ * These types define the contract between the orchestrator workflow
+ * and algorithm worker activities.
  */
-export interface WorkflowAlgorithmPayload {
-  /** MongoDB ObjectId of the snapshot being executed */
-  snapshotId: string;
-  /** Algorithm key (e.g., 'voting_engagement') */
-  algorithmKey: string;
-  /** Algorithm version (e.g., '1.0.0') */
-  algorithmVersion: string;
-  /**
-   * Input data locations indexed by input key.
-   * Each value is typically an S3 key or other storage location reference.
-   * The structure matches the algorithm's input definitions.
-   */
-  inputLocations: Record<string, unknown>;
+
+/**
+ * Storage configuration for algorithm activities.
+ */
+export interface StorageConfig {
+  bucket: string;
+  maxSizeBytes: number;
 }
 
 /**
- * Result returned by algorithm worker activities after execution.
- *
- * Contains output data locations that will be stored in the snapshot document.
+ * Result returned by algorithm activities to workflows.
  */
-export interface WorkflowAlgorithmResult {
+export interface AlgorithmResult {
   /**
-   * Output data locations indexed by output key.
-   * Each value is typically an S3 key or other storage location reference.
-   * The structure matches the algorithm's output definitions.
+   * Algorithm outputs, mapping logical output keys to storage keys or inline values.
+   * Keys must match AlgorithmDefinition.outputs[].key.
    */
   outputs: Record<string, unknown>;
 }
-
-/**
- * Type signature for algorithm worker activities.
- *
- * All algorithm workers must implement activities with this signature.
- * The activity name and task queue are specified in the AlgorithmDefinition.runtime.
- */
-export type WorkflowAlgorithmActivity = (payload: WorkflowAlgorithmPayload) => Promise<WorkflowAlgorithmResult>;

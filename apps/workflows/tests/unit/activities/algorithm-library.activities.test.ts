@@ -3,7 +3,7 @@
  */
 
 import { describe, expect, it, vi } from 'vitest';
-import { createAlgorithmLibraryActivities } from '../../../src/activities/algorithm-library.activities.js';
+import { createAlgorithmLibraryActivities } from '../../../src/activities/orchestrator/reputation-algorithm.activities.js';
 
 // Mock the reputation-algorithms package
 vi.mock('@reputo/reputation-algorithms', () => ({
@@ -12,7 +12,8 @@ vi.mock('@reputo/reputation-algorithms', () => ({
       return JSON.stringify({
         key: 'voting_engagement',
         name: 'Voting Engagement',
-        category: 'engagement',
+        category: 'Engagement',
+        summary: 'Scores users based on voting activity',
         description: 'Scores users based on voting activity',
         version: '1.0.0',
         inputs: [
@@ -43,10 +44,7 @@ vi.mock('@reputo/reputation-algorithms', () => ({
             },
           },
         ],
-        runtime: {
-          taskQueue: 'typescript-worker',
-          activity: 'voting_engagement',
-        },
+        runtime: 'typescript',
       });
     }
     throw new Error('Algorithm not found');
@@ -79,10 +77,7 @@ describe('Algorithm Library Activities', () => {
       expect(result.definition).toMatchObject({
         key: 'voting_engagement',
         version: '1.0.0',
-        runtime: {
-          taskQueue: 'typescript-worker',
-          activity: 'voting_engagement',
-        },
+        runtime: 'typescript',
       });
     });
 
@@ -107,7 +102,7 @@ describe('Algorithm Library Activities', () => {
           key: 'nonexistent',
           version: '1.0.0',
         }),
-      ).rejects.toThrow('Algorithm definition not found: nonexistent@1.0.0');
+      ).rejects.toThrow('Algorithm not found');
     });
   });
 });

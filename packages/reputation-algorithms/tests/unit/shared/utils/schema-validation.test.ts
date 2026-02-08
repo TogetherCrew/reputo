@@ -88,10 +88,7 @@ describe('Build: Schema Validation', () => {
             },
           },
         ],
-        runtime: {
-          taskQueue: 'typescript-worker',
-          activity: 'test_algo',
-        },
+        runtime: 'typescript',
       };
 
       const result = validator.validate(invalid);
@@ -121,10 +118,7 @@ describe('Build: Schema Validation', () => {
             },
           },
         ],
-        runtime: {
-          taskQueue: 'typescript-worker',
-          activity: 'test_algo',
-        },
+        runtime: 'typescript',
       };
 
       const result = validator.validate(invalid);
@@ -141,10 +135,7 @@ describe('Build: Schema Validation', () => {
         version: '1.0.0',
         inputs: [],
         outputs: [],
-        runtime: {
-          taskQueue: 'typescript-worker',
-          activity: 'test_algo',
-        },
+        runtime: 'typescript',
       };
 
       const result = validator.validate(invalid);
@@ -179,10 +170,7 @@ describe('Build: Schema Validation', () => {
             },
           },
         ],
-        runtime: {
-          taskQueue: 'typescript-worker',
-          activity: 'test_algo',
-        },
+        runtime: 'typescript',
       };
 
       const result = validator.validate(invalid);
@@ -204,10 +192,7 @@ describe('Build: Schema Validation', () => {
             type: 'csv',
           },
         ],
-        runtime: {
-          taskQueue: 'typescript-worker',
-          activity: 'test_algo',
-        },
+        runtime: 'typescript',
       };
 
       const result = validator.validate(invalid);
@@ -240,10 +225,7 @@ describe('Build: Schema Validation', () => {
               },
             },
           ],
-          runtime: {
-            taskQueue: 'typescript-worker',
-            activity: 'test_algo',
-          },
+          runtime: 'typescript',
         };
 
         const result = validator.validate(valid);
@@ -252,42 +234,42 @@ describe('Build: Schema Validation', () => {
     });
   });
 
-  describe('Runtime Metadata', () => {
-    it('should accept valid runtime metadata', () => {
-      const valid = {
-        key: 'test_algo',
-        name: 'Test',
-        category: 'Activity',
-        summary: 'Test',
-        description: 'Test',
-        version: '1.0.0',
-        inputs: [],
-        outputs: [
-          {
-            key: 'result',
-            type: 'csv',
-            csv: {
-              hasHeader: true,
-              delimiter: ',',
-              columns: [
-                { key: 'collection_id', type: 'string', description: 'User identifier' },
-                { key: 'result', type: 'number', description: 'Result score' },
-              ],
-            },
-          },
-        ],
-        runtime: {
-          taskQueue: 'typescript-worker',
-          activity: 'test_algo',
-        },
-      };
+  describe('Runtime', () => {
+    it('should accept valid runtime values', () => {
+      const runtimes = ['typescript', 'python'];
 
-      const result = validator.validate(valid);
-      expect(result.isValid).toBe(true);
-      expect(result.errors).toEqual([]);
+      for (const runtime of runtimes) {
+        const valid = {
+          key: 'test_algo',
+          name: 'Test',
+          category: 'Activity',
+          summary: 'Test',
+          description: 'Test',
+          version: '1.0.0',
+          inputs: [],
+          outputs: [
+            {
+              key: 'result',
+              type: 'csv',
+              csv: {
+                hasHeader: true,
+                delimiter: ',',
+                columns: [
+                  { key: 'collection_id', type: 'string', description: 'User identifier' },
+                  { key: 'result', type: 'number', description: 'Result score' },
+                ],
+              },
+            },
+          ],
+          runtime,
+        };
+
+        const result = validator.validate(valid);
+        expect(result.isValid).toBe(true);
+      }
     });
 
-    it('should reject algorithm without runtime metadata (required)', () => {
+    it('should reject algorithm without runtime (required)', () => {
       const invalid = {
         key: 'test_algo',
         name: 'Test',
@@ -317,7 +299,7 @@ describe('Build: Schema Validation', () => {
       expect(result.errors.some((e) => e.instancePath === '' && e.keyword === 'required')).toBe(true);
     });
 
-    it('should reject runtime metadata with missing taskQueue', () => {
+    it('should reject unsupported runtime values', () => {
       const invalid = {
         key: 'test_algo',
         name: 'Test',
@@ -340,187 +322,12 @@ describe('Build: Schema Validation', () => {
             },
           },
         ],
-        runtime: {
-          activity: 'test_algo',
-        },
+        runtime: 'ruby',
       };
 
       const result = validator.validate(invalid);
       expect(result.isValid).toBe(false);
       expect(result.errors.some((e) => e.instancePath === '/runtime')).toBe(true);
-    });
-
-    it('should reject runtime metadata with missing activity', () => {
-      const invalid = {
-        key: 'test_algo',
-        name: 'Test',
-        category: 'Activity',
-        summary: 'Test',
-        description: 'Test',
-        version: '1.0.0',
-        inputs: [],
-        outputs: [
-          {
-            key: 'result',
-            type: 'csv',
-            csv: {
-              hasHeader: true,
-              delimiter: ',',
-              columns: [
-                { key: 'collection_id', type: 'string', description: 'User identifier' },
-                { key: 'result', type: 'number', description: 'Result score' },
-              ],
-            },
-          },
-        ],
-        runtime: {
-          taskQueue: 'typescript-worker',
-        },
-      };
-
-      const result = validator.validate(invalid);
-      expect(result.isValid).toBe(false);
-      expect(result.errors.some((e) => e.instancePath === '/runtime')).toBe(true);
-    });
-
-    it('should reject runtime metadata with empty taskQueue', () => {
-      const invalid = {
-        key: 'test_algo',
-        name: 'Test',
-        category: 'Activity',
-        summary: 'Test',
-        description: 'Test',
-        version: '1.0.0',
-        inputs: [],
-        outputs: [
-          {
-            key: 'result',
-            type: 'csv',
-            csv: {
-              hasHeader: true,
-              delimiter: ',',
-              columns: [
-                { key: 'collection_id', type: 'string', description: 'User identifier' },
-                { key: 'result', type: 'number', description: 'Result score' },
-              ],
-            },
-          },
-        ],
-        runtime: {
-          taskQueue: '',
-          activity: 'test_algo',
-        },
-      };
-
-      const result = validator.validate(invalid);
-      expect(result.isValid).toBe(false);
-      expect(result.errors.some((e) => e.instancePath === '/runtime/taskQueue')).toBe(true);
-    });
-
-    it('should reject runtime metadata with empty activity', () => {
-      const invalid = {
-        key: 'test_algo',
-        name: 'Test',
-        category: 'Activity',
-        summary: 'Test',
-        description: 'Test',
-        version: '1.0.0',
-        inputs: [],
-        outputs: [
-          {
-            key: 'result',
-            type: 'csv',
-            csv: {
-              hasHeader: true,
-              delimiter: ',',
-              columns: [
-                { key: 'collection_id', type: 'string', description: 'User identifier' },
-                { key: 'result', type: 'number', description: 'Result score' },
-              ],
-            },
-          },
-        ],
-        runtime: {
-          taskQueue: 'typescript-worker',
-          activity: '',
-        },
-      };
-
-      const result = validator.validate(invalid);
-      expect(result.isValid).toBe(false);
-      expect(result.errors.some((e) => e.instancePath === '/runtime/activity')).toBe(true);
-    });
-
-    it('should reject runtime metadata with additional properties', () => {
-      const invalid = {
-        key: 'test_algo',
-        name: 'Test',
-        category: 'Activity',
-        summary: 'Test',
-        description: 'Test',
-        version: '1.0.0',
-        inputs: [],
-        outputs: [
-          {
-            key: 'result',
-            type: 'csv',
-            csv: {
-              hasHeader: true,
-              delimiter: ',',
-              columns: [
-                { key: 'collection_id', type: 'string', description: 'User identifier' },
-                { key: 'result', type: 'number', description: 'Result score' },
-              ],
-            },
-          },
-        ],
-        runtime: {
-          taskQueue: 'typescript-worker',
-          activity: 'test_algo',
-          extraProperty: 'not allowed',
-        },
-      };
-
-      const result = validator.validate(invalid);
-      expect(result.isValid).toBe(false);
-      expect(result.errors.some((e) => e.keyword === 'additionalProperties')).toBe(true);
-    });
-
-    it('should accept different taskQueue values', () => {
-      const taskQueues = ['typescript-worker', 'python-worker', 'reputation-algorithms-heavy', 'custom-queue'];
-
-      for (const taskQueue of taskQueues) {
-        const valid = {
-          key: 'test_algo',
-          name: 'Test',
-          category: 'Activity',
-          summary: 'Test',
-          description: 'Test',
-          version: '1.0.0',
-          inputs: [],
-          outputs: [
-            {
-              key: 'result',
-              type: 'csv',
-              csv: {
-                hasHeader: true,
-                delimiter: ',',
-                columns: [
-                  { key: 'collection_id', type: 'string', description: 'User identifier' },
-                  { key: 'result', type: 'number', description: 'Result score' },
-                ],
-              },
-            },
-          ],
-          runtime: {
-            taskQueue,
-            activity: 'test_algo',
-          },
-        };
-
-        const result = validator.validate(valid);
-        expect(result.isValid).toBe(true);
-      }
     });
   });
 });

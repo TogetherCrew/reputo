@@ -52,4 +52,3 @@ export function InputTypeBadge({ type, label }: InputTypeBadgeProps) {
     </TooltipProvider>
   )
 }
-

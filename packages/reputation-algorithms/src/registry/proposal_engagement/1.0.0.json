@@ -7,8 +7,8 @@
     "version": "1.0.0",
     "inputs": [
         {
-            "key": "funded_concluded_proposal_weight",
-            "label": "Funded Concluded Proposal Weight",
+            "key": "funded_concluded_reward_weight",
+            "label": "Funded & Concluded Reward Weight",
             "description": "Reward strength for funded + concluded proposals.",
             "type": "number",
             "min": 0,
@@ -21,8 +21,8 @@
             "required": true
         },
         {
-            "key": "unfunded_proposal_weight",
-            "label": "Unfunded Proposal Weight",
+            "key": "unfunded_penalty_weight",
+            "label": "Unfunded Penalty Weight",
             "description": "Penalty strength for unfunded proposals.",
             "type": "number",
             "min": 0,
@@ -38,9 +38,9 @@
             "key": "engagement_window_months",
             "label": "Engagement Window (Months)",
             "description": "Engagement window in months; proposals older than this contribute 0.",
-            "type": "number",
+            "type": "integer",
             "min": 1,
-            "max": 12,
+            "max": 60,
             "default": 12,
             "step": 1,
             "required": true
@@ -66,6 +66,7 @@
             "required": false
         }
     ],
+    "dependencies": [{ "key": "deepfunding-portal-api" }],
     "outputs": [
         {
             "key": "proposal_engagement",
@@ -77,9 +78,9 @@
                 "delimiter": ",",
                 "columns": [
                     {
-                        "key": "collection_id",
-                        "type": "string",
-                        "description": "Unique user identifier"
+                        "key": "user_id",
+                        "type": "integer",
+                        "description": "DeepFunding user ID"
                     },
                     {
                         "key": "proposal_engagement",
@@ -88,10 +89,13 @@
                     }
                 ]
             }
+        },
+        {
+            "key": "proposal_engagement_details",
+            "label": "Proposal Engagement Details (JSON)",
+            "description": "Full per-user proposal engagement breakdown including per-proposal intermediate values.",
+            "type": "json"
         }
     ],
-    "runtime": {
-        "taskQueue": "typescript-worker",
-        "activity": "proposal_engagement"
-    }
+    "runtime": "typescript"
 }

@@ -6,7 +6,7 @@
 export type {
   AlgorithmCategory,
   AlgorithmDefinition,
-  AlgorithmRuntimeMetadata,
+  AlgorithmRuntime,
   CsvIoItem,
   IoItem,
   IoType,

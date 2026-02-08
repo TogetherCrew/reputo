@@ -25,9 +25,12 @@ jobs:
               env:
                   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
                   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+                  DEEPFUNDING_API_KEY: ${{ secrets.DEEPFUNDING_API_KEY }}
+
               run: |
                   echo "AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID" >> .env
                   echo "AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY" >> .env
+                  echo "DEEPFUNDING_API_KEY=$DEEPFUNDING_API_KEY" >> .env
 
             - name: Generate MongoDB keyfile
               run: |

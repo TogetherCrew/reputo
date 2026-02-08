@@ -3,17 +3,51 @@
  */
 
 import type { Snapshot } from '@reputo/database';
-import type { Model } from 'mongoose';
-import { describe, expect, it, vi } from 'vitest';
-import { createDatabaseActivities } from '../../../src/activities/database.activities.js';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { createDbActivities } from '../../../src/activities/orchestrator/database.activities.js';
+
+const { mockFindById, mockFindByIdAndUpdate } = vi.hoisted(() => ({
+  mockFindById: vi.fn(),
+  mockFindByIdAndUpdate: vi.fn(),
+}));
+
+vi.mock('@reputo/database', async () => {
+  const actual = await vi.importActual('@reputo/database');
+  return {
+    ...actual,
+    SnapshotModelValue: {
+      findById: mockFindById,
+      findByIdAndUpdate: mockFindByIdAndUpdate,
+    },
+  };
+});
+
+// Mock Context.current()
+vi.mock('@temporalio/activity', () => ({
+  Context: {
+    current: () => ({
+      log: {
+        info: vi.fn(),
+        error: vi.fn(),
+        warn: vi.fn(),
+      },
+    }),
+  },
+}));
 
 describe('Database Activities', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   describe('getSnapshot', () => {
-    it('should fetch a snapshot successfully', async () => {
-      // Mock snapshot data
-      const mockSnapshot: Snapshot = {
-        status: 'queued',
-        algorithmPreset: '507f1f77bcf86cd799439011',
+    it('should fetch a snapshot successfully and include _id as string', async () => {
+      const snapshotId = '507f1f77bcf86cd799439011';
+      // Mock lean() result with ObjectId-like _id that has toString()
+      const mockLeanSnapshot = {
+        _id: { toString: () => snapshotId },
+        status: 'queued' as const,
+        algorithmPreset: snapshotId,
         algorithmPresetFrozen: {
           key: 'voting_engagement',
           version: '1.0.0',
@@ -21,67 +55,33 @@ describe('Database Activities', () => {
         },
       };
 
-      // Mock Mongoose model
-      const mockModel = {
-        findById: vi.fn().mockReturnValue({
-          lean: vi.fn().mockReturnValue({
-            exec: vi.fn().mockResolvedValue(mockSnapshot),
-          }),
+      // Mock Mongoose model chain: findById().lean().exec()
+      mockFindById.mockReturnValue({
+        lean: vi.fn().mockReturnValue({
+          exec: vi.fn().mockResolvedValue(mockLeanSnapshot),
         }),
-      } as unknown as Model<Snapshot>;
-
-      // Create activities with mocked model
-      const activities = createDatabaseActivities(mockModel);
-
-      // Mock Context.current()
-      vi.mock('@temporalio/activity', () => ({
-        Context: {
-          current: () => ({
-            log: {
-              info: vi.fn(),
-              error: vi.fn(),
-              warn: vi.fn(),
-            },
-          }),
-        },
-      }));
-
-      // Execute activity
-      const result = await activities.getSnapshot({
-        snapshotId: '507f1f77bcf86cd799439011',
       });
 
-      // Assertions
-      expect(result.snapshot).toEqual(mockSnapshot);
-      expect(mockModel.findById).toHaveBeenCalledWith('507f1f77bcf86cd799439011');
+      const activities = createDbActivities();
+
+      const result = await activities.getSnapshot({ snapshotId });
+
+      // _id should be serialized as a plain string
+      expect(result.snapshot._id).toBe(snapshotId);
+      expect(result.snapshot.status).toBe('queued');
+      expect(result.snapshot.algorithmPresetFrozen.key).toBe('voting_engagement');
+      expect(mockFindById).toHaveBeenCalledWith(snapshotId);
     });
 
     it('should throw error if snapshot not found', async () => {
-      // Mock Mongoose model to return null
-      const mockModel = {
-        findById: vi.fn().mockReturnValue({
-          lean: vi.fn().mockReturnValue({
-            exec: vi.fn().mockResolvedValue(null),
-          }),
+      mockFindById.mockReturnValue({
+        lean: vi.fn().mockReturnValue({
+          exec: vi.fn().mockResolvedValue(null),
         }),
-      } as unknown as Model<Snapshot>;
+      });
 
-      const activities = createDatabaseActivities(mockModel);
+      const activities = createDbActivities();
 
-      // Mock Context.current()
-      vi.mock('@temporalio/activity', () => ({
-        Context: {
-          current: () => ({
-            log: {
-              info: vi.fn(),
-              error: vi.fn(),
-              warn: vi.fn(),
-            },
-          }),
-        },
-      }));
-
-      // Execute activity and expect error
       await expect(activities.getSnapshot({ snapshotId: 'nonexistent' })).rejects.toThrow(
         'Snapshot not found: nonexistent',
       );
@@ -91,7 +91,7 @@ describe('Database Activities', () => {
   describe('updateSnapshot', () => {
     it('should update snapshot status successfully', async () => {
       const updatedSnapshot: Snapshot = {
-        status: 'processing',
+        status: 'running',
         algorithmPreset: '507f1f77bcf86cd799439011',
         algorithmPresetFrozen: {
           key: 'voting_engagement',
@@ -105,32 +105,17 @@ describe('Database Activities', () => {
         },
       };
 
-      const mockModel = {
-        findByIdAndUpdate: vi.fn().mockReturnValue({
-          lean: vi.fn().mockReturnValue({
-            exec: vi.fn().mockResolvedValue(updatedSnapshot),
-          }),
+      mockFindByIdAndUpdate.mockReturnValue({
+        lean: vi.fn().mockReturnValue({
+          exec: vi.fn().mockResolvedValue(updatedSnapshot),
         }),
-      } as unknown as Model<Snapshot>;
+      });
 
-      const activities = createDatabaseActivities(mockModel);
-
-      // Mock Context.current()
-      vi.mock('@temporalio/activity', () => ({
-        Context: {
-          current: () => ({
-            log: {
-              info: vi.fn(),
-              error: vi.fn(),
-              warn: vi.fn(),
-            },
-          }),
-        },
-      }));
+      const activities = createDbActivities();
 
       await activities.updateSnapshot({
         snapshotId: '507f1f77bcf86cd799439011',
-        status: 'processing',
+        status: 'running',
         temporal: {
           workflowId: 'workflow-123',
           runId: 'run-456',
@@ -138,11 +123,11 @@ describe('Database Activities', () => {
         },
       });
 
-      expect(mockModel.findByIdAndUpdate).toHaveBeenCalledWith(
+      expect(mockFindByIdAndUpdate).toHaveBeenCalledWith(
         '507f1f77bcf86cd799439011',
         expect.objectContaining({
           $set: expect.objectContaining({
-            status: 'processing',
+            status: 'running',
           }),
         }),
         { new: true },

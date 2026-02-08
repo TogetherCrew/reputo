@@ -53,7 +53,8 @@ const categories: {
   {
     key: "Engagement",
     title: "Engagement",
-    description: "Algorithms measuring user participation and interaction quality",
+    description:
+      "Algorithms measuring user participation and interaction quality",
     icon: <Target className="size-4 text-primary" />,
   },
   {
@@ -184,16 +185,14 @@ export default function Home() {
                           key={algo.id}
                           href={`/dashboard/algorithms/${algo.id}`}
                         >
-                        <Card
+                          <Card
                             key={algo.id}
                             className={cn(
                               "flex flex-col h-full transition-colors hover:border-foreground/20",
                               viewMode === "list" && "max-w-none"
                             )}
                           >
-                            <CardHeader
-                              className="grid grid-cols-[1fr_auto] gap-2"
-                            >
+                            <CardHeader className="grid grid-cols-[1fr_auto] gap-2">
                               <div className="flex flex-col gap-2 min-w-0">
                                 <Badge variant="outline" className="w-fit">
                                   {algo.category}
@@ -217,9 +216,7 @@ export default function Home() {
                             </CardHeader>
 
                             <CardContent className="-mt-3">
-                              <CardDescription>
-                                {algo.summary}
-                              </CardDescription>
+                              <CardDescription>{algo.summary}</CardDescription>
                               <div className="mt-4 flex flex-wrap items-center gap-4 text-sm">
                                 <span className="inline-flex items-center gap-2 text-muted-foreground">
                                   <Clock className="size-4" /> {algo.duration}

@@ -1,0 +1,68 @@
+{
+    "name": "@reputo/deepfunding-portal-api",
+    "version": "0.0.0",
+    "description": "TypeScript package for fetching data from the DeepFunding Portal API and persisting to SQLite via Drizzle ORM.",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "private": true,
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js",
+            "default": "./dist/index.js"
+        }
+    },
+    "type": "module",
+    "module": "dist/index.js",
+    "scripts": {
+        "check": "pnpm exec biome check --write",
+        "lint": "pnpm exec biome lint --write",
+        "format": "pnpm exec biome format --write",
+        "test": "vitest run",
+        "test:watch": "vitest --watch",
+        "test:cov": "vitest --coverage",
+        "typecheck": "tsc --noEmit",
+        "sync": "tsx src/temp-sync.ts",
+        "validate": "tsx src/validate-api.ts",
+        "fetch-api": "tsx scripts/fetch-api-responses.ts",
+        "build": "tsc",
+        "docs": "typedoc",
+        "clean": "rm -rf coverage dist docs node_modules tsconfig.tsbuildinfo"
+    },
+    "dependencies": {
+        "@aws-sdk/client-s3": "^3.700.0",
+        "@reputo/storage": "workspace:*",
+        "better-sqlite3": "^11.10.0",
+        "drizzle-orm": "^0.44.2",
+        "js-yaml": "^4.1.0",
+        "p-limit": "^6.2.0",
+        "pino": "^9.7.0",
+        "undici": "^7.10.0"
+    },
+    "devDependencies": {
+        "@types/better-sqlite3": "^7.6.13",
+        "@types/js-yaml": "^4.0.9",
+        "@types/node": "^22.17.0",
+        "typedoc": "^0.28.13",
+        "typedoc-plugin-markdown": "^4.9.0",
+        "typescript": "5.9.2",
+        "vitest": "3.2.4"
+    },
+    "keywords": [
+        "typescript",
+        "deepfunding",
+        "api",
+        "sqlite",
+        "drizzle"
+    ],
+    "files": [
+        "dist",
+        "!dist/**/*.test.*"
+    ],
+    "author": {
+        "name": "Behzad Rabiei",
+        "url": "https://github.com/Behzad-rabiei"
+    },
+    "license": "GPL-3.0",
+    "packageManager": "pnpm@10.12.4"
+}

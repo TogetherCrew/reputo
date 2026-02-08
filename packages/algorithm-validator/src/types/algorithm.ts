@@ -21,6 +21,7 @@ export type AlgorithmCategory =
  */
 export type IoType =
   | 'csv' // Comma-separated values data
+  | 'json' // JSON output/input (file or object)
   | 'number' // Numeric values
   | 'boolean' // True/false values
   | 'array' // Array of values
@@ -84,6 +85,18 @@ export interface CsvIoItem extends BaseIoItem {
 }
 
 /**
+ * JSON input/output item configuration for algorithm definitions.
+ *
+ * For server execution, JSON outputs are typically stored as a JSON file in storage (e.g. S3 key).
+ */
+export interface JsonIoItem extends BaseIoItem {
+  /** Type identifier for JSON data */
+  type: 'json';
+  /** Optional entity type that this JSON represents */
+  entity?: string;
+}
+
+/**
  * Numeric input item configuration for algorithm definitions.
  */
 export interface NumericIoItem extends BaseIoItem {
@@ -137,17 +150,12 @@ export interface StringIoItem extends BaseIoItem {
 /**
  * Union type for all supported input/output item types.
  */
-export type IoItem = CsvIoItem | NumericIoItem | BooleanIoItem | StringIoItem;
+export type IoItem = CsvIoItem | JsonIoItem | NumericIoItem | BooleanIoItem | StringIoItem;
 
 /**
- * Runtime metadata for algorithm execution by orchestration layers.
+ * Supported runtimes (languages) for algorithm execution.
  */
-export interface AlgorithmRuntimeMetadata {
-  /** Task queue name where this reputation algorithm should be executed */
-  taskQueue: string;
-  /** Activity name used by the worker to execute this reputation algorithm */
-  activity: string;
-}
+export type AlgorithmRuntime = 'typescript' | 'python';
 
 /**
  * Complete algorithm definition structure.
@@ -171,6 +179,6 @@ export interface AlgorithmDefinition {
   inputs: IoItem[];
   /** Array of output data specifications */
   outputs: IoItem[];
-  /** Runtime execution metadata for orchestration layers */
-  runtime: AlgorithmRuntimeMetadata;
+  /** Runtime (language) used for execution routing */
+  runtime: AlgorithmRuntime;
 }

@@ -6,6 +6,4 @@ import type { Snapshot, SnapshotModel } from '../shared/types/index.js';
 /**
  * Mongoose model for Snapshot documents.
  */
-const SnapshotModel: SnapshotModel = model<Snapshot, SnapshotModel>(MODEL_NAMES.SNAPSHOT, SnapshotSchema);
-
-export default SnapshotModel;
+export default model<Snapshot, SnapshotModel>(MODEL_NAMES.SNAPSHOT, SnapshotSchema);

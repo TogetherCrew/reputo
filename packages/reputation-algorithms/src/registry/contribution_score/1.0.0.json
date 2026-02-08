@@ -76,7 +76,7 @@
             "description": "Engagement window in months; items older than this contribute 0.",
             "type": "integer",
             "min": 1,
-            "max": 12,
+            "max": 60,
             "default": 12,
             "step": 1,
             "required": true
@@ -102,6 +102,7 @@
             "required": false
         }
     ],
+    "dependencies": [{ "key": "deepfunding-portal-api" }],
     "outputs": [
         {
             "key": "contribution_score",
@@ -113,9 +114,9 @@
                 "delimiter": ",",
                 "columns": [
                     {
-                        "key": "collection_id",
-                        "type": "string",
-                        "description": "Unique user identifier"
+                        "key": "user_id",
+                        "type": "integer",
+                        "description": "DeepFunding user ID"
                     },
                     {
                         "key": "contribution_score",
@@ -124,10 +125,13 @@
                     }
                 ]
             }
+        },
+        {
+            "key": "contribution_score_details",
+            "label": "Contribution Score Details (JSON)",
+            "description": "Full per-user contribution score breakdown including per-comment scoring components and intermediate values.",
+            "type": "json"
         }
     ],
-    "runtime": {
-        "taskQueue": "typescript-worker",
-        "activity": "contribution_score"
-    }
+    "runtime": "typescript"
 }

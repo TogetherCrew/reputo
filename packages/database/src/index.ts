@@ -6,9 +6,14 @@
  * algorithm presets and snapshots.
  */
 
-// Export models
-export type { AlgorithmPresetModel, SnapshotModel } from './models/index.js';
+// Export connection utilities
+export { connect, disconnect } from './connection.js';
+// Export models (as values with Model suffix for clarity)
+export {
+  AlgorithmPresetModel as AlgorithmPresetModelValue,
+  SnapshotModel as SnapshotModelValue,
+} from './models/index.js';
 // Export schemas
 export { AlgorithmPresetSchema, SnapshotSchema } from './schemas/index.js';
-// Export shared utilities
+// Export shared utilities (includes types AlgorithmPresetModel, SnapshotModel as interfaces)
 export * from './shared/index.js';
