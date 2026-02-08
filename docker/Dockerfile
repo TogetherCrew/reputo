@@ -28,6 +28,7 @@ COPY . .
 RUN pnpm run -r build
 RUN pnpm deploy --filter=@reputo/api --prod --legacy --ignore-scripts /prod/api
 RUN pnpm deploy --filter=@reputo/workflows --prod --legacy --ignore-scripts /prod/workflows
+RUN cd /prod/workflows && pnpm rebuild better-sqlite3
 
 FROM base AS api
 ENV NODE_ENV=production
