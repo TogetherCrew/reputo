@@ -4,8 +4,10 @@ import { stringify } from 'csv-stringify/sync';
 
 import config from '../../../../config/index.js';
 import type { AlgorithmResult, Snapshot } from '../../../../shared/types/index.js';
+import { buildVoterBenchmarkRecord, formatBenchmarkOutput } from './benchmark/index.js';
 import { calculateVotingEngagement, groupVotesByVoter } from './pipeline/index.js';
-import type { VotingEngagementResult } from './types.js';
+import type { VoterBenchmarkRecord, VotingEngagementResult } from './types.js';
+import { roundScore } from './types.js';
 import { extractVotesKey, loadVotes } from './utils/index.js';
 
 /**
@@ -17,10 +19,9 @@ import { extractVotesKey, loadVotes } from './utils/index.js';
  */
 export async function computeVotingEngagement(snapshot: Snapshot, storage: Storage): Promise<AlgorithmResult> {
   const logger = Context.current().log;
+  const snapshotId = snapshot._id;
 
-  logger.info('Starting voting_engagement algorithm', {
-    snapshotId: snapshot._id,
-  });
+  logger.info('Starting voting_engagement algorithm', { snapshotId });
 
   const { bucket } = config.storage;
   const votesKey = extractVotesKey(snapshot.algorithmPresetFrozen.inputs);
@@ -39,13 +40,17 @@ export async function computeVotingEngagement(snapshot: Snapshot, storage: Stora
 
   // Compute engagement for each voter
   const results: VotingEngagementResult[] = [];
+  const benchmarkRecords: VoterBenchmarkRecord[] = [];
 
   for (const [voterId, voterVotes] of votesByVoter.entries()) {
-    const votingEngagement = calculateVotingEngagement(voterVotes);
+    const votingEngagement = roundScore(calculateVotingEngagement(voterVotes));
+
     results.push({
       collection_id: voterId,
       voting_engagement: votingEngagement,
     });
+
+    benchmarkRecords.push(buildVoterBenchmarkRecord(voterId, voterVotes, votingEngagement));
   }
 
   // Sort by collection_id for deterministic output
@@ -61,7 +66,7 @@ export async function computeVotingEngagement(snapshot: Snapshot, storage: Stora
     columns: ['collection_id', 'voting_engagement'],
   });
 
-  const outputKey = generateKey('snapshot', snapshot._id, `${snapshot.algorithmPresetFrozen.key}.csv`);
+  const outputKey = generateKey('snapshot', snapshotId, `${snapshot.algorithmPresetFrozen.key}.csv`);
 
   await storage.putObject({
     bucket,
@@ -72,9 +77,28 @@ export async function computeVotingEngagement(snapshot: Snapshot, storage: Stora
 
   logger.info('Uploaded voting engagement results', { outputKey });
 
+  // Generate and upload benchmark details
+  const benchmark = formatBenchmarkOutput({
+    records: benchmarkRecords,
+    snapshotId,
+    stats,
+  });
+
+  const benchmarkKey = generateKey('snapshot', snapshotId, 'voting_engagement_details.json');
+
+  await storage.putObject({
+    bucket,
+    key: benchmarkKey,
+    body: JSON.stringify(benchmark, null, 2),
+    contentType: 'application/json',
+  });
+
+  logger.info('Uploaded voting engagement benchmark', { benchmarkKey });
+
   return {
     outputs: {
       voting_engagement: outputKey,
+      voting_engagement_details: benchmarkKey,
     },
   };
 }
