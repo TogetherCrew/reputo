@@ -1,4 +1,4 @@
-# Goal: Review the code like a senior backend engineer
+# Goal: Review the code like a senior software engineer
 
 Checklist:
 
@@ -12,4 +12,5 @@ Checklist:
 Output:
 
 - Issues grouped by severity (blocker / should-fix / nice-to-have).
-- Concrete improvement suggestions.
+- Concrete suggestions with file/line pointers (where possible).
+- “If I were to change only 3 things” shortlist.
