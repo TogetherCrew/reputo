@@ -11,7 +11,7 @@ Steps:
     - Validation + good errors
     - Logging/metrics for key actions
     - Docs/readme/ADR if behavior/contract changed
-6. Verify
+6. Verify (run build, lint and test command at root level)
 
 Output (required):
 

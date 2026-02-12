@@ -2,7 +2,7 @@ import { BadRequestException, forwardRef, Inject, Injectable, NotFoundException 
 import { ConfigService } from '@nestjs/config';
 import { InjectConnection } from '@nestjs/mongoose';
 import { validateCSVContent, validatePayload } from '@reputo/algorithm-validator';
-import type { AlgorithmPreset, Snapshot } from '@reputo/database';
+import type { AlgorithmPreset, AlgorithmPresetWithId, SnapshotWithId } from '@reputo/database';
 import { MODEL_NAMES } from '@reputo/database';
 import { type AlgorithmDefinition, type CsvIoItem, getAlgorithmDefinition } from '@reputo/reputation-algorithms';
 import type { StorageMetadata } from '@reputo/storage';
@@ -159,11 +159,15 @@ export class AlgorithmPresetService {
     if (!algorithmPreset) {
       throwNotFoundError(id, MODEL_NAMES.ALGORITHM_PRESET);
     }
-    const snapshots: Snapshot[] = await this.snapshotRepository.find({
+    const snapshots: SnapshotWithId[] = await this.snapshotRepository.find({
       algorithmPreset: id,
     });
-    await this.temporalService.cancelSnapshotWorkflows(snapshots);
+
+    await this.temporalService.terminateSnapshotWorkflows(snapshots);
+
     await this.deletePresetWithSnapshots(id, snapshots.length);
+
+    await this.deleteS3Objects(algorithmPreset, snapshots);
   }
 
   private async deletePresetWithSnapshots(presetId: string, snapshotCount: number): Promise<void> {
@@ -179,6 +183,53 @@ export class AlgorithmPresetService {
       });
     } finally {
       await session.endSession();
+    }
+  }
+
+  private async deleteS3Objects(algorithmPreset: AlgorithmPresetWithId, snapshots: SnapshotWithId[]): Promise<void> {
+    const keysToDelete: string[] = [];
+
+    try {
+      for (const input of algorithmPreset.inputs) {
+        if (typeof input.value === 'string' && input.value.startsWith('uploads/')) {
+          keysToDelete.push(input.value);
+        }
+      }
+
+      for (const snapshot of snapshots) {
+        try {
+          const prefix = `snapshots/${snapshot._id}/`;
+          const snapshotKeys = await this.storageService.listObjectsByPrefix(prefix);
+          keysToDelete.push(...snapshotKeys);
+          this.logger.info(`Found ${snapshotKeys.length} objects for snapshot ${snapshot._id}`);
+        } catch (error) {
+          const err = error as Error;
+          this.logger.error(`Failed to list S3 objects for snapshot ${snapshot._id}: ${err.message}`, err.stack);
+        }
+      }
+
+      if (keysToDelete.length > 0) {
+        this.logger.info(`Deleting ${keysToDelete.length} S3 objects for algorithm preset ${algorithmPreset._id}`);
+
+        const result = await this.storageService.deleteObjects(keysToDelete);
+
+        this.logger.info(`Deleted ${result.deleted.length} S3 objects for algorithm preset ${algorithmPreset._id}`);
+
+        if (result.errors.length > 0) {
+          this.logger.warn(
+            `Failed to delete ${result.errors.length} S3 objects for algorithm preset ${algorithmPreset._id}`,
+            { errors: result.errors },
+          );
+        }
+      } else {
+        this.logger.info(`No S3 objects to delete for algorithm preset ${algorithmPreset._id}`);
+      }
+    } catch (error) {
+      const err = error as Error;
+      this.logger.error(
+        `Failed to delete S3 objects for algorithm preset ${algorithmPreset._id}: ${err.message}`,
+        err.stack,
+      );
     }
   }
 }

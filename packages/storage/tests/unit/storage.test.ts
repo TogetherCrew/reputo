@@ -424,6 +424,192 @@ describe('Storage', () => {
     });
   });
 
+  describe('deleteObject', () => {
+    it('should delete a single object', async () => {
+      const key = 'uploads/test-uuid/votes.csv';
+
+      vi.mocked(mockS3Client.send).mockResolvedValue({});
+
+      await storage.deleteObject({
+        bucket: testBucket,
+        key,
+      });
+
+      expect(mockS3Client.send).toHaveBeenCalledTimes(1);
+      expect(mockS3Client.send).toHaveBeenCalledWith(expect.any(Object));
+    });
+
+    it('should be idempotent (no error if object does not exist)', async () => {
+      const key = 'uploads/test-uuid/nonexistent.csv';
+
+      vi.mocked(mockS3Client.send).mockResolvedValue({});
+
+      await expect(
+        storage.deleteObject({
+          bucket: testBucket,
+          key,
+        }),
+      ).resolves.not.toThrow();
+    });
+  });
+
+  describe('listObjectsByPrefix', () => {
+    it('should list all objects under a prefix', async () => {
+      const prefix = 'snapshots/abc123/';
+
+      vi.mocked(mockS3Client.send).mockResolvedValue({
+        Contents: [
+          { Key: 'snapshots/abc123/file1.csv' },
+          { Key: 'snapshots/abc123/file2.json' },
+          { Key: 'snapshots/abc123/subfolder/file3.txt' },
+        ],
+        IsTruncated: false,
+      });
+
+      const keys = await storage.listObjectsByPrefix({
+        bucket: testBucket,
+        prefix,
+      });
+
+      expect(keys).toEqual([
+        'snapshots/abc123/file1.csv',
+        'snapshots/abc123/file2.json',
+        'snapshots/abc123/subfolder/file3.txt',
+      ]);
+    });
+
+    it('should handle pagination when results are truncated', async () => {
+      const prefix = 'snapshots/abc123/';
+
+      vi.mocked(mockS3Client.send)
+        .mockResolvedValueOnce({
+          Contents: [{ Key: 'snapshots/abc123/file1.csv' }, { Key: 'snapshots/abc123/file2.json' }],
+          IsTruncated: true,
+          NextContinuationToken: 'token123',
+        })
+        .mockResolvedValueOnce({
+          Contents: [{ Key: 'snapshots/abc123/file3.txt' }],
+          IsTruncated: false,
+        });
+
+      const keys = await storage.listObjectsByPrefix({
+        bucket: testBucket,
+        prefix,
+      });
+
+      expect(keys).toEqual(['snapshots/abc123/file1.csv', 'snapshots/abc123/file2.json', 'snapshots/abc123/file3.txt']);
+      expect(mockS3Client.send).toHaveBeenCalledTimes(2);
+    });
+
+    it('should return empty array when no objects match prefix', async () => {
+      const prefix = 'snapshots/nonexistent/';
+
+      vi.mocked(mockS3Client.send).mockResolvedValue({
+        Contents: [],
+        IsTruncated: false,
+      });
+
+      const keys = await storage.listObjectsByPrefix({
+        bucket: testBucket,
+        prefix,
+      });
+
+      expect(keys).toEqual([]);
+    });
+
+    it('should handle missing Contents in response', async () => {
+      const prefix = 'snapshots/empty/';
+
+      vi.mocked(mockS3Client.send).mockResolvedValue({
+        IsTruncated: false,
+      });
+
+      const keys = await storage.listObjectsByPrefix({
+        bucket: testBucket,
+        prefix,
+      });
+
+      expect(keys).toEqual([]);
+    });
+  });
+
+  describe('deleteObjects', () => {
+    it('should delete multiple objects in a single batch', async () => {
+      const keys = ['uploads/a/file1.csv', 'uploads/b/file2.csv', 'snapshots/abc/file3.json'];
+
+      vi.mocked(mockS3Client.send).mockResolvedValue({
+        Deleted: [{ Key: 'uploads/a/file1.csv' }, { Key: 'uploads/b/file2.csv' }, { Key: 'snapshots/abc/file3.json' }],
+      });
+
+      const result = await storage.deleteObjects({
+        bucket: testBucket,
+        keys,
+      });
+
+      expect(result.deleted).toEqual(keys);
+      expect(result.errors).toEqual([]);
+    });
+
+    it('should handle partial failures', async () => {
+      const keys = ['uploads/a/file1.csv', 'uploads/b/file2.csv', 'uploads/c/file3.csv'];
+
+      vi.mocked(mockS3Client.send).mockResolvedValue({
+        Deleted: [{ Key: 'uploads/a/file1.csv' }, { Key: 'uploads/b/file2.csv' }],
+        Errors: [{ Key: 'uploads/c/file3.csv', Message: 'Access Denied' }],
+      });
+
+      const result = await storage.deleteObjects({
+        bucket: testBucket,
+        keys,
+      });
+
+      expect(result.deleted).toEqual(['uploads/a/file1.csv', 'uploads/b/file2.csv']);
+      expect(result.errors).toEqual([{ key: 'uploads/c/file3.csv', message: 'Access Denied' }]);
+    });
+
+    it('should return empty result for empty keys array', async () => {
+      const result = await storage.deleteObjects({
+        bucket: testBucket,
+        keys: [],
+      });
+
+      expect(result.deleted).toEqual([]);
+      expect(result.errors).toEqual([]);
+      expect(mockS3Client.send).not.toHaveBeenCalled();
+    });
+
+    it('should batch delete requests for more than 1000 keys', async () => {
+      const keys = Array.from({ length: 2500 }, (_, i) => `uploads/batch/${i}.csv`);
+
+      vi.mocked(mockS3Client.send).mockResolvedValue({
+        Deleted: keys.slice(0, 1000).map((key) => ({ Key: key })),
+      });
+
+      const result = await storage.deleteObjects({
+        bucket: testBucket,
+        keys,
+      });
+
+      expect(mockS3Client.send).toHaveBeenCalledTimes(3);
+      expect(result.deleted.length).toBeGreaterThan(0);
+    });
+
+    it('should handle batch failure and mark all keys as errors', async () => {
+      const keys = ['uploads/a/file1.csv', 'uploads/b/file2.csv'];
+
+      vi.mocked(mockS3Client.send).mockRejectedValue(new Error('Network error'));
+
+      const result = await storage.deleteObjects({
+        bucket: testBucket,
+        keys,
+      });
+
+      expect(result.deleted).toEqual([]);
+      expect(result.errors).toHaveLength(2);
+      expect(result.errors[0].message).toBe('Network error');
+    });
+  });
+
   describe('configuration', () => {
     it('should accept S3Client via constructor', () => {
       const customStorage = new Storage(mockS3Client);

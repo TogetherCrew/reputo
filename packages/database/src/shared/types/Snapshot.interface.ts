@@ -68,9 +68,14 @@ export interface Snapshot {
 }
 
 /**
- * Type representing a hydrated Snapshot document with Mongoose methods.
+ * Type representing a hydrated Snapshot document with Mongoose methods and explicit _id.
  */
-export type SnapshotDoc = HydratedDocument<Snapshot>;
+export type SnapshotDoc = HydratedDocument<Snapshot> & { _id: Types.ObjectId };
+
+/**
+ * Snapshot document with _id (for lean documents returned from queries).
+ */
+export type SnapshotWithId = Snapshot & { _id: Types.ObjectId };
 
 /**
  * Interface extending Mongoose Model with additional methods for Snapshot.

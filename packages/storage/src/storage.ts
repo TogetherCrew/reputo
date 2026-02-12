@@ -5,7 +5,15 @@
  */
 
 import { randomUUID } from 'node:crypto';
-import { GetObjectCommand, HeadObjectCommand, PutObjectCommand, type S3Client } from '@aws-sdk/client-s3';
+import {
+  DeleteObjectCommand,
+  DeleteObjectsCommand,
+  GetObjectCommand,
+  HeadObjectCommand,
+  ListObjectsV2Command,
+  PutObjectCommand,
+  type S3Client,
+} from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import {
   FileTooLargeError,
@@ -14,7 +22,11 @@ import {
   ObjectNotFoundError,
 } from './shared/errors/index.js';
 import type {
+  DeleteObjectOptions,
+  DeleteObjectsOptions,
+  DeleteObjectsResult,
   GetObjectOptions,
+  ListObjectsByPrefixOptions,
   ParsedStorageKey,
   PresignedDownload,
   PresignedUpload,
@@ -368,6 +380,159 @@ export class Storage {
     );
 
     return key;
+  }
+
+  /**
+   * Deletes a single object from S3.
+   *
+   * This operation is idempotent - if the object doesn't exist, no error is thrown.
+   *
+   * @param options - Delete operation options
+   * @returns Promise that resolves when the object is deleted
+   *
+   * @example
+   * ```typescript
+   * await storage.deleteObject({
+   *   bucket: 'my-bucket',
+   *   key: 'uploads/{uuid}/votes.csv',
+   * });
+   * ```
+   */
+  async deleteObject(options: DeleteObjectOptions): Promise<void> {
+    const { bucket, key } = options;
+
+    await this.s3Client.send(
+      new DeleteObjectCommand({
+        Bucket: bucket,
+        Key: key,
+      }),
+    );
+  }
+
+  /**
+   * Lists all objects under a given prefix.
+   *
+   * Handles pagination automatically and returns all matching keys.
+   *
+   * @param options - List operation options
+   * @returns Array of object keys matching the prefix
+   *
+   * @example
+   * ```typescript
+   * const keys = await storage.listObjectsByPrefix({
+   *   bucket: 'my-bucket',
+   *   prefix: 'snapshots/abc123/',
+   * });
+   * // Returns: ['snapshots/abc123/file1.csv', 'snapshots/abc123/file2.json', ...]
+   * ```
+   */
+  async listObjectsByPrefix(options: ListObjectsByPrefixOptions): Promise<string[]> {
+    const { bucket, prefix, maxKeys } = options;
+    const keys: string[] = [];
+    let continuationToken: string | undefined;
+
+    do {
+      const response = await this.s3Client.send(
+        new ListObjectsV2Command({
+          Bucket: bucket,
+          Prefix: prefix,
+          MaxKeys: maxKeys,
+          ContinuationToken: continuationToken,
+        }),
+      );
+
+      if (response.Contents) {
+        for (const obj of response.Contents) {
+          if (obj.Key) {
+            keys.push(obj.Key);
+          }
+        }
+      }
+
+      continuationToken = response.IsTruncated ? response.NextContinuationToken : undefined;
+    } while (continuationToken);
+
+    return keys;
+  }
+
+  /**
+   * Deletes multiple objects from S3 in a single batch request.
+   *
+   * S3 allows up to 1000 objects per DeleteObjects request.
+   * If more than 1000 keys are provided, they are automatically batched.
+   *
+   * This operation is idempotent - if any object doesn't exist, no error is thrown for that object.
+   *
+   * @param options - Batch delete operation options
+   * @returns Result with deleted keys and any errors
+   *
+   * @example
+   * ```typescript
+   * const result = await storage.deleteObjects({
+   *   bucket: 'my-bucket',
+   *   keys: ['uploads/a/file1.csv', 'uploads/b/file2.csv'],
+   * });
+   * console.log(`Deleted ${result.deleted.length} objects`);
+   * ```
+   */
+  async deleteObjects(options: DeleteObjectsOptions): Promise<DeleteObjectsResult> {
+    const { bucket, keys } = options;
+
+    if (keys.length === 0) {
+      return { deleted: [], errors: [] };
+    }
+
+    const deleted: string[] = [];
+    const errors: Array<{ key: string; message: string }> = [];
+
+    // S3 allows max 1000 objects per DeleteObjects request
+    const BATCH_SIZE = 1000;
+
+    for (let i = 0; i < keys.length; i += BATCH_SIZE) {
+      const batch = keys.slice(i, i + BATCH_SIZE);
+
+      try {
+        const response = await this.s3Client.send(
+          new DeleteObjectsCommand({
+            Bucket: bucket,
+            Delete: {
+              Objects: batch.map((key) => ({ Key: key })),
+              Quiet: false,
+            },
+          }),
+        );
+
+        if (response.Deleted) {
+          for (const obj of response.Deleted) {
+            if (obj.Key) {
+              deleted.push(obj.Key);
+            }
+          }
+        }
+
+        if (response.Errors) {
+          for (const error of response.Errors) {
+            if (error.Key) {
+              errors.push({
+                key: error.Key,
+                message: error.Message || 'Unknown error',
+              });
+            }
+          }
+        }
+      } catch (error) {
+        // If entire batch fails, mark all keys as errors
+        const err = error as Error;
+        for (const key of batch) {
+          errors.push({
+            key,
+            message: err.message || 'Batch delete failed',
+          });
+        }
+      }
+    }
+
+    return { deleted, errors };
   }
 
   /**

@@ -1,15 +1,15 @@
 import { Injectable } from '@nestjs/common';
-import type { AlgorithmPresetFrozen, Snapshot } from '@reputo/database';
+import type { AlgorithmPresetFrozen, Snapshot, SnapshotWithId } from '@reputo/database';
 import { MODEL_NAMES } from '@reputo/database';
-import type { FilterQuery } from 'mongoose';
+import type { FilterQuery, HydratedDocument } from 'mongoose';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { AlgorithmPresetRepository } from '../algorithm-preset/algorithm-preset.repository';
 import { throwNotFoundError } from '../shared/exceptions';
 import { pick } from '../shared/utils';
+import { StorageService } from '../storage/storage.service';
 import { TemporalService } from '../temporal';
 import type { CreateSnapshotDto, ListSnapshotsQueryDto } from './dto';
 import { SnapshotRepository } from './snapshot.repository';
-
 @Injectable()
 export class SnapshotService {
   constructor(
@@ -18,6 +18,7 @@ export class SnapshotService {
     private readonly repository: SnapshotRepository,
     private readonly algorithmPresetRepository: AlgorithmPresetRepository,
     private readonly temporalService: TemporalService,
+    private readonly storageService: StorageService,
   ) {}
 
   async create(createDto: CreateSnapshotDto) {
@@ -73,11 +74,56 @@ export class SnapshotService {
     if (snapshot.status === 'running' && snapshot.temporal?.workflowId) {
       this.logger.info(
         { snapshotId: id, workflowId: snapshot.temporal.workflowId },
-        'Cancelling running snapshot workflow before delete',
+        'Terminating running snapshot workflow before delete',
       );
-      await this.temporalService.cancelSnapshotWorkflow(snapshot.temporal.workflowId);
+      await this.temporalService.terminateSnapshotWorkflow(snapshot.temporal.workflowId);
     }
 
     await this.repository.deleteById(id);
+
+    await this.deleteS3Objects(snapshot);
+  }
+
+  private async deleteS3Objects(snapshot: SnapshotWithId): Promise<void> {
+    const keysToDelete: string[] = [];
+
+    try {
+      if (snapshot.algorithmPresetFrozen?.inputs) {
+        for (const input of snapshot.algorithmPresetFrozen.inputs) {
+          if (typeof input.value === 'string' && input.value.startsWith('uploads/')) {
+            keysToDelete.push(input.value);
+          }
+        }
+      }
+
+      try {
+        const prefix = `snapshots/${snapshot._id}/`;
+        const snapshotKeys = await this.storageService.listObjectsByPrefix(prefix);
+        keysToDelete.push(...snapshotKeys);
+        this.logger.info(`Found ${snapshotKeys.length} objects for snapshot ${snapshot._id}`);
+      } catch (error) {
+        const err = error as Error;
+        this.logger.error(`Failed to list S3 objects for snapshot ${snapshot._id}: ${err.message}`, err.stack);
+      }
+
+      if (keysToDelete.length > 0) {
+        this.logger.info(`Deleting ${keysToDelete.length} S3 objects for snapshot ${snapshot._id}`);
+
+        const result = await this.storageService.deleteObjects(keysToDelete);
+
+        this.logger.info(`Deleted ${result.deleted.length} S3 objects for snapshot ${snapshot._id}`);
+
+        if (result.errors.length > 0) {
+          this.logger.warn(`Failed to delete ${result.errors.length} S3 objects for snapshot ${snapshot._id}`, {
+            errors: result.errors,
+          });
+        }
+      } else {
+        this.logger.info(`No S3 objects to delete for snapshot ${snapshot._id}`);
+      }
+    } catch (error) {
+      const err = error as Error;
+      this.logger.error(`Failed to delete S3 objects for snapshot ${snapshot._id}: ${err.message}`, err.stack);
+    }
   }
 }

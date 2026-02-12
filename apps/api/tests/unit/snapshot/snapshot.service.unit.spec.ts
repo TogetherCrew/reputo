@@ -5,6 +5,7 @@ import { AlgorithmPresetRepository } from '../../../src/algorithm-preset/algorit
 import type { CreateSnapshotDto, ListSnapshotsQueryDto } from '../../../src/snapshot/dto';
 import { SnapshotRepository } from '../../../src/snapshot/snapshot.repository';
 import { SnapshotService } from '../../../src/snapshot/snapshot.service';
+import { StorageService } from '../../../src/storage/storage.service';
 
 describe('SnapshotService', () => {
   let service: SnapshotService;
@@ -13,7 +14,9 @@ describe('SnapshotService', () => {
   let mockTemporalService: {
     startSnapshotWorkflow: ReturnType<typeof vi.fn>;
     cancelSnapshotWorkflow: ReturnType<typeof vi.fn>;
+    terminateSnapshotWorkflow: ReturnType<typeof vi.fn>;
   };
+  let mockStorageService: StorageService;
   const mockLogger = {
     info: vi.fn(),
     error: vi.fn(),
@@ -41,13 +44,20 @@ describe('SnapshotService', () => {
     mockTemporalService = {
       startSnapshotWorkflow: vi.fn().mockResolvedValue(undefined),
       cancelSnapshotWorkflow: vi.fn().mockResolvedValue(undefined),
+      terminateSnapshotWorkflow: vi.fn().mockResolvedValue(undefined),
     };
+
+    mockStorageService = {
+      listObjectsByPrefix: vi.fn().mockResolvedValue([]),
+      deleteObjects: vi.fn().mockResolvedValue({ deleted: [], errors: [] }),
+    } as unknown as StorageService;
 
     service = new SnapshotService(
       mockLogger,
       mockSnapshotRepository,
       mockAlgorithmPresetRepository,
       mockTemporalService as any,
+      mockStorageService,
     );
   });
 
@@ -465,7 +475,10 @@ describe('SnapshotService', () => {
     it('should complete successfully when snapshot is deleted', async () => {
       const id = '507f1f77bcf86cd799439011';
 
-      mockSnapshotRepository.findById = vi.fn().mockResolvedValue({ _id: id });
+      mockSnapshotRepository.findById = vi.fn().mockResolvedValue({
+        _id: id,
+        algorithmPresetFrozen: { inputs: [] },
+      });
       mockSnapshotRepository.deleteById = vi.fn().mockResolvedValue({ _id: id });
 
       await service.deleteById(id);
@@ -486,19 +499,97 @@ describe('SnapshotService', () => {
       await expect(promise).rejects.toThrow(`${MODEL_NAMES.SNAPSHOT} with ID ${id} not found`);
     });
 
-    it('should cancel workflow when snapshot is running', async () => {
+    it('should terminate workflow and clean S3 when snapshot is running', async () => {
       const id = '507f1f77bcf86cd799439011';
-      mockSnapshotRepository.findById = vi.fn().mockResolvedValue({
+      const snapshot = {
         _id: id,
         status: 'running',
         temporal: { workflowId: 'wf-123' },
-      });
+        algorithmPresetFrozen: {
+          inputs: [{ key: 'votes', value: 'uploads/uuid-1/votes.csv' }],
+        },
+      };
+
+      mockSnapshotRepository.findById = vi.fn().mockResolvedValue(snapshot);
       mockSnapshotRepository.deleteById = vi.fn().mockResolvedValue({ _id: id });
+      mockStorageService.listObjectsByPrefix = vi
+        .fn()
+        .mockResolvedValue([
+          'snapshots/507f1f77bcf86cd799439011/output1.csv',
+          'snapshots/507f1f77bcf86cd799439011/output2.json',
+        ]);
+      mockStorageService.deleteObjects = vi.fn().mockResolvedValue({
+        deleted: [
+          'uploads/uuid-1/votes.csv',
+          'snapshots/507f1f77bcf86cd799439011/output1.csv',
+          'snapshots/507f1f77bcf86cd799439011/output2.json',
+        ],
+        errors: [],
+      });
 
       await service.deleteById(id);
 
-      expect(mockTemporalService.cancelSnapshotWorkflow).toHaveBeenCalledWith('wf-123');
+      // Verify workflow terminated
+      expect(mockTemporalService.terminateSnapshotWorkflow).toHaveBeenCalledWith('wf-123');
+
+      // Verify DB delete
       expect(mockSnapshotRepository.deleteById).toHaveBeenCalledWith(id);
+
+      // Verify S3 cleanup
+      expect(mockStorageService.listObjectsByPrefix).toHaveBeenCalledWith(`snapshots/${id}/`);
+      expect(mockStorageService.deleteObjects).toHaveBeenCalledWith([
+        'uploads/uuid-1/votes.csv',
+        'snapshots/507f1f77bcf86cd799439011/output1.csv',
+        'snapshots/507f1f77bcf86cd799439011/output2.json',
+      ]);
+    });
+
+    it('should handle S3 cleanup failures gracefully', async () => {
+      const id = '507f1f77bcf86cd799439011';
+      const snapshot = {
+        _id: id,
+        status: 'completed',
+        algorithmPresetFrozen: {
+          inputs: [{ key: 'votes', value: 'uploads/uuid-1/votes.csv' }],
+        },
+      };
+
+      mockSnapshotRepository.findById = vi.fn().mockResolvedValue(snapshot);
+      mockSnapshotRepository.deleteById = vi.fn().mockResolvedValue({ _id: id });
+      mockStorageService.listObjectsByPrefix = vi.fn().mockRejectedValue(new Error('S3 error'));
+
+      // Should not throw even if S3 cleanup fails
+      await expect(service.deleteById(id)).resolves.not.toThrow();
+
+      // DB operations should still complete
+      expect(mockSnapshotRepository.deleteById).toHaveBeenCalled();
+    });
+
+    it('should handle partial S3 deletion failures', async () => {
+      const id = '507f1f77bcf86cd799439011';
+      const snapshot = {
+        _id: id,
+        status: 'completed',
+        algorithmPresetFrozen: {
+          inputs: [{ key: 'votes', value: 'uploads/uuid-1/votes.csv' }],
+        },
+      };
+
+      mockSnapshotRepository.findById = vi.fn().mockResolvedValue(snapshot);
+      mockSnapshotRepository.deleteById = vi.fn().mockResolvedValue({ _id: id });
+      mockStorageService.listObjectsByPrefix = vi
+        .fn()
+        .mockResolvedValue(['snapshots/507f1f77bcf86cd799439011/output.csv']);
+      mockStorageService.deleteObjects = vi.fn().mockResolvedValue({
+        deleted: ['uploads/uuid-1/votes.csv'],
+        errors: [{ key: 'snapshots/507f1f77bcf86cd799439011/output.csv', message: 'Access denied' }],
+      });
+
+      await service.deleteById(id);
+
+      // Should complete successfully despite partial S3 failure
+      expect(mockSnapshotRepository.deleteById).toHaveBeenCalled();
+      expect(mockLogger.warn).toHaveBeenCalled();
     });
   });
 });

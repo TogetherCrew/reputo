@@ -144,6 +144,9 @@ export class TemporalService implements OnModuleInit, OnModuleDestroy {
   /**
    * Cancels a running Temporal workflow by its workflow ID.
    *
+   * This is a graceful cancellation - the workflow can handle the cancellation
+   * and perform cleanup before completing.
+   *
    * @param workflowId - The Temporal workflow ID to cancel
    * @throws Error if Temporal client is not available
    */
@@ -172,6 +175,40 @@ export class TemporalService implements OnModuleInit, OnModuleDestroy {
   }
 
   /**
+   * Terminates a running Temporal workflow immediately without cleanup.
+   *
+   * This forces the workflow to stop immediately without giving it a chance
+   * to handle cancellation or perform cleanup. Use this when you need to
+   * ensure the workflow stops right away.
+   *
+   * @param workflowId - The Temporal workflow ID to terminate
+   * @throws Error if Temporal client is not available
+   */
+  async terminateWorkflow(workflowId: string): Promise<void> {
+    if (!this.client) {
+      throw new Error('Temporal client is not available. Check TEMPORAL_ADDRESS configuration.');
+    }
+
+    try {
+      this.logger.info(`Terminating workflow ${workflowId}`);
+
+      const handle = this.client.workflow.getHandle(workflowId);
+      await handle.terminate('Workflow terminated due to algorithm preset or snapshot deletion');
+
+      this.logger.info(`Workflow ${workflowId} terminated successfully`);
+    } catch (error) {
+      const err = error as Error;
+      // WorkflowNotFoundError means workflow already completed or doesn't exist
+      if (err.name === 'WorkflowNotFoundError') {
+        this.logger.warn(`Workflow ${workflowId} not found, may have already completed`);
+        return;
+      }
+      this.logger.error(`Failed to terminate workflow ${workflowId}: ${err.message}`, err.stack);
+      throw error;
+    }
+  }
+
+  /**
    * Safe cancellation wrapper that logs errors but does not throw.
    */
   async cancelSnapshotWorkflow(workflowId: string): Promise<void> {
@@ -180,6 +217,18 @@ export class TemporalService implements OnModuleInit, OnModuleDestroy {
     } catch (error) {
       const err = error as Error;
       this.logger.error(`Failed to cancel workflow ${workflowId}: ${err.message}`, err.stack);
+    }
+  }
+
+  /**
+   * Safe termination wrapper that logs errors but does not throw.
+   */
+  async terminateSnapshotWorkflow(workflowId: string): Promise<void> {
+    try {
+      await this.terminateWorkflow(workflowId);
+    } catch (error) {
+      const err = error as Error;
+      this.logger.error(`Failed to terminate workflow ${workflowId}: ${err.message}`, err.stack);
     }
   }
 
@@ -195,6 +244,25 @@ export class TemporalService implements OnModuleInit, OnModuleDestroy {
       const workflowId = snapshot.temporal?.workflowId;
       if (workflowId) {
         await this.cancelSnapshotWorkflow(workflowId);
+      }
+    }
+  }
+
+  /**
+   * Terminates workflows for all running snapshots.
+   *
+   * This immediately stops all running workflows without allowing cleanup.
+   * Used when deleting algorithm presets or snapshots.
+   */
+  async terminateSnapshotWorkflows(snapshots: Snapshot[]): Promise<void> {
+    const runningSnapshots = snapshots.filter(
+      (snapshot) => snapshot.status === 'running' && snapshot.temporal?.workflowId,
+    );
+
+    for (const snapshot of runningSnapshots) {
+      const workflowId = snapshot.temporal?.workflowId;
+      if (workflowId) {
+        await this.terminateSnapshotWorkflow(workflowId);
       }
     }
   }

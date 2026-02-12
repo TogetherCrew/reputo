@@ -294,3 +294,72 @@ export interface PresignedDownload {
    */
   metadata: StorageMetadata;
 }
+
+/**
+ * Options for deleting a single object from S3.
+ */
+export interface DeleteObjectOptions {
+  /**
+   * S3 bucket name where the object is stored.
+   */
+  bucket: string;
+
+  /**
+   * S3 key of the object to delete.
+   */
+  key: string;
+}
+
+/**
+ * Options for listing objects by prefix.
+ */
+export interface ListObjectsByPrefixOptions {
+  /**
+   * S3 bucket name where the objects are stored.
+   */
+  bucket: string;
+
+  /**
+   * Prefix to filter objects by.
+   */
+  prefix: string;
+
+  /**
+   * Maximum number of keys to return per page.
+   * Default is 1000 (S3 maximum).
+   */
+  maxKeys?: number;
+}
+
+/**
+ * Options for deleting multiple objects from S3.
+ */
+export interface DeleteObjectsOptions {
+  /**
+   * S3 bucket name where the objects are stored.
+   */
+  bucket: string;
+
+  /**
+   * Array of S3 keys to delete.
+   */
+  keys: string[];
+}
+
+/**
+ * Result from a batch delete operation.
+ */
+export interface DeleteObjectsResult {
+  /**
+   * Keys that were successfully deleted.
+   */
+  deleted: string[];
+
+  /**
+   * Keys that failed to delete, with error messages.
+   */
+  errors: Array<{
+    key: string;
+    message: string;
+  }>;
+}
