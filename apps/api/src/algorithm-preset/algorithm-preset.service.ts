@@ -163,10 +163,13 @@ export class AlgorithmPresetService {
       algorithmPreset: id,
     });
 
-    await this.temporalService.terminateSnapshotWorkflows(snapshots);
+    // Step 1: Terminate workflows and wait for them to fully stop
+    await this.temporalService.terminateSnapshotWorkflows(snapshots, true);
 
+    // Step 2: Delete from database
     await this.deletePresetWithSnapshots(id, snapshots.length);
 
+    // Step 3: Clean up S3 (workflows are now guaranteed to be stopped)
     await this.deleteS3Objects(algorithmPreset, snapshots);
   }
 

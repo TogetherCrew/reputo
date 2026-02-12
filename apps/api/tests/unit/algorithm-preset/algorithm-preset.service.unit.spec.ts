@@ -652,7 +652,7 @@ describe('AlgorithmPresetService', () => {
 
       await service.deleteById(id);
 
-      expect(mockTemporalService.terminateSnapshotWorkflows).toHaveBeenCalledWith([]);
+      expect(mockTemporalService.terminateSnapshotWorkflows).toHaveBeenCalledWith([], true);
       expect(mockSnapshotRepository.deleteMany).not.toHaveBeenCalled();
       expect(mockRepository.deleteById).toHaveBeenCalled();
     });
@@ -706,7 +706,7 @@ describe('AlgorithmPresetService', () => {
       await service.deleteById(id);
 
       // Verify workflows terminated
-      expect(mockTemporalService.terminateSnapshotWorkflows).toHaveBeenCalledWith(snapshots);
+      expect(mockTemporalService.terminateSnapshotWorkflows).toHaveBeenCalledWith(snapshots, true);
 
       // Verify DB cascade delete
       expect(mockSnapshotRepository.deleteMany).toHaveBeenCalled();

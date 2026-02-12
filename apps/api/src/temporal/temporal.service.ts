@@ -182,9 +182,10 @@ export class TemporalService implements OnModuleInit, OnModuleDestroy {
    * ensure the workflow stops right away.
    *
    * @param workflowId - The Temporal workflow ID to terminate
+   * @param waitForCompletion - If true, waits for workflow to reach terminal state before returning
    * @throws Error if Temporal client is not available
    */
-  async terminateWorkflow(workflowId: string): Promise<void> {
+  async terminateWorkflow(workflowId: string, waitForCompletion = false): Promise<void> {
     if (!this.client) {
       throw new Error('Temporal client is not available. Check TEMPORAL_ADDRESS configuration.');
     }
@@ -195,7 +196,24 @@ export class TemporalService implements OnModuleInit, OnModuleDestroy {
       const handle = this.client.workflow.getHandle(workflowId);
       await handle.terminate('Workflow terminated due to algorithm preset or snapshot deletion');
 
-      this.logger.info(`Workflow ${workflowId} terminated successfully`);
+      this.logger.info(`Workflow ${workflowId} termination request sent`);
+
+      if (waitForCompletion) {
+        this.logger.info(`Waiting for workflow ${workflowId} to reach terminal state`);
+        try {
+          // Wait for the workflow to complete (will throw when terminated)
+          await handle.result();
+        } catch (error) {
+          // Expected: terminated workflows throw an error
+          const err = error as Error;
+          if (err.name === 'WorkflowExecutionTerminatedError' || err.message?.includes('terminated')) {
+            this.logger.info(`Workflow ${workflowId} confirmed terminated`);
+          } else {
+            // Unexpected error, but workflow is in terminal state
+            this.logger.warn(`Workflow ${workflowId} ended with unexpected error: ${err.message}`);
+          }
+        }
+      }
     } catch (error) {
       const err = error as Error;
       // WorkflowNotFoundError means workflow already completed or doesn't exist
@@ -222,10 +240,13 @@ export class TemporalService implements OnModuleInit, OnModuleDestroy {
 
   /**
    * Safe termination wrapper that logs errors but does not throw.
+   *
+   * @param workflowId - The Temporal workflow ID to terminate
+   * @param waitForCompletion - If true, waits for workflow to reach terminal state before returning
    */
-  async terminateSnapshotWorkflow(workflowId: string): Promise<void> {
+  async terminateSnapshotWorkflow(workflowId: string, waitForCompletion = false): Promise<void> {
     try {
-      await this.terminateWorkflow(workflowId);
+      await this.terminateWorkflow(workflowId, waitForCompletion);
     } catch (error) {
       const err = error as Error;
       this.logger.error(`Failed to terminate workflow ${workflowId}: ${err.message}`, err.stack);
@@ -253,17 +274,34 @@ export class TemporalService implements OnModuleInit, OnModuleDestroy {
    *
    * This immediately stops all running workflows without allowing cleanup.
    * Used when deleting algorithm presets or snapshots.
+   *
+   * @param snapshots - Array of snapshots to terminate workflows for
+   * @param waitForCompletion - If true, waits for all workflows to reach terminal state before returning
    */
-  async terminateSnapshotWorkflows(snapshots: Snapshot[]): Promise<void> {
+  async terminateSnapshotWorkflows(snapshots: Snapshot[], waitForCompletion = false): Promise<void> {
     const runningSnapshots = snapshots.filter(
       (snapshot) => snapshot.status === 'running' && snapshot.temporal?.workflowId,
     );
 
-    for (const snapshot of runningSnapshots) {
-      const workflowId = snapshot.temporal?.workflowId;
-      if (workflowId) {
-        await this.terminateSnapshotWorkflow(workflowId);
-      }
+    if (runningSnapshots.length === 0) {
+      return;
     }
+
+    this.logger.info(`Terminating ${runningSnapshots.length} running workflow(s)`, {
+      waitForCompletion,
+    });
+
+    // Terminate all workflows in parallel
+    await Promise.all(
+      runningSnapshots.map((snapshot) => {
+        const workflowId = snapshot.temporal?.workflowId;
+        if (workflowId) {
+          return this.terminateSnapshotWorkflow(workflowId, waitForCompletion);
+        }
+        return Promise.resolve();
+      }),
+    );
+
+    this.logger.info(`All ${runningSnapshots.length} workflow(s) terminated`);
   }
 }

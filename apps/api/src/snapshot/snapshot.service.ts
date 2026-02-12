@@ -71,16 +71,22 @@ export class SnapshotService {
       throwNotFoundError(id, MODEL_NAMES.SNAPSHOT);
     }
 
+    // Step 1: Terminate workflow and wait for it to fully stop
     if (snapshot.status === 'running' && snapshot.temporal?.workflowId) {
       this.logger.info(
         { snapshotId: id, workflowId: snapshot.temporal.workflowId },
         'Terminating running snapshot workflow before delete',
       );
-      await this.temporalService.terminateSnapshotWorkflow(snapshot.temporal.workflowId);
+      await this.temporalService.terminateSnapshotWorkflow(
+        snapshot.temporal.workflowId,
+        true, // Wait for termination to complete
+      );
     }
 
+    // Step 2: Delete from database
     await this.repository.deleteById(id);
 
+    // Step 3: Clean up S3 (workflow is now guaranteed to be stopped)
     await this.deleteS3Objects(snapshot);
   }
 

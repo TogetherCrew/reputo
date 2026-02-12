@@ -530,7 +530,7 @@ describe('SnapshotService', () => {
       await service.deleteById(id);
 
       // Verify workflow terminated
-      expect(mockTemporalService.terminateSnapshotWorkflow).toHaveBeenCalledWith('wf-123');
+      expect(mockTemporalService.terminateSnapshotWorkflow).toHaveBeenCalledWith('wf-123', true);
 
       // Verify DB delete
       expect(mockSnapshotRepository.deleteById).toHaveBeenCalledWith(id);
