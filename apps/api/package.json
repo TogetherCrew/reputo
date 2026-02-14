@@ -33,7 +33,6 @@
         "@nestjs/swagger": "^11.2.1",
         "@reputo/algorithm-validator": "workspace:*",
         "@reputo/database": "workspace:*",
-        "@reputo/workflows": "workspace:*",
         "@reputo/reputation-algorithms": "workspace:*",
         "@reputo/storage": "workspace:*",
         "@scalar/nestjs-api-reference": "^1.0.5",

@@ -3,6 +3,7 @@ import { NativeConnection, Worker } from '@temporalio/worker';
 
 import { dispatchAlgorithm } from '../../activities/typescript/dispatchAlgorithm.activity.js';
 import config from '../../config/index.js';
+import { ALGORITHM_MAX_CONCURRENT_ACTIVITIES } from '../../shared/constants/index.js';
 import { logger } from '../../shared/utils/index.js';
 
 async function run(): Promise<void> {
@@ -37,6 +38,7 @@ async function run(): Promise<void> {
     connection,
     namespace: config.temporal.namespace,
     taskQueue: config.temporal.algorithmTypescriptTaskQueue,
+    maxConcurrentActivityTaskExecutions: ALGORITHM_MAX_CONCURRENT_ACTIVITIES,
     activities,
   });
 

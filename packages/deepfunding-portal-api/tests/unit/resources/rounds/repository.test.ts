@@ -1,15 +1,20 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { create, createMany, findAll, findById } from '../../../../src/resources/rounds/repository.js';
+import { createRoundsRepo } from '../../../../src/resources/rounds/repository.js';
+import type { DeepFundingPortalDb } from '../../../../src/shared/types/db.js';
 import { cleanupTestDb, createTestDb } from '../../../utils/db-helpers.js';
 import { createMockRound } from '../../../utils/mock-helpers.js';
 
 describe('Round Repository', () => {
+  let db: DeepFundingPortalDb;
+  let repo: ReturnType<typeof createRoundsRepo>;
+
   beforeEach(() => {
-    createTestDb();
+    db = createTestDb();
+    repo = createRoundsRepo(db);
   });
 
   afterEach(() => {
-    cleanupTestDb();
+    cleanupTestDb(db);
   });
 
   describe('create', () => {
@@ -19,9 +24,9 @@ describe('Round Repository', () => {
         name: 'Test Round',
       });
 
-      create(round);
+      repo.create(round);
 
-      const result = findById(1);
+      const result = repo.findById(1);
       expect(result).toBeDefined();
       expect(result?.name).toBe('Test Round');
     });
@@ -31,19 +36,19 @@ describe('Round Repository', () => {
     it('should insert multiple rounds', () => {
       const rounds = [createMockRound({ id: 1 }), createMockRound({ id: 2 }), createMockRound({ id: 3 })];
 
-      createMany(rounds);
+      repo.createMany(rounds);
 
-      const all = findAll();
+      const all = repo.findAll();
       expect(all.length).toBe(3);
     });
   });
 
   describe('findAll', () => {
     it('should return all rounds', () => {
-      create(createMockRound({ id: 1 }));
-      create(createMockRound({ id: 2 }));
+      repo.create(createMockRound({ id: 1 }));
+      repo.create(createMockRound({ id: 2 }));
 
-      const result = findAll();
+      const result = repo.findAll();
       expect(result.length).toBe(2);
     });
   });
@@ -54,9 +59,9 @@ describe('Round Repository', () => {
         id: 1,
         name: 'Specific Round',
       });
-      create(round);
+      repo.create(round);
 
-      const result = findById(1);
+      const result = repo.findById(1);
       expect(result).toBeDefined();
       expect(result?.id).toBe(1);
       expect(result?.name).toBe('Specific Round');

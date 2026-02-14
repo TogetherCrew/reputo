@@ -1,22 +1,20 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import {
-  create,
-  createMany,
-  findAll,
-  findById,
-  findByProposalId,
-  findByUserId,
-} from '../../../../src/resources/comments/repository.js';
+import { createCommentsRepo } from '../../../../src/resources/comments/repository.js';
+import type { DeepFundingPortalDb } from '../../../../src/shared/types/db.js';
 import { cleanupTestDb, createTestDb } from '../../../utils/db-helpers.js';
 import { createMockComment } from '../../../utils/mock-helpers.js';
 
 describe('Comment Repository', () => {
+  let db: DeepFundingPortalDb;
+  let repo: ReturnType<typeof createCommentsRepo>;
+
   beforeEach(() => {
-    createTestDb();
+    db = createTestDb();
+    repo = createCommentsRepo(db);
   });
 
   afterEach(() => {
-    cleanupTestDb();
+    cleanupTestDb(db);
   });
 
   describe('create', () => {
@@ -26,9 +24,9 @@ describe('Comment Repository', () => {
         proposal_id: 100,
       });
 
-      create(comment);
+      repo.create(comment);
 
-      const result = findById(1);
+      const result = repo.findById(1);
       expect(result).toBeDefined();
       expect(result?.proposalId).toBe(100);
     });
@@ -42,30 +40,30 @@ describe('Comment Repository', () => {
         createMockComment({ comment_id: 3, proposal_id: 200 }),
       ];
 
-      createMany(comments);
+      repo.createMany(comments);
 
-      const all = findAll();
+      const all = repo.findAll();
       expect(all.length).toBe(3);
     });
   });
 
   describe('findAll', () => {
     it('should return all comments', () => {
-      create(createMockComment({ comment_id: 1 }));
-      create(createMockComment({ comment_id: 2 }));
+      repo.create(createMockComment({ comment_id: 1 }));
+      repo.create(createMockComment({ comment_id: 2 }));
 
-      const result = findAll();
+      const result = repo.findAll();
       expect(result.length).toBe(2);
     });
   });
 
   describe('findByProposalId', () => {
     it('should find comments by proposal ID', () => {
-      create(createMockComment({ comment_id: 1, proposal_id: 100 }));
-      create(createMockComment({ comment_id: 2, proposal_id: 100 }));
-      create(createMockComment({ comment_id: 3, proposal_id: 200 }));
+      repo.create(createMockComment({ comment_id: 1, proposal_id: 100 }));
+      repo.create(createMockComment({ comment_id: 2, proposal_id: 100 }));
+      repo.create(createMockComment({ comment_id: 3, proposal_id: 200 }));
 
-      const result = findByProposalId(100);
+      const result = repo.findByProposalId(100);
       expect(result.length).toBe(2);
       expect(result.every((c) => c.proposalId === 100)).toBe(true);
     });
@@ -73,11 +71,11 @@ describe('Comment Repository', () => {
 
   describe('findByUserId', () => {
     it('should find comments by user ID', () => {
-      create(createMockComment({ comment_id: 1, user_id: 10 }));
-      create(createMockComment({ comment_id: 2, user_id: 10 }));
-      create(createMockComment({ comment_id: 3, user_id: 20 }));
+      repo.create(createMockComment({ comment_id: 1, user_id: 10 }));
+      repo.create(createMockComment({ comment_id: 2, user_id: 10 }));
+      repo.create(createMockComment({ comment_id: 3, user_id: 20 }));
 
-      const result = findByUserId(10);
+      const result = repo.findByUserId(10);
       expect(result.length).toBe(2);
       expect(result.every((c) => c.userId === 10)).toBe(true);
     });
@@ -89,9 +87,9 @@ describe('Comment Repository', () => {
         comment_id: 1,
         content: 'Specific comment',
       });
-      create(comment);
+      repo.create(comment);
 
-      const result = findById(1);
+      const result = repo.findById(1);
       expect(result).toBeDefined();
       expect(result?.commentId).toBe(1);
       expect(result?.content).toBe('Specific comment');

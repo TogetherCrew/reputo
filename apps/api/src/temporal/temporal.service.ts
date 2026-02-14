@@ -1,9 +1,9 @@
 import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { Snapshot } from '@reputo/database';
-import { WORKFLOW_RUN_TIMEOUT } from '@reputo/workflows/shared/constants';
 import { Client, Connection } from '@temporalio/client';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
+import { WORKFLOW_RUN_TIMEOUT } from '../shared/constants/temporal.constants';
 
 /**
  * Service for interacting with Temporal workflows.
@@ -27,12 +27,7 @@ export class TemporalService implements OnModuleInit, OnModuleDestroy {
   async onModuleInit(): Promise<void> {
     try {
       const address = this.configService.get<string>('temporal.address');
-      const namespace = this.configService.get<string>('temporal.namespace') || 'default';
-
-      if (!address) {
-        this.logger.warn('TEMPORAL_ADDRESS not configured, Temporal workflows will not be available');
-        return;
-      }
+      const namespace = this.configService.get<string>('temporal.namespace');
 
       this.logger.info(`Connecting to Temporal at ${address} (namespace: ${namespace})`);
 
@@ -80,14 +75,9 @@ export class TemporalService implements OnModuleInit, OnModuleDestroy {
       throw new Error('Temporal client is not available. Check TEMPORAL_ADDRESS configuration.');
     }
 
-    const orchestratorTaskQueue =
-      this.configService.get<string>('temporal.orchestratorTaskQueue') ||
-      this.configService.get<string>('temporal.taskQueue') ||
-      'workflows';
-    const algorithmTypescriptTaskQueue =
-      this.configService.get<string>('temporal.algorithmTypescriptTaskQueue') || 'algorithm-typescript-worker';
-    const algorithmPythonTaskQueue =
-      this.configService.get<string>('temporal.algorithmPythonTaskQueue') || 'algorithm-python-worker';
+    const orchestratorTaskQueue = this.configService.get<string>('temporal.orchestratorTaskQueue') as string;
+    const algorithmTypescriptTaskQueue = this.configService.get<string>('temporal.algorithmTypescriptTaskQueue');
+    const algorithmPythonTaskQueue = this.configService.get<string>('temporal.algorithmPythonTaskQueue');
     const workflowId = `snapshot-${snapshotId}`;
 
     try {
@@ -102,7 +92,7 @@ export class TemporalService implements OnModuleInit, OnModuleDestroy {
       await this.client.workflow.start('OrchestratorWorkflow', {
         taskQueue: orchestratorTaskQueue,
         workflowId,
-        workflowRunTimeout: WORKFLOW_RUN_TIMEOUT as Parameters<Client['workflow']['start']>[1]['workflowRunTimeout'],
+        workflowRunTimeout: WORKFLOW_RUN_TIMEOUT,
         args: [
           {
             snapshotId,

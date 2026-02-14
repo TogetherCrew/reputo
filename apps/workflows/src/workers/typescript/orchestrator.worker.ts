@@ -8,6 +8,7 @@ import {
   createDependencyResolverActivities,
 } from '../../activities/orchestrator/index.js';
 import config from '../../config/index.js';
+import { ORCHESTRATOR_MAX_CONCURRENT_ACTIVITIES } from '../../shared/constants/index.js';
 import { logger } from '../../shared/utils/index.js';
 
 const require = createRequire(import.meta.url);
@@ -40,6 +41,7 @@ async function run(): Promise<void> {
     connection,
     namespace: config.temporal.namespace,
     taskQueue: config.temporal.orchestratorTaskQueue,
+    maxConcurrentActivityTaskExecutions: ORCHESTRATOR_MAX_CONCURRENT_ACTIVITIES,
 
     workflowsPath: require.resolve('../../workflows/orchestrator.workflow'),
     activities: {

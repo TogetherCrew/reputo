@@ -6,6 +6,7 @@ import {
   ALGORITHM_LIBRARY_TIMEOUT,
   DB_ACTIVITY_TIMEOUT,
   DEPENDENCY_RESOLUTION_TIMEOUT,
+  HEARTBEAT_TIMEOUT,
 } from '../shared/constants/index.js';
 import { UnsupportedAlgorithmError } from '../shared/errors/index.js';
 import type {
@@ -111,38 +112,43 @@ export async function OrchestratorWorkflow(input: string | OrchestratorWorkflowI
   const { resolveDependency } = workflow.proxyActivities<DependencyResolverActivities>({
     taskQueue: orchestratorTaskQueue,
     startToCloseTimeout: DEPENDENCY_RESOLUTION_TIMEOUT,
+    heartbeatTimeout: HEARTBEAT_TIMEOUT,
     retry: { maximumAttempts: ACTIVITY_MAX_ATTEMPTS },
   });
 
   const typescriptAlgorithmActivities = workflow.proxyActivities<TypescriptAlgorithmDispatcherActivities>({
     taskQueue: algorithmTaskQueue,
     startToCloseTimeout: ALGORITHM_EXECUTION_TIMEOUT,
+    heartbeatTimeout: HEARTBEAT_TIMEOUT,
     retry: { maximumAttempts: ACTIVITY_MAX_ATTEMPTS },
   });
 
+  // Resolve all dependencies in parallel (they are independent)
   if (definition.dependencies && definition.dependencies.length > 0) {
-    workflow.log.info('Resolving algorithm dependencies', {
+    workflow.log.info('Resolving algorithm dependencies in parallel', {
       snapshotId,
       algorithmKey,
       dependencies: definition.dependencies.map((d) => d.key),
     });
 
-    for (const dependency of definition.dependencies) {
-      workflow.log.info('Resolving dependency', {
-        dependencyKey: dependency.key,
-        snapshotId,
-      });
+    await Promise.all(
+      definition.dependencies.map(async (dependency) => {
+        workflow.log.info('Resolving dependency', {
+          dependencyKey: dependency.key,
+          snapshotId,
+        });
 
-      await resolveDependency({
-        dependencyKey: dependency.key as DependencyKey,
-        snapshotId,
-      });
+        await resolveDependency({
+          dependencyKey: dependency.key as DependencyKey,
+          snapshotId,
+        });
 
-      workflow.log.info('Dependency resolved', {
-        dependencyKey: dependency.key,
-        snapshotId,
-      });
-    }
+        workflow.log.info('Dependency resolved', {
+          dependencyKey: dependency.key,
+          snapshotId,
+        });
+      }),
+    );
 
     workflow.log.info('All dependencies resolved', {
       snapshotId,
@@ -184,26 +190,32 @@ export async function OrchestratorWorkflow(input: string | OrchestratorWorkflowI
 
     workflow.log.info('Snapshot marked as completed', { snapshotId });
   } catch (error) {
-    const err = error as Error;
+    const isCancelled = workflow.isCancellation(error);
+    const status = isCancelled ? 'cancelled' : 'failed';
+    const message = isCancelled ? 'Workflow was cancelled' : (error as Error).message || 'Unknown error';
+
     workflow.log.error('Algorithm execution failed', {
       snapshotId,
-      error: err.message,
-      stack: err.stack,
+      cancelled: isCancelled,
+      error: message,
     });
 
-    await updateSnapshot({
-      snapshotId,
-      status: 'failed',
-      temporal: {
-        workflowId: workflowInfo.workflowId,
-        runId: workflowInfo.runId,
-        taskQueue: orchestratorTaskQueue,
-        algorithmTaskQueue,
-      },
-      error: { message: err.message || 'Unknown error' },
+    // Use a non-cancellable scope so the status update completes even during cancellation
+    await workflow.CancellationScope.nonCancellable(async () => {
+      await updateSnapshot({
+        snapshotId,
+        status,
+        temporal: {
+          workflowId: workflowInfo.workflowId,
+          runId: workflowInfo.runId,
+          taskQueue: orchestratorTaskQueue,
+          algorithmTaskQueue,
+        },
+        error: { message },
+      });
     });
 
-    workflow.log.info('Snapshot marked as failed', { snapshotId });
+    workflow.log.info(`Snapshot marked as ${status}`, { snapshotId });
     throw error;
   }
 }

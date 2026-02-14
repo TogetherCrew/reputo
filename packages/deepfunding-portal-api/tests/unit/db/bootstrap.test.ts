@@ -10,7 +10,7 @@ describe('Database Bootstrap', () => {
   });
 
   afterEach(() => {
-    cleanupTestDb();
+    cleanupTestDb(db);
   });
 
   describe('BOOTSTRAP_SQL', () => {

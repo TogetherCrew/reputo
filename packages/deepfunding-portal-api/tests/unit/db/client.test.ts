@@ -1,15 +1,21 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { closeDb, closeDeepFundingDb, createNewDeepFundingDb, getDb, initializeDb } from '../../../src/db/client.js';
+import { closeDbInstance, createDb } from '../../../src/db/client.js';
+import type { DeepFundingPortalDb } from '../../../src/shared/types/db.js';
 import { cleanupTestDb, tableExists } from '../../utils/db-helpers.js';
 
 describe('Database Client', () => {
+  let db: DeepFundingPortalDb | null = null;
+
   afterEach(() => {
-    cleanupTestDb();
+    if (db) {
+      cleanupTestDb(db);
+      db = null;
+    }
   });
 
-  describe('initializeDb', () => {
+  describe('createDb', () => {
     it('should create database instance', () => {
-      const db = initializeDb({ path: ':memory:' });
+      db = createDb({ path: ':memory:' });
 
       expect(db).toBeDefined();
       expect(db.sqlite).toBeDefined();
@@ -17,7 +23,7 @@ describe('Database Client', () => {
     });
 
     it('should initialize database with schema', () => {
-      const db = initializeDb({ path: ':memory:' });
+      db = createDb({ path: ':memory:' });
 
       expect(tableExists(db, 'rounds')).toBe(true);
       expect(tableExists(db, 'pools')).toBe(true);
@@ -29,83 +35,27 @@ describe('Database Client', () => {
       expect(tableExists(db, 'comment_votes')).toBe(true);
     });
 
-    it('should close existing connection when re-initializing', () => {
-      const db1 = initializeDb({ path: ':memory:' });
-      const closeSpy = vi.spyOn(db1.sqlite, 'close');
+    it('should return independent instances', () => {
+      const db1 = createDb({ path: ':memory:' });
+      const db2 = createDb({ path: ':memory:' });
 
-      const db2 = initializeDb({ path: ':memory:' });
-
-      expect(closeSpy).toHaveBeenCalled();
       expect(db2).toBeDefined();
       expect(db2).not.toBe(db1);
+      closeDbInstance(db1);
+      closeDbInstance(db2);
+      db = null;
     });
   });
 
-  describe('getDb', () => {
-    it('should return singleton database instance', () => {
-      const db1 = initializeDb({ path: ':memory:' });
-      const db2 = getDb();
-
-      expect(db2).toBe(db1);
-    });
-
-    it('should throw error when database not initialized', () => {
-      cleanupTestDb();
-
-      expect(() => {
-        getDb();
-      }).toThrow('Database has not been initialized');
-    });
-  });
-
-  describe('closeDb', () => {
-    it('should close database connection and reset singleton', () => {
-      const db = initializeDb({ path: ':memory:' });
-      const closeSpy = vi.spyOn(db.sqlite, 'close');
-
-      closeDb();
-
-      expect(closeSpy).toHaveBeenCalled();
-      expect(() => {
-        getDb();
-      }).toThrow('Database has not been initialized');
-    });
-
-    it('should handle closing when database not initialized', () => {
-      cleanupTestDb();
-
-      expect(() => {
-        closeDb();
-      }).not.toThrow();
-    });
-  });
-
-  describe('createNewDeepFundingDb (deprecated)', () => {
-    it('should create a new database instance', () => {
-      const db = createNewDeepFundingDb({ path: ':memory:' });
-
-      expect(db).toBeDefined();
-      expect(db.sqlite).toBeDefined();
-      expect(db.drizzle).toBeDefined();
-    });
-
-    it('should initialize database with schema', () => {
-      const db = createNewDeepFundingDb({ path: ':memory:' });
-
-      expect(tableExists(db, 'rounds')).toBe(true);
-      expect(tableExists(db, 'pools')).toBe(true);
-      expect(tableExists(db, 'proposals')).toBe(true);
-    });
-  });
-
-  describe('closeDeepFundingDb (deprecated)', () => {
+  describe('closeDbInstance', () => {
     it('should close database connection', () => {
-      const db = createNewDeepFundingDb({ path: ':memory:' });
+      db = createDb({ path: ':memory:' });
       const closeSpy = vi.spyOn(db.sqlite, 'close');
 
-      closeDeepFundingDb(db);
+      closeDbInstance(db);
 
       expect(closeSpy).toHaveBeenCalled();
+      db = null;
     });
   });
 });
