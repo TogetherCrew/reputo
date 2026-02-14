@@ -73,7 +73,10 @@ export function createDbActivities(): DbActivities {
       }
 
       if (input.error) {
-        updateData.error = input.error;
+        updateData.error = {
+          ...input.error,
+          timestamp: new Date().toISOString(),
+        };
       }
 
       const result = await SnapshotModel.findByIdAndUpdate(input.snapshotId, { $set: updateData }, { new: true })

@@ -1,6 +1,7 @@
 import * as workflow from '@temporalio/workflow';
 
 import {
+  ACTIVITY_MAX_ATTEMPTS,
   ALGORITHM_EXECUTION_TIMEOUT,
   ALGORITHM_LIBRARY_TIMEOUT,
   DB_ACTIVITY_TIMEOUT,
@@ -23,10 +24,12 @@ import {
 
 const { getSnapshot, updateSnapshot } = workflow.proxyActivities<DbActivities>({
   startToCloseTimeout: DB_ACTIVITY_TIMEOUT,
+  retry: { maximumAttempts: ACTIVITY_MAX_ATTEMPTS },
 });
 
 const { getAlgorithmDefinition } = workflow.proxyActivities<AlgorithmLibraryActivities>({
   startToCloseTimeout: ALGORITHM_LIBRARY_TIMEOUT,
+  retry: { maximumAttempts: ACTIVITY_MAX_ATTEMPTS },
 });
 
 export async function OrchestratorWorkflow(input: string | OrchestratorWorkflowInput): Promise<void> {
@@ -69,10 +72,7 @@ export async function OrchestratorWorkflow(input: string | OrchestratorWorkflowI
         runId: workflowInfo.runId,
         taskQueue: orchestratorTaskQueue,
       },
-      error: {
-        message,
-        timestamp: Date.now(),
-      },
+      error: { message },
     });
 
     throw new Error(message);
@@ -111,11 +111,13 @@ export async function OrchestratorWorkflow(input: string | OrchestratorWorkflowI
   const { resolveDependency } = workflow.proxyActivities<DependencyResolverActivities>({
     taskQueue: orchestratorTaskQueue,
     startToCloseTimeout: DEPENDENCY_RESOLUTION_TIMEOUT,
+    retry: { maximumAttempts: ACTIVITY_MAX_ATTEMPTS },
   });
 
   const typescriptAlgorithmActivities = workflow.proxyActivities<TypescriptAlgorithmDispatcherActivities>({
     taskQueue: algorithmTaskQueue,
     startToCloseTimeout: ALGORITHM_EXECUTION_TIMEOUT,
+    retry: { maximumAttempts: ACTIVITY_MAX_ATTEMPTS },
   });
 
   if (definition.dependencies && definition.dependencies.length > 0) {
@@ -198,10 +200,7 @@ export async function OrchestratorWorkflow(input: string | OrchestratorWorkflowI
         taskQueue: orchestratorTaskQueue,
         algorithmTaskQueue,
       },
-      error: {
-        message: err.message || 'Unknown error',
-        timestamp: Date.now(),
-      },
+      error: { message: err.message || 'Unknown error' },
     });
 
     workflow.log.info('Snapshot marked as failed', { snapshotId });

@@ -120,6 +120,9 @@ importers:
       '@reputo/storage':
         specifier: workspace:*
         version: link:../../packages/storage
+      '@reputo/workflows':
+        specifier: workspace:*
+        version: file:apps/workflows
       '@scalar/nestjs-api-reference':
         specifier: ^1.0.5
         version: 1.0.7
@@ -2968,6 +2971,21 @@ packages:
 
   '@radix-ui/rect@1.1.1':
     resolution: {integrity: sha512-HPwpGIzkl28mWyZqG52jiqDJ12waP11Pa1lGoiyUkIEuMLBP0oeK/C89esbXrxsky5we7dfd8U58nm0SgAWpVw==}
+
+  '@reputo/database@file:packages/database':
+    resolution: {directory: packages/database, type: directory}
+
+  '@reputo/deepfunding-portal-api@file:packages/deepfunding-portal-api':
+    resolution: {directory: packages/deepfunding-portal-api, type: directory}
+
+  '@reputo/reputation-algorithms@file:packages/reputation-algorithms':
+    resolution: {directory: packages/reputation-algorithms, type: directory}
+
+  '@reputo/storage@file:packages/storage':
+    resolution: {directory: packages/storage, type: directory}
+
+  '@reputo/workflows@file:apps/workflows':
+    resolution: {directory: apps/workflows, type: directory}
 
   '@rollup/pluginutils@5.3.0':
     resolution: {integrity: sha512-5EdhGZtnu3V88ces7s53hhfK5KSASnJZv8Lulpc04cWO3REESroJXg73DFsOmgbU2BhwV0E20bu2IDZb3VKW4Q==}
@@ -12462,6 +12480,130 @@ snapshots:
       '@types/react-dom': 19.2.3(@types/react@19.2.6)
 
   '@radix-ui/rect@1.1.1': {}
+
+  '@reputo/database@file:packages/database':
+    dependencies:
+      mongoose: 8.20.0
+    transitivePeerDependencies:
+      - '@aws-sdk/credential-providers'
+      - '@mongodb-js/zstd'
+      - gcp-metadata
+      - kerberos
+      - mongodb-client-encryption
+      - snappy
+      - socks
+      - supports-color
+
+  '@reputo/deepfunding-portal-api@file:packages/deepfunding-portal-api(@types/better-sqlite3@7.6.13)':
+    dependencies:
+      '@aws-sdk/client-s3': 3.933.0
+      '@reputo/storage': file:packages/storage
+      better-sqlite3: 11.10.0
+      drizzle-orm: 0.44.7(@types/better-sqlite3@7.6.13)(better-sqlite3@11.10.0)
+      js-yaml: 4.1.1
+      p-limit: 6.2.0
+      pino: 9.14.0
+      undici: 7.16.0
+    transitivePeerDependencies:
+      - '@aws-sdk/client-rds-data'
+      - '@cloudflare/workers-types'
+      - '@electric-sql/pglite'
+      - '@libsql/client'
+      - '@libsql/client-wasm'
+      - '@neondatabase/serverless'
+      - '@op-engineering/op-sqlite'
+      - '@opentelemetry/api'
+      - '@planetscale/database'
+      - '@prisma/client'
+      - '@tidbcloud/serverless'
+      - '@types/better-sqlite3'
+      - '@types/pg'
+      - '@types/sql.js'
+      - '@upstash/redis'
+      - '@vercel/postgres'
+      - '@xata.io/client'
+      - aws-crt
+      - bun-types
+      - expo-sqlite
+      - gel
+      - knex
+      - kysely
+      - mysql2
+      - pg
+      - postgres
+      - prisma
+      - sql.js
+      - sqlite3
+
+  '@reputo/reputation-algorithms@file:packages/reputation-algorithms': {}
+
+  '@reputo/storage@file:packages/storage':
+    dependencies:
+      '@aws-sdk/client-s3': 3.933.0
+      '@aws-sdk/s3-request-presigner': 3.933.0
+    transitivePeerDependencies:
+      - aws-crt
+
+  '@reputo/workflows@file:apps/workflows':
+    dependencies:
+      '@aws-sdk/client-s3': 3.933.0
+      '@reputo/database': file:packages/database
+      '@reputo/deepfunding-portal-api': file:packages/deepfunding-portal-api(@types/better-sqlite3@7.6.13)
+      '@reputo/reputation-algorithms': file:packages/reputation-algorithms
+      '@reputo/storage': file:packages/storage
+      '@temporalio/activity': 1.13.2
+      '@temporalio/client': 1.13.2
+      '@temporalio/worker': 1.13.2
+      '@temporalio/workflow': 1.13.2
+      csv-parse: 5.6.0
+      csv-stringify: 6.6.0
+      dotenv: 16.4.7
+      joi: 17.13.3
+      mongoose: 8.20.0
+      pino: 9.14.0
+      pino-pretty: 13.1.2
+    transitivePeerDependencies:
+      - '@aws-sdk/client-rds-data'
+      - '@aws-sdk/credential-providers'
+      - '@cloudflare/workers-types'
+      - '@electric-sql/pglite'
+      - '@libsql/client'
+      - '@libsql/client-wasm'
+      - '@mongodb-js/zstd'
+      - '@neondatabase/serverless'
+      - '@op-engineering/op-sqlite'
+      - '@opentelemetry/api'
+      - '@planetscale/database'
+      - '@prisma/client'
+      - '@swc/helpers'
+      - '@tidbcloud/serverless'
+      - '@types/better-sqlite3'
+      - '@types/pg'
+      - '@types/sql.js'
+      - '@upstash/redis'
+      - '@vercel/postgres'
+      - '@xata.io/client'
+      - aws-crt
+      - bun-types
+      - esbuild
+      - expo-sqlite
+      - gcp-metadata
+      - gel
+      - kerberos
+      - knex
+      - kysely
+      - mongodb-client-encryption
+      - mysql2
+      - pg
+      - postgres
+      - prisma
+      - snappy
+      - socks
+      - sql.js
+      - sqlite3
+      - supports-color
+      - uglify-js
+      - webpack-cli
 
   '@rollup/pluginutils@5.3.0(rollup@4.53.2)':
     dependencies:

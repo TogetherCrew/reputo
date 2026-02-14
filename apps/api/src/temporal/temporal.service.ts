@@ -1,6 +1,7 @@
 import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { Snapshot } from '@reputo/database';
+import { WORKFLOW_RUN_TIMEOUT } from '@reputo/workflows/shared/constants';
 import { Client, Connection } from '@temporalio/client';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 
@@ -101,6 +102,7 @@ export class TemporalService implements OnModuleInit, OnModuleDestroy {
       await this.client.workflow.start('OrchestratorWorkflow', {
         taskQueue: orchestratorTaskQueue,
         workflowId,
+        workflowRunTimeout: WORKFLOW_RUN_TIMEOUT as Parameters<Client['workflow']['start']>[1]['workflowRunTimeout'],
         args: [
           {
             snapshotId,
