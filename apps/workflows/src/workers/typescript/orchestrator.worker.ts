@@ -8,7 +8,10 @@ import {
   createDependencyResolverActivities,
 } from '../../activities/orchestrator/index.js';
 import config from '../../config/index.js';
-import { ORCHESTRATOR_MAX_CONCURRENT_ACTIVITIES } from '../../shared/constants/index.js';
+import {
+  ORCHESTRATOR_MAX_CONCURRENT_ACTIVITIES,
+  ORCHESTRATOR_MAX_CONCURRENT_WORKFLOWS,
+} from '../../shared/constants/index.js';
 import { logger } from '../../shared/utils/index.js';
 
 const require = createRequire(import.meta.url);
@@ -41,6 +44,7 @@ async function run(): Promise<void> {
     connection,
     namespace: config.temporal.namespace,
     taskQueue: config.temporal.orchestratorTaskQueue,
+    maxConcurrentWorkflowTaskExecutions: ORCHESTRATOR_MAX_CONCURRENT_WORKFLOWS,
     maxConcurrentActivityTaskExecutions: ORCHESTRATOR_MAX_CONCURRENT_ACTIVITIES,
 
     workflowsPath: require.resolve('../../workflows/orchestrator.workflow'),
@@ -60,15 +64,22 @@ async function run(): Promise<void> {
     logger.info('Shutting down orchestrator worker...');
 
     try {
-      worker.shutdown();
+      try {
+        await worker.shutdown();
+      } catch (shutdownErr) {
+        const msg = shutdownErr instanceof Error ? shutdownErr.message : String(shutdownErr);
+        if (msg.includes('STOPPED') || msg.includes('Not running')) {
+          logger.info('Worker already stopped');
+        } else {
+          throw shutdownErr;
+        }
+      }
       logger.info('Worker shutdown initiated');
 
       await disconnect();
       logger.info('MongoDB connection closed');
 
-      await connection.close();
-      logger.info('Temporal connection closed');
-
+      // Connection is still held by the worker; process exit will close it.
       logger.info('Worker shut down successfully');
       process.exit(0);
     } catch (error) {
@@ -87,6 +98,6 @@ async function run(): Promise<void> {
 }
 
 run().catch((error) => {
-  console.error('Fatal error starting orchestrator worker:', error);
+  logger.error({ err: error }, 'Fatal error starting orchestrator worker');
   process.exit(1);
 });

@@ -6,12 +6,7 @@ export const DEPENDENCY_RESOLUTION_TIMEOUT = '30 minutes';
 export const WORKFLOW_RUN_TIMEOUT = '2 hours';
 export const HEARTBEAT_TIMEOUT = '2 minutes';
 export const ACTIVITY_MAX_ATTEMPTS = 3;
-
-/** How many items to process between heartbeat calls inside algorithm loops. */
 export const HEARTBEAT_INTERVAL = 100;
-
-/** Max concurrent activity executions for the orchestrator worker. */
-export const ORCHESTRATOR_MAX_CONCURRENT_ACTIVITIES = 1;
-
-/** Max concurrent activity executions for the TypeScript algorithm worker. */
-export const ALGORITHM_MAX_CONCURRENT_ACTIVITIES = 1;
+export const ORCHESTRATOR_MAX_CONCURRENT_WORKFLOWS = 5;
+export const ORCHESTRATOR_MAX_CONCURRENT_ACTIVITIES = 5;
+export const ALGORITHM_MAX_CONCURRENT_ACTIVITIES = 5;
