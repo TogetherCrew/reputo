@@ -9,8 +9,8 @@ import {
 } from '../../activities/orchestrator/index.js';
 import config from '../../config/index.js';
 import {
-  ORCHESTRATOR_MAX_CONCURRENT_ACTIVITIES,
-  ORCHESTRATOR_MAX_CONCURRENT_WORKFLOWS,
+  ORCHESTRATOR_WORKER_MAX_CONCURRENT_ACTIVITIES,
+  ORCHESTRATOR_WORKER_MAX_CONCURRENT_WORKFLOWS,
 } from '../../shared/constants/index.js';
 import { logger } from '../../shared/utils/index.js';
 
@@ -44,8 +44,8 @@ async function run(): Promise<void> {
     connection,
     namespace: config.temporal.namespace,
     taskQueue: config.temporal.orchestratorTaskQueue,
-    maxConcurrentWorkflowTaskExecutions: ORCHESTRATOR_MAX_CONCURRENT_WORKFLOWS,
-    maxConcurrentActivityTaskExecutions: ORCHESTRATOR_MAX_CONCURRENT_ACTIVITIES,
+    maxConcurrentWorkflowTaskExecutions: ORCHESTRATOR_WORKER_MAX_CONCURRENT_WORKFLOWS,
+    maxConcurrentActivityTaskExecutions: ORCHESTRATOR_WORKER_MAX_CONCURRENT_ACTIVITIES,
 
     workflowsPath: require.resolve('../../workflows/orchestrator.workflow'),
     activities: {
