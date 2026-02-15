@@ -71,7 +71,6 @@ export async function computeProposalEngagement(snapshot: Snapshot, storage: Sto
       const timeWeight = computeTimeWeightFromString(proposal.createdAt, now, {
         engagementWindowMonths: inputs.engagementWindowMonths,
         monthlyDecayRatePercent: inputs.monthlyDecayRatePercent,
-        decayBucketSizeMonths: inputs.decayBucketSizeMonths,
       });
 
       const score = computeProposalScore({

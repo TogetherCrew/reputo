@@ -8,7 +8,6 @@ const REQUIRED_KEYS: (keyof ProposalEngagementParams)[] = [
   'unfundedPenaltyWeight',
   'engagementWindowMonths',
   'monthlyDecayRatePercent',
-  'decayBucketSizeMonths',
 ];
 
 const KEY_MAP: Record<string, keyof ProposalEngagementParams> = {
@@ -16,7 +15,6 @@ const KEY_MAP: Record<string, keyof ProposalEngagementParams> = {
   unfunded_penalty_weight: 'unfundedPenaltyWeight',
   engagement_window_months: 'engagementWindowMonths',
   monthly_decay_rate_percent: 'monthlyDecayRatePercent',
-  decay_bucket_size_months: 'decayBucketSizeMonths',
 };
 
 export function extractInputs(inputs: AlgorithmPresetFrozen['inputs']): ProposalEngagementParams {

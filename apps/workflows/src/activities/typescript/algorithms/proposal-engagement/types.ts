@@ -3,7 +3,6 @@ export interface ProposalEngagementParams {
   unfundedPenaltyWeight: number;
   engagementWindowMonths: number;
   monthlyDecayRatePercent: number;
-  decayBucketSizeMonths: number;
 }
 
 export interface ProposalEngagementResult {

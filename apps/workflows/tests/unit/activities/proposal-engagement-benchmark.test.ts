@@ -8,13 +8,19 @@ import type { ProposalBenchmarkRecord } from '../../../src/activities/typescript
 const mockProposal = {
   id: 10,
   roundId: 31,
+  poolId: 1,
   proposerId: 42,
   title: 'Test Proposal',
-  teamMembers: '[100, 101]',
+  content: '',
+  link: '',
+  featureImage: '',
+  requestedAmount: '0',
+  awardedAmount: '0',
   isAwarded: true,
   isCompleted: true,
   createdAt: '2026-01-01T00:00:00.000Z',
   updatedAt: '2026-01-01T00:00:00.000Z',
+  teamMembers: '[100, 101]',
   rawJson: '{}',
 };
 
@@ -56,7 +62,6 @@ const mockParams = {
   unfundedPenaltyWeight: 0.5,
   engagementWindowMonths: 24,
   monthlyDecayRatePercent: 5,
-  decayBucketSizeMonths: 3,
 };
 
 describe('proposal-engagement benchmark', () => {
@@ -213,8 +218,12 @@ describe('proposal-engagement benchmark', () => {
       });
 
       expect(result.users).toHaveLength(1);
-      expect(result.users[0]!.user_id).toBe(35);
-      expect(result.users[0]!.proposal_engagement).toBe(0.8);
+      const user = result.users[0];
+      expect(user).toBeDefined();
+      if (user) {
+        expect(user.user_id).toBe(35);
+        expect(user.proposal_engagement).toBe(0.8);
+      }
     });
 
     it('populates per-user accumulator sums and proposal count', () => {
@@ -247,10 +256,13 @@ describe('proposal-engagement benchmark', () => {
       });
 
       expect(result.users).toHaveLength(1);
-      const user = result.users[0]!;
-      expect(user.positive_sum).toBe(0.5);
-      expect(user.negative_sum).toBe(0.2);
-      expect(user.proposal_count).toBe(2);
+      const user = result.users[0];
+      expect(user).toBeDefined();
+      if (user) {
+        expect(user.positive_sum).toBe(0.5);
+        expect(user.negative_sum).toBe(0.2);
+        expect(user.proposal_count).toBe(2);
+      }
     });
 
     it('tracks proposals_skipped_unsupported_round in metrics', () => {

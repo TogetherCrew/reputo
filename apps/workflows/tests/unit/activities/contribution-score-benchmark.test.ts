@@ -52,7 +52,6 @@ const mockParams = {
   projectOwnerUpvoteBonusMultiplier: 1.2,
   engagementWindowMonths: 12,
   monthlyDecayRatePercent: 10,
-  decayBucketSizeMonths: 1,
 };
 
 describe('contribution-score benchmark', () => {

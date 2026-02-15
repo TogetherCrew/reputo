@@ -82,7 +82,6 @@ export async function computeContributionScore(snapshot: Snapshot, storage: Stor
       const timeWeight = computeTimeWeightFromString(comment.createdAt, now, {
         engagementWindowMonths: params.engagementWindowMonths,
         monthlyDecayRatePercent: params.monthlyDecayRatePercent,
-        decayBucketSizeMonths: params.decayBucketSizeMonths,
       });
 
       const selfInteraction = detectSelfInteraction(comment, params.selfInteractionPenaltyFactor, {
