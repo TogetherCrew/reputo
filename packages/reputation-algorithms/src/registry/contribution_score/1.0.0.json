@@ -2,8 +2,8 @@
     "key": "contribution_score",
     "name": "Contribution Score",
     "category": "Activity",
-    "summary": "Scores how much value a user adds through comments, boosting community-endorsed contributions and reducing self-serving behavior. Recent, upvoted comments count more than old or self-related ones.",
-    "description": "**How it works (simple):**\n- Each comment starts with a **base score**: `commentBaseScore`.\n- Votes adjust it:\n  - Upvotes add points: `commentUpvoteWeight`\n  - Downvotes subtract points: `commentDownvoteWeight`\n- Self-serving activity is discounted with a **penalty factor**: `selfInteractionPenaltyFactor`\n  - commenting on your own project\n  - replying to yourself\n- A **time decay policy** makes recent comments matter more:\n  - `engagementWindowMonths` (older than this → weight 0)\n  - `monthlyDecayRatePercent` (drops each month bucket)\n- Optional bonus: if the **project owner upvoted** the comment, apply `projectOwnerUpvoteBonusMultiplier`.\n\n**Inputs:**\n- No manual file upload.\n- Data is fetched from DeepFunding Portal APIs.\n\n**Output:**\n- Per-user contribution engagement score (higher = more valuable, recent, community-endorsed commenting).",
+    "summary": "Scores how much value a user adds through comments: recent, upvoted comments count more; self-serving or downvoted ones count less. Optional bonus when the project owner upvotes.",
+    "description": "**How it works:**\n- Each comment gets a **base score** (`comment_base_score`). Votes adjust it: upvotes add `comment_upvote_weight`, downvotes subtract `comment_downvote_weight`.\n- **Self-serving** activity (own project, replying to yourself) is discounted by `self_interaction_penalty_factor` (0 = full penalty, 1 = no penalty).\n- **Time decay**: `engagement_window_months` (comments older than this → weight 0) and `monthly_decay_rate_percent` (weight drops each month).\n- Optional **project-owner upvote bonus**: if the project owner upvoted the comment, score is multiplied by `project_owner_upvote_bonus_multiplier`.\n\n**Inputs:**\n- No manual file upload. Data is fetched from DeepFunding Portal APIs.\n\n**Output:**\n- Per-user contribution score (CSV: `user_id`, `contribution_score`) plus an optional JSON details file with per-comment breakdown for debugging.",
     "version": "1.0.0",
     "inputs": [
         {
@@ -27,9 +27,7 @@
             "default": 1,
             "step": 0.1,
             "required": true,
-            "uiHint": {
-                "widget": "slider"
-            }
+            "uiHint": { "widget": "slider" }
         },
         {
             "key": "comment_downvote_weight",
@@ -41,65 +39,52 @@
             "default": 1,
             "step": 0.1,
             "required": true,
-            "uiHint": {
-                "widget": "slider"
-            }
+            "uiHint": { "widget": "slider" }
         },
         {
             "key": "self_interaction_penalty_factor",
             "label": "Self Interaction Penalty Factor",
-            "description": "Penalty multiplier applied when a comment is self-related (own project) and/or a same-user reply chain.",
+            "description": "Multiplier for self-related comments (own project or same-user reply). 0 = maximum penalty, 1 = no penalty.",
             "type": "number",
             "min": 0,
             "max": 1,
-            "default": 1,
+            "default": 0,
             "step": 0.1,
-            "uiHint": {
-                "widget": "slider"
-            },
+            "uiHint": { "widget": "slider" },
             "required": true
         },
         {
             "key": "project_owner_upvote_bonus_multiplier",
             "label": "Project Owner Upvote Bonus Multiplier",
-            "description": "Bonus multiplier applied only if the project owner upvoted the comment.",
+            "description": "Bonus multiplier applied when the project owner upvoted the comment (1 = no bonus).",
             "type": "number",
             "min": 1,
             "max": 10,
-            "default": 1.2,
+            "default": 1,
             "step": 0.1,
             "required": true
         },
         {
             "key": "engagement_window_months",
             "label": "Engagement Window (Months)",
-            "description": "Engagement window in months; items older than this contribute 0.",
+            "description": "Comments older than this many months contribute 0. Must be between 1 and 60.",
             "type": "integer",
             "min": 1,
-            "max": 60,
-            "default": 12,
+            "max": 72,
+            "default": 24,
             "step": 1,
             "required": true
         },
         {
             "key": "monthly_decay_rate_percent",
             "label": "Monthly Decay Rate (%)",
-            "description": "Decay rate per month bucket (%). Each month reduces weight by this percentage.",
+            "description": "Decay per month bucket (0 = no decay, 100 = full decay). Each month reduces weight by this percentage.",
             "type": "integer",
             "min": 0,
             "max": 100,
-            "default": 10,
+            "default": 0,
             "step": 1,
             "required": true
-        },
-        {
-            "key": "decay_bucket_size_months",
-            "label": "Decay Bucket Size (Months)",
-            "description": "Fixed bucket size used for time decay calculations.",
-            "type": "integer",
-            "default": 1,
-            "step": 1,
-            "required": false
         }
     ],
     "dependencies": [{ "key": "deepfunding-portal-api" }],
@@ -107,7 +92,7 @@
         {
             "key": "contribution_score",
             "label": "Contribution Score by User",
-            "description": "Contribution score for each user",
+            "description": "Per-user CSV with columns: user_id (DeepFunding user ID), contribution_score (numeric score).",
             "type": "csv",
             "csv": {
                 "hasHeader": true,
@@ -129,7 +114,7 @@
         {
             "key": "contribution_score_details",
             "label": "Contribution Score Details (JSON)",
-            "description": "Full per-user contribution score breakdown including per-comment scoring components and intermediate values.",
+            "description": "Full per-user breakdown including per-comment scoring components and intermediate values. For debugging and auditing.",
             "type": "json"
         }
     ],
