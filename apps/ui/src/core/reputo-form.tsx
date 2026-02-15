@@ -171,12 +171,29 @@ function getDefaultValues(
 ): Record<string, any> {
   const defaults: Record<string, any> = {}
 
+  const isNumericType = (type: unknown) =>
+    type === "number" || type === "integer" || type === "slider"
+
+  const normalizeNumeric = (value: unknown): unknown => {
+    if (typeof value !== "string") return value
+    const trimmed = value.trim()
+    if (trimmed === "") return ""
+    const normalized = trimmed.replace(",", ".")
+    const n = Number(normalized)
+    return Number.isFinite(n) ? n : value
+  }
+
   schema.inputs.forEach((input) => {
     if (userDefaults[input.key] !== undefined) {
-      defaults[input.key] = userDefaults[input.key]
+      const raw = userDefaults[input.key]
+      defaults[input.key] = isNumericType(input.type)
+        ? normalizeNumeric(raw)
+        : raw
     } else if ("default" in input && input.default !== undefined) {
       // Use the default value from the input definition
-      defaults[input.key] = input.default
+      defaults[input.key] = isNumericType(input.type)
+        ? normalizeNumeric(input.default)
+        : input.default
     } else {
       // Set type-appropriate defaults
       const isRequired = "required" in input ? input.required !== false : true

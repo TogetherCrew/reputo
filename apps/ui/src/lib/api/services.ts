@@ -113,6 +113,12 @@ export const storageApi = {
     const response = await api.post("/storage/downloads", data)
     return response.data
   },
+  /** Same-origin stream URL for download (avoids new tab; use for triggerDownload). */
+  getStreamUrl: (key: string): string => {
+    const base = api.defaults.baseURL ?? ""
+    const sep = base.endsWith("/") ? "" : "/"
+    return `${base}${sep}storage/stream?key=${encodeURIComponent(key)}`
+  },
   // Verify upload and get metadata
   verify: async (data: {
     key: string

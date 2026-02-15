@@ -5,7 +5,7 @@ import {
   getAlgorithmDefinition,
 } from "@reputo/reputation-algorithms"
 import { AlertCircle } from "lucide-react"
-import { useMemo, useState } from "react"
+import { useMemo, useRef, useState } from "react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import {
   Dialog,
@@ -94,6 +94,7 @@ export function EditPresetDialog({
   const [formErrors, setFormErrors] = useState<
     { field: string; message: string }[]
   >([])
+  const isSubmittingRef = useRef(false)
 
   // Get algorithm from preset
   const algorithm = useMemo(() => {
@@ -166,49 +167,50 @@ export function EditPresetDialog({
 
   const handleSubmit = async (data: Record<string, unknown>) => {
     if (!preset || !algorithm) return
-
+    if (isSubmittingRef.current) return
+    isSubmittingRef.current = true
     setFormErrors([])
 
     try {
-      // Transform form data to UpdateAlgorithmPresetDto format
-      // Key and version come from preset prop, not form data
-      const updateData: UpdateAlgorithmPresetDto = {
-        name: data.name as string | undefined,
-        description: data.description as string | undefined,
-        inputs: algorithm.inputs.map((input, index) => {
-          const value = data[input.key]
+      // Build PATCH payload: only include defined fields (API accepts partial update)
+      const updateData: UpdateAlgorithmPresetDto = {}
 
-          // Get the original key from the full definition
-          const originalKey =
-            fullDefinition?.inputs.find(
-              (defInput) => defInput.label === input.label
-            )?.key ||
-            fullDefinition?.inputs[index]?.key ||
-            input.key
-
-          // Convert File object to filename string
-          let inputValue: unknown
-          if (value instanceof File) {
-            inputValue = ""
-          } else {
-            inputValue = value || ""
-          }
-
-          return {
-            key: originalKey,
-            value: inputValue,
-          }
-        }),
+      if (data.name !== undefined && data.name !== "") {
+        updateData.name = data.name as string
+      }
+      if (data.description !== undefined && data.description !== "") {
+        updateData.description = data.description as string
       }
 
-      await onUpdatePreset(updateData)
+      // Inputs: send full array from form so backend can replace; use preset value when form has no value
+      const inputs = algorithm.inputs.map((input, index) => {
+        const value = data[input.key]
+        const originalKey =
+          fullDefinition?.inputs.find(
+            (defInput) => defInput.label === input.label
+          )?.key ||
+          fullDefinition?.inputs[index]?.key ||
+          input.key
+        let inputValue: unknown
+        if (value instanceof File) {
+          inputValue = ""
+        } else if (value !== undefined && value !== null && value !== "") {
+          inputValue = value
+        } else {
+          const existing = preset.inputs.find((i) => i.key === originalKey)
+          inputValue = existing?.value ?? ""
+        }
+        return { key: originalKey, value: inputValue }
+      })
+      updateData.inputs = inputs
 
-      // Close dialog on success
+      await onUpdatePreset(updateData)
       onClose()
     } catch (err) {
-      // Don't close dialog on error - errors will be displayed
       const parsedErrors = parseBackendError(err)
       setFormErrors(parsedErrors)
+    } finally {
+      isSubmittingRef.current = false
     }
   }
 
@@ -222,7 +224,12 @@ export function EditPresetDialog({
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        if (!open) handleClose()
+      }}
+    >
       <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Edit Preset</DialogTitle>
