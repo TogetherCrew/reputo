@@ -103,13 +103,7 @@ services:
             - traefik.enable=true
             - traefik.http.routers.api.rule=Host(`api.${PULLPREVIEW_PUBLIC_DNS}`)
             - traefik.http.routers.api.entrypoints=web
-            - traefik.http.routers.api.middlewares=api-cors
             - traefik.http.services.api.loadbalancer.server.port=3000
-            - traefik.http.middlewares.api-cors.headers.accessControlAllowMethods=GET,OPTIONS,PUT,POST,DELETE,PATCH
-            - traefik.http.middlewares.api-cors.headers.accessControlAllowOriginList=*
-            - traefik.http.middlewares.api-cors.headers.accessControlAllowHeaders=Content-Type,Authorization,Accept,Origin,X-Requested-With
-            - traefik.http.middlewares.api-cors.headers.accessControlMaxAge=3600
-            # - traefik.http.middlewares.api-cors.headers.accessControlAllowCredentials=true
         environment:
             - NODE_ENV=development
             - PORT=3000

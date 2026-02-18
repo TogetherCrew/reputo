@@ -25,14 +25,16 @@ interface FileDisplayProps {
 
 /**
  * Trigger file download without opening a new tab.
- * Fetches from the same-origin stream URL so the browser receives
+ * Fetches from the stream URL so the browser receives
  * Content-Disposition: attachment and downloads the file.
+ * Uses credentials: "omit" so CORS works when the API responds with
+ * Access-Control-Allow-Origin: * (e.g. preview env); the stream endpoint is public.
  */
 async function triggerDownload(
   streamUrl: string,
   filename?: string
 ): Promise<void> {
-  const res = await fetch(streamUrl, { credentials: "include" })
+  const res = await fetch(streamUrl, { credentials: "omit" })
   if (!res.ok) throw new Error(`Download failed: ${res.status}`)
   const blob = await res.blob()
   const blobUrl = URL.createObjectURL(blob)
