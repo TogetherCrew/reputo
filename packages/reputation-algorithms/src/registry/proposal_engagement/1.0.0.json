@@ -1,88 +1,88 @@
 {
-    "key": "proposal_engagement",
-    "name": "Proposal Engagement",
-    "category": "Engagement",
-    "summary": "Scores a user's impact through proposals by rewarding funded, concluded work with strong community ratings and penalizing unfunded or low-rated proposals. Uses time decay so recent activity matters more.",
-    "description": "**How it works:**\n- Each proposal gets a **community rating** (1–5), normalized to **0..1**.\n- If a proposal is **funded & concluded**, it adds a reward scaled by `funded_concluded_reward_weight`.\n- If a proposal is **unfunded**, it adds a penalty scaled by `unfunded_penalty_weight` (stronger when rating is low).\n- A **time decay** policy makes recent proposals matter more:\n  - `engagement_window_months`: proposals older than this contribute 0.\n  - `monthly_decay_rate_percent`: each month bucket reduces weight by this percentage.\n\n**Inputs:**\n- No manual file upload. Data is fetched from DeepFunding Portal APIs.\n\n**Output:**\n- Per-user proposal engagement score (CSV: `user_id`, `proposal_engagement`) plus an optional JSON details file with per-proposal breakdown for debugging.",
-    "version": "1.0.0",
-    "inputs": [
-        {
-            "key": "funded_concluded_reward_weight",
-            "label": "Funded & Concluded Reward Weight",
-            "description": "Reward strength for funded and concluded proposals. Higher values increase the impact of successful proposals.",
-            "type": "number",
-            "min": 0,
-            "max": 10,
-            "default": 1,
-            "step": 0.1,
-            "uiHint": { "widget": "slider" },
-            "required": true
-        },
-        {
-            "key": "unfunded_penalty_weight",
-            "label": "Unfunded Penalty Weight",
-            "description": "Penalty strength for unfunded proposals. Higher values penalize unfunded or low-rated proposals more.",
-            "type": "number",
-            "min": 0,
-            "max": 10,
-            "default": 1,
-            "step": 0.1,
-            "uiHint": { "widget": "slider" },
-            "required": true
-        },
-        {
-            "key": "engagement_window_months",
-            "label": "Engagement Window (Months)",
-            "description": "Proposals older than this many months contribute 0. Must be between 1 and 60.",
+  "key": "proposal_engagement",
+  "name": "Proposal Engagement",
+  "category": "Engagement",
+  "summary": "Scores a user's impact through proposals by rewarding funded, concluded work with strong community ratings and penalizing unfunded or low-rated proposals. Uses time decay so recent activity matters more.",
+  "description": "**How it works:**\n- Each proposal gets a **community rating** (1–5), normalized to **0..1**.\n- If a proposal is **funded & concluded**, it adds a reward scaled by `funded_concluded_reward_weight`.\n- If a proposal is **unfunded**, it adds a penalty scaled by `unfunded_penalty_weight` (stronger when rating is low).\n- A **time decay** policy makes recent proposals matter more:\n  - `engagement_window_months`: proposals older than this contribute 0.\n  - `monthly_decay_rate_percent`: each month bucket reduces weight by this percentage.\n\n**Inputs:**\n- No manual file upload. Data is fetched from DeepFunding Portal APIs.\n\n**Output:**\n- Per-user proposal engagement score (CSV: `user_id`, `proposal_engagement`) plus an optional JSON details file with per-proposal breakdown for debugging.",
+  "version": "1.0.0",
+  "inputs": [
+    {
+      "key": "funded_concluded_reward_weight",
+      "label": "Funded & Concluded Reward Weight",
+      "description": "Reward strength for funded and concluded proposals. Higher values increase the impact of successful proposals.",
+      "type": "number",
+      "min": 0,
+      "max": 10,
+      "default": 1,
+      "step": 0.1,
+      "uiHint": { "widget": "slider" },
+      "required": true
+    },
+    {
+      "key": "unfunded_penalty_weight",
+      "label": "Unfunded Penalty Weight",
+      "description": "Penalty strength for unfunded proposals. Higher values penalize unfunded or low-rated proposals more.",
+      "type": "number",
+      "min": 0,
+      "max": 10,
+      "default": 1,
+      "step": 0.1,
+      "uiHint": { "widget": "slider" },
+      "required": true
+    },
+    {
+      "key": "engagement_window_months",
+      "label": "Engagement Window (Months)",
+      "description": "Proposals older than this many months contribute 0. Must be between 1 and 72.",
+      "type": "integer",
+      "min": 1,
+      "max": 72,
+      "default": 24,
+      "step": 1,
+      "required": true
+    },
+    {
+      "key": "monthly_decay_rate_percent",
+      "label": "Monthly Decay Rate (%)",
+      "description": "Decay per month bucket (0 = no decay, 100 = full decay). Each month reduces weight by this percentage.",
+      "type": "integer",
+      "min": 0,
+      "max": 100,
+      "default": 0,
+      "step": 1,
+      "required": true
+    }
+  ],
+  "dependencies": [{ "key": "deepfunding-portal-api" }],
+  "outputs": [
+    {
+      "key": "proposal_engagement",
+      "label": "Proposal Engagement by User",
+      "description": "Per-user CSV with columns: user_id (DeepFunding user ID), proposal_engagement (numeric score).",
+      "type": "csv",
+      "csv": {
+        "hasHeader": true,
+        "delimiter": ",",
+        "columns": [
+          {
+            "key": "user_id",
             "type": "integer",
-            "min": 1,
-            "max": 72,
-            "default": 24,
-            "step": 1,
-            "required": true
-        },
-        {
-            "key": "monthly_decay_rate_percent",
-            "label": "Monthly Decay Rate (%)",
-            "description": "Decay per month bucket (0 = no decay, 100 = full decay). Each month reduces proposal weight by this percentage.",
-            "type": "integer",
-            "min": 0,
-            "max": 100,
-            "default": 0,
-            "step": 1,
-            "required": true
-        }
-    ],
-    "dependencies": [{ "key": "deepfunding-portal-api" }],
-    "outputs": [
-        {
+            "description": "DeepFunding user ID"
+          },
+          {
             "key": "proposal_engagement",
-            "label": "Proposal Engagement by User",
-            "description": "Per-user CSV with columns: user_id (DeepFunding user ID), proposal_engagement (numeric score).",
-            "type": "csv",
-            "csv": {
-                "hasHeader": true,
-                "delimiter": ",",
-                "columns": [
-                    {
-                        "key": "user_id",
-                        "type": "integer",
-                        "description": "DeepFunding user ID"
-                    },
-                    {
-                        "key": "proposal_engagement",
-                        "type": "number",
-                        "description": "Proposal engagement score"
-                    }
-                ]
-            }
-        },
-        {
-            "key": "proposal_engagement_details",
-            "label": "Proposal Engagement Details (JSON)",
-            "description": "Full per-user breakdown including per-proposal intermediate values (rewards, penalties, time weights). For debugging and auditing.",
-            "type": "json"
-        }
-    ],
-    "runtime": "typescript"
+            "type": "number",
+            "description": "Proposal engagement score"
+          }
+        ]
+      }
+    },
+    {
+      "key": "proposal_engagement_details",
+      "label": "Proposal Engagement Details (JSON)",
+      "description": "Full per-user breakdown including per-proposal intermediate values (rewards, penalties, time weights). For debugging and auditing.",
+      "type": "json"
+    }
+  ],
+  "runtime": "typescript"
 }
