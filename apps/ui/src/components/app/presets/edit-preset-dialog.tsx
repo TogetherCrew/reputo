@@ -1,9 +1,5 @@
 "use client"
 
-import {
-  type AlgorithmDefinition,
-  getAlgorithmDefinition,
-} from "@reputo/reputation-algorithms"
 import { AlertCircle } from "lucide-react"
 import { useMemo, useRef, useState } from "react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
@@ -83,6 +79,19 @@ function parseBackendError(
   return errors
 }
 
+/** Normalize numeric value: accept "1,2" (locale) and return number 1.2 so UI and API use dot. */
+function normalizeNumericPresetValue(value: unknown): unknown {
+  if (typeof value === "number" && Number.isFinite(value)) return value
+  if (typeof value !== "string") return value
+  const trimmed = value.trim()
+  if (trimmed === "") return value
+  const normalized = trimmed.replace(/,/g, ".")
+  const n = Number(normalized)
+  return Number.isFinite(n) ? n : value
+}
+
+const NUMERIC_INPUT_TYPES = new Set(["number", "integer", "slider"])
+
 export function EditPresetDialog({
   isOpen,
   onClose,
@@ -108,19 +117,7 @@ export function EditPresetDialog({
     return buildSchemaFromAlgorithm(algorithm, preset?.version || "1.0.0")
   }, [algorithm, preset])
 
-  // Fetch full algorithm definition to get original input keys
-  const fullDefinition = useMemo(() => {
-    if (!preset) return null
-    try {
-      const definitionJson = getAlgorithmDefinition({ key: preset.key })
-      return JSON.parse(definitionJson) as AlgorithmDefinition
-    } catch (error) {
-      console.warn(`Could not fetch full definition for ${preset.key}:`, error)
-      return null
-    }
-  }, [preset])
-
-  // Build default values from preset
+  // Build default values from preset (preset.inputs use algorithm input keys)
   const defaultValues = useMemo(() => {
     if (!preset || !algorithm) return {}
 
@@ -131,30 +128,17 @@ export function EditPresetDialog({
       description: preset.description || "",
     }
 
-    // Map preset inputs to form field values.
-    // The form schema uses algorithm input keys (e.g. "votes") directly.
     preset.inputs.forEach((presetInput) => {
-      // Normal path: preset keys should match algorithm input keys.
-      defaults[presetInput.key] = presetInput.value
-
-      // Backwards compatibility fallback: if preset used label-derived keys, try mapping.
-      if (
-        defaults[presetInput.key] == null ||
-        defaults[presetInput.key] === ""
-      ) {
-        const fullDefInput = fullDefinition?.inputs.find(
-          (input) =>
-            input.label &&
-            input.label.toLowerCase().replace(/\s+/g, "_") === presetInput.key
-        )
-        if (fullDefInput?.key) {
-          defaults[fullDefInput.key] = presetInput.value
-        }
-      }
+      const raw = presetInput.value
+      const algoInput = algorithm.inputs.find((i) => i.key === presetInput.key)
+      const isNumeric = algoInput && NUMERIC_INPUT_TYPES.has(algoInput.type)
+      defaults[presetInput.key] = isNumeric
+        ? normalizeNumericPresetValue(raw)
+        : raw
     })
 
     return defaults
-  }, [preset, algorithm, fullDefinition])
+  }, [preset, algorithm])
 
   // Parse backend errors
   const backendErrors = useMemo(() => {
@@ -182,25 +166,25 @@ export function EditPresetDialog({
         updateData.description = data.description as string
       }
 
-      // Inputs: send full array from form so backend can replace; use preset value when form has no value
-      const inputs = algorithm.inputs.map((input, index) => {
+      // Inputs: use algorithm input keys; send form value or fall back to existing preset value.
+      // Normalize numeric values so "1,2" (locale) is sent as number 1.2 for API validity.
+      const inputs = algorithm.inputs.map((input) => {
         const value = data[input.key]
-        const originalKey =
-          fullDefinition?.inputs.find(
-            (defInput) => defInput.label === input.label
-          )?.key ||
-          fullDefinition?.inputs[index]?.key ||
-          input.key
         let inputValue: unknown
         if (value instanceof File) {
           inputValue = ""
         } else if (value !== undefined && value !== null && value !== "") {
-          inputValue = value
+          inputValue = NUMERIC_INPUT_TYPES.has(input.type)
+            ? normalizeNumericPresetValue(value)
+            : value
         } else {
-          const existing = preset.inputs.find((i) => i.key === originalKey)
-          inputValue = existing?.value ?? ""
+          const existing = preset.inputs.find((i) => i.key === input.key)
+          const raw = existing?.value ?? ""
+          inputValue = NUMERIC_INPUT_TYPES.has(input.type)
+            ? normalizeNumericPresetValue(raw)
+            : raw
         }
-        return { key: originalKey, value: inputValue }
+        return { key: input.key, value: inputValue }
       })
       updateData.inputs = inputs
 

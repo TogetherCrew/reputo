@@ -10,12 +10,11 @@ export interface OrchestratorWorkflowInput {
   snapshotId: string;
   /**
    * Task queues used by the orchestrator to route activities to the correct workers.
-   *
-   * Note: Workflow code should not read process env; these must be passed in from the caller (API).
+   * Passed in from the caller (API); workflow code must not read process env.
    */
-  taskQueues?: {
+  taskQueues: {
     /** Task queue for TypeScript algorithm worker activities */
-    typescript?: string;
+    typescript: string;
     /** Task queue for Python algorithm worker activities (reserved for future runtimes) */
     python?: string;
   };

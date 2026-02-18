@@ -73,6 +73,18 @@ function parseBackendErrorMessages(error: unknown): string[] {
   return messages
 }
 
+/** Normalize numeric value: "1,2" (locale) → number 1.2 for API validity. */
+function normalizeNumericPresetValue(value: unknown): unknown {
+  if (typeof value === "number" && Number.isFinite(value)) return value
+  if (typeof value !== "string") return value
+  const trimmed = value.trim()
+  if (trimmed === "") return value
+  const n = Number(trimmed.replace(/,/g, "."))
+  return Number.isFinite(n) ? n : value
+}
+
+const NUMERIC_INPUT_TYPES = new Set(["number", "integer", "slider"])
+
 export function CreatePresetDialog({
   algo,
   onCreatePreset,
@@ -121,7 +133,7 @@ export function CreatePresetDialog({
             fullDefinition?.inputs[index]?.key ||
             input.key
 
-          // Convert File object to filename string
+          // Convert File object to filename string; normalize numeric values so "1,2" → 1.2
           let inputValue: unknown
           if (value instanceof File) {
             // If we ever see a File here, it means the async upload hasn't completed yet.
@@ -129,8 +141,11 @@ export function CreatePresetDialog({
             inputValue = ""
           } else {
             // Use explicit null/undefined check to preserve numeric 0 values
-            // (value || "") would convert 0 to "" because 0 is falsy
-            inputValue = value !== undefined && value !== null ? value : ""
+            const raw = value !== undefined && value !== null ? value : ""
+            inputValue =
+              NUMERIC_INPUT_TYPES.has(input.type) && raw !== ""
+                ? normalizeNumericPresetValue(raw)
+                : raw
           }
 
           return {

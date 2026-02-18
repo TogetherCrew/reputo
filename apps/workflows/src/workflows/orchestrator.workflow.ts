@@ -18,10 +18,7 @@ import type {
   OrchestratorWorkflowInput,
   TypescriptAlgorithmDispatcherActivities,
 } from '../shared/types/index.js';
-import {
-  getAlgorithmTaskQueueFromRuntime,
-  normalizeOrchestratorWorkflowInput,
-} from '../shared/utils/orchestrator-input.utils.js';
+import { getAlgorithmTaskQueueFromRuntime } from '../shared/utils/orchestrator-input.utils.js';
 
 const { getSnapshot, updateSnapshot } = workflow.proxyActivities<DbActivities>({
   startToCloseTimeout: DB_ACTIVITY_TIMEOUT,
@@ -33,8 +30,8 @@ const { getAlgorithmDefinition } = workflow.proxyActivities<AlgorithmLibraryActi
   retry: { maximumAttempts: ACTIVITY_MAX_ATTEMPTS },
 });
 
-export async function OrchestratorWorkflow(input: string | OrchestratorWorkflowInput): Promise<void> {
-  const { snapshotId, taskQueues } = normalizeOrchestratorWorkflowInput(input);
+export async function OrchestratorWorkflow(input: OrchestratorWorkflowInput): Promise<void> {
+  const { snapshotId, taskQueues } = input;
   const workflowInfo = workflow.workflowInfo();
   const orchestratorTaskQueue = workflowInfo.taskQueue;
 

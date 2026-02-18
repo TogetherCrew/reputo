@@ -195,32 +195,6 @@ export interface ParsedSnapshotKey extends ParsedStorageKeyBase {
 export type ParsedStorageKey = ParsedUploadKey | ParsedSnapshotKey;
 
 /**
- * @deprecated Use ParsedStorageKey with type discrimination instead.
- * Legacy interface for backward compatibility.
- */
-export interface LegacyParsedStorageKey {
-  /**
-   * Full filename including extension.
-   *
-   * @example 'data.csv'
-   */
-  filename: string;
-
-  /**
-   * File extension without the dot.
-   *
-   * @example 'csv'
-   */
-  ext: string;
-
-  /**
-   * Unix timestamp (seconds since epoch) when the key was generated.
-   * Only present for upload keys.
-   */
-  timestamp: number;
-}
-
-/**
  * Complete metadata about a stored object.
  * Includes both parsed key information and S3 object metadata.
  */

@@ -124,7 +124,10 @@ const client = new Client()
 await client.workflow.start('OrchestratorWorkflow', {
     taskQueue: 'workflows',
     workflowId: 'snapshot-507f1f77bcf86cd799439011',
-    args: [{ snapshotId: '507f1f77bcf86cd799439011' }],
+    args: [{
+      snapshotId: '507f1f77bcf86cd799439011',
+      taskQueues: { typescript: 'algorithm-typescript-worker' },
+    }],
 })
 ```
 
