@@ -3,13 +3,13 @@
     "name": "Contribution Score",
     "category": "Activity",
     "summary": "Scores how much value a user adds through comments: recent, upvoted comments count more; self-serving or downvoted ones count less. Optional bonus when the project owner upvotes.",
-    "description": "**How it works:**\n- Each comment gets a **base score** (`comment_base_score`). Votes adjust it: upvotes add `comment_upvote_weight`, downvotes subtract `comment_downvote_weight`.\n- **Self-serving** activity (own project, replying to yourself) is discounted by `self_interaction_penalty_factor` (0 = full penalty, 1 = no penalty).\n- **Time decay**: `engagement_window_months` (comments older than this → weight 0) and `monthly_decay_rate_percent` (weight drops each month).\n- Optional **project-owner upvote bonus**: if the project owner upvoted the comment, score is multiplied by `project_owner_upvote_bonus_multiplier`.\n\n**Inputs:**\n- No manual file upload. Data is fetched from DeepFunding Portal APIs.\n\n**Output:**\n- Per-user contribution score (CSV: `user_id`, `contribution_score`) plus an optional JSON details file with per-comment breakdown for debugging.",
+    "description": "**Formulas:**\n- **Base score:** `baseScore = comment_base_score + upvotes × comment_upvote_weight - downvotes × comment_downvote_weight`.\n- **Time weight:** `tw = max(0, 1 - bucket × monthly_decay_rate_percent/100)`; comments older than `engagement_window_months` get tw = 0.\n- **Self-interaction:** `discountMultiplier = self_interaction_penalty_factor^discountConditions` (0, 1, or 2 conditions: own project, reply-to-self).\n- **Owner bonus:** `ownerBonus = project_owner_upvote_bonus_multiplier` if project owner upvoted, else 1.\n- **Per-comment:** `score = ownerBonus × tw × discountMultiplier × baseScore`.\n- **Per-user:** `contribution_score = Σ(score)` over the user's comments.\n\n**Inputs:**\n- No manual file upload. Data is fetched from DeepFunding Portal APIs.\n\n**Output:**\n- Per-user contribution score (CSV: `user_id`, `contribution_score`) plus an optional JSON details file with per-comment breakdown for debugging.",
     "version": "1.0.0",
     "inputs": [
         {
             "key": "comment_base_score",
             "label": "Comment Base Score",
-            "description": "Baseline points for creating a comment.",
+            "description": "Baseline in baseScore formula: baseScore = comment_base_score + upvotes × comment_upvote_weight - downvotes × comment_downvote_weight.",
             "type": "integer",
             "min": 0,
             "max": 100,
@@ -20,7 +20,7 @@
         {
             "key": "comment_upvote_weight",
             "label": "Comment Upvote Weight",
-            "description": "Points added per upvote on a comment.",
+            "description": "Points added per upvote in baseScore: baseScore = comment_base_score + upvotes × comment_upvote_weight - ...",
             "type": "number",
             "min": 0,
             "max": 10,
@@ -32,7 +32,7 @@
         {
             "key": "comment_downvote_weight",
             "label": "Comment Downvote Weight",
-            "description": "Points subtracted per downvote on a comment.",
+            "description": "Points subtracted per downvote in baseScore: baseScore = ... - downvotes × comment_downvote_weight.",
             "type": "number",
             "min": 0,
             "max": 10,
@@ -44,7 +44,7 @@
         {
             "key": "self_interaction_penalty_factor",
             "label": "Self Interaction Penalty Factor",
-            "description": "Multiplier for self-related comments (own project or same-user reply). 0 = maximum penalty, 1 = no penalty.",
+            "description": "Self-interaction discount: discountMultiplier = self_interaction_penalty_factor^discountConditions (each condition: own project or reply-to-self). 0 = max penalty, 1 = no penalty.",
             "type": "number",
             "min": 0,
             "max": 1,
@@ -56,7 +56,7 @@
         {
             "key": "project_owner_upvote_bonus_multiplier",
             "label": "Project Owner Upvote Bonus Multiplier",
-            "description": "Bonus multiplier applied when the project owner upvoted the comment (1 = no bonus).",
+            "description": "When project owner upvoted: ownerBonus = this value in score = ownerBonus × tw × discountMultiplier × baseScore. 1 = no bonus.",
             "type": "number",
             "min": 1,
             "max": 10,
@@ -67,7 +67,7 @@
         {
             "key": "engagement_window_months",
             "label": "Engagement Window (Months)",
-            "description": "Comments older than this many months contribute 0. Must be between 1 and 72.",
+            "description": "Comments older than this many months get tw = 0 and do not contribute. Must be between 1 and 72.",
             "type": "integer",
             "min": 1,
             "max": 72,
@@ -78,7 +78,7 @@
         {
             "key": "monthly_decay_rate_percent",
             "label": "Monthly Decay Rate (%)",
-            "description": "Decay per month bucket (0 = no decay, 100 = full decay). Each month reduces weight by this percentage.",
+            "description": "Time decay: tw = max(0, 1 - bucket × value/100), bucket = floor(age_months). 0 = no decay, 100 = full decay after one month.",
             "type": "integer",
             "min": 0,
             "max": 100,
