@@ -21,7 +21,9 @@
 - [ModelName](type-aliases/ModelName.md)
 - [SnapshotStatus](type-aliases/SnapshotStatus.md)
 - [AlgorithmPresetDoc](type-aliases/AlgorithmPresetDoc.md)
+- [AlgorithmPresetWithId](type-aliases/AlgorithmPresetWithId.md)
 - [SnapshotDoc](type-aliases/SnapshotDoc.md)
+- [SnapshotWithId](type-aliases/SnapshotWithId.md)
 
 ## Variables
 

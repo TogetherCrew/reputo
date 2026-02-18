@@ -6,7 +6,7 @@
 
 # Interface: PresignedUpload
 
-Defined in: [shared/types/types.ts:258](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/storage/src/shared/types/types.ts#L258)
+Defined in: [shared/types/types.ts:232](https://github.com/TogetherCrew/reputo/blob/bc7521151e0cf79ab1c29321ef1e6ee87b55063d/packages/storage/src/shared/types/types.ts#L232)
 
 Response from generating a presigned upload URL.
 
@@ -16,7 +16,7 @@ Response from generating a presigned upload URL.
 
 > **key**: `string`
 
-Defined in: [shared/types/types.ts:262](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/storage/src/shared/types/types.ts#L262)
+Defined in: [shared/types/types.ts:236](https://github.com/TogetherCrew/reputo/blob/bc7521151e0cf79ab1c29321ef1e6ee87b55063d/packages/storage/src/shared/types/types.ts#L236)
 
 S3 object key where the file should be uploaded.
 
@@ -26,7 +26,7 @@ S3 object key where the file should be uploaded.
 
 > **url**: `string`
 
-Defined in: [shared/types/types.ts:268](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/storage/src/shared/types/types.ts#L268)
+Defined in: [shared/types/types.ts:242](https://github.com/TogetherCrew/reputo/blob/bc7521151e0cf79ab1c29321ef1e6ee87b55063d/packages/storage/src/shared/types/types.ts#L242)
 
 Presigned URL for uploading the file.
 Valid for the duration specified in presignPutTtl.
@@ -37,6 +37,6 @@ Valid for the duration specified in presignPutTtl.
 
 > **expiresIn**: `number`
 
-Defined in: [shared/types/types.ts:273](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/storage/src/shared/types/types.ts#L273)
+Defined in: [shared/types/types.ts:247](https://github.com/TogetherCrew/reputo/blob/bc7521151e0cf79ab1c29321ef1e6ee87b55063d/packages/storage/src/shared/types/types.ts#L247)
 
 Number of seconds until the URL expires.

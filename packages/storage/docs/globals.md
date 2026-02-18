@@ -24,10 +24,13 @@
 - [PutObjectOptions](interfaces/PutObjectOptions.md)
 - [ParsedUploadKey](interfaces/ParsedUploadKey.md)
 - [ParsedSnapshotKey](interfaces/ParsedSnapshotKey.md)
-- [~~LegacyParsedStorageKey~~](interfaces/LegacyParsedStorageKey.md)
 - [StorageMetadata](interfaces/StorageMetadata.md)
 - [PresignedUpload](interfaces/PresignedUpload.md)
 - [PresignedDownload](interfaces/PresignedDownload.md)
+- [DeleteObjectOptions](interfaces/DeleteObjectOptions.md)
+- [ListObjectsByPrefixOptions](interfaces/ListObjectsByPrefixOptions.md)
+- [DeleteObjectsOptions](interfaces/DeleteObjectsOptions.md)
+- [DeleteObjectsResult](interfaces/DeleteObjectsResult.md)
 
 ## Type Aliases
 

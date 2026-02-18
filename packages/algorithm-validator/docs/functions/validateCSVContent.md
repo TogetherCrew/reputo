@@ -8,7 +8,7 @@
 
 > **validateCSVContent**(`file`, `csvConfig`): `Promise`\<[`CSVValidationResult`](../interfaces/CSVValidationResult.md)\>
 
-Defined in: [packages/algorithm-validator/src/csv-validation.ts:109](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/algorithm-validator/src/csv-validation.ts#L109)
+Defined in: [packages/algorithm-validator/src/csv-validation.ts:109](https://github.com/TogetherCrew/reputo/blob/bc7521151e0cf79ab1c29321ef1e6ee87b55063d/packages/algorithm-validator/src/csv-validation.ts#L109)
 
 Validates CSV content against column definitions and constraints.
 

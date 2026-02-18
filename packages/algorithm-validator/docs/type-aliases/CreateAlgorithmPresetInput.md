@@ -8,7 +8,7 @@
 
 > **CreateAlgorithmPresetInput** = `z.infer`\<*typeof* [`createAlgorithmPresetSchema`](../variables/createAlgorithmPresetSchema.md)\>
 
-Defined in: [packages/algorithm-validator/src/schemas/algorithm-preset.ts:62](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/algorithm-validator/src/schemas/algorithm-preset.ts#L62)
+Defined in: [packages/algorithm-validator/src/schemas/algorithm-preset.ts:62](https://github.com/TogetherCrew/reputo/blob/bc7521151e0cf79ab1c29321ef1e6ee87b55063d/packages/algorithm-validator/src/schemas/algorithm-preset.ts#L62)
 
 TypeScript type inferred from the create algorithm preset Zod schema.
 

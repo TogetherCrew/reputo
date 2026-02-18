@@ -8,7 +8,7 @@
 
 > **buildZodSchema**(`definition`): `ZodObject`\<`Record`\<`string`, `ZodType`\<`unknown`, `unknown`, `$ZodTypeInternals`\<`unknown`, `unknown`\>\>\>\>
 
-Defined in: [packages/algorithm-validator/src/validation.ts:105](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/algorithm-validator/src/validation.ts#L105)
+Defined in: [packages/algorithm-validator/src/validation.ts:105](https://github.com/TogetherCrew/reputo/blob/bc7521151e0cf79ab1c29321ef1e6ee87b55063d/packages/algorithm-validator/src/validation.ts#L105)
 
 Builds a Zod schema from an AlgorithmDefinition.
 

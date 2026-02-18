@@ -6,7 +6,7 @@
 
 # Interface: StorageMetadata
 
-Defined in: [shared/types/types.ts:227](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/storage/src/shared/types/types.ts#L227)
+Defined in: [shared/types/types.ts:201](https://github.com/TogetherCrew/reputo/blob/bc7521151e0cf79ab1c29321ef1e6ee87b55063d/packages/storage/src/shared/types/types.ts#L201)
 
 Complete metadata about a stored object.
 Includes both parsed key information and S3 object metadata.
@@ -17,7 +17,7 @@ Includes both parsed key information and S3 object metadata.
 
 > **filename**: `string`
 
-Defined in: [shared/types/types.ts:231](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/storage/src/shared/types/types.ts#L231)
+Defined in: [shared/types/types.ts:205](https://github.com/TogetherCrew/reputo/blob/bc7521151e0cf79ab1c29321ef1e6ee87b55063d/packages/storage/src/shared/types/types.ts#L205)
 
 Full filename including extension.
 
@@ -27,7 +27,7 @@ Full filename including extension.
 
 > **ext**: `string`
 
-Defined in: [shared/types/types.ts:236](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/storage/src/shared/types/types.ts#L236)
+Defined in: [shared/types/types.ts:210](https://github.com/TogetherCrew/reputo/blob/bc7521151e0cf79ab1c29321ef1e6ee87b55063d/packages/storage/src/shared/types/types.ts#L210)
 
 File extension without the dot.
 
@@ -37,7 +37,7 @@ File extension without the dot.
 
 > **size**: `number`
 
-Defined in: [shared/types/types.ts:241](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/storage/src/shared/types/types.ts#L241)
+Defined in: [shared/types/types.ts:215](https://github.com/TogetherCrew/reputo/blob/bc7521151e0cf79ab1c29321ef1e6ee87b55063d/packages/storage/src/shared/types/types.ts#L215)
 
 Object size in bytes.
 
@@ -47,7 +47,7 @@ Object size in bytes.
 
 > **contentType**: `string`
 
-Defined in: [shared/types/types.ts:246](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/storage/src/shared/types/types.ts#L246)
+Defined in: [shared/types/types.ts:220](https://github.com/TogetherCrew/reputo/blob/bc7521151e0cf79ab1c29321ef1e6ee87b55063d/packages/storage/src/shared/types/types.ts#L220)
 
 Content type (MIME type) of the object.
 
@@ -57,7 +57,7 @@ Content type (MIME type) of the object.
 
 > **timestamp**: `number`
 
-Defined in: [shared/types/types.ts:252](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/storage/src/shared/types/types.ts#L252)
+Defined in: [shared/types/types.ts:226](https://github.com/TogetherCrew/reputo/blob/bc7521151e0cf79ab1c29321ef1e6ee87b55063d/packages/storage/src/shared/types/types.ts#L226)
 
 Unix timestamp (seconds since epoch) when the metadata was retrieved.
 For uploads, this is typically the current time. For snapshots, this is also the current time.

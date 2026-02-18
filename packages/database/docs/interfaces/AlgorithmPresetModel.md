@@ -6,7 +6,7 @@
 
 # Interface: AlgorithmPresetModel
 
-Defined in: [packages/database/src/shared/types/AlgorithmPreset.interface.ts:40](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/database/src/shared/types/AlgorithmPreset.interface.ts#L40)
+Defined in: [packages/database/src/shared/types/AlgorithmPreset.interface.ts:45](https://github.com/TogetherCrew/reputo/blob/bc7521151e0cf79ab1c29321ef1e6ee87b55063d/packages/database/src/shared/types/AlgorithmPreset.interface.ts#L45)
 
 Interface extending Mongoose Model with additional methods for AlgorithmPreset.
 
@@ -20,7 +20,7 @@ Interface extending Mongoose Model with additional methods for AlgorithmPreset.
 
 > **new AlgorithmPresetModel**\<`DocType`\>(`doc?`, `fields?`, `options?`): `Document`\<`unknown`, \{ \}, [`AlgorithmPreset`](AlgorithmPreset.md), \{ \}, \{ \}\> & [`AlgorithmPreset`](AlgorithmPreset.md) & `object` & `object`
 
-Defined in: [packages/database/src/shared/types/AlgorithmPreset.interface.ts:40](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/database/src/shared/types/AlgorithmPreset.interface.ts#L40)
+Defined in: [packages/database/src/shared/types/AlgorithmPreset.interface.ts:45](https://github.com/TogetherCrew/reputo/blob/bc7521151e0cf79ab1c29321ef1e6ee87b55063d/packages/database/src/shared/types/AlgorithmPreset.interface.ts#L45)
 
 #### Parameters
 
@@ -48,9 +48,9 @@ Defined in: [packages/database/src/shared/types/AlgorithmPreset.interface.ts:40]
 
 ### paginate()
 
-> **paginate**: (`filter`, `options`) => `Promise`\<[`PaginateResult`](PaginateResult.md)\<`Document`\<`unknown`, \{ \}, [`AlgorithmPreset`](AlgorithmPreset.md), \{ \}, \{ \}\> & [`AlgorithmPreset`](AlgorithmPreset.md) & `object` & `object`\>\>
+> **paginate**: (`filter`, `options`) => `Promise`\<[`PaginateResult`](PaginateResult.md)\<[`AlgorithmPresetDoc`](../type-aliases/AlgorithmPresetDoc.md)\>\>
 
-Defined in: [packages/database/src/shared/types/AlgorithmPreset.interface.ts:42](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/database/src/shared/types/AlgorithmPreset.interface.ts#L42)
+Defined in: [packages/database/src/shared/types/AlgorithmPreset.interface.ts:47](https://github.com/TogetherCrew/reputo/blob/bc7521151e0cf79ab1c29321ef1e6ee87b55063d/packages/database/src/shared/types/AlgorithmPreset.interface.ts#L47)
 
 Pagination method for querying presets
 
@@ -66,4 +66,4 @@ Pagination method for querying presets
 
 #### Returns
 
-`Promise`\<[`PaginateResult`](PaginateResult.md)\<`Document`\<`unknown`, \{ \}, [`AlgorithmPreset`](AlgorithmPreset.md), \{ \}, \{ \}\> & [`AlgorithmPreset`](AlgorithmPreset.md) & `object` & `object`\>\>
+`Promise`\<[`PaginateResult`](PaginateResult.md)\<[`AlgorithmPresetDoc`](../type-aliases/AlgorithmPresetDoc.md)\>\>

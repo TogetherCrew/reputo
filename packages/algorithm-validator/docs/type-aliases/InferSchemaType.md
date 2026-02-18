@@ -8,7 +8,7 @@
 
 > **InferSchemaType** = `z.infer`\<`ReturnType`\<*typeof* [`buildZodSchema`](../functions/buildZodSchema.md)\>\>
 
-Defined in: [packages/algorithm-validator/src/validation.ts:289](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/algorithm-validator/src/validation.ts#L289)
+Defined in: [packages/algorithm-validator/src/validation.ts:289](https://github.com/TogetherCrew/reputo/blob/bc7521151e0cf79ab1c29321ef1e6ee87b55063d/packages/algorithm-validator/src/validation.ts#L289)
 
 Type inference helper for AlgorithmDefinition.
 

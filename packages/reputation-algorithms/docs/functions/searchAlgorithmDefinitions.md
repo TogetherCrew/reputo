@@ -8,7 +8,7 @@
 
 > **searchAlgorithmDefinitions**(`filters`): `string`[]
 
-Defined in: [api/registry.ts:148](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/reputation-algorithms/src/api/registry.ts#L148)
+Defined in: [api/registry.ts:148](https://github.com/TogetherCrew/reputo/blob/bc7521151e0cf79ab1c29321ef1e6ee87b55063d/packages/reputation-algorithms/src/api/registry.ts#L148)
 
 Searches algorithm definitions by metadata using flexible filters.
 

@@ -6,7 +6,7 @@
 
 # Class: Storage
 
-Defined in: [storage.ts:80](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/storage/src/storage.ts#L80)
+Defined in: [storage.ts:92](https://github.com/TogetherCrew/reputo/blob/bc7521151e0cf79ab1c29321ef1e6ee87b55063d/packages/storage/src/storage.ts#L92)
 
 Main storage class that wraps an S3Client instance.
 
@@ -65,7 +65,7 @@ console.log(download.url);
 
 > **new Storage**(`s3Client`): `Storage`
 
-Defined in: [storage.ts:86](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/storage/src/storage.ts#L86)
+Defined in: [storage.ts:98](https://github.com/TogetherCrew/reputo/blob/bc7521151e0cf79ab1c29321ef1e6ee87b55063d/packages/storage/src/storage.ts#L98)
 
 Creates a new Storage instance.
 
@@ -87,7 +87,7 @@ Configured S3Client instance to use for all operations
 
 > **presignPut**(`options`): `Promise`\<[`PresignedUpload`](../interfaces/PresignedUpload.md)\>
 
-Defined in: [storage.ts:113](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/storage/src/storage.ts#L113)
+Defined in: [storage.ts:125](https://github.com/TogetherCrew/reputo/blob/bc7521151e0cf79ab1c29321ef1e6ee87b55063d/packages/storage/src/storage.ts#L125)
 
 Generates a presigned URL for uploading a file.
 
@@ -134,7 +134,7 @@ const result = await storage.presignPut({
 
 > **verify**(`options`): `Promise`\<\{ `key`: `string`; `metadata`: [`StorageMetadata`](../interfaces/StorageMetadata.md); \}\>
 
-Defined in: [storage.ts:170](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/storage/src/storage.ts#L170)
+Defined in: [storage.ts:182](https://github.com/TogetherCrew/reputo/blob/bc7521151e0cf79ab1c29321ef1e6ee87b55063d/packages/storage/src/storage.ts#L182)
 
 Verifies that a file meets size requirements and optionally content-type policies.
 
@@ -197,7 +197,7 @@ const result = await storage.verify({
 
 > **presignGet**(`options`): `Promise`\<[`PresignedDownload`](../interfaces/PresignedDownload.md)\>
 
-Defined in: [storage.ts:233](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/storage/src/storage.ts#L233)
+Defined in: [storage.ts:245](https://github.com/TogetherCrew/reputo/blob/bc7521151e0cf79ab1c29321ef1e6ee87b55063d/packages/storage/src/storage.ts#L245)
 
 Generates a presigned URL for downloading a file.
 
@@ -253,7 +253,7 @@ const result = await storage.presignGet({
 
 > **getObject**(`options`): `Promise`\<`Buffer`\<`ArrayBufferLike`\>\>
 
-Defined in: [storage.ts:286](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/storage/src/storage.ts#L286)
+Defined in: [storage.ts:298](https://github.com/TogetherCrew/reputo/blob/bc7521151e0cf79ab1c29321ef1e6ee87b55063d/packages/storage/src/storage.ts#L298)
 
 Reads an object from S3 and returns its contents as a Buffer.
 
@@ -295,7 +295,7 @@ console.log(text);
 
 > **putObject**(`options`): `Promise`\<`string`\>
 
-Defined in: [storage.ts:352](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/storage/src/storage.ts#L352)
+Defined in: [storage.ts:364](https://github.com/TogetherCrew/reputo/blob/bc7521151e0cf79ab1c29321ef1e6ee87b55063d/packages/storage/src/storage.ts#L364)
 
 Writes an object to S3.
 
@@ -343,4 +343,114 @@ await storage.putObject({
   body: csvData,
   contentType: 'text/csv',
 });
+```
+
+***
+
+### deleteObject()
+
+> **deleteObject**(`options`): `Promise`\<`void`\>
+
+Defined in: [storage.ts:401](https://github.com/TogetherCrew/reputo/blob/bc7521151e0cf79ab1c29321ef1e6ee87b55063d/packages/storage/src/storage.ts#L401)
+
+Deletes a single object from S3.
+
+This operation is idempotent - if the object doesn't exist, no error is thrown.
+
+#### Parameters
+
+##### options
+
+[`DeleteObjectOptions`](../interfaces/DeleteObjectOptions.md)
+
+Delete operation options
+
+#### Returns
+
+`Promise`\<`void`\>
+
+Promise that resolves when the object is deleted
+
+#### Example
+
+```typescript
+await storage.deleteObject({
+  bucket: 'my-bucket',
+  key: 'uploads/{uuid}/votes.csv',
+});
+```
+
+***
+
+### listObjectsByPrefix()
+
+> **listObjectsByPrefix**(`options`): `Promise`\<`string`[]\>
+
+Defined in: [storage.ts:429](https://github.com/TogetherCrew/reputo/blob/bc7521151e0cf79ab1c29321ef1e6ee87b55063d/packages/storage/src/storage.ts#L429)
+
+Lists all objects under a given prefix.
+
+Handles pagination automatically and returns all matching keys.
+
+#### Parameters
+
+##### options
+
+[`ListObjectsByPrefixOptions`](../interfaces/ListObjectsByPrefixOptions.md)
+
+List operation options
+
+#### Returns
+
+`Promise`\<`string`[]\>
+
+Array of object keys matching the prefix
+
+#### Example
+
+```typescript
+const keys = await storage.listObjectsByPrefix({
+  bucket: 'my-bucket',
+  prefix: 'snapshots/abc123/',
+});
+// Returns: ['snapshots/abc123/file1.csv', 'snapshots/abc123/file2.json', ...]
+```
+
+***
+
+### deleteObjects()
+
+> **deleteObjects**(`options`): `Promise`\<[`DeleteObjectsResult`](../interfaces/DeleteObjectsResult.md)\>
+
+Defined in: [storage.ts:478](https://github.com/TogetherCrew/reputo/blob/bc7521151e0cf79ab1c29321ef1e6ee87b55063d/packages/storage/src/storage.ts#L478)
+
+Deletes multiple objects from S3 in a single batch request.
+
+S3 allows up to 1000 objects per DeleteObjects request.
+If more than 1000 keys are provided, they are automatically batched.
+
+This operation is idempotent - if any object doesn't exist, no error is thrown for that object.
+
+#### Parameters
+
+##### options
+
+[`DeleteObjectsOptions`](../interfaces/DeleteObjectsOptions.md)
+
+Batch delete operation options
+
+#### Returns
+
+`Promise`\<[`DeleteObjectsResult`](../interfaces/DeleteObjectsResult.md)\>
+
+Result with deleted keys and any errors
+
+#### Example
+
+```typescript
+const result = await storage.deleteObjects({
+  bucket: 'my-bucket',
+  keys: ['uploads/a/file1.csv', 'uploads/b/file2.csv'],
+});
+console.log(`Deleted ${result.deleted.length} objects`);
 ```

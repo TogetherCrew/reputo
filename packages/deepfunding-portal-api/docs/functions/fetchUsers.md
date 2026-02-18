@@ -8,7 +8,7 @@
 
 > **fetchUsers**(`client`, `options`): [`PaginatedFetcher`](../type-aliases/PaginatedFetcher.md)\<[`User`](../type-aliases/User.md)\>
 
-Defined in: [packages/deepfunding-portal-api/src/resources/users/api.ts:10](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/deepfunding-portal-api/src/resources/users/api.ts#L10)
+Defined in: [packages/deepfunding-portal-api/src/resources/users/api.ts:10](https://github.com/TogetherCrew/reputo/blob/bc7521151e0cf79ab1c29321ef1e6ee87b55063d/packages/deepfunding-portal-api/src/resources/users/api.ts#L10)
 
 Fetch all users with pagination
 
