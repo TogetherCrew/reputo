@@ -70,12 +70,12 @@ export async function computeContributionScore(snapshot: Snapshot, storage: Stor
     // Process each comment through the pipeline
     // Only score comments whose author exists in the users table
     for (let i = 0; i < comments.length; i++) {
-      const comment = comments[i];
-      if (!userIdSet.has(comment.userId)) continue;
-
       if (i % HEARTBEAT_INTERVAL === 0) {
         ctx.heartbeat({ phase: 'scoring', processed: i, total: comments.length });
       }
+
+      const comment = comments[i];
+      if (!userIdSet.has(comment.userId)) continue;
 
       const votes = getVoteStats(comment.commentId, voteMap);
 

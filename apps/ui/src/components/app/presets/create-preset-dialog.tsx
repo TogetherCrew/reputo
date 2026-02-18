@@ -1,9 +1,5 @@
 "use client"
 
-import {
-  type AlgorithmDefinition,
-  getAlgorithmDefinition,
-} from "@reputo/reputation-algorithms"
 import { Plus } from "lucide-react"
 import { useMemo, useState } from "react"
 import { toast } from "sonner"
@@ -98,49 +94,24 @@ export function CreatePresetDialog({
     return buildSchemaFromAlgorithm(algo, "1.0.0")
   }, [algo])
 
-  // Fetch full algorithm definition to get original input keys
-  const fullDefinition = useMemo(() => {
-    if (!algo) return null
-    try {
-      const definitionJson = getAlgorithmDefinition({ key: algo.id })
-      return JSON.parse(definitionJson) as AlgorithmDefinition
-    } catch (error) {
-      console.warn(`Could not fetch full definition for ${algo.id}:`, error)
-      return null
-    }
-  }, [algo])
-
   const handleSubmit = async (data: Record<string, unknown>) => {
     if (!algo) return
 
     try {
-      // Transform form data to CreateAlgorithmPresetDto format
+      // Transform form data to CreateAlgorithmPresetDto format.
+      // Form schema uses algorithm input keys as field names, so resolve by input.key only.
       const createData: CreateAlgorithmPresetDto = {
         key: (data.key as string) || algo.id,
         version: (data.version as string) || "1.0.0",
         name: data.name as string | undefined,
         description: data.description as string | undefined,
-        inputs: algo.inputs.map((input, index) => {
-          // IMPORTANT:
-          // The form schema uses the algorithm input key (e.g. "votes") as the field name.
-          // Do NOT derive keys from labels (e.g. "votes_csv") or you'll miss the real value
-          // and fallback to placeholders.
+        inputs: algo.inputs.map((input) => {
           const value = data[input.key]
-          const originalInputKey =
-            fullDefinition?.inputs.find(
-              (defInput) => defInput.label === input.label
-            )?.key ||
-            fullDefinition?.inputs[index]?.key ||
-            input.key
 
-          // Convert File object to filename string; normalize numeric values so "1,2" → 1.2
           let inputValue: unknown
           if (value instanceof File) {
-            // If we ever see a File here, it means the async upload hasn't completed yet.
-            // ReputoForm should block submission in that state, but keep this safe.
             inputValue = ""
           } else {
-            // Use explicit null/undefined check to preserve numeric 0 values
             const raw = value !== undefined && value !== null ? value : ""
             inputValue =
               NUMERIC_INPUT_TYPES.has(input.type) && raw !== ""
@@ -148,10 +119,7 @@ export function CreatePresetDialog({
                 : raw
           }
 
-          return {
-            key: originalInputKey,
-            value: inputValue,
-          }
+          return { key: input.key, value: inputValue }
         }),
       }
 

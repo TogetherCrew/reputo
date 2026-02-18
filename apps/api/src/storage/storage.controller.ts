@@ -21,6 +21,27 @@ import {
 } from './dto';
 import { StorageService } from './storage.service';
 
+/** Sanitize filename for Content-Disposition: strip control chars and quotes to prevent header injection. */
+function sanitizeFilename(filename: string): string {
+  let out = '';
+  for (let i = 0; i < filename.length; i++) {
+    const code = filename.charCodeAt(i);
+    if (
+      code <= 31 ||
+      code === 127 ||
+      filename[i] === '"' ||
+      filename[i] === '\\' ||
+      filename[i] === '\r' ||
+      filename[i] === '\n'
+    ) {
+      out += '_';
+    } else {
+      out += filename[i];
+    }
+  }
+  return out.replace(/^\.+/, '') || 'download';
+}
+
 @ApiTags('Storage')
 @Controller('storage')
 export class StorageController {
@@ -104,12 +125,13 @@ export class StorageController {
   @ApiOkResponse({ description: 'File stream' })
   @ApiNotFoundResponse({ description: 'Object not found' })
   @ApiInternalServerErrorResponse({ description: 'Failed to stream file' })
-  async stream(@Query('key') key: string, @Res() res: Response): Promise<void> {
+  async stream(@Query('key') key: string, @Res({ passthrough: true }) res: Response): Promise<void> {
     const [buffer, metadata] = await Promise.all([
       this.storageService.getObject(key),
       this.storageService.getObjectMetadata(key),
     ]);
-    const filename = metadata.filename || key.split('/').pop() || 'download';
+    const rawFilename = metadata.filename || key.split('/').pop() || 'download';
+    const filename = sanitizeFilename(rawFilename);
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
     res.setHeader('Content-Type', metadata.contentType || 'application/octet-stream');
     res.send(buffer);
