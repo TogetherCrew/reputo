@@ -1,21 +1,20 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import {
-  create,
-  createMany,
-  findAll,
-  findById,
-  findByRoundId,
-} from '../../../../src/resources/proposals/repository.js';
+import { createProposalsRepo } from '../../../../src/resources/proposals/repository.js';
+import type { DeepFundingPortalDb } from '../../../../src/shared/types/db.js';
 import { cleanupTestDb, createTestDb } from '../../../utils/db-helpers.js';
 import { createMockProposal } from '../../../utils/mock-helpers.js';
 
 describe('Proposal Repository', () => {
+  let db: DeepFundingPortalDb;
+  let repo: ReturnType<typeof createProposalsRepo>;
+
   beforeEach(() => {
-    createTestDb();
+    db = createTestDb();
+    repo = createProposalsRepo(db);
   });
 
   afterEach(() => {
-    cleanupTestDb();
+    cleanupTestDb(db);
   });
 
   describe('create', () => {
@@ -26,9 +25,9 @@ describe('Proposal Repository', () => {
         title: 'Test Proposal',
       });
 
-      create(proposal);
+      repo.create(proposal);
 
-      const result = findById(1);
+      const result = repo.findById(1);
       expect(result).toBeDefined();
       expect(result?.title).toBe('Test Proposal');
       expect(result?.roundId).toBe(10);
@@ -43,9 +42,9 @@ describe('Proposal Repository', () => {
         createMockProposal({ id: 3, round_id: 20 }),
       ];
 
-      createMany(proposals);
+      repo.createMany(proposals);
 
-      const all = findAll();
+      const all = repo.findAll();
       expect(all.length).toBe(3);
     });
 
@@ -57,41 +56,41 @@ describe('Proposal Repository', () => {
         }),
       );
 
-      createMany(proposals, { chunkSize: 100 });
+      repo.createMany(proposals, { chunkSize: 100 });
 
-      const all = findAll();
+      const all = repo.findAll();
       expect(all.length).toBe(250);
     });
   });
 
   describe('findAll', () => {
     it('should return all proposals', () => {
-      create(createMockProposal({ id: 1, round_id: 10 }));
-      create(createMockProposal({ id: 2, round_id: 20 }));
+      repo.create(createMockProposal({ id: 1, round_id: 10 }));
+      repo.create(createMockProposal({ id: 2, round_id: 20 }));
 
-      const result = findAll();
+      const result = repo.findAll();
       expect(result.length).toBe(2);
     });
 
     it('should return empty array when no proposals exist', () => {
-      const result = findAll();
+      const result = repo.findAll();
       expect(result).toEqual([]);
     });
   });
 
   describe('findByRoundId', () => {
     it('should find proposals by round ID', () => {
-      create(createMockProposal({ id: 1, round_id: 10 }));
-      create(createMockProposal({ id: 2, round_id: 10 }));
-      create(createMockProposal({ id: 3, round_id: 20 }));
+      repo.create(createMockProposal({ id: 1, round_id: 10 }));
+      repo.create(createMockProposal({ id: 2, round_id: 10 }));
+      repo.create(createMockProposal({ id: 3, round_id: 20 }));
 
-      const result = findByRoundId(10);
+      const result = repo.findByRoundId(10);
       expect(result.length).toBe(2);
       expect(result.every((p) => p.roundId === 10)).toBe(true);
     });
 
     it('should return empty array when no proposals found for round', () => {
-      const result = findByRoundId(999);
+      const result = repo.findByRoundId(999);
       expect(result).toEqual([]);
     });
   });
@@ -103,16 +102,16 @@ describe('Proposal Repository', () => {
         round_id: 10,
         title: 'Specific Proposal',
       });
-      create(proposal);
+      repo.create(proposal);
 
-      const result = findById(1);
+      const result = repo.findById(1);
       expect(result).toBeDefined();
       expect(result?.id).toBe(1);
       expect(result?.title).toBe('Specific Proposal');
     });
 
     it('should return undefined when proposal not found', () => {
-      const result = findById(999);
+      const result = repo.findById(999);
       expect(result).toBeUndefined();
     });
   });

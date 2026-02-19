@@ -1,17 +1,17 @@
-import { closeDb, type DeepFundingPortalDb, initializeDb } from '../../src/db/client.js';
+import { closeDbInstance, createDb, type DeepFundingPortalDb } from '../../src/db/client.js';
 
 /**
  * Create an in-memory database for testing
  */
 export function createTestDb(): DeepFundingPortalDb {
-  return initializeDb({ path: ':memory:' });
+  return createDb({ path: ':memory:' });
 }
 
 /**
  * Clean up test database
  */
-export function cleanupTestDb(): void {
-  closeDb();
+export function cleanupTestDb(db: DeepFundingPortalDb): void {
+  closeDbInstance(db);
 }
 
 /**

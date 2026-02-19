@@ -13,7 +13,6 @@ export interface ContributionScoreParams {
   projectOwnerUpvoteBonusMultiplier: number;
   engagementWindowMonths: number;
   monthlyDecayRatePercent: number;
-  decayBucketSizeMonths: number;
 }
 
 /**

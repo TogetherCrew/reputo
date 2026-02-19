@@ -6,7 +6,7 @@
 
 # Interface: SnapshotModel
 
-Defined in: [packages/database/src/shared/types/Snapshot.interface.ts:78](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/database/src/shared/types/Snapshot.interface.ts#L78)
+Defined in: [packages/database/src/shared/types/Snapshot.interface.ts:83](https://github.com/TogetherCrew/reputo/blob/bc7521151e0cf79ab1c29321ef1e6ee87b55063d/packages/database/src/shared/types/Snapshot.interface.ts#L83)
 
 Interface extending Mongoose Model with additional methods for Snapshot.
 
@@ -20,7 +20,7 @@ Interface extending Mongoose Model with additional methods for Snapshot.
 
 > **new SnapshotModel**\<`DocType`\>(`doc?`, `fields?`, `options?`): `Document`\<`unknown`, \{ \}, [`Snapshot`](Snapshot.md), \{ \}, \{ \}\> & [`Snapshot`](Snapshot.md) & `object` & `object`
 
-Defined in: [packages/database/src/shared/types/Snapshot.interface.ts:78](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/database/src/shared/types/Snapshot.interface.ts#L78)
+Defined in: [packages/database/src/shared/types/Snapshot.interface.ts:83](https://github.com/TogetherCrew/reputo/blob/bc7521151e0cf79ab1c29321ef1e6ee87b55063d/packages/database/src/shared/types/Snapshot.interface.ts#L83)
 
 #### Parameters
 
@@ -48,9 +48,9 @@ Defined in: [packages/database/src/shared/types/Snapshot.interface.ts:78](https:
 
 ### paginate()
 
-> **paginate**: (`filter`, `options`) => `Promise`\<[`PaginateResult`](PaginateResult.md)\<`Document`\<`unknown`, \{ \}, [`Snapshot`](Snapshot.md), \{ \}, \{ \}\> & [`Snapshot`](Snapshot.md) & `object` & `object`\>\>
+> **paginate**: (`filter`, `options`) => `Promise`\<[`PaginateResult`](PaginateResult.md)\<[`SnapshotDoc`](../type-aliases/SnapshotDoc.md)\>\>
 
-Defined in: [packages/database/src/shared/types/Snapshot.interface.ts:80](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/database/src/shared/types/Snapshot.interface.ts#L80)
+Defined in: [packages/database/src/shared/types/Snapshot.interface.ts:85](https://github.com/TogetherCrew/reputo/blob/bc7521151e0cf79ab1c29321ef1e6ee87b55063d/packages/database/src/shared/types/Snapshot.interface.ts#L85)
 
 Pagination method for querying snapshots
 
@@ -66,4 +66,4 @@ Pagination method for querying snapshots
 
 #### Returns
 
-`Promise`\<[`PaginateResult`](PaginateResult.md)\<`Document`\<`unknown`, \{ \}, [`Snapshot`](Snapshot.md), \{ \}, \{ \}\> & [`Snapshot`](Snapshot.md) & `object` & `object`\>\>
+`Promise`\<[`PaginateResult`](PaginateResult.md)\<[`SnapshotDoc`](../type-aliases/SnapshotDoc.md)\>\>

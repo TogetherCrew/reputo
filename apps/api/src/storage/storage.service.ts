@@ -110,6 +110,39 @@ export class StorageService {
     }
   }
 
+  async deleteObject(key: string): Promise<void> {
+    try {
+      await this.storage.deleteObject({
+        bucket: this.bucket,
+        key,
+      });
+    } catch (error) {
+      this.handleStorageError(error);
+    }
+  }
+
+  async listObjectsByPrefix(prefix: string): Promise<string[]> {
+    try {
+      return await this.storage.listObjectsByPrefix({
+        bucket: this.bucket,
+        prefix,
+      });
+    } catch (error) {
+      this.handleStorageError(error);
+    }
+  }
+
+  async deleteObjects(keys: string[]): Promise<{ deleted: string[]; errors: Array<{ key: string; message: string }> }> {
+    try {
+      return await this.storage.deleteObjects({
+        bucket: this.bucket,
+        keys,
+      });
+    } catch (error) {
+      this.handleStorageError(error);
+    }
+  }
+
   private handleStorageError(error: unknown): never {
     if (error instanceof FileTooLargeError) {
       throw new FileTooLargeException(error.maxSizeBytes);

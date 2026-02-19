@@ -5,6 +5,11 @@ import {
   searchAlgorithmDefinitions,
 } from "@reputo/reputation-algorithms"
 
+/** Display labels for known algorithm dependency keys (e.g. external data sources) */
+const DEPENDENCY_KEY_TO_LABEL: Record<string, string> = {
+  "deepfunding-portal-api": "DeepFunding Portal API",
+}
+
 // Transform the AlgorithmDefinition from the package to match the UI's expected format
 export interface Algorithm {
   id: string
@@ -20,10 +25,17 @@ export interface Algorithm {
     type: string
     label: string
   }>
+  /** Labels for data-source dependencies (e.g. external APIs) to show in Inputs section */
+  dataSourceLabels: string[]
 }
 
 // Transform AlgorithmDefinition to UI Algorithm format
 function transformAlgorithm(definition: AlgorithmDefinition): Algorithm {
+  const dataSourceLabels =
+    definition.dependencies
+      ?.map((dep) => DEPENDENCY_KEY_TO_LABEL[dep.key])
+      .filter((label): label is string => Boolean(label)) ?? []
+
   return {
     id: definition.key,
     title: definition.name,
@@ -40,6 +52,7 @@ function transformAlgorithm(definition: AlgorithmDefinition): Algorithm {
       type: input.type,
       label: input.label || input.key,
     })),
+    dataSourceLabels,
   }
 }
 

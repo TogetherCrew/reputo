@@ -133,5 +133,45 @@ describe('Database Activities', () => {
         { new: true },
       );
     });
+
+    it('should set error.timestamp when updating with error', async () => {
+      const updatedSnapshot: Snapshot = {
+        status: 'failed',
+        algorithmPreset: '507f1f77bcf86cd799439011',
+        algorithmPresetFrozen: {
+          key: 'voting_engagement',
+          version: '1.0.0',
+          inputs: [],
+        },
+      };
+
+      mockFindByIdAndUpdate.mockReturnValue({
+        lean: vi.fn().mockReturnValue({
+          exec: vi.fn().mockResolvedValue(updatedSnapshot),
+        }),
+      });
+
+      const activities = createDbActivities();
+
+      await activities.updateSnapshot({
+        snapshotId: '507f1f77bcf86cd799439011',
+        status: 'failed',
+        error: { message: 'Algorithm failed' },
+      });
+
+      expect(mockFindByIdAndUpdate).toHaveBeenCalledWith(
+        '507f1f77bcf86cd799439011',
+        expect.objectContaining({
+          $set: expect.objectContaining({
+            status: 'failed',
+            error: {
+              message: 'Algorithm failed',
+              timestamp: expect.any(String),
+            },
+          }),
+        }),
+        { new: true },
+      );
+    });
   });
 });

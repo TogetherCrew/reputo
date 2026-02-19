@@ -11,7 +11,6 @@ const REQUIRED_KEYS: (keyof ContributionScoreParams)[] = [
   'projectOwnerUpvoteBonusMultiplier',
   'engagementWindowMonths',
   'monthlyDecayRatePercent',
-  'decayBucketSizeMonths',
 ];
 
 /** Mapping from snake_case input keys to camelCase param keys. */
@@ -23,7 +22,6 @@ const KEY_MAP: Record<string, keyof ContributionScoreParams> = {
   project_owner_upvote_bonus_multiplier: 'projectOwnerUpvoteBonusMultiplier',
   engagement_window_months: 'engagementWindowMonths',
   monthly_decay_rate_percent: 'monthlyDecayRatePercent',
-  decay_bucket_size_months: 'decayBucketSizeMonths',
 };
 
 /**

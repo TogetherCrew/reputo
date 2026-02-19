@@ -16,14 +16,12 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
   Card,
-  CardAction,
   CardContent,
   CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { Checkbox } from "@/components/ui/checkbox"
 import {
   Empty,
   EmptyDescription,
@@ -192,7 +190,7 @@ export default function Home() {
                               viewMode === "list" && "max-w-none"
                             )}
                           >
-                            <CardHeader className="grid grid-cols-[1fr_auto] gap-2">
+                            <CardHeader>
                               <div className="flex flex-col gap-2 min-w-0">
                                 <Badge variant="outline" className="w-fit">
                                   {algo.category}
@@ -207,12 +205,6 @@ export default function Home() {
                                   {algo.title}
                                 </CardTitle>
                               </div>
-                              <CardAction>
-                                <Checkbox
-                                  aria-label="Select algorithm"
-                                  className="size-5 rounded-full"
-                                />
-                              </CardAction>
                             </CardHeader>
 
                             <CardContent className="-mt-3">
@@ -242,6 +234,15 @@ export default function Home() {
                                     type={input.type}
                                     label={input.label}
                                   />
+                                ))}
+                                {algo.dataSourceLabels.map((label) => (
+                                  <span
+                                    key={label}
+                                    className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 text-xs font-medium"
+                                    title="Data is fetched from this source"
+                                  >
+                                    {label}
+                                  </span>
                                 ))}
                               </div>
                             </CardFooter>

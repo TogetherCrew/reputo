@@ -195,32 +195,6 @@ export interface ParsedSnapshotKey extends ParsedStorageKeyBase {
 export type ParsedStorageKey = ParsedUploadKey | ParsedSnapshotKey;
 
 /**
- * @deprecated Use ParsedStorageKey with type discrimination instead.
- * Legacy interface for backward compatibility.
- */
-export interface LegacyParsedStorageKey {
-  /**
-   * Full filename including extension.
-   *
-   * @example 'data.csv'
-   */
-  filename: string;
-
-  /**
-   * File extension without the dot.
-   *
-   * @example 'csv'
-   */
-  ext: string;
-
-  /**
-   * Unix timestamp (seconds since epoch) when the key was generated.
-   * Only present for upload keys.
-   */
-  timestamp: number;
-}
-
-/**
  * Complete metadata about a stored object.
  * Includes both parsed key information and S3 object metadata.
  */
@@ -293,4 +267,73 @@ export interface PresignedDownload {
    * Complete metadata about the object.
    */
   metadata: StorageMetadata;
+}
+
+/**
+ * Options for deleting a single object from S3.
+ */
+export interface DeleteObjectOptions {
+  /**
+   * S3 bucket name where the object is stored.
+   */
+  bucket: string;
+
+  /**
+   * S3 key of the object to delete.
+   */
+  key: string;
+}
+
+/**
+ * Options for listing objects by prefix.
+ */
+export interface ListObjectsByPrefixOptions {
+  /**
+   * S3 bucket name where the objects are stored.
+   */
+  bucket: string;
+
+  /**
+   * Prefix to filter objects by.
+   */
+  prefix: string;
+
+  /**
+   * Maximum number of keys to return per page.
+   * Default is 1000 (S3 maximum).
+   */
+  maxKeys?: number;
+}
+
+/**
+ * Options for deleting multiple objects from S3.
+ */
+export interface DeleteObjectsOptions {
+  /**
+   * S3 bucket name where the objects are stored.
+   */
+  bucket: string;
+
+  /**
+   * Array of S3 keys to delete.
+   */
+  keys: string[];
+}
+
+/**
+ * Result from a batch delete operation.
+ */
+export interface DeleteObjectsResult {
+  /**
+   * Keys that were successfully deleted.
+   */
+  deleted: string[];
+
+  /**
+   * Keys that failed to delete, with error messages.
+   */
+  errors: Array<{
+    key: string;
+    message: string;
+  }>;
 }

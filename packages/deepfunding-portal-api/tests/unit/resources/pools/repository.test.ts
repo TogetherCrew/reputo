@@ -1,15 +1,20 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { create, createMany, findAll, findById } from '../../../../src/resources/pools/repository.js';
+import { createPoolsRepo } from '../../../../src/resources/pools/repository.js';
+import type { DeepFundingPortalDb } from '../../../../src/shared/types/db.js';
 import { cleanupTestDb, createTestDb } from '../../../utils/db-helpers.js';
 import { createMockPool } from '../../../utils/mock-helpers.js';
 
 describe('Pool Repository', () => {
+  let db: DeepFundingPortalDb;
+  let repo: ReturnType<typeof createPoolsRepo>;
+
   beforeEach(() => {
-    createTestDb();
+    db = createTestDb();
+    repo = createPoolsRepo(db);
   });
 
   afterEach(() => {
-    cleanupTestDb();
+    cleanupTestDb(db);
   });
 
   describe('create', () => {
@@ -19,9 +24,9 @@ describe('Pool Repository', () => {
         name: 'Test Pool',
       });
 
-      create(pool);
+      repo.create(pool);
 
-      const result = findById(1);
+      const result = repo.findById(1);
       expect(result).toBeDefined();
       expect(result?.name).toBe('Test Pool');
     });
@@ -31,19 +36,19 @@ describe('Pool Repository', () => {
     it('should insert multiple pools', () => {
       const pools = [createMockPool({ id: 1 }), createMockPool({ id: 2 }), createMockPool({ id: 3 })];
 
-      createMany(pools);
+      repo.createMany(pools);
 
-      const all = findAll();
+      const all = repo.findAll();
       expect(all.length).toBe(3);
     });
   });
 
   describe('findAll', () => {
     it('should return all pools', () => {
-      create(createMockPool({ id: 1 }));
-      create(createMockPool({ id: 2 }));
+      repo.create(createMockPool({ id: 1 }));
+      repo.create(createMockPool({ id: 2 }));
 
-      const result = findAll();
+      const result = repo.findAll();
       expect(result.length).toBe(2);
     });
   });
@@ -54,9 +59,9 @@ describe('Pool Repository', () => {
         id: 1,
         name: 'Specific Pool',
       });
-      create(pool);
+      repo.create(pool);
 
-      const result = findById(1);
+      const result = repo.findById(1);
       expect(result).toBeDefined();
       expect(result?.id).toBe(1);
       expect(result?.name).toBe('Specific Pool');

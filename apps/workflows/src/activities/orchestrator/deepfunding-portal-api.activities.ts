@@ -62,8 +62,9 @@ export function createDeepfundingSyncActivity(ctx: DeepfundingSyncContext) {
     });
 
     const {
-      closeDb,
-      initializeDb,
+      createDb,
+      closeDbInstance,
+      createRepos,
       createDeepFundingClient,
       fetchComments,
       fetchCommentVotes,
@@ -73,14 +74,6 @@ export function createDeepfundingSyncActivity(ctx: DeepfundingSyncContext) {
       fetchReviews,
       fetchRounds,
       fetchUsers,
-      commentsRepo,
-      commentVotesRepo,
-      milestonesRepo,
-      poolsRepo,
-      proposalsRepo,
-      reviewsRepo,
-      roundsRepo,
-      usersRepo,
     } = await import('@reputo/deepfunding-portal-api');
 
     const tempDir = await mkdtemp(join(tmpdir(), `reputo-deepfunding-${snapshotId}-`));
@@ -101,9 +94,10 @@ export function createDeepfundingSyncActivity(ctx: DeepfundingSyncContext) {
 
     const startedAt = new Date().toISOString();
 
-    try {
-      initializeDb({ path: localDbPath });
+    const db = createDb({ path: localDbPath });
+    const repos = createRepos(db);
 
+    try {
       // 1) Rounds
       const rounds = await fetchRounds(client);
       await Promise.all([
@@ -113,7 +107,7 @@ export function createDeepfundingSyncActivity(ctx: DeepfundingSyncContext) {
           body: JSON.stringify(rounds),
           contentType: 'application/json',
         }),
-        roundsRepo.createMany(rounds),
+        repos.rounds.createMany(rounds),
       ]);
 
       // 2) Proposals (per round)
@@ -127,7 +121,7 @@ export function createDeepfundingSyncActivity(ctx: DeepfundingSyncContext) {
               body: JSON.stringify(proposals),
               contentType: 'application/json',
             }),
-            proposalsRepo.createMany(
+            repos.proposals.createMany(
               // biome-ignore lint/suspicious/noExplicitAny: External API type
               (proposals as any[]).map((p: any) => ({
                 ...p,
@@ -147,7 +141,7 @@ export function createDeepfundingSyncActivity(ctx: DeepfundingSyncContext) {
           body: JSON.stringify(pools),
           contentType: 'application/json',
         }),
-        poolsRepo.createMany(pools),
+        repos.pools.createMany(pools),
       ]);
 
       // 4) Milestones (paginated)
@@ -161,7 +155,7 @@ export function createDeepfundingSyncActivity(ctx: DeepfundingSyncContext) {
             body: JSON.stringify(page),
             contentType: 'application/json',
           }),
-          milestonesRepo.createMany(typedPage.data),
+          repos.milestones.createMany(typedPage.data),
         ]);
       }
 
@@ -176,7 +170,7 @@ export function createDeepfundingSyncActivity(ctx: DeepfundingSyncContext) {
             body: JSON.stringify(page),
             contentType: 'application/json',
           }),
-          reviewsRepo.createMany(typedPage.data),
+          repos.reviews.createMany(typedPage.data),
         ]);
       }
 
@@ -191,7 +185,7 @@ export function createDeepfundingSyncActivity(ctx: DeepfundingSyncContext) {
             body: JSON.stringify(page),
             contentType: 'application/json',
           }),
-          commentsRepo.createMany(typedPage.data),
+          repos.comments.createMany(typedPage.data),
         ]);
       }
 
@@ -206,7 +200,7 @@ export function createDeepfundingSyncActivity(ctx: DeepfundingSyncContext) {
             body: JSON.stringify(page),
             contentType: 'application/json',
           }),
-          commentVotesRepo.createMany(typedPage.data),
+          repos.commentVotes.createMany(typedPage.data),
         ]);
       }
 
@@ -221,7 +215,7 @@ export function createDeepfundingSyncActivity(ctx: DeepfundingSyncContext) {
             body: JSON.stringify(page),
             contentType: 'application/json',
           }),
-          usersRepo.createMany(typedPage.data),
+          repos.users.createMany(typedPage.data),
         ]);
       }
 
@@ -263,7 +257,7 @@ export function createDeepfundingSyncActivity(ctx: DeepfundingSyncContext) {
       };
     } finally {
       try {
-        closeDb();
+        closeDbInstance(db);
       } catch {
         // ignore
       }

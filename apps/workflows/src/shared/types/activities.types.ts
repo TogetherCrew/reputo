@@ -4,7 +4,8 @@ import type { Storage } from '@reputo/storage';
 import type { AlgorithmResult, StorageConfig } from './algorithm.types.js';
 import type { ResolveDependencyInput } from './dependency.types.js';
 
-export type Snapshot = SnapshotBase & { _id: string };
+/** Serialized snapshot (activity boundary): base shape with _id as string. */
+export type Snapshot = Omit<SnapshotBase, '_id'> & { _id: string };
 
 export interface GetSnapshotInput {
   snapshotId: string;

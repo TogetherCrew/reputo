@@ -2,14 +2,14 @@
     "key": "contribution_score",
     "name": "Contribution Score",
     "category": "Activity",
-    "summary": "Scores how much value a user adds through comments, boosting community-endorsed contributions and reducing self-serving behavior. Recent, upvoted comments count more than old or self-related ones.",
-    "description": "**How it works (simple):**\n- Each comment starts with a **base score**: `commentBaseScore`.\n- Votes adjust it:\n  - Upvotes add points: `commentUpvoteWeight`\n  - Downvotes subtract points: `commentDownvoteWeight`\n- Self-serving activity is discounted with a **penalty factor**: `selfInteractionPenaltyFactor`\n  - commenting on your own project\n  - replying to yourself\n- A **time decay policy** makes recent comments matter more:\n  - `engagementWindowMonths` (older than this → weight 0)\n  - `monthlyDecayRatePercent` (drops each month bucket)\n- Optional bonus: if the **project owner upvoted** the comment, apply `projectOwnerUpvoteBonusMultiplier`.\n\n**Inputs:**\n- No manual file upload.\n- Data is fetched from DeepFunding Portal APIs.\n\n**Output:**\n- Per-user contribution engagement score (higher = more valuable, recent, community-endorsed commenting).",
+    "summary": "Adds up a user's comment-by-comment points to estimate how much value they contributed. Helpful, upvoted, and recent comments count more; downvoted comments and self-promotional patterns count less. Optional bonus when a proposal owner upvotes.",
+    "description": "### What this algorithm is\nThis algorithm estimates how much value a user adds through comments.\n\nIt gives each comment points, then adds those points across all of the user’s comments.\n\n### What increases or decreases the score\n- Upvotes help and downvotes hurt.\n- Newer comments matter more than older comments.\n- Comments that look like self-promotion can be discounted (commenting on your own proposal or replying to yourself).\n- Optionally, comments upvoted by a proposal owner can get a bonus.\n\n### What data is used\nNo file upload is needed. The algorithm fetches proposals, comments, users, and comment votes from DeepFunding Portal data.\n\n### Outputs\n- A per-user CSV with user_id and contribution_score.\n- A JSON details file with a per-comment breakdown (useful for auditing and debugging).",
     "version": "1.0.0",
     "inputs": [
         {
             "key": "comment_base_score",
             "label": "Comment Base Score",
-            "description": "Baseline points for creating a comment.",
+            "description": "Starting points every comment gets before vote impact, time decay, penalties, and bonuses.",
             "type": "integer",
             "min": 0,
             "max": 100,
@@ -20,86 +20,71 @@
         {
             "key": "comment_upvote_weight",
             "label": "Comment Upvote Weight",
-            "description": "Points added per upvote on a comment.",
+            "description": "How much each upvote increases a comment’s points (higher means upvotes matter more).",
             "type": "number",
             "min": 0,
             "max": 10,
             "default": 1,
             "step": 0.1,
             "required": true,
-            "uiHint": {
-                "widget": "slider"
-            }
+            "uiHint": { "widget": "slider" }
         },
         {
             "key": "comment_downvote_weight",
             "label": "Comment Downvote Weight",
-            "description": "Points subtracted per downvote on a comment.",
+            "description": "How much each downvote decreases a comment’s points (higher means downvotes hurt more).",
             "type": "number",
             "min": 0,
             "max": 10,
             "default": 1,
             "step": 0.1,
             "required": true,
-            "uiHint": {
-                "widget": "slider"
-            }
+            "uiHint": { "widget": "slider" }
         },
         {
             "key": "self_interaction_penalty_factor",
             "label": "Self Interaction Penalty Factor",
-            "description": "Penalty multiplier applied when a comment is self-related (own project) and/or a same-user reply chain.",
+            "description": "Discount factor (0..1) applied when a comment is on your own proposal and/or is a reply to yourself (1 means no discount).",
             "type": "number",
             "min": 0,
             "max": 1,
             "default": 1,
             "step": 0.1,
-            "uiHint": {
-                "widget": "slider"
-            },
+            "uiHint": { "widget": "slider" },
             "required": true
         },
         {
             "key": "project_owner_upvote_bonus_multiplier",
             "label": "Project Owner Upvote Bonus Multiplier",
-            "description": "Bonus multiplier applied only if the project owner upvoted the comment.",
+            "description": "Bonus applied only when a proposal owner upvoted the comment (1 means no bonus).",
             "type": "number",
             "min": 1,
             "max": 10,
-            "default": 1.2,
+            "default": 1,
             "step": 0.1,
             "required": true
         },
         {
             "key": "engagement_window_months",
             "label": "Engagement Window (Months)",
-            "description": "Engagement window in months; items older than this contribute 0.",
+            "description": "How many months back comments are allowed to count; older comments are ignored.",
             "type": "integer",
             "min": 1,
-            "max": 60,
-            "default": 12,
+            "max": 72,
+            "default": 24,
             "step": 1,
             "required": true
         },
         {
             "key": "monthly_decay_rate_percent",
             "label": "Monthly Decay Rate (%)",
-            "description": "Decay rate per month bucket (%). Each month reduces weight by this percentage.",
+            "description": "How quickly older comments lose influence each month (0 means no decay).",
             "type": "integer",
             "min": 0,
             "max": 100,
-            "default": 10,
+            "default": 0,
             "step": 1,
             "required": true
-        },
-        {
-            "key": "decay_bucket_size_months",
-            "label": "Decay Bucket Size (Months)",
-            "description": "Fixed bucket size used for time decay calculations.",
-            "type": "integer",
-            "default": 1,
-            "step": 1,
-            "required": false
         }
     ],
     "dependencies": [{ "key": "deepfunding-portal-api" }],
@@ -107,7 +92,7 @@
         {
             "key": "contribution_score",
             "label": "Contribution Score by User",
-            "description": "Contribution score for each user",
+            "description": "Per-user CSV with columns: user_id (DeepFunding user ID), contribution_score (numeric score).",
             "type": "csv",
             "csv": {
                 "hasHeader": true,
@@ -129,7 +114,7 @@
         {
             "key": "contribution_score_details",
             "label": "Contribution Score Details (JSON)",
-            "description": "Full per-user contribution score breakdown including per-comment scoring components and intermediate values.",
+            "description": "Full per-user breakdown including per-comment scoring components and intermediate values. For debugging and auditing.",
             "type": "json"
         }
     ],

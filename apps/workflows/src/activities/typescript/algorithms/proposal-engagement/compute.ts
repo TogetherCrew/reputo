@@ -1,13 +1,14 @@
 import { rm } from 'node:fs/promises';
 import { dirname } from 'node:path';
 
-import { closeDb, initializeDb, proposalsRepo, reviewsRepo, usersRepo } from '@reputo/deepfunding-portal-api';
+import { closeDbInstance, createDb, createRepos } from '@reputo/deepfunding-portal-api';
 import { generateKey, type Storage } from '@reputo/storage';
 import { Context } from '@temporalio/activity';
-import { stringify } from 'csv-stringify/sync';
 
 import config from '../../../../config/index.js';
+import { HEARTBEAT_INTERVAL } from '../../../../shared/constants/index.js';
 import type { AlgorithmResult, Snapshot } from '../../../../shared/types/index.js';
+import { stringifyCsvAsync } from '../../../../shared/utils/index.js';
 import { buildProposalBenchmarkRecord, formatBenchmarkOutput } from './benchmark/index.js';
 import {
   aggregateCommunityRatings,
@@ -26,21 +27,23 @@ interface UserScoreAccumulator {
 }
 
 export async function computeProposalEngagement(snapshot: Snapshot, storage: Storage): Promise<AlgorithmResult> {
-  const logger = Context.current().log;
+  const ctx = Context.current();
+  const logger = ctx.log;
   const snapshotId = snapshot._id;
   const now = new Date();
 
   const inputs = extractInputs(snapshot.algorithmPresetFrozen.inputs);
   const dbPath = await createDeepFundingDb(snapshotId, storage);
-  initializeDb({ path: dbPath });
+  const db = createDb({ path: dbPath });
+  const repos = createRepos(db);
 
   logger.info('Starting proposal_engagement algorithm', { snapshotId });
   logger.info('Algorithm inputs', inputs);
 
   try {
-    const proposals = proposalsRepo.findAll();
-    const reviews = reviewsRepo.findAll();
-    const users = usersRepo.findAll();
+    const proposals = repos.proposals.findAll();
+    const reviews = repos.reviews.findAll();
+    const users = repos.users.findAll();
 
     logger.info('Loaded data from DeepFunding Portal database', {
       proposalCount: proposals.length,
@@ -55,14 +58,19 @@ export async function computeProposalEngagement(snapshot: Snapshot, storage: Sto
     let totalProposalsScored = 0;
     let proposalsSkippedUnsupportedRound = 0;
 
-    for (const proposal of proposals) {
+    for (let i = 0; i < proposals.length; i++) {
+      const proposal = proposals[i];
+
+      if (i % HEARTBEAT_INTERVAL === 0) {
+        ctx.heartbeat({ phase: 'scoring', processed: i, total: proposals.length });
+      }
+
       const owners = buildProposalOwners(proposal);
       const communityScore = computeCommunityScore(proposal.id, communityRatings);
       const status = classifyProposal(proposal);
       const timeWeight = computeTimeWeightFromString(proposal.createdAt, now, {
         engagementWindowMonths: inputs.engagementWindowMonths,
         monthlyDecayRatePercent: inputs.monthlyDecayRatePercent,
-        decayBucketSizeMonths: inputs.decayBucketSizeMonths,
       });
 
       const score = computeProposalScore({
@@ -125,8 +133,10 @@ export async function computeProposalEngagement(snapshot: Snapshot, storage: Sto
       userCount: results.length,
     });
 
-    // Generate and upload CSV output
-    const csvContent = stringify(results, {
+    ctx.heartbeat({ phase: 'upload' });
+
+    // Generate and upload CSV output (async to avoid blocking the event loop)
+    const csvContent = await stringifyCsvAsync(results, {
       header: true,
       columns: ['user_id', 'proposal_engagement'],
     });
@@ -178,7 +188,7 @@ export async function computeProposalEngagement(snapshot: Snapshot, storage: Sto
       },
     };
   } finally {
-    closeDb();
+    closeDbInstance(db);
     await rm(dirname(dbPath), { recursive: true, force: true });
   }
 }

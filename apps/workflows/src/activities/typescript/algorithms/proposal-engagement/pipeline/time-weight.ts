@@ -1,7 +1,9 @@
+/** Time decay uses a fixed bucket size of 1 month. */
+const DECAY_BUCKET_SIZE_MONTHS = 1;
+
 export interface TimeWeightParams {
   engagementWindowMonths: number;
   monthlyDecayRatePercent: number;
-  decayBucketSizeMonths: number;
 }
 
 export interface TimeWeightResult {
@@ -28,7 +30,7 @@ export interface TimeWeightResult {
  * @returns Time weight result with tw, age, and bucket info
  */
 export function calculateTimeWeight(createdAt: Date, now: Date, params: TimeWeightParams): TimeWeightResult {
-  const { engagementWindowMonths, monthlyDecayRatePercent, decayBucketSizeMonths } = params;
+  const { engagementWindowMonths, monthlyDecayRatePercent } = params;
 
   const isValid = !Number.isNaN(createdAt.getTime());
   if (!isValid) {
@@ -48,13 +50,13 @@ export function calculateTimeWeight(createdAt: Date, now: Date, params: TimeWeig
     return {
       tw: 0,
       ageMonths,
-      bucketIndex: Math.floor(ageMonths / decayBucketSizeMonths),
+      bucketIndex: Math.floor(ageMonths / DECAY_BUCKET_SIZE_MONTHS),
       isValid: true,
       isWithinWindow: false,
     };
   }
 
-  const bucketIndex = Math.floor(ageMonths / decayBucketSizeMonths);
+  const bucketIndex = Math.floor(ageMonths / DECAY_BUCKET_SIZE_MONTHS);
   const tw = Math.max(0, 1 - bucketIndex * (monthlyDecayRatePercent / 100));
 
   return {

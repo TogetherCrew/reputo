@@ -1,9 +1,10 @@
 import { generateKey, type Storage } from '@reputo/storage';
 import { Context } from '@temporalio/activity';
-import { stringify } from 'csv-stringify/sync';
 
 import config from '../../../../config/index.js';
+import { HEARTBEAT_INTERVAL } from '../../../../shared/constants/index.js';
 import type { AlgorithmResult, Snapshot } from '../../../../shared/types/index.js';
+import { stringifyCsvAsync } from '../../../../shared/utils/index.js';
 import { buildVoterBenchmarkRecord, formatBenchmarkOutput } from './benchmark/index.js';
 import { calculateVotingEngagement, groupVotesByVoter } from './pipeline/index.js';
 import type { VoterBenchmarkRecord, VotingEngagementResult } from './types.js';
@@ -18,7 +19,8 @@ import { extractVotesKey, loadVotes } from './utils/index.js';
  * @returns Algorithm result with output file locations
  */
 export async function computeVotingEngagement(snapshot: Snapshot, storage: Storage): Promise<AlgorithmResult> {
-  const logger = Context.current().log;
+  const ctx = Context.current();
+  const logger = ctx.log;
   const snapshotId = snapshot._id;
 
   logger.info('Starting voting_engagement algorithm', { snapshotId });
@@ -42,7 +44,13 @@ export async function computeVotingEngagement(snapshot: Snapshot, storage: Stora
   const results: VotingEngagementResult[] = [];
   const benchmarkRecords: VoterBenchmarkRecord[] = [];
 
+  let processed = 0;
   for (const [voterId, voterVotes] of votesByVoter.entries()) {
+    if (processed % HEARTBEAT_INTERVAL === 0) {
+      ctx.heartbeat({ phase: 'scoring', processed, total: votesByVoter.size });
+    }
+    processed++;
+
     const votingEngagement = roundScore(calculateVotingEngagement(voterVotes));
 
     results.push({
@@ -60,8 +68,10 @@ export async function computeVotingEngagement(snapshot: Snapshot, storage: Stora
     resultCount: results.length,
   });
 
-  // Generate and upload CSV output
-  const csvContent = stringify(results, {
+  ctx.heartbeat({ phase: 'upload' });
+
+  // Generate and upload CSV output (async to avoid blocking the event loop)
+  const csvContent = await stringifyCsvAsync(results, {
     header: true,
     columns: ['collection_id', 'voting_engagement'],
   });

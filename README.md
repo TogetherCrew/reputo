@@ -97,9 +97,10 @@ reputo/
 │   └── workflows/                  # Temporal workflows & algorithm workers
 ├── packages/
 │   ├── algorithm-validator/        # Shared Zod validation library
-│   ├── reputation-algorithms/      # Algorithm definitions registry
-│   ├── storage/                    # Framework-agnostic S3 utilities
-│   └── database/                   # Mongoose database layer
+│   ├── database/                   # Mongoose database layer
+│   ├── deepfunding-portal-api/      # DeepFunding Portal API client & SQLite ingest
+│   ├── reputation-algorithms/       # Algorithm definitions registry
+│   └── storage/                    # Framework-agnostic S3 utilities
 ├── scripts/
 │   ├── create-algorithm.ts         # Unified algorithm creation CLI
 │   └── validate-algorithms.ts      # Algorithm sync validation CLI

@@ -3,7 +3,20 @@
     "version": "2.0.0",
     "description": "Temporal-based workflow orchestration and algorithm workers for Reputo",
     "type": "module",
-    "main": "dist/index.js",
+    "main": "dist/workflows/index.js",
+    "types": "dist/workflows/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./dist/workflows/index.d.ts",
+            "import": "./dist/workflows/index.js",
+            "default": "./dist/workflows/index.js"
+        },
+        "./shared/constants": {
+            "types": "./dist/shared/constants/index.d.ts",
+            "import": "./dist/shared/constants/index.js",
+            "default": "./dist/shared/constants/index.js"
+        }
+    },
     "private": true,
     "scripts": {
         "build": "tsc",

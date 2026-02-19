@@ -1,21 +1,20 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import {
-  create,
-  createMany,
-  findAll,
-  findById,
-  findByProposalId,
-} from '../../../../src/resources/milestones/repository.js';
+import { createMilestonesRepo } from '../../../../src/resources/milestones/repository.js';
+import type { DeepFundingPortalDb } from '../../../../src/shared/types/db.js';
 import { cleanupTestDb, createTestDb } from '../../../utils/db-helpers.js';
 import { createMockMilestone } from '../../../utils/mock-helpers.js';
 
 describe('Milestone Repository', () => {
+  let db: DeepFundingPortalDb;
+  let repo: ReturnType<typeof createMilestonesRepo>;
+
   beforeEach(() => {
-    createTestDb();
+    db = createTestDb();
+    repo = createMilestonesRepo(db);
   });
 
   afterEach(() => {
-    cleanupTestDb();
+    cleanupTestDb(db);
   });
 
   describe('create', () => {
@@ -26,9 +25,9 @@ describe('Milestone Repository', () => {
         title: 'Test Milestone',
       });
 
-      create(milestone);
+      repo.create(milestone);
 
-      const result = findById(1);
+      const result = repo.findById(1);
       expect(result).toBeDefined();
       expect(result?.title).toBe('Test Milestone');
       expect(result?.proposalId).toBe(100);
@@ -43,9 +42,9 @@ describe('Milestone Repository', () => {
         createMockMilestone({ id: 3, proposal_id: 200 }),
       ];
 
-      createMany(milestones);
+      repo.createMany(milestones);
 
-      const all = findAll();
+      const all = repo.findAll();
       expect(all.length).toBe(3);
     });
 
@@ -57,9 +56,9 @@ describe('Milestone Repository', () => {
         }),
       );
 
-      createMany(milestones, { chunkSize: 100 });
+      repo.createMany(milestones, { chunkSize: 100 });
 
-      const all = findAll();
+      const all = repo.findAll();
       expect(all.length).toBe(250);
     });
 
@@ -71,41 +70,41 @@ describe('Milestone Repository', () => {
         }),
       );
 
-      createMany(milestones);
+      repo.createMany(milestones);
 
-      const all = findAll();
+      const all = repo.findAll();
       expect(all.length).toBe(150);
     });
   });
 
   describe('findAll', () => {
     it('should return all milestones', () => {
-      create(createMockMilestone({ id: 1, proposal_id: 100 }));
-      create(createMockMilestone({ id: 2, proposal_id: 200 }));
+      repo.create(createMockMilestone({ id: 1, proposal_id: 100 }));
+      repo.create(createMockMilestone({ id: 2, proposal_id: 200 }));
 
-      const result = findAll();
+      const result = repo.findAll();
       expect(result.length).toBe(2);
     });
 
     it('should return empty array when no milestones exist', () => {
-      const result = findAll();
+      const result = repo.findAll();
       expect(result).toEqual([]);
     });
   });
 
   describe('findByProposalId', () => {
     it('should find milestones by proposal ID', () => {
-      create(createMockMilestone({ id: 1, proposal_id: 100 }));
-      create(createMockMilestone({ id: 2, proposal_id: 100 }));
-      create(createMockMilestone({ id: 3, proposal_id: 200 }));
+      repo.create(createMockMilestone({ id: 1, proposal_id: 100 }));
+      repo.create(createMockMilestone({ id: 2, proposal_id: 100 }));
+      repo.create(createMockMilestone({ id: 3, proposal_id: 200 }));
 
-      const result = findByProposalId(100);
+      const result = repo.findByProposalId(100);
       expect(result.length).toBe(2);
       expect(result.every((m) => m.proposalId === 100)).toBe(true);
     });
 
     it('should return empty array when no milestones found for proposal', () => {
-      const result = findByProposalId(999);
+      const result = repo.findByProposalId(999);
       expect(result).toEqual([]);
     });
   });
@@ -117,16 +116,16 @@ describe('Milestone Repository', () => {
         proposal_id: 100,
         title: 'Specific Milestone',
       });
-      create(milestone);
+      repo.create(milestone);
 
-      const result = findById(1);
+      const result = repo.findById(1);
       expect(result).toBeDefined();
       expect(result?.id).toBe(1);
       expect(result?.title).toBe('Specific Milestone');
     });
 
     it('should return undefined when milestone not found', () => {
-      const result = findById(999);
+      const result = repo.findById(999);
       expect(result).toBeUndefined();
     });
   });

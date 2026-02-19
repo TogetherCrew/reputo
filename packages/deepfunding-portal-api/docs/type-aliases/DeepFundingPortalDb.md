@@ -8,7 +8,7 @@
 
 > **DeepFundingPortalDb** = `object`
 
-Defined in: [packages/deepfunding-portal-api/src/shared/types/db.ts:17](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/deepfunding-portal-api/src/shared/types/db.ts#L17)
+Defined in: [packages/deepfunding-portal-api/src/shared/types/db.ts:17](https://github.com/TogetherCrew/reputo/blob/bc7521151e0cf79ab1c29321ef1e6ee87b55063d/packages/deepfunding-portal-api/src/shared/types/db.ts#L17)
 
 DeepFunding Portal database wrapper
 
@@ -21,7 +21,7 @@ This type represents the structure without the full drizzle type.
 
 > **sqlite**: `Database.Database`
 
-Defined in: [packages/deepfunding-portal-api/src/shared/types/db.ts:19](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/deepfunding-portal-api/src/shared/types/db.ts#L19)
+Defined in: [packages/deepfunding-portal-api/src/shared/types/db.ts:19](https://github.com/TogetherCrew/reputo/blob/bc7521151e0cf79ab1c29321ef1e6ee87b55063d/packages/deepfunding-portal-api/src/shared/types/db.ts#L19)
 
 Underlying SQLite database connection
 
@@ -31,6 +31,6 @@ Underlying SQLite database connection
 
 > **drizzle**: `ReturnType`\<`drizzle`\>
 
-Defined in: [packages/deepfunding-portal-api/src/shared/types/db.ts:21](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/deepfunding-portal-api/src/shared/types/db.ts#L21)
+Defined in: [packages/deepfunding-portal-api/src/shared/types/db.ts:21](https://github.com/TogetherCrew/reputo/blob/bc7521151e0cf79ab1c29321ef1e6ee87b55063d/packages/deepfunding-portal-api/src/shared/types/db.ts#L21)
 
 Drizzle ORM database instance

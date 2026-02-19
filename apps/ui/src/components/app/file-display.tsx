@@ -24,6 +24,32 @@ interface FileDisplayProps {
 }
 
 /**
+ * Trigger file download without opening a new tab.
+ * Fetches from the stream URL so the browser receives
+ * Content-Disposition: attachment and downloads the file.
+ * Uses credentials: "omit" so CORS works when the API responds with
+ * Access-Control-Allow-Origin: * (e.g. preview env); the stream endpoint is public.
+ */
+async function triggerDownload(
+  streamUrl: string,
+  filename?: string
+): Promise<void> {
+  const res = await fetch(streamUrl, { credentials: "omit" })
+  if (!res.ok) throw new Error(`Download failed: ${res.status}`)
+  const blob = await res.blob()
+  const blobUrl = URL.createObjectURL(blob)
+  const a = document.createElement("a")
+  a.href = blobUrl
+  a.download = filename ?? "download"
+  a.rel = "noopener noreferrer"
+  a.style.display = "none"
+  document.body.appendChild(a)
+  a.click()
+  a.remove()
+  URL.revokeObjectURL(blobUrl)
+}
+
+/**
  * Formats file size in a human-readable format
  */
 function formatFileSize(bytes: number): string {
@@ -82,8 +108,8 @@ export function FileDisplay({
   const handleDownload = async () => {
     setIsDownloading(true)
     try {
-      const { url } = await storageApi.createDownload({ key: storageKey })
-      window.open(url, "_blank", "noopener,noreferrer")
+      const streamUrl = storageApi.getStreamUrl(storageKey)
+      await triggerDownload(streamUrl, metadata?.filename)
     } catch (err) {
       console.error("Failed to create download link:", err)
       alert("Failed to create download link")

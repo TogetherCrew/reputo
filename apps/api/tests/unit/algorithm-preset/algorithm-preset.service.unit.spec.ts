@@ -112,6 +112,8 @@ describe('AlgorithmPresetService', () => {
     mockStorageService = {
       getObjectMetadata: vi.fn().mockResolvedValue(validMetadata),
       getObject: vi.fn().mockResolvedValue(validCsvBuffer),
+      listObjectsByPrefix: vi.fn().mockResolvedValue([]),
+      deleteObjects: vi.fn().mockResolvedValue({ deleted: [], errors: [] }),
     } as unknown as StorageService;
 
     mockConfigService = {
@@ -129,6 +131,7 @@ describe('AlgorithmPresetService', () => {
 
     mockTemporalService = {
       cancelSnapshotWorkflows: vi.fn().mockResolvedValue(undefined),
+      terminateSnapshotWorkflows: vi.fn().mockResolvedValue(undefined),
     } as unknown as TemporalService;
 
     const session = {
@@ -643,13 +646,13 @@ describe('AlgorithmPresetService', () => {
     it('should complete successfully when preset is deleted', async () => {
       const id = '507f1f77bcf86cd799439011';
 
-      mockRepository.findById = vi.fn().mockResolvedValue({ _id: id });
+      mockRepository.findById = vi.fn().mockResolvedValue({ _id: id, inputs: [] });
       mockSnapshotRepository.find = vi.fn().mockResolvedValue([]);
       mockRepository.deleteById = vi.fn().mockResolvedValue({ _id: id });
 
       await service.deleteById(id);
 
-      expect(mockTemporalService.cancelSnapshotWorkflows).toHaveBeenCalledWith([]);
+      expect(mockTemporalService.terminateSnapshotWorkflows).toHaveBeenCalledWith([], true);
       expect(mockSnapshotRepository.deleteMany).not.toHaveBeenCalled();
       expect(mockRepository.deleteById).toHaveBeenCalled();
     });
@@ -665,29 +668,104 @@ describe('AlgorithmPresetService', () => {
       await expect(promise).rejects.toThrow(`${MODEL_NAMES.ALGORITHM_PRESET} with ID ${id} not found`);
     });
 
-    it('should cascade delete snapshots and preset', async () => {
+    it('should cascade delete snapshots, terminate workflows, and clean S3', async () => {
       const id = '507f1f77bcf86cd799439011';
-      mockRepository.findById = vi.fn().mockResolvedValue({ _id: id });
-      mockSnapshotRepository.find = vi.fn().mockResolvedValue([
+      const preset = {
+        _id: id,
+        inputs: [
+          { key: 'votes', value: 'uploads/uuid-1/votes.csv' },
+          { key: 'config', value: 'some-value' }, // non-upload value
+        ],
+      };
+      const snapshots = [
         { _id: 's1', status: 'completed' },
         {
           _id: 's2',
           status: 'running',
           temporal: { workflowId: 'wf-1' },
         },
-      ]);
+      ];
+
+      mockRepository.findById = vi.fn().mockResolvedValue(preset);
+      mockSnapshotRepository.find = vi.fn().mockResolvedValue(snapshots);
       mockRepository.deleteById = vi.fn().mockResolvedValue({ _id: id });
-      mockTemporalService.cancelSnapshotWorkflows = vi.fn().mockResolvedValue(undefined);
+      mockStorageService.listObjectsByPrefix = vi
+        .fn()
+        .mockResolvedValueOnce(['snapshots/s1/output1.csv'])
+        .mockResolvedValueOnce(['snapshots/s2/output2.json', 'snapshots/s2/output3.csv']);
+      mockStorageService.deleteObjects = vi.fn().mockResolvedValue({
+        deleted: [
+          'uploads/uuid-1/votes.csv',
+          'snapshots/s1/output1.csv',
+          'snapshots/s2/output2.json',
+          'snapshots/s2/output3.csv',
+        ],
+        errors: [],
+      });
 
       await service.deleteById(id);
 
-      expect(mockTemporalService.cancelSnapshotWorkflows).toHaveBeenCalled();
+      // Verify workflows terminated
+      expect(mockTemporalService.terminateSnapshotWorkflows).toHaveBeenCalledWith(snapshots, true);
+
+      // Verify DB cascade delete
       expect(mockSnapshotRepository.deleteMany).toHaveBeenCalled();
       const [filter] = (mockSnapshotRepository.deleteMany as any).mock.calls[0];
       expect(filter).toEqual({ algorithmPreset: id });
       expect(mockRepository.deleteById).toHaveBeenCalled();
-      const [deleteId] = (mockRepository.deleteById as any).mock.calls[0];
-      expect(deleteId).toBe(id);
+
+      // Verify S3 cleanup
+      expect(mockStorageService.listObjectsByPrefix).toHaveBeenCalledWith('snapshots/s1/');
+      expect(mockStorageService.listObjectsByPrefix).toHaveBeenCalledWith('snapshots/s2/');
+      expect(mockStorageService.deleteObjects).toHaveBeenCalledWith([
+        'uploads/uuid-1/votes.csv',
+        'snapshots/s1/output1.csv',
+        'snapshots/s2/output2.json',
+        'snapshots/s2/output3.csv',
+      ]);
+    });
+
+    it('should handle S3 cleanup failures gracefully', async () => {
+      const id = '507f1f77bcf86cd799439011';
+      const preset = {
+        _id: id,
+        inputs: [{ key: 'votes', value: 'uploads/uuid-1/votes.csv' }],
+      };
+
+      mockRepository.findById = vi.fn().mockResolvedValue(preset);
+      mockSnapshotRepository.find = vi.fn().mockResolvedValue([]);
+      mockRepository.deleteById = vi.fn().mockResolvedValue({ _id: id });
+      mockStorageService.deleteObjects = vi.fn().mockRejectedValue(new Error('S3 error'));
+
+      // Should not throw even if S3 cleanup fails
+      await expect(service.deleteById(id)).resolves.not.toThrow();
+
+      // DB operations should still complete
+      expect(mockRepository.deleteById).toHaveBeenCalled();
+    });
+
+    it('should handle partial S3 deletion failures', async () => {
+      const id = '507f1f77bcf86cd799439011';
+      const preset = {
+        _id: id,
+        inputs: [{ key: 'votes', value: 'uploads/uuid-1/votes.csv' }],
+      };
+      const snapshots = [{ _id: 's1', status: 'completed' }];
+
+      mockRepository.findById = vi.fn().mockResolvedValue(preset);
+      mockSnapshotRepository.find = vi.fn().mockResolvedValue(snapshots);
+      mockRepository.deleteById = vi.fn().mockResolvedValue({ _id: id });
+      mockStorageService.listObjectsByPrefix = vi.fn().mockResolvedValue(['snapshots/s1/output.csv']);
+      mockStorageService.deleteObjects = vi.fn().mockResolvedValue({
+        deleted: ['uploads/uuid-1/votes.csv'],
+        errors: [{ key: 'snapshots/s1/output.csv', message: 'Access denied' }],
+      });
+
+      await service.deleteById(id);
+
+      // Should complete successfully despite partial S3 failure
+      expect(mockRepository.deleteById).toHaveBeenCalled();
+      expect(mockLogger.warn).toHaveBeenCalled();
     });
   });
 });

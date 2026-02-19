@@ -1,4 +1,4 @@
-import type { FilterQuery, HydratedDocument, Model } from 'mongoose';
+import type { FilterQuery, HydratedDocument, Model, Types } from 'mongoose';
 import type { PaginateOptions, PaginateResult } from '../plugins/index.js';
 
 /**
@@ -30,9 +30,14 @@ export interface AlgorithmPreset {
 }
 
 /**
- * Type representing a hydrated AlgorithmPreset document with Mongoose methods.
+ * Type representing a hydrated AlgorithmPreset document with Mongoose methods and explicit _id.
  */
-export type AlgorithmPresetDoc = HydratedDocument<AlgorithmPreset>;
+export type AlgorithmPresetDoc = HydratedDocument<AlgorithmPreset> & { _id: Types.ObjectId };
+
+/**
+ * AlgorithmPreset document with _id (for lean documents returned from queries).
+ */
+export type AlgorithmPresetWithId = AlgorithmPreset & { _id: Types.ObjectId };
 
 /**
  * Interface extending Mongoose Model with additional methods for AlgorithmPreset.

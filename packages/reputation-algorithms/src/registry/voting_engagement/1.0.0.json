@@ -2,14 +2,14 @@
     "key": "voting_engagement",
     "name": "Voting Engagement",
     "category": "Engagement",
-    "summary": "Scores how responsibly a user votes by measuring how balanced and non-extreme their voting pattern is. Higher scores favor users who rate across options instead of always skipping or always giving the same rating.",
-    "description": "**How it works (simple):**\n- Each vote is one of **11 choices**: `skip` or a rating `1..10`.\n- For each user, we compute how often they use each choice (their probability distribution).\n- We compute **entropy** of that distribution:\n  - **High entropy** → votes spread across many options → more responsible / less extreme.\n  - **Low entropy** → mostly one choice (e.g., always skip, or always 10) → more extreme.\n- We normalize by the maximum possible entropy so the final score is in **[0, 1]**.\n\n**Inputs:**\n- A single **Votes CSV**.\n\n**Output:**\n- Per-user voting engagement score `Ve(i)` in **[0,1]**.\n\n**Notes:**\n- You can compute this per round or across multiple rounds to capture consistent voting behavior over time.",
+    "summary": "Measures how varied a user’s votes are. Higher scores mean they use a wider range of options (skip and/or 1 to 10) instead of always choosing the same value. Output is between 0 and 1.",
+    "description": "### What this algorithm is\nThis algorithm measures how varied a voter’s choices are.\n\nIt does not judge whether votes are correct. It only checks whether the voter uses a range of options (skip and/or 1 to 10) or keeps choosing the same option.\n\n### How to interpret the score\n- A lower score means the voter almost always chooses the same option.\n- A higher score means the voter spreads their votes across more options.\n\n### Inputs (Votes CSV)\nEach row is one vote. Votes are grouped by voter using collection_id.\n\nRows are ignored if collection_id, question_id, or answer is missing, or if answer is not one of: skip, 1, 2, ..., 10.\n\n### Outputs\n- A per-voter CSV with a score between 0 and 1.\n- A JSON details file with each voter’s vote distribution and processing stats (useful for auditing and debugging).",
     "version": "1.0.0",
     "inputs": [
         {
             "key": "votes",
             "label": "Votes CSV",
-            "description": "Upload a CSV with the columns below (aliases allowed).",
+            "description": "Votes input CSV that includes voter id, proposal id, and an answer value of skip or 1 to 10 (invalid rows are ignored).",
             "type": "csv",
             "csv": {
                 "hasHeader": true,
@@ -94,8 +94,8 @@
     "outputs": [
         {
             "key": "voting_engagement",
-            "label": "Voting Engagement by User",
-            "description": "Ve(i) in [0,1]",
+            "label": "Voting Engagement by Voter",
+            "description": "Per-voter CSV with columns: collection_id (voter id), voting_engagement (score in [0, 1]).",
             "type": "csv",
             "csv": {
                 "hasHeader": true,
@@ -104,15 +104,21 @@
                     {
                         "key": "collection_id",
                         "type": "string",
-                        "description": "Unique user identifier"
+                        "description": "Unique voter identifier"
                     },
                     {
                         "key": "voting_engagement",
                         "type": "number",
-                        "description": "Voting engagement score Ve(i) in [0,1]"
+                        "description": "Voting engagement score in [0, 1]"
                     }
                 ]
             }
+        },
+        {
+            "key": "voting_engagement_details",
+            "label": "Voting Engagement Details (JSON)",
+            "description": "Per-voter breakdown including vote distribution across the 11 categories plus processing metrics (valid/invalid rows). For debugging and auditing.",
+            "type": "json"
         }
     ],
     "runtime": "typescript"

@@ -1,20 +1,14 @@
 import { rm } from 'node:fs/promises';
 import { dirname } from 'node:path';
 
-import {
-  closeDb,
-  commentsRepo,
-  commentVotesRepo,
-  initializeDb,
-  proposalsRepo,
-  usersRepo,
-} from '@reputo/deepfunding-portal-api';
+import { closeDbInstance, createDb, createRepos } from '@reputo/deepfunding-portal-api';
 import { generateKey, type Storage } from '@reputo/storage';
 import { Context } from '@temporalio/activity';
-import { stringify } from 'csv-stringify/sync';
 
 import config from '../../../../config/index.js';
+import { HEARTBEAT_INTERVAL } from '../../../../shared/constants/index.js';
 import type { AlgorithmResult, Snapshot } from '../../../../shared/types/index.js';
+import { stringifyCsvAsync } from '../../../../shared/utils/index.js';
 import { buildCommentBenchmarkRecord, formatBenchmarkOutput } from './benchmark/index.js';
 import {
   aggregateVotesByComment,
@@ -36,21 +30,23 @@ import {
 } from './utils/index.js';
 
 export async function computeContributionScore(snapshot: Snapshot, storage: Storage): Promise<AlgorithmResult> {
-  const logger = Context.current().log;
+  const ctx = Context.current();
+  const logger = ctx.log;
   const snapshotId = snapshot._id;
 
   const params = extractInputs(snapshot.algorithmPresetFrozen.inputs);
   const dbPath = await createDeepFundingDb(snapshotId, storage);
-  initializeDb({ path: dbPath });
+  const db = createDb({ path: dbPath });
+  const repos = createRepos(db);
 
   logger.info('Starting contribution_score algorithm', { snapshotId });
   logger.info('Algorithm parameters', params);
 
   try {
-    const comments = commentsRepo.findAll();
-    const commentVotes = commentVotesRepo.findAll();
-    const proposals = proposalsRepo.findAll();
-    const users = usersRepo.findAll();
+    const comments = repos.comments.findAll();
+    const commentVotes = repos.commentVotes.findAll();
+    const proposals = repos.proposals.findAll();
+    const users = repos.users.findAll();
 
     logger.info('Loaded data from DeepFunding Portal database', {
       commentCount: comments.length,
@@ -73,7 +69,12 @@ export async function computeContributionScore(snapshot: Snapshot, storage: Stor
 
     // Process each comment through the pipeline
     // Only score comments whose author exists in the users table
-    for (const comment of comments) {
+    for (let i = 0; i < comments.length; i++) {
+      if (i % HEARTBEAT_INTERVAL === 0) {
+        ctx.heartbeat({ phase: 'scoring', processed: i, total: comments.length });
+      }
+
+      const comment = comments[i];
       if (!userIdSet.has(comment.userId)) continue;
 
       const votes = getVoteStats(comment.commentId, voteMap);
@@ -81,7 +82,6 @@ export async function computeContributionScore(snapshot: Snapshot, storage: Stor
       const timeWeight = computeTimeWeightFromString(comment.createdAt, now, {
         engagementWindowMonths: params.engagementWindowMonths,
         monthlyDecayRatePercent: params.monthlyDecayRatePercent,
-        decayBucketSizeMonths: params.decayBucketSizeMonths,
       });
 
       const selfInteraction = detectSelfInteraction(comment, params.selfInteractionPenaltyFactor, {
@@ -132,8 +132,10 @@ export async function computeContributionScore(snapshot: Snapshot, storage: Stor
       userCount: results.length,
     });
 
-    // Generate and upload CSV output
-    const csvContent = stringify(results, {
+    ctx.heartbeat({ phase: 'upload' });
+
+    // Generate and upload CSV output (async to avoid blocking the event loop)
+    const csvContent = await stringifyCsvAsync(results, {
       header: true,
       columns: ['user_id', 'contribution_score'],
     });
@@ -180,7 +182,7 @@ export async function computeContributionScore(snapshot: Snapshot, storage: Stor
       },
     };
   } finally {
-    closeDb();
+    closeDbInstance(db);
     await rm(dirname(dbPath), { recursive: true, force: true });
   }
 }

@@ -3,6 +3,7 @@ import { NativeConnection, Worker } from '@temporalio/worker';
 
 import { dispatchAlgorithm } from '../../activities/typescript/dispatchAlgorithm.activity.js';
 import config from '../../config/index.js';
+import { TYPESCRIPT_ALGORITHM_WORKER_MAX_CONCURRENT_ACTIVITIES } from '../../shared/constants/index.js';
 import { logger } from '../../shared/utils/index.js';
 
 async function run(): Promise<void> {
@@ -37,6 +38,7 @@ async function run(): Promise<void> {
     connection,
     namespace: config.temporal.namespace,
     taskQueue: config.temporal.algorithmTypescriptTaskQueue,
+    maxConcurrentActivityTaskExecutions: TYPESCRIPT_ALGORITHM_WORKER_MAX_CONCURRENT_ACTIVITIES,
     activities,
   });
 
@@ -46,12 +48,19 @@ async function run(): Promise<void> {
     logger.info('Shutting down algorithm worker...');
 
     try {
-      worker.shutdown();
+      try {
+        await worker.shutdown();
+      } catch (shutdownErr) {
+        const msg = shutdownErr instanceof Error ? shutdownErr.message : String(shutdownErr);
+        if (msg.includes('STOPPED') || msg.includes('Not running')) {
+          logger.info('Worker already stopped');
+        } else {
+          throw shutdownErr;
+        }
+      }
       logger.info('Worker shutdown initiated');
 
-      await connection.close();
-      logger.info('Temporal connection closed');
-
+      // Connection is still held by the worker; process exit will close it.
       logger.info('Worker shut down successfully');
       process.exit(0);
     } catch (error) {
@@ -70,6 +79,6 @@ async function run(): Promise<void> {
 }
 
 run().catch((error) => {
-  console.error('Fatal error starting algorithm worker:', error);
+  logger.error({ err: error }, 'Fatal error starting algorithm worker');
   process.exit(1);
 });

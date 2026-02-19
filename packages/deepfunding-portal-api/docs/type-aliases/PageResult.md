@@ -8,7 +8,7 @@
 
 > **PageResult**\<`T`\> = `object`
 
-Defined in: [packages/deepfunding-portal-api/src/shared/types/fetchers.ts:16](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/deepfunding-portal-api/src/shared/types/fetchers.ts#L16)
+Defined in: [packages/deepfunding-portal-api/src/shared/types/fetchers.ts:16](https://github.com/TogetherCrew/reputo/blob/bc7521151e0cf79ab1c29321ef1e6ee87b55063d/packages/deepfunding-portal-api/src/shared/types/fetchers.ts#L16)
 
 Page result with data and pagination info
 
@@ -24,7 +24,7 @@ Page result with data and pagination info
 
 > **data**: `T`[]
 
-Defined in: [packages/deepfunding-portal-api/src/shared/types/fetchers.ts:17](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/deepfunding-portal-api/src/shared/types/fetchers.ts#L17)
+Defined in: [packages/deepfunding-portal-api/src/shared/types/fetchers.ts:17](https://github.com/TogetherCrew/reputo/blob/bc7521151e0cf79ab1c29321ef1e6ee87b55063d/packages/deepfunding-portal-api/src/shared/types/fetchers.ts#L17)
 
 ***
 
@@ -32,4 +32,4 @@ Defined in: [packages/deepfunding-portal-api/src/shared/types/fetchers.ts:17](ht
 
 > **pagination**: [`Pagination`](Pagination.md)
 
-Defined in: [packages/deepfunding-portal-api/src/shared/types/fetchers.ts:18](https://github.com/TogetherCrew/reputo/blob/d3645de26613ef1e4f98fe4ffe438d901c4e46bf/packages/deepfunding-portal-api/src/shared/types/fetchers.ts#L18)
+Defined in: [packages/deepfunding-portal-api/src/shared/types/fetchers.ts:18](https://github.com/TogetherCrew/reputo/blob/bc7521151e0cf79ab1c29321ef1e6ee87b55063d/packages/deepfunding-portal-api/src/shared/types/fetchers.ts#L18)
