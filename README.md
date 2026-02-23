@@ -2,7 +2,7 @@
 
 <p align="center">
   <br/>
-  <a href="https://logid.xyz">Reputo</a> is a privacy-preserving, modular reputation-and-voting platform inspired by Snapshot.
+  <a href="https://logid.xyz">Reputo</a> is a privacy-preserving, modular reputation platform inspired by Snapshot.
   <br/>
 </p>
 
