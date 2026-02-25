@@ -1,77 +1,76 @@
 {
-    "name": "@reputo/workflows",
-    "version": "2.0.0",
-    "description": "Temporal-based workflow orchestration and algorithm workers for Reputo",
-    "type": "module",
-    "main": "dist/workflows/index.js",
-    "types": "dist/workflows/index.d.ts",
-    "exports": {
-        ".": {
-            "types": "./dist/workflows/index.d.ts",
-            "import": "./dist/workflows/index.js",
-            "default": "./dist/workflows/index.js"
-        },
-        "./shared/constants": {
-            "types": "./dist/shared/constants/index.d.ts",
-            "import": "./dist/shared/constants/index.js",
-            "default": "./dist/shared/constants/index.js"
-        }
+  "name": "@reputo/workflows",
+  "version": "2.0.0",
+  "description": "Temporal-based workflow orchestration and algorithm workers for Reputo",
+  "type": "module",
+  "main": "dist/workflows/index.js",
+  "types": "dist/workflows/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/workflows/index.d.ts",
+      "import": "./dist/workflows/index.js",
+      "default": "./dist/workflows/index.js"
     },
-    "private": true,
-    "scripts": {
-        "build": "tsc",
-        "start:orchestrator": "node dist/workers/typescript/orchestrator.worker.js",
-        "start:algorithm-typescript": "node dist/workers/typescript/algorithm.worker.js",
-        "dev:orchestrator": "dotenv -e .env -- nodemon src/workers/typescript/orchestrator.worker.ts",
-        "dev:algorithm-typescript": "dotenv -e .env -- nodemon src/workers/typescript/algorithm.worker.ts",
-        "clean": "rm -rf coverage dist docs node_modules tsconfig.tsbuildinfo",
-        "check": "pnpm exec biome check --write",
-        "lint": "pnpm exec biome lint --write",
-        "format": "pnpm exec biome format --write",
-        "test": "vitest",
-        "test:watch": "vitest --watch",
-        "test:cov": "vitest --coverage",
-        "typecheck": "tsc --noEmit",
-        "release": "semantic-release"
-    },
-    "dependencies": {
-        "@aws-sdk/client-s3": "catalog:",
-        "@reputo/database": "workspace:*",
-        "@reputo/deepfunding-portal-api": "workspace:*",
-        "@reputo/reputation-algorithms": "workspace:*",
-        "@reputo/storage": "workspace:*",
-        "@temporalio/activity": "catalog:",
-        "@temporalio/client": "catalog:",
-        "@temporalio/worker": "catalog:",
-        "@temporalio/workflow": "catalog:",
-        "csv-parse": "^5.6.0",
-        "csv-stringify": "^6.5.2",
-        "dotenv": "^16.4.7",
-        "joi": "^17.13.3",
-        "mongoose": "catalog:",
-        "pino": "catalog:",
-        "pino-pretty": "catalog:"
-    },
-    "devDependencies": {
-        "@biomejs/biome": "catalog:",
-        "@types/node": "catalog:",
-        "dotenv-cli": "^7.4.2",
-        "nodemon": "^3.1.9",
-        "tsx": "catalog:",
-        "typescript": "catalog:",
-        "vitest": "catalog:"
-    },
-    "keywords": [
-        "temporal",
-        "workflow",
-        "orchestration",
-        "reputation",
-        "algorithms"
-    ],
-    "author": {
-        "name": "Behzad Rabiei",
-        "url": "https://github.com/Behzad-rabiei"
-    },
-    "license": "GPL-3.0",
-    "packageManager": "pnpm@10.12.4"
+    "./shared/constants": {
+      "types": "./dist/shared/constants/index.d.ts",
+      "import": "./dist/shared/constants/index.js",
+      "default": "./dist/shared/constants/index.js"
+    }
+  },
+  "private": true,
+  "scripts": {
+    "build": "tsc",
+    "start:orchestrator": "node dist/workers/typescript/orchestrator.worker.js",
+    "start:algorithm-typescript": "node dist/workers/typescript/algorithm.worker.js",
+    "dev:orchestrator": "dotenv -e .env -- nodemon src/workers/typescript/orchestrator.worker.ts",
+    "dev:algorithm-typescript": "dotenv -e .env -- nodemon src/workers/typescript/algorithm.worker.ts",
+    "clean": "rm -rf coverage dist docs node_modules tsconfig.tsbuildinfo",
+    "check": "pnpm exec biome check --write",
+    "lint": "pnpm exec biome lint --write",
+    "format": "pnpm exec biome format --write",
+    "test": "vitest",
+    "test:watch": "vitest --watch",
+    "test:cov": "vitest --coverage",
+    "typecheck": "tsc --noEmit",
+    "release": "semantic-release"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "catalog:",
+    "@reputo/database": "workspace:*",
+    "@reputo/deepfunding-portal-api": "workspace:*",
+    "@reputo/reputation-algorithms": "workspace:*",
+    "@reputo/storage": "workspace:*",
+    "@temporalio/activity": "catalog:",
+    "@temporalio/client": "catalog:",
+    "@temporalio/worker": "catalog:",
+    "@temporalio/workflow": "catalog:",
+    "csv-parse": "^5.6.0",
+    "csv-stringify": "^6.5.2",
+    "joi": "^17.13.3",
+    "mongoose": "catalog:",
+    "pino": "catalog:",
+    "pino-pretty": "catalog:"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "catalog:",
+    "@types/node": "catalog:",
+    "dotenv-cli": "^7.4.2",
+    "nodemon": "^3.1.9",
+    "tsx": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  },
+  "keywords": [
+    "temporal",
+    "workflow",
+    "orchestration",
+    "reputation",
+    "algorithms"
+  ],
+  "author": {
+    "name": "Behzad Rabiei",
+    "url": "https://github.com/Behzad-rabiei"
+  },
+  "license": "GPL-3.0",
+  "packageManager": "pnpm@10.12.4"
 }
