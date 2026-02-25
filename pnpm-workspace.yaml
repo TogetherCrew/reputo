@@ -2,6 +2,59 @@ packages:
     - packages/*
     - apps/*
 
+catalog:
+    # Semantic release & commitlint
+    "@anolilab/semantic-release-pnpm": ^2.0.2
+    "@commitlint/cli": ^19.8.1
+    "@commitlint/config-conventional": ^19.8.1
+    "@semantic-release/changelog": ^6.0.3
+    "@semantic-release/commit-analyzer": ^13.0.1
+    "@semantic-release/exec": ^7.1.0
+    "@semantic-release/git": ^10.0.1
+    "@semantic-release/npm": ^12.0.2
+    "@semantic-release/release-notes-generator": ^14.0.3
+    semantic-release: ^24.2.0
+    semantic-release-commits-lint: ^1.1.0
+    # AWS SDK
+    "@aws-sdk/client-s3": ^3.922.0
+    "@aws-sdk/s3-request-presigner": ^3.922.0
+    # Tooling
+    "@biomejs/biome": ^2.3.7
+    "@swc/cli": ^0.6.0
+    "@swc/core": ^1.12.7
+    tsx: ^4.7.0
+    ts-node: 10.9.2
+    typescript: 5.9.2
+    # Types
+    "@types/js-yaml": ^4.0.9
+    "@types/node": ^22.17.0
+    "@types/react-dom": ^19
+    "@types/supertest": ^6.0.3
+    # Vitest
+    "@vitest/coverage-v8": 3.2.4
+    "@vitest/spy": ^3.2.4
+    "@vitest/ui": 3.2.4
+    vitest: 3.2.4
+    # Docs & validation
+    ajv: ^8.17.1
+    ajv-formats: ^3.0.1
+    axios: ^1.12.2
+    supertest: ^7.1.4
+    typedoc: ^0.28.13
+    typedoc-plugin-markdown: ^4.9.0
+    # Runtime (shared)
+    mongoose: ^8.19.1
+    pino: ^9.8.0
+    pino-pretty: ^13.1.2
+    zod: ^4.1.0
+    # Temporal
+    "@temporalio/activity": ^1.11.3
+    "@temporalio/client": ^1.11.3
+    "@temporalio/worker": ^1.11.3
+    "@temporalio/workflow": ^1.11.3
+    # Paths
+    tsconfig-paths: ^4.2.0
+
 injectWorkspacePackages: true
 syncInjectedDepsAfterScripts:
     - build
