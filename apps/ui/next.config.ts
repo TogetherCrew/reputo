@@ -1,9 +1,10 @@
+import path from "node:path"
 import type { NextConfig } from "next"
 
 const nextConfig: NextConfig = {
-  // Produce a standalone server output for Docker runtime
   output: "standalone",
-  // Transpile workspace packages for Next.js/Turbopack compatibility
+  outputFileTracingRoot: path.join(__dirname, "../../"),
+
   transpilePackages: [
     "@reputo/algorithm-validator",
     "@reputo/reputation-algorithms",
