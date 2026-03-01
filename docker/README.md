@@ -62,9 +62,10 @@ docker-compose -f docker-compose.dev.yml up -d
 
 Used by PullPreview for ephemeral PR environments. Features:
 
-- Builds images from source code
+- Pre-built images from GHCR (built in CI, not on the instance)
 - Traefik without TLS (HTTP only)
 - Uses `PULLPREVIEW_PUBLIC_DNS` for dynamic routing
+- Image tag controlled by `PREVIEW_IMAGE_TAG` env var
 
 ## Environment Files
 

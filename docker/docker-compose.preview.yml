@@ -67,12 +67,9 @@ services:
 
     ui:
         container_name: ui
+        image: ghcr.io/togethercrew/reputo/ui:${PREVIEW_IMAGE_TAG}
         depends_on:
             - traefik
-        build:
-            context: ..
-            dockerfile: docker/Dockerfile
-            target: ui
         restart: unless-stopped
         networks: [preview]
         environment:
@@ -86,15 +83,12 @@ services:
 
     api:
         container_name: api
+        image: ghcr.io/togethercrew/reputo/api:${PREVIEW_IMAGE_TAG}
         depends_on:
             mongodb:
                 condition: service_healthy
             temporal:
                 condition: service_healthy
-        build:
-            context: ..
-            dockerfile: docker/Dockerfile
-            target: api
         restart: unless-stopped
         networks: [preview]
         labels:
@@ -206,15 +200,12 @@ services:
 
     orchestrator-worker:
         container_name: orchestrator-worker
+        image: ghcr.io/togethercrew/reputo/workflows:${PREVIEW_IMAGE_TAG}
         depends_on:
             mongodb:
                 condition: service_healthy
             temporal:
                 condition: service_healthy
-        build:
-            context: ..
-            dockerfile: docker/Dockerfile
-            target: workflows
         command: ['pnpm', 'start:orchestrator']
         restart: unless-stopped
         networks: [preview]
@@ -243,13 +234,10 @@ services:
             - AWS_REGION=eu-central-1
     typescript-worker:
         container_name: typescript-worker
+        image: ghcr.io/togethercrew/reputo/workflows:${PREVIEW_IMAGE_TAG}
         depends_on:
             temporal:
                 condition: service_healthy
-        build:
-            context: ..
-            dockerfile: docker/Dockerfile
-            target: workflows
         command: ['pnpm', 'start:algorithm-typescript']
         restart: unless-stopped
         networks: [preview]

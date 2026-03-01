@@ -8,10 +8,24 @@ on:
 concurrency: ${{ github.ref }}
 
 jobs:
+    build:
+        if: |
+            github.event.action != 'closed' &&
+            (github.event.label.name == 'pullpreview' || contains(github.event.pull_request.labels.*.name, 'pullpreview'))
+        uses: ./.github/workflows/_build-and-push.yml
+        with:
+            ref: ${{ github.event.pull_request.head.sha }}
+            push: true
+            tags: |
+                type=raw,value=preview-${{ github.event.pull_request.head.sha }}
+
     deploy:
         name: deploy
+        needs: build
+        if: |
+            !failure() && !cancelled() &&
+            (github.event.label.name == 'pullpreview' || contains(github.event.pull_request.labels.*.name, 'pullpreview'))
         runs-on: ubuntu-latest
-        if: github.event.label.name == 'pullpreview' || contains(github.event.pull_request.labels.*.name, 'pullpreview')
         timeout-minutes: 30
         permissions:
             contents: read
@@ -26,24 +40,24 @@ jobs:
                   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
                   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
                   DEEPFUNDING_API_KEY: ${{ secrets.DEEPFUNDING_API_KEY }}
-
               run: |
                   echo "AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID" >> .env
                   echo "AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY" >> .env
                   echo "DEEPFUNDING_API_KEY=$DEEPFUNDING_API_KEY" >> .env
+                  echo "PREVIEW_IMAGE_TAG=preview-${{ github.event.pull_request.head.sha }}" >> .env
 
             - name: Generate MongoDB keyfile
               run: |
                   openssl rand -base64 768 > docker/mongo/keyfile.txt
                   chmod 400 docker/mongo/keyfile.txt
 
-            - uses: pullpreview/action@v5
+            - uses: pullpreview/action@v6
               with:
-                  always_on: main
                   label: pullpreview
                   provider: lightsail
                   instance_type: large
                   compose_files: docker/docker-compose.preview.yml
+                  compose_options: ''
                   ttl: 48h
               env:
                   AWS_ACCESS_KEY_ID: '${{ secrets.AWS_ACCESS_KEY_ID }}'
