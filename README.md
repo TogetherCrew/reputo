@@ -27,16 +27,16 @@
 
 ## Apps & Packages
 
-| Path                             | Stack                                                                                                                                                                                                           | Status   | Links                                                                                    |
-| -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ---------------------------------------------------------------------------------------- |
-| `apps/api`                       | ![nestjs](https://img.shields.io/badge/-NestJS-E0234E?logo=nestjs&logoColor=white&style=flat)                                                                                                                   | ✅ Ready | [📚 README](apps/api/README.md) · [📖 API Docs](https://api-staging.logid.xyz/reference) |
-| `apps/ui`                        | ![next](https://img.shields.io/badge/-Next.js-000000?logo=nextdotjs&logoColor=white&style=flat)                                                                                                                 | ✅ Ready | [📚 README](apps/ui/README.md) · [🌐 App](https://staging.logid.xyz)                     |
-| `apps/workflows`                 | ![temporal](https://img.shields.io/badge/-Temporal-000000?logo=temporal&logoColor=white&style=flat) + ![typescript](https://img.shields.io/badge/-TypeScript-3178C6?logo=typescript&logoColor=white&style=flat) | ✅ Ready | [📚 README](apps/workflows/README.md)                                                    |
-| `packages/reputation-algorithms` | ![typescript](https://img.shields.io/badge/-TypeScript-3178C6?logo=typescript&logoColor=white&style=flat)                                                                                                       | ✅ Ready | [📚 README](packages/reputation-algorithms/README.md)                                    |
-| `packages/algorithm-validator`   | ![typescript](https://img.shields.io/badge/-TypeScript-3178C6?logo=typescript&logoColor=white&style=flat)                                                                                                       | ✅ Ready | [📚 README](packages/algorithm-validator/README.md)                                      |
-| `packages/database`              | ![mongoose](https://img.shields.io/badge/-Mongoose-880000?logo=mongoose&logoColor=white&style=flat) + ![typescript](https://img.shields.io/badge/-TypeScript-3178C6?logo=typescript&logoColor=white&style=flat) | ✅ Ready | [📚 README](packages/database/README.md)                                                 |
-| `packages/storage`               | ![typescript](https://img.shields.io/badge/-TypeScript-3178C6?logo=typescript&logoColor=white&style=flat)                                                                                                       | ✅ Ready | [📚 README](packages/storage/README.md)                                                  |
-| `packages/deepfunding-portal-api`| ![typescript](https://img.shields.io/badge/-TypeScript-3178C6?logo=typescript&logoColor=white&style=flat)                                                                                                       | ✅ Ready | [📚 README](packages/deepfunding-portal-api/README.md)                                   |
+| Path                              | Stack                                                                                                                                                                                                           | Status   | Links                                                                                    |
+| --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ---------------------------------------------------------------------------------------- |
+| `apps/api`                        | ![nestjs](https://img.shields.io/badge/-NestJS-E0234E?logo=nestjs&logoColor=white&style=flat)                                                                                                                   | ✅ Ready | [📚 README](apps/api/README.md) · [📖 API Docs](https://api-staging.logid.xyz/reference) |
+| `apps/ui`                         | ![next](https://img.shields.io/badge/-Next.js-000000?logo=nextdotjs&logoColor=white&style=flat)                                                                                                                 | ✅ Ready | [📚 README](apps/ui/README.md) · [🌐 App](https://staging.logid.xyz)                     |
+| `apps/workflows`                  | ![temporal](https://img.shields.io/badge/-Temporal-000000?logo=temporal&logoColor=white&style=flat) + ![typescript](https://img.shields.io/badge/-TypeScript-3178C6?logo=typescript&logoColor=white&style=flat) | ✅ Ready | [📚 README](apps/workflows/README.md)                                                    |
+| `packages/reputation-algorithms`  | ![typescript](https://img.shields.io/badge/-TypeScript-3178C6?logo=typescript&logoColor=white&style=flat)                                                                                                       | ✅ Ready | [📚 README](packages/reputation-algorithms/README.md)                                    |
+| `packages/algorithm-validator`    | ![typescript](https://img.shields.io/badge/-TypeScript-3178C6?logo=typescript&logoColor=white&style=flat)                                                                                                       | ✅ Ready | [📚 README](packages/algorithm-validator/README.md)                                      |
+| `packages/database`               | ![mongoose](https://img.shields.io/badge/-Mongoose-880000?logo=mongoose&logoColor=white&style=flat) + ![typescript](https://img.shields.io/badge/-TypeScript-3178C6?logo=typescript&logoColor=white&style=flat) | ✅ Ready | [📚 README](packages/database/README.md)                                                 |
+| `packages/storage`                | ![typescript](https://img.shields.io/badge/-TypeScript-3178C6?logo=typescript&logoColor=white&style=flat)                                                                                                       | ✅ Ready | [📚 README](packages/storage/README.md)                                                  |
+| `packages/deepfunding-portal-api` | ![typescript](https://img.shields.io/badge/-TypeScript-3178C6?logo=typescript&logoColor=white&style=flat)                                                                                                       | ✅ Ready | [📚 README](packages/deepfunding-portal-api/README.md)                                   |
 
 ---
 
@@ -73,17 +73,17 @@ docker compose -f docker/docker-compose.dev.yml up --build
 
 ### Development Environment
 
--   **Node.js**: 20.x or higher
--   **pnpm**: 10.12.4 or higher
--   **Docker**: For containerized development
--   **Git**: With Lefthook for git hooks
+- **Node.js**: 20.x or higher
+- **pnpm**: 10.12.4 or higher
+- **Docker**: For containerized development
+- **Git**: With Lefthook for git hooks
 
 ### Production/Staging Deployment
 
--   **Docker & Docker Compose**: Container orchestration
--   **Traefik**: Reverse proxy
--   **Domain & DNS**: For SSL certificate generation
--   **Cloudflare API Token**: For DNS challenge
+- **Docker & Docker Compose**: Container orchestration
+- **Traefik**: Reverse proxy
+- **Domain & DNS**: For SSL certificate generation
+- **Cloudflare API Token**: For DNS challenge
 
 ---
 
@@ -98,8 +98,8 @@ reputo/
 ├── packages/
 │   ├── algorithm-validator/        # Shared Zod validation library
 │   ├── database/                   # Mongoose database layer
-│   ├── deepfunding-portal-api/      # DeepFunding Portal API client & SQLite ingest
-│   ├── reputation-algorithms/       # Algorithm definitions registry
+│   ├── deepfunding-portal-api/     # DeepFunding Portal API client & SQLite ingest
+│   ├── reputation-algorithms/      # Algorithm definitions registry
 │   └── storage/                    # Framework-agnostic S3 utilities
 ├── scripts/
 │   ├── create-algorithm.ts         # Unified algorithm creation CLI
@@ -130,28 +130,28 @@ We follow a three-tier deployment strategy with automated promotion:
 
 #### Preview Environment (Pull Requests)
 
--   **Trigger**: Adding `pullpreview` label to PRs
--   **Infrastructure**: AWS Lightsail
--   **URL**: Dynamic subdomain generated per PR
--   **Cleanup**: Auto-expires after 48h or PR closure
+- **Trigger**: Adding `pullpreview` label to PRs
+- **Infrastructure**: AWS Lightsail
+- **URL**: Dynamic subdomain generated per PR
+- **Cleanup**: Auto-expires after 48h or PR closure
 
 #### Staging Environment
 
--   **Trigger**: Merge to `main` branch (automated)
--   **URL**:
-    -   UI: [staging.logid.xyz](https://staging.logid.xyz)
-    -   API: [api-staging.logid.xyz](https://api-staging.logid.xyz)
-    -   Traefik: [traefik-staging.logid.xyz/dashboard](https://traefik-staging.logid.xyz/dashboard/)
--   **Deployment**: Watchtower auto-pulls `staging` tagged images
+- **Trigger**: Merge to `main` branch (automated)
+- **URL**:
+    - UI: [staging.logid.xyz](https://staging.logid.xyz)
+    - API: [api-staging.logid.xyz](https://api-staging.logid.xyz)
+    - Traefik: [traefik-staging.logid.xyz/dashboard](https://traefik-staging.logid.xyz/dashboard/)
+- **Deployment**: Watchtower auto-pulls `staging` tagged images
 
 #### Production Environment
 
--   **Trigger**: Manual workflow dispatch with commit SHA
--   **URL**:
-    -   UI: [logid.xyz](https://logid.xyz)
-    -   API: [api.logid.xyz](https://api.logid.xyz)
-    -   Traefik: [traefik.logid.xyz/dashboard](https://traefik.logid.xyz/dashboard/)
--   **Process**: Promotes staging images with `production` tags
+- **Trigger**: Manual workflow dispatch with commit SHA
+- **URL**:
+    - UI: [logid.xyz](https://logid.xyz)
+    - API: [api.logid.xyz](https://api.logid.xyz)
+    - Traefik: [traefik.logid.xyz/dashboard](https://traefik.logid.xyz/dashboard/)
+- **Process**: Promotes staging images with `production` tags
 
 ---
 
@@ -183,14 +183,14 @@ pnpm algorithm:create proposal_engagement 1.0.0
 
 This creates:
 
--   `packages/reputation-algorithms/src/registry/proposal_engagement/1.0.0.json` - Algorithm definition
--   `apps/workflows/src/activities/typescript/algorithms/proposal-engagement/compute.ts` - Activity implementation
--   `apps/workflows/src/activities/typescript/algorithms/proposal-engagement/index.ts` - Activity export
+- `packages/reputation-algorithms/src/registry/proposal_engagement/1.0.0.json` - Algorithm definition
+- `apps/workflows/src/activities/typescript/algorithms/proposal-engagement/compute.ts` - Activity implementation
+- `apps/workflows/src/activities/typescript/algorithms/proposal-engagement/index.ts` - Activity export
 
 **Requirements:**
 
--   `key` must be `snake_case` (e.g., `voting_engagement`, `proposal_score`)
--   `version` must be valid SemVer (e.g., `1.0.0`, `2.1.0-beta`)
+- `key` must be `snake_case` (e.g., `voting_engagement`, `proposal_score`)
+- `version` must be valid SemVer (e.g., `1.0.0`, `2.1.0-beta`)
 
 ### Step 2: Configure the Algorithm Definition
 
@@ -256,7 +256,7 @@ Edit the generated activity file to implement your algorithm:
 
 export async function computeProposalEngagement(
     snapshot: Snapshot,
-    storage: Storage
+    storage: Storage,
 ): Promise<AlgorithmResult> {
     const { inputs } = snapshot.algorithmPresetFrozen
 
@@ -297,9 +297,9 @@ pnpm algorithm:validate
 
 This checks:
 
--   Every definition has a matching algorithm directory with `compute.ts`
--   Every algorithm is registered in the dispatcher
--   Every algorithm is exported in the algorithms index
+- Every definition has a matching algorithm directory with `compute.ts`
+- Every algorithm is registered in the dispatcher
+- Every algorithm is exported in the algorithms index
 
 ### Step 5: Build and Test
 
@@ -345,7 +345,6 @@ This creates a new version file. The activity implementation is shared across ve
     ```
 
 2. **Open Pull Request** to `main`
-
     - Add `pullpreview` label for preview deployment
     - Ensure CI passes
     - Request review from maintainers
