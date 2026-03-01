@@ -11,10 +11,12 @@ import type {
   UpdateAlgorithmPresetDto,
 } from "./types"
 
-// Create axios instance with base configuration
+const API_BASE_PATH = "/api/v1"
+
+// Create axios instance with base configuration.
+// Browser requests should always be same-origin (via Traefik / reverse-proxy).
 const api = axios.create({
-  baseURL:
-    process.env.NEXT_PUBLIC_API_URL || "https://api-staging.logid.xyz/api/v1",
+  baseURL: API_BASE_PATH,
   headers: {
     "Content-Type": "application/json",
   },
@@ -88,8 +90,10 @@ export const snapshotsApi = {
 
   // Subscribe to snapshot events via SSE
   subscribeToEvents: (params?: { algorithmPreset?: string }): EventSource => {
-    const baseUrl = api.defaults.baseURL || ""
-    const url = new URL(`${baseUrl}/snapshots/events`)
+    const url = new URL(
+      `${API_BASE_PATH}/snapshots/events`,
+      window.location.href
+    )
     if (params?.algorithmPreset) {
       url.searchParams.set("algorithmPreset", params.algorithmPreset)
     }
@@ -115,9 +119,7 @@ export const storageApi = {
   },
   /** Same-origin stream URL for download (avoids new tab; use for triggerDownload). */
   getStreamUrl: (key: string): string => {
-    const base = api.defaults.baseURL ?? ""
-    const sep = base.endsWith("/") ? "" : "/"
-    return `${base}${sep}storage/stream?key=${encodeURIComponent(key)}`
+    return `${API_BASE_PATH}/storage/stream?key=${encodeURIComponent(key)}`
   },
   // Verify upload and get metadata
   verify: async (data: {

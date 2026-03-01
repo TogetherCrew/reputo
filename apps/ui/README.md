@@ -13,11 +13,11 @@ Next.js-based frontend for Reputo. Built with Next.js 15 (App Router), React 19,
 ## Development
 
 ```bash
-# Start development server (Turbopack)
+# Start development server (Turbopack, port 4000)
 pnpm --filter @reputo/ui dev
 
-# Local URL
-open http://localhost:3000
+# Local URL (with pnpm -r dev, API runs on 3000)
+open http://localhost:4000
 ```
 
 ## Build & Start
@@ -32,14 +32,7 @@ pnpm --filter @reputo/ui start
 
 ## Environment Variables
 
-Create `.env.local` from `envs.example` and set the public API base URL used by the UI:
-
-```bash
-# .env.local
-NEXT_PUBLIC_API_URL=http://localhost:3000/api/v1
-```
-
-See `envs.example` for details.
+The UI always calls the API via same-origin relative paths (e.g. `/api/v1/...`). In Docker, Traefik routes `/api` to the API service. For local dev (`pnpm -r dev`), copy `.env.example` to `.env` and set `API_PROXY_TARGET=http://localhost:3000` so Next.js rewrites `/api` to the API server.
 
 ## Tech Stack
 
