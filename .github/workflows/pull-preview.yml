@@ -35,16 +35,18 @@ jobs:
         steps:
             - uses: actions/checkout@v4
 
-            - name: Generate .env for docker-compose
+            - name: Generate .env 
               env:
                   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
                   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
                   DEEPFUNDING_API_KEY: ${{ secrets.DEEPFUNDING_API_KEY }}
               run: |
-                  echo "AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID" >> .env
-                  echo "AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY" >> .env
-                  echo "DEEPFUNDING_API_KEY=$DEEPFUNDING_API_KEY" >> .env
-                  echo "PREVIEW_IMAGE_TAG=preview-${{ github.event.pull_request.head.sha }}" >> .env
+                    cat > docker/preview/.env <<EOF
+                    AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+                    AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+                    DEEPFUNDING_API_KEY=$DEEPFUNDING_API_KEY
+                    PREVIEW_IMAGE_TAG=sha-${{ github.event.pull_request.head.sha }}
+                    EOF
 
             - name: Generate MongoDB keyfile
               run: |
