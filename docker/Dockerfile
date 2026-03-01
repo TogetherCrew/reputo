@@ -34,8 +34,8 @@ ENV NODE_ENV=production
 ENV PORT=8080
 
 COPY --from=build-ui /usr/src/app/apps/ui/.next/standalone ./
-COPY --from=build-ui /usr/src/app/apps/ui/.next/static ./.next/static
-COPY --from=build-ui /usr/src/app/apps/ui/public ./public
+COPY --from=build-ui /usr/src/app/apps/ui/.next/static ./apps/ui/.next/static
+COPY --from=build-ui /usr/src/app/apps/ui/public ./apps/ui/public
 
 EXPOSE 8080
 CMD ["node", "apps/ui/server.js"]

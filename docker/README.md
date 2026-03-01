@@ -34,10 +34,10 @@ docker/
 
 Used for production and staging deployments. Features:
 
--   Pre-built images from GitHub Container Registry (GHCR)
--   Traefik reverse proxy with TLS via Cloudflare
--   Watchtower for automatic container updates
--   External `web` network
+- Pre-built images from GitHub Container Registry (GHCR)
+- Traefik reverse proxy with TLS via Cloudflare
+- Watchtower for automatic container updates
+- External `web` network
 
 ```bash
 cd docker
@@ -48,10 +48,10 @@ docker-compose up -d
 
 Used for local development. Features:
 
--   Builds images from source code
--   Hot-reload via mounted source volumes
--   MongoDB with replica set and authentication
--   Exposed ports for direct access (API: 3000, UI: 8080, Temporal UI: 8088)
+- Builds images from source code
+- Hot-reload via mounted source volumes
+- MongoDB with replica set and authentication
+- Exposed ports for direct access (API: 3000, UI: 8080, Temporal UI: 8088)
 
 ```bash
 cd docker
@@ -62,9 +62,9 @@ docker-compose -f docker-compose.dev.yml up -d
 
 Used by PullPreview for ephemeral PR environments. Features:
 
--   Builds images from source code
--   Traefik without TLS (HTTP only)
--   Uses `PULLPREVIEW_PUBLIC_DNS` for dynamic routing
+- Builds images from source code
+- Traefik without TLS (HTTP only)
+- Uses `PULLPREVIEW_PUBLIC_DNS` for dynamic routing
 
 ## Environment Files
 
@@ -97,45 +97,45 @@ for f in *.env.example; do cp "$f" "../${f%.example}"; done
 
 ## Services
 
-| Service                  | Description                           | Ports   |
-| ------------------------ | ------------------------------------- | ------- |
-| `api`                    | NestJS backend API                    | 3000    |
-| `ui`                     | Next.js frontend                      | 8080    |
-| `orchestrator-worker`    | Temporal workflow orchestrator        | -       |
-| `typescript-worker`      | Temporal algorithm activity worker    | -       |
-| `mongodb`                | MongoDB database (replica set)        | 27017   |
-| `temporal`               | Temporal server                       | 7233    |
-| `temporal-ui`            | Temporal web dashboard                | 8088    |
-| `temporal-postgresql`    | PostgreSQL for Temporal               | -       |
-| `temporal-elasticsearch` | Elasticsearch for Temporal            | -       |
-| `traefik`                | Reverse proxy (production only)       | 80, 443 |
-| `watchtower`             | Auto-updater (production only)        | -       |
+| Service                  | Description                        | Ports   |
+| ------------------------ | ---------------------------------- | ------- |
+| `api`                    | NestJS backend API                 | 3000    |
+| `ui`                     | Next.js frontend                   | 8080    |
+| `orchestrator-worker`    | Temporal workflow orchestrator     | -       |
+| `typescript-worker`      | Temporal algorithm activity worker | -       |
+| `mongodb`                | MongoDB database (replica set)     | 27017   |
+| `temporal`               | Temporal server                    | 7233    |
+| `temporal-ui`            | Temporal web dashboard             | 8088    |
+| `temporal-postgresql`    | PostgreSQL for Temporal            | -       |
+| `temporal-elasticsearch` | Elasticsearch for Temporal         | -       |
+| `traefik`                | Reverse proxy (production only)    | 80, 443 |
+| `watchtower`             | Auto-updater (production only)     | -       |
 
 ## MongoDB Replica Set
 
 All MongoDB instances are configured as replica sets (`rs0`) to support:
 
--   Change Streams (used by workflows)
--   Transactions
+- Change Streams (used by workflows)
+- Transactions
 
 The `mongo/` folder contains initialization scripts:
 
--   `init.js` - Creates database user on first startup
--   `healthcheck.js` - Verifies replica set status
--   `keyfile.txt` - Authentication key for replica set members
+- `init.js` - Creates database user on first startup
+- `healthcheck.js` - Verifies replica set status
+- `keyfile.txt` - Authentication key for replica set members
 
 ## Traefik Configuration
 
 The `traefik/` folder contains:
 
--   `traefik.yml` - Static configuration for Traefik reverse proxy
-    -   HTTP to HTTPS redirection
-    -   Cloudflare DNS challenge for TLS certificates
-    -   Docker provider configuration
+- `traefik.yml` - Static configuration for Traefik reverse proxy
+    - HTTP to HTTPS redirection
+    - Cloudflare DNS challenge for TLS certificates
+    - Docker provider configuration
 
 ## Security Notes
 
--   Local development files use safe default values
--   Production environment files (`.env`) are gitignored
--   Never commit production credentials to the repository
--   In production, use IAM roles for AWS instead of access keys
+- Local development files use safe default values
+- Production environment files (`.env`) are gitignored
+- Never commit production credentials to the repository
+- In production, use IAM roles for AWS instead of access keys

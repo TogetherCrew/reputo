@@ -43,7 +43,7 @@ services:
             start_period: 40s
 
     traefik:
-        image: traefik:v3.5.0
+        image: traefik:v3.6
         container_name: traefik
         ports:
             - '80:80'
@@ -73,16 +73,14 @@ services:
             context: ..
             dockerfile: docker/Dockerfile
             target: ui
-            args:
-                NEXT_PUBLIC_API_URL: http://api.${PULLPREVIEW_PUBLIC_DNS}/api/v1
         restart: unless-stopped
         networks: [preview]
         environment:
-            - NEXT_PUBLIC_API_URL=http://api.${PULLPREVIEW_PUBLIC_DNS}/api/v1
             - PORT=8080
         labels:
             - traefik.enable=true
             - traefik.http.routers.ui.rule=Host(`${PULLPREVIEW_PUBLIC_DNS}`)
+            - traefik.http.routers.ui.priority=1
             - traefik.http.routers.ui.entrypoints=web
             - traefik.http.services.ui.loadbalancer.server.port=8080
 
@@ -104,6 +102,10 @@ services:
             - traefik.http.routers.api.rule=Host(`api.${PULLPREVIEW_PUBLIC_DNS}`)
             - traefik.http.routers.api.entrypoints=web
             - traefik.http.services.api.loadbalancer.server.port=3000
+            - traefik.http.routers.api-ui.rule=Host(`${PULLPREVIEW_PUBLIC_DNS}`) && PathPrefix(`/api`)
+            - traefik.http.routers.api-ui.priority=100
+            - traefik.http.routers.api-ui.entrypoints=web
+            - traefik.http.routers.api-ui.service=api
         environment:
             - NODE_ENV=development
             - PORT=3000
