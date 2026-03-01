@@ -107,7 +107,7 @@ reputo/
 ├── docker/
 │   ├── docker-compose.yml          # Production/staging setup
 │   ├── docker-compose.dev.yml      # Local development
-│   ├── docker-compose.preview.yml  # PR preview environments
+│   ├── preview/                    # PR preview environments
 │   ├── Dockerfile                  # Multi-stage build
 │   └── traefik.yml                 # Reverse proxy config
 ├── .github/
