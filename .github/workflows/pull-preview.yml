@@ -45,7 +45,7 @@ jobs:
                     AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
                     AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
                     DEEPFUNDING_API_KEY=$DEEPFUNDING_API_KEY
-                    PREVIEW_IMAGE_TAG=sha-${{ github.event.pull_request.head.sha }}
+                    PREVIEW_IMAGE_TAG=preview-${{ github.event.pull_request.head.sha }}
                     EOF
 
             - name: Generate MongoDB keyfile
