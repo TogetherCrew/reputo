@@ -2,7 +2,7 @@
     "branches": ["main"],
     "plugins": [
         [
-            "@semantic-release-commits-lint",
+            "semantic-release-commits-lint",
             { "commitlintFile": "./commitlint.config.mjs" }
         ],
         "@semantic-release/release-notes-generator",
