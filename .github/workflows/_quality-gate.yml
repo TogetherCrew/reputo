@@ -36,16 +36,11 @@ jobs:
               env:
                   CI: 'true'
 
-            - name: Upload coverage to Codecov
+            - name: Upload results to Codecov
               uses: codecov/codecov-action@v5
               with:
                 token: ${{ secrets.CODECOV_TOKEN }}
-                
-            - name: Upload test results to Codecov
-              if: ${{ !cancelled() }}
-              uses: codecov/test-results-action@v1
-              with:
-                token: ${{ secrets.CODECOV_TOKEN }}
+                slug: reputo-org/reputo
 
             - name: Build project
               run: pnpm run build

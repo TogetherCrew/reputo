@@ -1,0 +1,1275 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuites name="vitest tests" tests="572" failures="0" errors="0" time="3.874161418">
+    <testsuite name="packages/storage/tests/unit/errors.test.ts" timestamp="2026-03-02T19:46:26.870Z" hostname="Behzads-Mac-mini.local" tests="13" failures="0" errors="0" skipped="0" time="0.010350625">
+        <testcase classname="packages/storage/tests/unit/errors.test.ts" name="StorageError &gt; should create an error with correct name and message" time="0.004309416">
+        </testcase>
+        <testcase classname="packages/storage/tests/unit/errors.test.ts" name="StorageError &gt; should have a stack trace" time="0.002158792">
+        </testcase>
+        <testcase classname="packages/storage/tests/unit/errors.test.ts" name="FileTooLargeError &gt; should create an error with correct properties" time="0.000168375">
+        </testcase>
+        <testcase classname="packages/storage/tests/unit/errors.test.ts" name="FileTooLargeError &gt; should format message with different sizes" time="0.001395">
+        </testcase>
+        <testcase classname="packages/storage/tests/unit/errors.test.ts" name="InvalidContentTypeError &gt; should create an error with correct properties" time="0.000334125">
+        </testcase>
+        <testcase classname="packages/storage/tests/unit/errors.test.ts" name="InvalidContentTypeError &gt; should format message with single allowed type" time="0.000079583">
+        </testcase>
+        <testcase classname="packages/storage/tests/unit/errors.test.ts" name="InvalidContentTypeError &gt; should format message with multiple allowed types" time="0.000047791">
+        </testcase>
+        <testcase classname="packages/storage/tests/unit/errors.test.ts" name="ObjectNotFoundError &gt; should create an error with default message when key is not provided" time="0.000106291">
+        </testcase>
+        <testcase classname="packages/storage/tests/unit/errors.test.ts" name="ObjectNotFoundError &gt; should create an error with key in message when provided" time="0.000146709">
+        </testcase>
+        <testcase classname="packages/storage/tests/unit/errors.test.ts" name="HeadObjectFailedError &gt; should create an error with default message when key is not provided" time="0.000077208">
+        </testcase>
+        <testcase classname="packages/storage/tests/unit/errors.test.ts" name="HeadObjectFailedError &gt; should create an error with key in message when provided" time="0.000032208">
+        </testcase>
+        <testcase classname="packages/storage/tests/unit/errors.test.ts" name="InvalidStorageKeyError &gt; should create an error with key in message" time="0.000061208">
+        </testcase>
+        <testcase classname="packages/storage/tests/unit/errors.test.ts" name="InvalidStorageKeyError &gt; should include reason in message when provided" time="0.000034542">
+        </testcase>
+    </testsuite>
+    <testsuite name="packages/storage/tests/unit/keys.test.ts" timestamp="2026-03-02T19:46:26.871Z" hostname="Behzads-Mac-mini.local" tests="22" failures="0" errors="0" skipped="0" time="0.007860541">
+        <testcase classname="packages/storage/tests/unit/keys.test.ts" name="generateKey &gt; upload keys &gt; should generate a valid upload key with UUID" time="0.00149775">
+        </testcase>
+        <testcase classname="packages/storage/tests/unit/keys.test.ts" name="generateKey &gt; upload keys &gt; should handle filenames with extensions" time="0.00018975">
+        </testcase>
+        <testcase classname="packages/storage/tests/unit/keys.test.ts" name="generateKey &gt; upload keys &gt; should handle filenames without extensions" time="0.000109708">
+        </testcase>
+        <testcase classname="packages/storage/tests/unit/keys.test.ts" name="generateKey &gt; upload keys &gt; should handle nested paths in filename" time="0.0002415">
+        </testcase>
+        <testcase classname="packages/storage/tests/unit/keys.test.ts" name="generateKey &gt; snapshot keys &gt; should generate a valid snapshot key" time="0.000105459">
+        </testcase>
+        <testcase classname="packages/storage/tests/unit/keys.test.ts" name="generateKey &gt; snapshot keys &gt; should handle filenames with extensions" time="0.000116333">
+        </testcase>
+        <testcase classname="packages/storage/tests/unit/keys.test.ts" name="generateKey &gt; snapshot keys &gt; should handle filenames without extensions" time="0.000072667">
+        </testcase>
+        <testcase classname="packages/storage/tests/unit/keys.test.ts" name="generateKey &gt; snapshot keys &gt; should handle nested paths in filename" time="0.000063333">
+        </testcase>
+        <testcase classname="packages/storage/tests/unit/keys.test.ts" name="detectKeyType &gt; should detect upload keys" time="0.000362791">
+        </testcase>
+        <testcase classname="packages/storage/tests/unit/keys.test.ts" name="detectKeyType &gt; should detect snapshot keys" time="0.000120125">
+        </testcase>
+        <testcase classname="packages/storage/tests/unit/keys.test.ts" name="detectKeyType &gt; should return null for unrecognized keys" time="0.000187291">
+        </testcase>
+        <testcase classname="packages/storage/tests/unit/keys.test.ts" name="parseStorageKey &gt; upload keys &gt; should parse a valid upload key correctly" time="0.000557167">
+        </testcase>
+        <testcase classname="packages/storage/tests/unit/keys.test.ts" name="parseStorageKey &gt; upload keys &gt; should handle nested paths after UUID" time="0.000111375">
+        </testcase>
+        <testcase classname="packages/storage/tests/unit/keys.test.ts" name="parseStorageKey &gt; upload keys &gt; should handle filenames with multiple dots" time="0.000089">
+        </testcase>
+        <testcase classname="packages/storage/tests/unit/keys.test.ts" name="parseStorageKey &gt; upload keys &gt; should throw InvalidStorageKeyError if UUID segment is missing" time="0.000704416">
+        </testcase>
+        <testcase classname="packages/storage/tests/unit/keys.test.ts" name="parseStorageKey &gt; snapshot keys &gt; should parse a valid snapshot key correctly" time="0.000347209">
+        </testcase>
+        <testcase classname="packages/storage/tests/unit/keys.test.ts" name="parseStorageKey &gt; snapshot keys &gt; should handle nested paths in snapshot keys" time="0.000134625">
+        </testcase>
+        <testcase classname="packages/storage/tests/unit/keys.test.ts" name="parseStorageKey &gt; snapshot keys &gt; should throw InvalidStorageKeyError if snapshotId segment is missing" time="0.000190959">
+        </testcase>
+        <testcase classname="packages/storage/tests/unit/keys.test.ts" name="parseStorageKey &gt; error handling &gt; should throw InvalidStorageKeyError for unrecognized key patterns" time="0.000152417">
+        </testcase>
+        <testcase classname="packages/storage/tests/unit/keys.test.ts" name="parseStorageKey &gt; error handling &gt; should throw InvalidStorageKeyError if key has insufficient segments" time="0.000203542">
+        </testcase>
+        <testcase classname="packages/storage/tests/unit/keys.test.ts" name="parseStorageKey &gt; error handling &gt; should throw InvalidStorageKeyError if filename has no extension" time="0.000294292">
+        </testcase>
+        <testcase classname="packages/storage/tests/unit/keys.test.ts" name="parseStorageKey &gt; error handling &gt; should preserve the invalid key in the error" time="0.000195417">
+        </testcase>
+    </testsuite>
+    <testsuite name="packages/storage/tests/unit/storage.test.ts" timestamp="2026-03-02T19:46:26.874Z" hostname="Behzads-Mac-mini.local" tests="33" failures="0" errors="0" skipped="0" time="0.024933375">
+        <testcase classname="packages/storage/tests/unit/storage.test.ts" name="Storage &gt; presignPut &gt; should generate a presigned upload URL" time="0.004934042">
+        </testcase>
+        <testcase classname="packages/storage/tests/unit/storage.test.ts" name="Storage &gt; presignPut &gt; should throw InvalidContentTypeError for disallowed content type" time="0.000818334">
+        </testcase>
+        <testcase classname="packages/storage/tests/unit/storage.test.ts" name="Storage &gt; presignPut &gt; should use filename as-is in the generated key" time="0.00026025">
+        </testcase>
+        <testcase classname="packages/storage/tests/unit/storage.test.ts" name="Storage &gt; verify &gt; should verify a valid upload and return metadata" time="0.000417792">
+        </testcase>
+        <testcase classname="packages/storage/tests/unit/storage.test.ts" name="Storage &gt; verify &gt; should throw FileTooLargeError if file exceeds max size" time="0.000246417">
+        </testcase>
+        <testcase classname="packages/storage/tests/unit/storage.test.ts" name="Storage &gt; verify &gt; should throw InvalidContentTypeError for disallowed content type" time="0.00033825">
+        </testcase>
+        <testcase classname="packages/storage/tests/unit/storage.test.ts" name="Storage &gt; verify &gt; should throw ObjectNotFoundError if object does not exist" time="0.001957041">
+        </testcase>
+        <testcase classname="packages/storage/tests/unit/storage.test.ts" name="Storage &gt; verify &gt; should throw HeadObjectFailedError for other S3 errors" time="0.000212333">
+        </testcase>
+        <testcase classname="packages/storage/tests/unit/storage.test.ts" name="Storage &gt; verify &gt; should use default content type if not provided by S3" time="0.000259167">
+        </testcase>
+        <testcase classname="packages/storage/tests/unit/storage.test.ts" name="Storage &gt; presignGet &gt; should generate a presigned download URL with metadata" time="0.000243666">
+        </testcase>
+        <testcase classname="packages/storage/tests/unit/storage.test.ts" name="Storage &gt; presignGet &gt; should throw ObjectNotFoundError if object does not exist" time="0.003829042">
+        </testcase>
+        <testcase classname="packages/storage/tests/unit/storage.test.ts" name="Storage &gt; getObject &gt; should read an object and return Buffer" time="0.00179875">
+        </testcase>
+        <testcase classname="packages/storage/tests/unit/storage.test.ts" name="Storage &gt; getObject &gt; should throw ObjectNotFoundError if object does not exist" time="0.001120041">
+        </testcase>
+        <testcase classname="packages/storage/tests/unit/storage.test.ts" name="Storage &gt; getObject &gt; should throw ObjectNotFoundError for 404 status code" time="0.000762375">
+        </testcase>
+        <testcase classname="packages/storage/tests/unit/storage.test.ts" name="Storage &gt; getObject &gt; should propagate other errors" time="0.001229333">
+        </testcase>
+        <testcase classname="packages/storage/tests/unit/storage.test.ts" name="Storage &gt; putObject &gt; should write a Buffer to S3" time="0.000339416">
+        </testcase>
+        <testcase classname="packages/storage/tests/unit/storage.test.ts" name="Storage &gt; putObject &gt; should write a string to S3" time="0.001326083">
+        </testcase>
+        <testcase classname="packages/storage/tests/unit/storage.test.ts" name="Storage &gt; putObject &gt; should write without content type when not provided" time="0.000336542">
+        </testcase>
+        <testcase classname="packages/storage/tests/unit/storage.test.ts" name="Storage &gt; putObject &gt; should throw InvalidContentTypeError for disallowed content type" time="0.000193208">
+        </testcase>
+        <testcase classname="packages/storage/tests/unit/storage.test.ts" name="Storage &gt; putObject &gt; should write Uint8Array to S3" time="0.000131667">
+        </testcase>
+        <testcase classname="packages/storage/tests/unit/storage.test.ts" name="Storage &gt; deleteObject &gt; should delete a single object" time="0.000232417">
+        </testcase>
+        <testcase classname="packages/storage/tests/unit/storage.test.ts" name="Storage &gt; deleteObject &gt; should be idempotent (no error if object does not exist)" time="0.000199333">
+        </testcase>
+        <testcase classname="packages/storage/tests/unit/storage.test.ts" name="Storage &gt; listObjectsByPrefix &gt; should list all objects under a prefix" time="0.000178666">
+        </testcase>
+        <testcase classname="packages/storage/tests/unit/storage.test.ts" name="Storage &gt; listObjectsByPrefix &gt; should handle pagination when results are truncated" time="0.000167917">
+        </testcase>
+        <testcase classname="packages/storage/tests/unit/storage.test.ts" name="Storage &gt; listObjectsByPrefix &gt; should return empty array when no objects match prefix" time="0.000111417">
+        </testcase>
+        <testcase classname="packages/storage/tests/unit/storage.test.ts" name="Storage &gt; listObjectsByPrefix &gt; should handle missing Contents in response" time="0.000104333">
+        </testcase>
+        <testcase classname="packages/storage/tests/unit/storage.test.ts" name="Storage &gt; deleteObjects &gt; should delete multiple objects in a single batch" time="0.0002585">
+        </testcase>
+        <testcase classname="packages/storage/tests/unit/storage.test.ts" name="Storage &gt; deleteObjects &gt; should handle partial failures" time="0.000148083">
+        </testcase>
+        <testcase classname="packages/storage/tests/unit/storage.test.ts" name="Storage &gt; deleteObjects &gt; should return empty result for empty keys array" time="0.000112417">
+        </testcase>
+        <testcase classname="packages/storage/tests/unit/storage.test.ts" name="Storage &gt; deleteObjects &gt; should batch delete requests for more than 1000 keys" time="0.000465084">
+        </testcase>
+        <testcase classname="packages/storage/tests/unit/storage.test.ts" name="Storage &gt; deleteObjects &gt; should handle batch failure and mark all keys as errors" time="0.000307209">
+        </testcase>
+        <testcase classname="packages/storage/tests/unit/storage.test.ts" name="Storage &gt; configuration &gt; should accept S3Client via constructor" time="0.000094125">
+        </testcase>
+        <testcase classname="packages/storage/tests/unit/storage.test.ts" name="Storage &gt; configuration &gt; should use injected S3Client instance" time="0.000269292">
+        </testcase>
+    </testsuite>
+    <testsuite name="packages/database/tests/unit/connection.test.ts" timestamp="2026-03-02T19:46:26.875Z" hostname="Behzads-Mac-mini.local" tests="6" failures="0" errors="0" skipped="0" time="0.007349375">
+        <testcase classname="packages/database/tests/unit/connection.test.ts" name="Connection &gt; connect &gt; should successfully connect to MongoDB" time="0.004092917">
+        </testcase>
+        <testcase classname="packages/database/tests/unit/connection.test.ts" name="Connection &gt; connect &gt; should throw an error if connection fails" time="0.001565042">
+        </testcase>
+        <testcase classname="packages/database/tests/unit/connection.test.ts" name="Connection &gt; connect &gt; should handle non-Error exceptions" time="0.000441667">
+        </testcase>
+        <testcase classname="packages/database/tests/unit/connection.test.ts" name="Connection &gt; disconnect &gt; should successfully disconnect from MongoDB" time="0.000231125">
+        </testcase>
+        <testcase classname="packages/database/tests/unit/connection.test.ts" name="Connection &gt; disconnect &gt; should throw an error if disconnection fails" time="0.000275458">
+        </testcase>
+        <testcase classname="packages/database/tests/unit/connection.test.ts" name="Connection &gt; disconnect &gt; should handle non-Error exceptions during disconnect" time="0.000153333">
+        </testcase>
+    </testsuite>
+    <testsuite name="packages/database/tests/unit/models/AlgorithmPreset.test.ts" timestamp="2026-03-02T19:46:26.876Z" hostname="Behzads-Mac-mini.local" tests="8" failures="0" errors="0" skipped="0" time="0.035778959">
+        <testcase classname="packages/database/tests/unit/models/AlgorithmPreset.test.ts" name="AlgorithmPreset model &gt; AlgorithmPreset validation &gt; should correctly validate a valid algorithm preset" time="0.029682959">
+        </testcase>
+        <testcase classname="packages/database/tests/unit/models/AlgorithmPreset.test.ts" name="AlgorithmPreset model &gt; AlgorithmPreset pagination &gt; should have paginate method" time="0.000186375">
+        </testcase>
+        <testcase classname="packages/database/tests/unit/models/AlgorithmPreset.test.ts" name="AlgorithmPreset model &gt; AlgorithmPreset pagination &gt; should paginate with custom page and limit" time="0.001547">
+        </testcase>
+        <testcase classname="packages/database/tests/unit/models/AlgorithmPreset.test.ts" name="AlgorithmPreset model &gt; AlgorithmPreset pagination &gt; should handle string page and limit parameters" time="0.002458125">
+        </testcase>
+        <testcase classname="packages/database/tests/unit/models/AlgorithmPreset.test.ts" name="AlgorithmPreset model &gt; AlgorithmPreset pagination &gt; should sort by field ascending" time="0.000305583">
+        </testcase>
+        <testcase classname="packages/database/tests/unit/models/AlgorithmPreset.test.ts" name="AlgorithmPreset model &gt; AlgorithmPreset pagination &gt; should sort by field descending" time="0.000192541">
+        </testcase>
+        <testcase classname="packages/database/tests/unit/models/AlgorithmPreset.test.ts" name="AlgorithmPreset model &gt; AlgorithmPreset pagination &gt; should handle multiple sort criteria" time="0.000196083">
+        </testcase>
+        <testcase classname="packages/database/tests/unit/models/AlgorithmPreset.test.ts" name="AlgorithmPreset model &gt; AlgorithmPreset pagination &gt; should handle filter queries" time="0.000346167">
+        </testcase>
+    </testsuite>
+    <testsuite name="packages/database/tests/unit/models/Snapshot.test.ts" timestamp="2026-03-02T19:46:26.876Z" hostname="Behzads-Mac-mini.local" tests="9" failures="0" errors="0" skipped="0" time="0.0123155">
+        <testcase classname="packages/database/tests/unit/models/Snapshot.test.ts" name="Snapshot model &gt; Snapshot validation &gt; should correctly validate a valid snapshot" time="0.008037417">
+        </testcase>
+        <testcase classname="packages/database/tests/unit/models/Snapshot.test.ts" name="Snapshot model &gt; Snapshot pagination &gt; should have paginate method" time="0.000167875">
+        </testcase>
+        <testcase classname="packages/database/tests/unit/models/Snapshot.test.ts" name="Snapshot model &gt; Snapshot pagination &gt; should paginate with custom page and limit" time="0.001445709">
+        </testcase>
+        <testcase classname="packages/database/tests/unit/models/Snapshot.test.ts" name="Snapshot model &gt; Snapshot pagination &gt; should filter by status" time="0.000485459">
+        </testcase>
+        <testcase classname="packages/database/tests/unit/models/Snapshot.test.ts" name="Snapshot model &gt; Snapshot pagination &gt; should filter by algorithmPresetFrozen.key" time="0.000231333">
+        </testcase>
+        <testcase classname="packages/database/tests/unit/models/Snapshot.test.ts" name="Snapshot model &gt; Snapshot pagination &gt; should filter by algorithmPresetFrozen.version" time="0.000183541">
+        </testcase>
+        <testcase classname="packages/database/tests/unit/models/Snapshot.test.ts" name="Snapshot model &gt; Snapshot pagination &gt; should sort by status ascending" time="0.000167375">
+        </testcase>
+        <testcase classname="packages/database/tests/unit/models/Snapshot.test.ts" name="Snapshot model &gt; Snapshot pagination &gt; should sort by createdAt descending" time="0.000292458">
+        </testcase>
+        <testcase classname="packages/database/tests/unit/models/Snapshot.test.ts" name="Snapshot model &gt; Snapshot pagination &gt; should handle multiple sort criteria" time="0.00023325">
+        </testcase>
+    </testsuite>
+    <testsuite name="apps/workflows/tests/unit/workflows/orchestrator-input.utils.test.ts" timestamp="2026-03-02T19:46:26.877Z" hostname="Behzads-Mac-mini.local" tests="4" failures="0" errors="0" skipped="0" time="0.004480708">
+        <testcase classname="apps/workflows/tests/unit/workflows/orchestrator-input.utils.test.ts" name="getAlgorithmTaskQueueFromRuntime &gt; returns typescript queue when runtime is typescript" time="0.000596">
+        </testcase>
+        <testcase classname="apps/workflows/tests/unit/workflows/orchestrator-input.utils.test.ts" name="getAlgorithmTaskQueueFromRuntime &gt; returns python queue when runtime is python" time="0.000123125">
+        </testcase>
+        <testcase classname="apps/workflows/tests/unit/workflows/orchestrator-input.utils.test.ts" name="getAlgorithmTaskQueueFromRuntime &gt; throws when python runtime has no python queue" time="0.00032025">
+        </testcase>
+        <testcase classname="apps/workflows/tests/unit/workflows/orchestrator-input.utils.test.ts" name="getAlgorithmTaskQueueFromRuntime &gt; throws for unsupported runtime" time="0.000107542">
+        </testcase>
+    </testsuite>
+    <testsuite name="apps/workflows/tests/unit/workflows/orchestrator.workflow.taskqueue.test.ts" timestamp="2026-03-02T19:46:26.877Z" hostname="Behzads-Mac-mini.local" tests="1" failures="0" errors="0" skipped="0" time="0.060441709">
+        <testcase classname="apps/workflows/tests/unit/workflows/orchestrator.workflow.taskqueue.test.ts" name="OrchestratorWorkflow task queue routing &gt; routes dependency resolution to the orchestrator task queue and algorithm execution to the algorithm task queue" time="0.059819542">
+        </testcase>
+    </testsuite>
+    <testsuite name="apps/workflows/tests/unit/activities/algorithm-library.activities.test.ts" timestamp="2026-03-02T19:46:26.877Z" hostname="Behzads-Mac-mini.local" tests="2" failures="0" errors="0" skipped="0" time="0.003636459">
+        <testcase classname="apps/workflows/tests/unit/activities/algorithm-library.activities.test.ts" name="Algorithm Library Activities &gt; getAlgorithmDefinition &gt; should load algorithm definition successfully" time="0.002206084">
+        </testcase>
+        <testcase classname="apps/workflows/tests/unit/activities/algorithm-library.activities.test.ts" name="Algorithm Library Activities &gt; getAlgorithmDefinition &gt; should throw error if algorithm not found" time="0.000618292">
+        </testcase>
+    </testsuite>
+    <testsuite name="apps/workflows/tests/unit/activities/contribution-score-benchmark.test.ts" timestamp="2026-03-02T19:46:26.877Z" hostname="Behzads-Mac-mini.local" tests="3" failures="0" errors="0" skipped="0" time="0.005310417">
+        <testcase classname="apps/workflows/tests/unit/activities/contribution-score-benchmark.test.ts" name="contribution-score benchmark &gt; buildCommentBenchmarkRecord &gt; builds a JSON-serializable record with rounded scores" time="0.001874042">
+        </testcase>
+        <testcase classname="apps/workflows/tests/unit/activities/contribution-score-benchmark.test.ts" name="contribution-score benchmark &gt; formatBenchmarkOutput &gt; includes metadata with included/excluded ids, config, and metrics" time="0.002048417">
+        </testcase>
+        <testcase classname="apps/workflows/tests/unit/activities/contribution-score-benchmark.test.ts" name="contribution-score benchmark &gt; formatBenchmarkOutput &gt; excludes users not in userIdsInResult" time="0.000299417">
+        </testcase>
+    </testsuite>
+    <testsuite name="apps/workflows/tests/unit/activities/database.activities.test.ts" timestamp="2026-03-02T19:46:26.877Z" hostname="Behzads-Mac-mini.local" tests="4" failures="0" errors="0" skipped="0" time="0.007386208">
+        <testcase classname="apps/workflows/tests/unit/activities/database.activities.test.ts" name="Database Activities &gt; getSnapshot &gt; should fetch a snapshot successfully and include _id as string" time="0.003138625">
+        </testcase>
+        <testcase classname="apps/workflows/tests/unit/activities/database.activities.test.ts" name="Database Activities &gt; getSnapshot &gt; should throw error if snapshot not found" time="0.001936417">
+        </testcase>
+        <testcase classname="apps/workflows/tests/unit/activities/database.activities.test.ts" name="Database Activities &gt; updateSnapshot &gt; should update snapshot status successfully" time="0.000813416">
+        </testcase>
+        <testcase classname="apps/workflows/tests/unit/activities/database.activities.test.ts" name="Database Activities &gt; updateSnapshot &gt; should set error.timestamp when updating with error" time="0.000564583">
+        </testcase>
+    </testsuite>
+    <testsuite name="apps/workflows/tests/unit/activities/dispatchAlgorithm.activity.test.ts" timestamp="2026-03-02T19:46:26.877Z" hostname="Behzads-Mac-mini.local" tests="1" failures="0" errors="0" skipped="0" time="1.683030375">
+        <testcase classname="apps/workflows/tests/unit/activities/dispatchAlgorithm.activity.test.ts" name="dispatchAlgorithm activity &gt; throws UnsupportedAlgorithmError for unknown algorithm keys" time="1.681063209">
+        </testcase>
+    </testsuite>
+    <testsuite name="apps/workflows/tests/unit/activities/proposal-engagement-benchmark.test.ts" timestamp="2026-03-02T19:46:26.877Z" hostname="Behzads-Mac-mini.local" tests="7" failures="0" errors="0" skipped="0" time="0.0042425">
+        <testcase classname="apps/workflows/tests/unit/activities/proposal-engagement-benchmark.test.ts" name="proposal-engagement benchmark &gt; buildProposalBenchmarkRecord &gt; builds a JSON-serializable record from pipeline outputs" time="0.00200775">
+        </testcase>
+        <testcase classname="apps/workflows/tests/unit/activities/proposal-engagement-benchmark.test.ts" name="proposal-engagement benchmark &gt; buildProposalBenchmarkRecord &gt; captures skip_reason for skipped proposals" time="0.000099333">
+        </testcase>
+        <testcase classname="apps/workflows/tests/unit/activities/proposal-engagement-benchmark.test.ts" name="proposal-engagement benchmark &gt; buildProposalBenchmarkRecord &gt; captures unsupported_round skip_reason for early-round proposals" time="0.000063333">
+        </testcase>
+        <testcase classname="apps/workflows/tests/unit/activities/proposal-engagement-benchmark.test.ts" name="proposal-engagement benchmark &gt; formatBenchmarkOutput &gt; includes metadata with included/excluded ids, config, and metrics" time="0.000755583">
+        </testcase>
+        <testcase classname="apps/workflows/tests/unit/activities/proposal-engagement-benchmark.test.ts" name="proposal-engagement benchmark &gt; formatBenchmarkOutput &gt; excludes users not in userIdsInResult from benchmark output" time="0.000134167">
+        </testcase>
+        <testcase classname="apps/workflows/tests/unit/activities/proposal-engagement-benchmark.test.ts" name="proposal-engagement benchmark &gt; formatBenchmarkOutput &gt; populates per-user accumulator sums and proposal count" time="0.000116458">
+        </testcase>
+        <testcase classname="apps/workflows/tests/unit/activities/proposal-engagement-benchmark.test.ts" name="proposal-engagement benchmark &gt; formatBenchmarkOutput &gt; tracks proposals_skipped_unsupported_round in metrics" time="0.000064667">
+        </testcase>
+    </testsuite>
+    <testsuite name="apps/workflows/tests/unit/activities/voting-engagement-benchmark.test.ts" timestamp="2026-03-02T19:46:26.878Z" hostname="Behzads-Mac-mini.local" tests="8" failures="0" errors="0" skipped="0" time="0.012587791">
+        <testcase classname="apps/workflows/tests/unit/activities/voting-engagement-benchmark.test.ts" name="voting-engagement benchmark &gt; buildVoterBenchmarkRecord &gt; builds a record with correct vote distribution" time="0.002001">
+        </testcase>
+        <testcase classname="apps/workflows/tests/unit/activities/voting-engagement-benchmark.test.ts" name="voting-engagement benchmark &gt; buildVoterBenchmarkRecord &gt; computes raw Shannon entropy and rounds it" time="0.00017025">
+        </testcase>
+        <testcase classname="apps/workflows/tests/unit/activities/voting-engagement-benchmark.test.ts" name="voting-engagement benchmark &gt; buildVoterBenchmarkRecord &gt; returns zero entropy for a single-category voter" time="0.000065166">
+        </testcase>
+        <testcase classname="apps/workflows/tests/unit/activities/voting-engagement-benchmark.test.ts" name="voting-engagement benchmark &gt; buildVoterBenchmarkRecord &gt; handles empty votes array" time="0.000054125">
+        </testcase>
+        <testcase classname="apps/workflows/tests/unit/activities/voting-engagement-benchmark.test.ts" name="voting-engagement benchmark &gt; formatBenchmarkOutput &gt; includes metadata with processing stats" time="0.009036">
+        </testcase>
+        <testcase classname="apps/workflows/tests/unit/activities/voting-engagement-benchmark.test.ts" name="voting-engagement benchmark &gt; formatBenchmarkOutput &gt; sorts voters by collection_id" time="0.00011025">
+        </testcase>
+        <testcase classname="apps/workflows/tests/unit/activities/voting-engagement-benchmark.test.ts" name="voting-engagement benchmark &gt; formatBenchmarkOutput &gt; handles empty records array" time="0.000084458">
+        </testcase>
+        <testcase classname="apps/workflows/tests/unit/activities/voting-engagement-benchmark.test.ts" name="voting-engagement benchmark &gt; formatBenchmarkOutput &gt; does not mutate the original records array" time="0.000049625">
+        </testcase>
+    </testsuite>
+    <testsuite name="apps/api/tests/unit/algorithm-preset/algorithm-preset.controller.unit.spec.ts" timestamp="2026-03-02T19:46:26.878Z" hostname="Behzads-Mac-mini.local" tests="7" failures="0" errors="0" skipped="0" time="0.003290833">
+        <testcase classname="apps/api/tests/unit/algorithm-preset/algorithm-preset.controller.unit.spec.ts" name="AlgorithmPresetController &gt; create &gt; should delegate to service.create with the provided DTO" time="0.001472">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/algorithm-preset/algorithm-preset.controller.unit.spec.ts" name="AlgorithmPresetController &gt; create &gt; should pass optional fields from DTO to service" time="0.000358375">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/algorithm-preset/algorithm-preset.controller.unit.spec.ts" name="AlgorithmPresetController &gt; list &gt; should delegate to service.list with the provided query DTO" time="0.000206042">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/algorithm-preset/algorithm-preset.controller.unit.spec.ts" name="AlgorithmPresetController &gt; list &gt; should handle empty query parameters" time="0.000073167">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/algorithm-preset/algorithm-preset.controller.unit.spec.ts" name="AlgorithmPresetController &gt; getById &gt; should delegate to service.getById with the provided id" time="0.000157292">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/algorithm-preset/algorithm-preset.controller.unit.spec.ts" name="AlgorithmPresetController &gt; updateById &gt; should delegate to service.updateById with id and update DTO" time="0.000161333">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/algorithm-preset/algorithm-preset.controller.unit.spec.ts" name="AlgorithmPresetController &gt; deleteById &gt; should delegate to service.deleteById with the provided id" time="0.000219292">
+        </testcase>
+    </testsuite>
+    <testsuite name="apps/api/tests/unit/algorithm-preset/algorithm-preset.repository.unit.spec.ts" timestamp="2026-03-02T19:46:26.879Z" hostname="Behzads-Mac-mini.local" tests="11" failures="0" errors="0" skipped="0" time="0.008295">
+        <testcase classname="apps/api/tests/unit/algorithm-preset/algorithm-preset.repository.unit.spec.ts" name="AlgorithmPresetRepository &gt; create &gt; should call model.create with the provided DTO" time="0.004136625">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/algorithm-preset/algorithm-preset.repository.unit.spec.ts" name="AlgorithmPresetRepository &gt; create &gt; should handle create errors" time="0.000692">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/algorithm-preset/algorithm-preset.repository.unit.spec.ts" name="AlgorithmPresetRepository &gt; findAll &gt; should call model.paginate with filter and options" time="0.0002965">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/algorithm-preset/algorithm-preset.repository.unit.spec.ts" name="AlgorithmPresetRepository &gt; findAll &gt; should handle empty filter and default pagination options" time="0.000154334">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/algorithm-preset/algorithm-preset.repository.unit.spec.ts" name="AlgorithmPresetRepository &gt; findById &gt; should call model.findById with id and return lean result" time="0.000234667">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/algorithm-preset/algorithm-preset.repository.unit.spec.ts" name="AlgorithmPresetRepository &gt; findById &gt; should return null when preset not found" time="0.000182375">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/algorithm-preset/algorithm-preset.repository.unit.spec.ts" name="AlgorithmPresetRepository &gt; updateById &gt; should call model.findByIdAndUpdate with id and updateDto" time="0.000235292">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/algorithm-preset/algorithm-preset.repository.unit.spec.ts" name="AlgorithmPresetRepository &gt; updateById &gt; should return null when preset not found" time="0.000127709">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/algorithm-preset/algorithm-preset.repository.unit.spec.ts" name="AlgorithmPresetRepository &gt; deleteById &gt; should call model.findByIdAndDelete with id and session option" time="0.000567375">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/algorithm-preset/algorithm-preset.repository.unit.spec.ts" name="AlgorithmPresetRepository &gt; deleteById &gt; should pass session when provided" time="0.000308375">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/algorithm-preset/algorithm-preset.repository.unit.spec.ts" name="AlgorithmPresetRepository &gt; deleteById &gt; should return null when preset not found" time="0.000133084">
+        </testcase>
+    </testsuite>
+    <testsuite name="apps/api/tests/unit/algorithm-preset/algorithm-preset.service.unit.spec.ts" timestamp="2026-03-02T19:46:26.879Z" hostname="Behzads-Mac-mini.local" tests="23" failures="0" errors="0" skipped="0" time="0.046290666">
+        <testcase classname="apps/api/tests/unit/algorithm-preset/algorithm-preset.service.unit.spec.ts" name="AlgorithmPresetService &gt; create &gt; should delegate to repository.create with the provided DTO" time="0.002812333">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/algorithm-preset/algorithm-preset.service.unit.spec.ts" name="AlgorithmPresetService &gt; create &gt; should validate storage metadata and CSV content for csv inputs" time="0.001781416">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/algorithm-preset/algorithm-preset.service.unit.spec.ts" name="AlgorithmPresetService &gt; validateStorageInputs - metadata validation &gt; should throw CSVValidationException when content type is not allowed" time="0.000817542">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/algorithm-preset/algorithm-preset.service.unit.spec.ts" name="AlgorithmPresetService &gt; validateStorageInputs - metadata validation &gt; should throw CSVValidationException when file exceeds API config maxSizeBytes" time="0.000485833">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/algorithm-preset/algorithm-preset.service.unit.spec.ts" name="AlgorithmPresetService &gt; validateStorageInputs - metadata validation &gt; should throw CSVValidationException when file exceeds algorithm definition maxBytes" time="0.000295583">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/algorithm-preset/algorithm-preset.service.unit.spec.ts" name="AlgorithmPresetService &gt; validateStorageInputs - metadata validation &gt; should allow files within both API and algorithm definition limits" time="0.000234166">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/algorithm-preset/algorithm-preset.service.unit.spec.ts" name="AlgorithmPresetService &gt; validateStorageInputs - CSV content validation &gt; should throw CSVValidationException when CSV content is invalid" time="0.000334125">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/algorithm-preset/algorithm-preset.service.unit.spec.ts" name="AlgorithmPresetService &gt; validateStorageInputs - CSV content validation &gt; should collect multiple CSV validation errors" time="0.000362375">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/algorithm-preset/algorithm-preset.service.unit.spec.ts" name="AlgorithmPresetService &gt; validateStorageInputs - multiple errors collection &gt; should collect metadata and CSV content errors together" time="0.000409334">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/algorithm-preset/algorithm-preset.service.unit.spec.ts" name="AlgorithmPresetService &gt; validateStorageInputs - multiple errors collection &gt; should collect errors from multiple CSV inputs" time="0.00030175">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/algorithm-preset/algorithm-preset.service.unit.spec.ts" name="AlgorithmPresetService &gt; validateStorageInputs - skip non-CSV inputs &gt; should skip validation for non-csv input types" time="0.000236458">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/algorithm-preset/algorithm-preset.service.unit.spec.ts" name="AlgorithmPresetService &gt; list &gt; should filter by key and version from queryDto" time="0.000419292">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/algorithm-preset/algorithm-preset.service.unit.spec.ts" name="AlgorithmPresetService &gt; list &gt; should filter with pagination options including sortBy" time="0.000914917">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/algorithm-preset/algorithm-preset.service.unit.spec.ts" name="AlgorithmPresetService &gt; list &gt; should handle empty queryDto with no filters" time="0.000493417">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/algorithm-preset/algorithm-preset.service.unit.spec.ts" name="AlgorithmPresetService &gt; getById &gt; should return preset when found" time="0.000261875">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/algorithm-preset/algorithm-preset.service.unit.spec.ts" name="AlgorithmPresetService &gt; getById &gt; should throw NotFoundException when preset not found" time="0.000512375">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/algorithm-preset/algorithm-preset.service.unit.spec.ts" name="AlgorithmPresetService &gt; updateById &gt; should return updated preset when found" time="0.00029175">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/algorithm-preset/algorithm-preset.service.unit.spec.ts" name="AlgorithmPresetService &gt; updateById &gt; should throw NotFoundException when preset not found" time="0.000266417">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/algorithm-preset/algorithm-preset.service.unit.spec.ts" name="AlgorithmPresetService &gt; deleteById &gt; should complete successfully when preset is deleted" time="0.00040525">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/algorithm-preset/algorithm-preset.service.unit.spec.ts" name="AlgorithmPresetService &gt; deleteById &gt; should throw NotFoundException when preset not found" time="0.000287875">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/algorithm-preset/algorithm-preset.service.unit.spec.ts" name="AlgorithmPresetService &gt; deleteById &gt; should cascade delete snapshots, terminate workflows, and clean S3" time="0.000395417">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/algorithm-preset/algorithm-preset.service.unit.spec.ts" name="AlgorithmPresetService &gt; deleteById &gt; should handle S3 cleanup failures gracefully" time="0.032206791">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/algorithm-preset/algorithm-preset.service.unit.spec.ts" name="AlgorithmPresetService &gt; deleteById &gt; should handle partial S3 deletion failures" time="0.000540666">
+        </testcase>
+    </testsuite>
+    <testsuite name="apps/api/tests/unit/storage/storage.controller.unit.spec.ts" timestamp="2026-03-02T19:46:26.880Z" hostname="Behzads-Mac-mini.local" tests="6" failures="0" errors="0" skipped="0" time="0.003496375">
+        <testcase classname="apps/api/tests/unit/storage/storage.controller.unit.spec.ts" name="StorageController &gt; upload &gt; should delegate to service.presignPut with the provided DTO" time="0.001915834">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/storage/storage.controller.unit.spec.ts" name="StorageController &gt; upload &gt; should handle text/plain content type" time="0.000264667">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/storage/storage.controller.unit.spec.ts" name="StorageController &gt; verifyUpload &gt; should delegate to service.verifyUpload with the provided DTO" time="0.000290625">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/storage/storage.controller.unit.spec.ts" name="StorageController &gt; verifyUpload &gt; should handle different file keys" time="0.000165959">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/storage/storage.controller.unit.spec.ts" name="StorageController &gt; signDownload &gt; should delegate to service.presignGet with the provided DTO" time="0.000167834">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/storage/storage.controller.unit.spec.ts" name="StorageController &gt; signDownload &gt; should handle different file keys" time="0.000149208">
+        </testcase>
+    </testsuite>
+    <testsuite name="apps/api/tests/unit/storage/storage.service.unit.spec.ts" timestamp="2026-03-02T19:46:26.880Z" hostname="Behzads-Mac-mini.local" tests="20" failures="0" errors="0" skipped="0" time="0.024039625">
+        <testcase classname="apps/api/tests/unit/storage/storage.service.unit.spec.ts" name="StorageService &gt; presignPut &gt; should generate presigned upload URL with valid content type" time="0.004670792">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/storage/storage.service.unit.spec.ts" name="StorageService &gt; presignPut &gt; should generate presigned upload URL for text/plain" time="0.001689417">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/storage/storage.service.unit.spec.ts" name="StorageService &gt; presignPut &gt; should use filename as-is in key" time="0.001943041">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/storage/storage.service.unit.spec.ts" name="StorageService &gt; presignPut &gt; should throw InvalidContentTypeException for disallowed content type" time="0.001963833">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/storage/storage.service.unit.spec.ts" name="StorageService &gt; presignPut &gt; should throw InvalidContentTypeException for empty content type" time="0.0007325">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/storage/storage.service.unit.spec.ts" name="StorageService &gt; verifyUpload &gt; should return metadata when object exists and is valid" time="0.000833083">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/storage/storage.service.unit.spec.ts" name="StorageService &gt; verifyUpload &gt; should handle text/plain content type" time="0.000351917">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/storage/storage.service.unit.spec.ts" name="StorageService &gt; verifyUpload &gt; should throw ObjectNotFoundException when object does not exist (404)" time="0.000557292">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/storage/storage.service.unit.spec.ts" name="StorageService &gt; verifyUpload &gt; should throw ObjectNotFoundException when error name is NotFound" time="0.000665417">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/storage/storage.service.unit.spec.ts" name="StorageService &gt; verifyUpload &gt; should throw FileTooLargeException when file exceeds maxSizeBytes" time="0.000582125">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/storage/storage.service.unit.spec.ts" name="StorageService &gt; verifyUpload &gt; should throw InvalidContentTypeException when content type not allowed" time="0.00208675">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/storage/storage.service.unit.spec.ts" name="StorageService &gt; verifyUpload &gt; should throw HeadObjectFailedException on other S3 errors" time="0.000650709">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/storage/storage.service.unit.spec.ts" name="StorageService &gt; verifyUpload &gt; should default to 0 size when ContentLength is undefined" time="0.000263125">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/storage/storage.service.unit.spec.ts" name="StorageService &gt; verifyUpload &gt; should default to application/octet-stream when ContentType is undefined" time="0.000373167">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/storage/storage.service.unit.spec.ts" name="StorageService &gt; presignGet &gt; should generate presigned download URL when object exists" time="0.0010215">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/storage/storage.service.unit.spec.ts" name="StorageService &gt; presignGet &gt; should verify object exists before generating download URL" time="0.002436416">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/storage/storage.service.unit.spec.ts" name="StorageService &gt; presignGet &gt; should throw ObjectNotFoundException when object does not exist (404)" time="0.000735458">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/storage/storage.service.unit.spec.ts" name="StorageService &gt; presignGet &gt; should throw ObjectNotFoundException when error name is NotFound" time="0.000430167">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/storage/storage.service.unit.spec.ts" name="StorageService &gt; presignGet &gt; should throw HeadObjectFailedException on other S3 errors" time="0.000341042">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/storage/storage.service.unit.spec.ts" name="StorageService &gt; presignGet &gt; should throw HeadObjectFailedException on network errors" time="0.000148583">
+        </testcase>
+    </testsuite>
+    <testsuite name="apps/api/tests/unit/snapshot/snapshot.controller.unit.spec.ts" timestamp="2026-03-02T19:46:26.882Z" hostname="Behzads-Mac-mini.local" tests="9" failures="0" errors="0" skipped="0" time="0.003682667">
+        <testcase classname="apps/api/tests/unit/snapshot/snapshot.controller.unit.spec.ts" name="SnapshotController &gt; create &gt; should delegate to service.create with the provided DTO" time="0.001707708">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/snapshot/snapshot.controller.unit.spec.ts" name="SnapshotController &gt; create &gt; should pass optional temporal and outputs fields from DTO to service" time="0.000373208">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/snapshot/snapshot.controller.unit.spec.ts" name="SnapshotController &gt; list &gt; should delegate to service.list with the provided query DTO" time="0.000251833">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/snapshot/snapshot.controller.unit.spec.ts" name="SnapshotController &gt; list &gt; should handle query with algorithmPreset filter" time="0.000125584">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/snapshot/snapshot.controller.unit.spec.ts" name="SnapshotController &gt; list &gt; should handle query with key and version filters" time="0.000124666">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/snapshot/snapshot.controller.unit.spec.ts" name="SnapshotController &gt; list &gt; should handle query with populate option" time="0.000086167">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/snapshot/snapshot.controller.unit.spec.ts" name="SnapshotController &gt; list &gt; should handle empty query parameters" time="0.000108625">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/snapshot/snapshot.controller.unit.spec.ts" name="SnapshotController &gt; getById &gt; should delegate to service.getById with the provided id" time="0.00010175">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/snapshot/snapshot.controller.unit.spec.ts" name="SnapshotController &gt; deleteById &gt; should delegate to service.deleteById with the provided id" time="0.000224708">
+        </testcase>
+    </testsuite>
+    <testsuite name="apps/api/tests/unit/snapshot/snapshot.repository.unit.spec.ts" timestamp="2026-03-02T19:46:26.883Z" hostname="Behzads-Mac-mini.local" tests="11" failures="0" errors="0" skipped="0" time="0.011071125">
+        <testcase classname="apps/api/tests/unit/snapshot/snapshot.repository.unit.spec.ts" name="SnapshotRepository &gt; create &gt; should call model.create with the provided data" time="0.007509167">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/snapshot/snapshot.repository.unit.spec.ts" name="SnapshotRepository &gt; create &gt; should handle optional temporal and outputs fields" time="0.000343583">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/snapshot/snapshot.repository.unit.spec.ts" name="SnapshotRepository &gt; create &gt; should handle create errors" time="0.000557417">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/snapshot/snapshot.repository.unit.spec.ts" name="SnapshotRepository &gt; findAll &gt; should call model.paginate with filter and options" time="0.000309458">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/snapshot/snapshot.repository.unit.spec.ts" name="SnapshotRepository &gt; findAll &gt; should handle empty filter and default pagination options" time="0.000162292">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/snapshot/snapshot.repository.unit.spec.ts" name="SnapshotRepository &gt; findAll &gt; should handle populate option" time="0.000192042">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/snapshot/snapshot.repository.unit.spec.ts" name="SnapshotRepository &gt; findById &gt; should call model.findById with id and return lean result" time="0.000208042">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/snapshot/snapshot.repository.unit.spec.ts" name="SnapshotRepository &gt; findById &gt; should return null when snapshot not found" time="0.000112375">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/snapshot/snapshot.repository.unit.spec.ts" name="SnapshotRepository &gt; deleteById &gt; should call model.findByIdAndDelete with id and session option" time="0.00031975">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/snapshot/snapshot.repository.unit.spec.ts" name="SnapshotRepository &gt; deleteById &gt; should pass session when provided" time="0.000227333">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/snapshot/snapshot.repository.unit.spec.ts" name="SnapshotRepository &gt; deleteById &gt; should return null when snapshot not found" time="0.000118291">
+        </testcase>
+    </testsuite>
+    <testsuite name="apps/api/tests/unit/snapshot/snapshot.service.unit.spec.ts" timestamp="2026-03-02T19:46:26.883Z" hostname="Behzads-Mac-mini.local" tests="20" failures="0" errors="0" skipped="0" time="0.063608916">
+        <testcase classname="apps/api/tests/unit/snapshot/snapshot.service.unit.spec.ts" name="SnapshotService &gt; create &gt; should create snapshot with frozen algorithmPreset when preset exists" time="0.003852083">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/snapshot/snapshot.service.unit.spec.ts" name="SnapshotService &gt; create &gt; should throw NotFoundException when algorithmPreset does not exist" time="0.001976125">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/snapshot/snapshot.service.unit.spec.ts" name="SnapshotService &gt; create &gt; should pass optional temporal and outputs fields with frozen preset" time="0.00130425">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/snapshot/snapshot.service.unit.spec.ts" name="SnapshotService &gt; list &gt; should filter by status from queryDto" time="0.001050833">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/snapshot/snapshot.service.unit.spec.ts" name="SnapshotService &gt; list &gt; should filter by algorithmPreset from queryDto" time="0.000966333">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/snapshot/snapshot.service.unit.spec.ts" name="SnapshotService &gt; list &gt; should filter by key directly on frozen field" time="0.000671">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/snapshot/snapshot.service.unit.spec.ts" name="SnapshotService &gt; list &gt; should filter by version directly on frozen field" time="0.000528458">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/snapshot/snapshot.service.unit.spec.ts" name="SnapshotService &gt; list &gt; should filter by both key and version directly on frozen fields" time="0.000493875">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/snapshot/snapshot.service.unit.spec.ts" name="SnapshotService &gt; list &gt; should filter by algorithmPreset combined with status" time="0.002067541">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/snapshot/snapshot.service.unit.spec.ts" name="SnapshotService &gt; list &gt; should handle empty query parameters without filters" time="0.000751667">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/snapshot/snapshot.service.unit.spec.ts" name="SnapshotService &gt; list &gt; should handle populate option" time="0.00047">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/snapshot/snapshot.service.unit.spec.ts" name="SnapshotService &gt; list &gt; should handle sortBy passthrough when provided" time="0.000484375">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/snapshot/snapshot.service.unit.spec.ts" name="SnapshotService &gt; list &gt; should query directly for non-existent key on frozen field" time="0.002912333">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/snapshot/snapshot.service.unit.spec.ts" name="SnapshotService &gt; getById &gt; should return snapshot when found" time="0.000834625">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/snapshot/snapshot.service.unit.spec.ts" name="SnapshotService &gt; getById &gt; should throw NotFoundException when snapshot not found" time="0.000863042">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/snapshot/snapshot.service.unit.spec.ts" name="SnapshotService &gt; deleteById &gt; should complete successfully when snapshot is deleted" time="0.011176">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/snapshot/snapshot.service.unit.spec.ts" name="SnapshotService &gt; deleteById &gt; should throw NotFoundException when snapshot not found" time="0.019050166">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/snapshot/snapshot.service.unit.spec.ts" name="SnapshotService &gt; deleteById &gt; should terminate workflow and clean S3 when snapshot is running" time="0.000547">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/snapshot/snapshot.service.unit.spec.ts" name="SnapshotService &gt; deleteById &gt; should handle S3 cleanup failures gracefully" time="0.009664125">
+        </testcase>
+        <testcase classname="apps/api/tests/unit/snapshot/snapshot.service.unit.spec.ts" name="SnapshotService &gt; deleteById &gt; should handle partial S3 deletion failures" time="0.002545958">
+        </testcase>
+    </testsuite>
+    <testsuite name="packages/deepfunding-portal-api/tests/unit/db/bootstrap.test.ts" timestamp="2026-03-02T19:46:26.884Z" hostname="Behzads-Mac-mini.local" tests="12" failures="0" errors="0" skipped="0" time="0.011745709">
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/db/bootstrap.test.ts" name="Database Bootstrap &gt; BOOTSTRAP_SQL &gt; should be an array of SQL statements" time="0.003813208">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/db/bootstrap.test.ts" name="Database Bootstrap &gt; BOOTSTRAP_SQL &gt; should create all required tables" time="0.001136458">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/db/bootstrap.test.ts" name="Database Bootstrap &gt; BOOTSTRAP_SQL &gt; should create rounds table with correct structure" time="0.000642041">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/db/bootstrap.test.ts" name="Database Bootstrap &gt; BOOTSTRAP_SQL &gt; should create pools table with correct structure" time="0.0005005">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/db/bootstrap.test.ts" name="Database Bootstrap &gt; BOOTSTRAP_SQL &gt; should create proposals table with correct structure" time="0.000521041">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/db/bootstrap.test.ts" name="Database Bootstrap &gt; BOOTSTRAP_SQL &gt; should create users table with correct structure" time="0.000372083">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/db/bootstrap.test.ts" name="Database Bootstrap &gt; BOOTSTRAP_SQL &gt; should create milestones table with autoincrement id" time="0.000274042">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/db/bootstrap.test.ts" name="Database Bootstrap &gt; BOOTSTRAP_SQL &gt; should create reviews table with autoincrement review_id" time="0.000284291">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/db/bootstrap.test.ts" name="Database Bootstrap &gt; BOOTSTRAP_SQL &gt; should create comments table with correct structure" time="0.000519833">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/db/bootstrap.test.ts" name="Database Bootstrap &gt; BOOTSTRAP_SQL &gt; should create comment_votes table with composite primary key" time="0.000649458">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/db/bootstrap.test.ts" name="Database Bootstrap &gt; BOOTSTRAP_SQL &gt; should create indexes" time="0.000651125">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/db/bootstrap.test.ts" name="Database Bootstrap &gt; SCHEMA_VERSION &gt; should be defined" time="0.00062925">
+        </testcase>
+    </testsuite>
+    <testsuite name="packages/deepfunding-portal-api/tests/unit/db/client.test.ts" timestamp="2026-03-02T19:46:26.885Z" hostname="Behzads-Mac-mini.local" tests="4" failures="0" errors="0" skipped="0" time="0.006466875">
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/db/client.test.ts" name="Database Client &gt; createDb &gt; should create database instance" time="0.00313825">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/db/client.test.ts" name="Database Client &gt; createDb &gt; should initialize database with schema" time="0.000636333">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/db/client.test.ts" name="Database Client &gt; createDb &gt; should return independent instances" time="0.001215958">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/db/client.test.ts" name="Database Client &gt; closeDbInstance &gt; should close database connection" time="0.000622958">
+        </testcase>
+    </testsuite>
+    <testsuite name="packages/deepfunding-portal-api/tests/unit/api/client.test.ts" timestamp="2026-03-02T19:46:26.885Z" hostname="Behzads-Mac-mini.local" tests="5" failures="0" errors="0" skipped="0" time="0.003400791">
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/api/client.test.ts" name="DeepFunding Client &gt; createDeepFundingClient &gt; should create client with default config" time="0.00183575">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/api/client.test.ts" name="DeepFunding Client &gt; createDeepFundingClient &gt; should create client with custom config" time="0.000373417">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/api/client.test.ts" name="DeepFunding Client &gt; createDeepFundingClient &gt; should merge partial retry config with defaults" time="0.000209625">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/api/client.test.ts" name="DeepFunding Client &gt; createDeepFundingClient &gt; should have get method" time="0.000166833">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/api/client.test.ts" name="DeepFunding Client &gt; createDeepFundingClient &gt; should have limiter" time="0.000192166">
+        </testcase>
+    </testsuite>
+    <testsuite name="packages/deepfunding-portal-api/tests/unit/api/endpoints.test.ts" timestamp="2026-03-02T19:46:26.885Z" hostname="Behzads-Mac-mini.local" tests="8" failures="0" errors="0" skipped="0" time="0.00249625">
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/api/endpoints.test.ts" name="API Endpoints &gt; endpoints &gt; should return correct path for rounds" time="0.000798958">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/api/endpoints.test.ts" name="API Endpoints &gt; endpoints &gt; should return correct path for pools" time="0.000080958">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/api/endpoints.test.ts" name="API Endpoints &gt; endpoints &gt; should return correct path for proposals with roundId" time="0.000064792">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/api/endpoints.test.ts" name="API Endpoints &gt; endpoints &gt; should return correct path for users" time="0.000052917">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/api/endpoints.test.ts" name="API Endpoints &gt; endpoints &gt; should return correct path for milestones" time="0.000038708">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/api/endpoints.test.ts" name="API Endpoints &gt; endpoints &gt; should return correct path for reviews" time="0.000061">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/api/endpoints.test.ts" name="API Endpoints &gt; endpoints &gt; should return correct path for comments" time="0.000034875">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/api/endpoints.test.ts" name="API Endpoints &gt; endpoints &gt; should return correct path for comment votes" time="0.000060417">
+        </testcase>
+    </testsuite>
+    <testsuite name="packages/deepfunding-portal-api/tests/unit/api/http.test.ts" timestamp="2026-03-02T19:46:26.886Z" hostname="Behzads-Mac-mini.local" tests="26" failures="0" errors="0" skipped="0" time="0.532241917">
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/api/http.test.ts" name="HTTP Utils &gt; createLimiter &gt; should create a limiter with specified concurrency" time="0.001165792">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/api/http.test.ts" name="HTTP Utils &gt; isRetryableError &gt; should return true for network timeout errors" time="0.000129917">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/api/http.test.ts" name="HTTP Utils &gt; isRetryableError &gt; should return true for connection reset errors" time="0.000106334">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/api/http.test.ts" name="HTTP Utils &gt; isRetryableError &gt; should return true for connection refused errors" time="0.000053417">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/api/http.test.ts" name="HTTP Utils &gt; isRetryableError &gt; should return true for socket hang up errors" time="0.000212042">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/api/http.test.ts" name="HTTP Utils &gt; isRetryableError &gt; should return true for network errors" time="0.000091833">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/api/http.test.ts" name="HTTP Utils &gt; isRetryableError &gt; should return true for 429 status code" time="0.00007375">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/api/http.test.ts" name="HTTP Utils &gt; isRetryableError &gt; should return true for 5xx status codes" time="0.000164167">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/api/http.test.ts" name="HTTP Utils &gt; isRetryableError &gt; should return false for 4xx errors (except 429)" time="0.000172542">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/api/http.test.ts" name="HTTP Utils &gt; isRetryableError &gt; should return false for non-HTTP errors without network keywords" time="0.000054541">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/api/http.test.ts" name="HTTP Utils &gt; isNonRetryableError &gt; should return true for 4xx errors (except 429)" time="0.000094667">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/api/http.test.ts" name="HTTP Utils &gt; isNonRetryableError &gt; should return false for 429" time="0.000032709">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/api/http.test.ts" name="HTTP Utils &gt; isNonRetryableError &gt; should return false for 5xx errors" time="0.00002825">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/api/http.test.ts" name="HTTP Utils &gt; isNonRetryableError &gt; should return false for non-HTTP errors" time="0.000026292">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/api/http.test.ts" name="HTTP Utils &gt; calculateDelay &gt; should calculate exponential backoff" time="0.000081">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/api/http.test.ts" name="HTTP Utils &gt; calculateDelay &gt; should cap delay at maxDelayMs" time="0.000075583">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/api/http.test.ts" name="HTTP Utils &gt; calculateDelay &gt; should include jitter" time="0.000038042">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/api/http.test.ts" name="HTTP Utils &gt; executeRequest &gt; should execute successful request" time="0.000447833">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/api/http.test.ts" name="HTTP Utils &gt; executeRequest &gt; should handle URL with trailing slash in baseUrl" time="0.000128459">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/api/http.test.ts" name="HTTP Utils &gt; executeRequest &gt; should handle path without leading slash" time="0.000066834">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/api/http.test.ts" name="HTTP Utils &gt; executeRequest &gt; should include query parameters" time="0.000231125">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/api/http.test.ts" name="HTTP Utils &gt; executeRequest &gt; should include authentication header" time="0.000286084">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/api/http.test.ts" name="HTTP Utils &gt; executeRequest &gt; should throw HttpError for 4xx responses" time="0.0005135">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/api/http.test.ts" name="HTTP Utils &gt; executeRequest &gt; should retry on retryable errors" time="0.13740825">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/api/http.test.ts" name="HTTP Utils &gt; executeRequest &gt; should not retry on non-retryable errors" time="0.000340541">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/api/http.test.ts" name="HTTP Utils &gt; executeRequest &gt; should respect maxAttempts" time="0.388249541">
+        </testcase>
+    </testsuite>
+    <testsuite name="packages/deepfunding-portal-api/tests/unit/api/paginate.test.ts" timestamp="2026-03-02T19:46:26.887Z" hostname="Behzads-Mac-mini.local" tests="4" failures="0" errors="0" skipped="0" time="0.003834375">
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/api/paginate.test.ts" name="Paginate Utils &gt; fetchAllPages &gt; should collect all pages from paginated fetcher" time="0.001104625">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/api/paginate.test.ts" name="Paginate Utils &gt; fetchAllPages &gt; should handle empty results" time="0.000085167">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/api/paginate.test.ts" name="Paginate Utils &gt; fetchAllPages &gt; should handle single page results" time="0.000061916">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/api/paginate.test.ts" name="Paginate Utils &gt; fetchAllPages &gt; should handle objects in pages" time="0.000204125">
+        </testcase>
+    </testsuite>
+    <testsuite name="packages/deepfunding-portal-api/tests/unit/shared/errors/index.test.ts" timestamp="2026-03-02T19:46:26.887Z" hostname="Behzads-Mac-mini.local" tests="5" failures="0" errors="0" skipped="0" time="0.002883333">
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/shared/errors/index.test.ts" name="HttpError &gt; should create error with status code and message" time="0.001303209">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/shared/errors/index.test.ts" name="HttpError &gt; should include body when provided" time="0.000123416">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/shared/errors/index.test.ts" name="HttpError &gt; should handle different status codes" time="0.000271458">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/shared/errors/index.test.ts" name="HttpError &gt; should format error message correctly" time="0.000071708">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/shared/errors/index.test.ts" name="HttpError &gt; should be throwable" time="0.000311041">
+        </testcase>
+    </testsuite>
+    <testsuite name="packages/deepfunding-portal-api/tests/unit/shared/utils/index.test.ts" timestamp="2026-03-02T19:46:26.888Z" hostname="Behzads-Mac-mini.local" tests="10" failures="0" errors="0" skipped="0" time="0.003624416">
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/shared/utils/index.test.ts" name="Shared Utils &gt; chunkArray &gt; should split array into chunks of specified size" time="0.001553959">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/shared/utils/index.test.ts" name="Shared Utils &gt; chunkArray &gt; should handle empty array" time="0.000075625">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/shared/utils/index.test.ts" name="Shared Utils &gt; chunkArray &gt; should handle array smaller than chunk size" time="0.000055167">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/shared/utils/index.test.ts" name="Shared Utils &gt; chunkArray &gt; should handle exact chunk size" time="0.000086833">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/shared/utils/index.test.ts" name="Shared Utils &gt; chunkArray &gt; should handle single element array" time="0.000043125">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/shared/utils/index.test.ts" name="Shared Utils &gt; chunkArray &gt; should handle chunk size of 1" time="0.000049125">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/shared/utils/index.test.ts" name="Shared Utils &gt; chunkArray &gt; should preserve array element types" time="0.000037417">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/shared/utils/index.test.ts" name="Shared Utils &gt; chunkArray &gt; should handle objects in array" time="0.000046167">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/shared/utils/index.test.ts" name="Shared Utils &gt; DEFAULT_CHUNK_SIZE &gt; should be defined" time="0.0002285">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/shared/utils/index.test.ts" name="Shared Utils &gt; DEFAULT_CHUNK_SIZE &gt; should be a positive number" time="0.000101833">
+        </testcase>
+    </testsuite>
+    <testsuite name="packages/deepfunding-portal-api/tests/unit/resources/commentVotes/api.test.ts" timestamp="2026-03-02T19:46:26.888Z" hostname="Behzads-Mac-mini.local" tests="1" failures="0" errors="0" skipped="0" time="0.004471667">
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/commentVotes/api.test.ts" name="CommentVote API &gt; fetchCommentVotes &gt; should fetch comment votes with pagination" time="0.003629834">
+        </testcase>
+    </testsuite>
+    <testsuite name="packages/deepfunding-portal-api/tests/unit/resources/commentVotes/normalize.test.ts" timestamp="2026-03-02T19:46:26.888Z" hostname="Behzads-Mac-mini.local" tests="3" failures="0" errors="0" skipped="0" time="0.002869667">
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/commentVotes/normalize.test.ts" name="CommentVote Normalization &gt; normalizeCommentVoteToRecord &gt; should transform API response to DB record format" time="0.001588292">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/commentVotes/normalize.test.ts" name="CommentVote Normalization &gt; normalizeCommentVoteToRecord &gt; should handle null created_at" time="0.000097417">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/commentVotes/normalize.test.ts" name="CommentVote Normalization &gt; normalizeCommentVoteToRecord &gt; should serialize raw JSON correctly" time="0.000070667">
+        </testcase>
+    </testsuite>
+    <testsuite name="packages/deepfunding-portal-api/tests/unit/resources/commentVotes/repository.test.ts" timestamp="2026-03-02T19:46:26.888Z" hostname="Behzads-Mac-mini.local" tests="5" failures="0" errors="0" skipped="0" time="0.017784584">
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/commentVotes/repository.test.ts" name="CommentVote Repository &gt; create &gt; should insert a single comment vote" time="0.012623291">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/commentVotes/repository.test.ts" name="CommentVote Repository &gt; createMany &gt; should insert multiple comment votes" time="0.000946125">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/commentVotes/repository.test.ts" name="CommentVote Repository &gt; findAll &gt; should return all comment votes" time="0.000466416">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/commentVotes/repository.test.ts" name="CommentVote Repository &gt; findByCommentId &gt; should find votes by comment ID" time="0.001282292">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/commentVotes/repository.test.ts" name="CommentVote Repository &gt; findByVoterId &gt; should find votes by voter ID" time="0.00134375">
+        </testcase>
+    </testsuite>
+    <testsuite name="packages/deepfunding-portal-api/tests/unit/resources/comments/api.test.ts" timestamp="2026-03-02T19:46:26.889Z" hostname="Behzads-Mac-mini.local" tests="1" failures="0" errors="0" skipped="0" time="0.012710625">
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/comments/api.test.ts" name="Comment API &gt; fetchComments &gt; should fetch comments with pagination" time="0.012199583">
+        </testcase>
+    </testsuite>
+    <testsuite name="packages/deepfunding-portal-api/tests/unit/resources/comments/normalize.test.ts" timestamp="2026-03-02T19:46:26.889Z" hostname="Behzads-Mac-mini.local" tests="3" failures="0" errors="0" skipped="0" time="0.007303084">
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/comments/normalize.test.ts" name="Comment Normalization &gt; normalizeCommentToRecord &gt; should transform API response to DB record format" time="0.005685667">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/comments/normalize.test.ts" name="Comment Normalization &gt; normalizeCommentToRecord &gt; should convert comment_votes to string" time="0.000072583">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/comments/normalize.test.ts" name="Comment Normalization &gt; normalizeCommentToRecord &gt; should serialize raw JSON correctly" time="0.000054167">
+        </testcase>
+    </testsuite>
+    <testsuite name="packages/deepfunding-portal-api/tests/unit/resources/comments/repository.test.ts" timestamp="2026-03-02T19:46:26.889Z" hostname="Behzads-Mac-mini.local" tests="6" failures="0" errors="0" skipped="0" time="0.013829875">
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/comments/repository.test.ts" name="Comment Repository &gt; create &gt; should insert a single comment" time="0.008495917">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/comments/repository.test.ts" name="Comment Repository &gt; createMany &gt; should insert multiple comments" time="0.001896667">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/comments/repository.test.ts" name="Comment Repository &gt; findAll &gt; should return all comments" time="0.000746125">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/comments/repository.test.ts" name="Comment Repository &gt; findByProposalId &gt; should find comments by proposal ID" time="0.000665042">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/comments/repository.test.ts" name="Comment Repository &gt; findByUserId &gt; should find comments by user ID" time="0.000631083">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/comments/repository.test.ts" name="Comment Repository &gt; findById &gt; should find comment by ID" time="0.000451542">
+        </testcase>
+    </testsuite>
+    <testsuite name="packages/deepfunding-portal-api/tests/unit/resources/pools/api.test.ts" timestamp="2026-03-02T19:46:26.889Z" hostname="Behzads-Mac-mini.local" tests="2" failures="0" errors="0" skipped="0" time="0.007791125">
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/pools/api.test.ts" name="Pool API &gt; fetchPools &gt; should fetch all pools" time="0.003647583">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/pools/api.test.ts" name="Pool API &gt; fetchPools &gt; should return empty array when no pools" time="0.000211542">
+        </testcase>
+    </testsuite>
+    <testsuite name="packages/deepfunding-portal-api/tests/unit/resources/pools/normalize.test.ts" timestamp="2026-03-02T19:46:26.890Z" hostname="Behzads-Mac-mini.local" tests="3" failures="0" errors="0" skipped="0" time="0.003351375">
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/pools/normalize.test.ts" name="Pool Normalization &gt; normalizePoolToRecord &gt; should transform API response to DB record format" time="0.001837125">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/pools/normalize.test.ts" name="Pool Normalization &gt; normalizePoolToRecord &gt; should handle null description" time="0.000195541">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/pools/normalize.test.ts" name="Pool Normalization &gt; normalizePoolToRecord &gt; should serialize raw JSON correctly" time="0.000151167">
+        </testcase>
+    </testsuite>
+    <testsuite name="packages/deepfunding-portal-api/tests/unit/resources/pools/repository.test.ts" timestamp="2026-03-02T19:46:26.890Z" hostname="Behzads-Mac-mini.local" tests="4" failures="0" errors="0" skipped="0" time="0.009935375">
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/pools/repository.test.ts" name="Pool Repository &gt; create &gt; should insert a single pool" time="0.004920375">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/pools/repository.test.ts" name="Pool Repository &gt; createMany &gt; should insert multiple pools" time="0.001235458">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/pools/repository.test.ts" name="Pool Repository &gt; findAll &gt; should return all pools" time="0.001141875">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/pools/repository.test.ts" name="Pool Repository &gt; findById &gt; should find pool by ID" time="0.001418333">
+        </testcase>
+    </testsuite>
+    <testsuite name="packages/deepfunding-portal-api/tests/unit/resources/proposals/api.test.ts" timestamp="2026-03-02T19:46:26.890Z" hostname="Behzads-Mac-mini.local" tests="3" failures="0" errors="0" skipped="0" time="0.003497417">
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/proposals/api.test.ts" name="Proposal API &gt; fetchProposals &gt; should fetch proposals for a round" time="0.001794834">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/proposals/api.test.ts" name="Proposal API &gt; fetchProposals &gt; should include poolId in params when provided" time="0.000457042">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/proposals/api.test.ts" name="Proposal API &gt; fetchProposals &gt; should return empty array when no proposals" time="0.00049625">
+        </testcase>
+    </testsuite>
+    <testsuite name="packages/deepfunding-portal-api/tests/unit/resources/proposals/normalize.test.ts" timestamp="2026-03-02T19:46:26.890Z" hostname="Behzads-Mac-mini.local" tests="4" failures="0" errors="0" skipped="0" time="0.00396825">
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/proposals/normalize.test.ts" name="Proposal Normalization &gt; normalizeProposalToRecord &gt; should transform API response to DB record format" time="0.002208833">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/proposals/normalize.test.ts" name="Proposal Normalization &gt; normalizeProposalToRecord &gt; should handle null updated_at" time="0.000266125">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/proposals/normalize.test.ts" name="Proposal Normalization &gt; normalizeProposalToRecord &gt; should handle empty team_members array" time="0.000141541">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/proposals/normalize.test.ts" name="Proposal Normalization &gt; normalizeProposalToRecord &gt; should serialize raw JSON correctly" time="0.000140042">
+        </testcase>
+    </testsuite>
+    <testsuite name="packages/deepfunding-portal-api/tests/unit/resources/proposals/repository.test.ts" timestamp="2026-03-02T19:46:26.890Z" hostname="Behzads-Mac-mini.local" tests="9" failures="0" errors="0" skipped="0" time="0.043153">
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/proposals/repository.test.ts" name="Proposal Repository &gt; create &gt; should insert a single proposal" time="0.007615792">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/proposals/repository.test.ts" name="Proposal Repository &gt; createMany &gt; should insert multiple proposals" time="0.001905">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/proposals/repository.test.ts" name="Proposal Repository &gt; createMany &gt; should handle chunking for large batches" time="0.023671542">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/proposals/repository.test.ts" name="Proposal Repository &gt; findAll &gt; should return all proposals" time="0.001627875">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/proposals/repository.test.ts" name="Proposal Repository &gt; findAll &gt; should return empty array when no proposals exist" time="0.000770291">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/proposals/repository.test.ts" name="Proposal Repository &gt; findByRoundId &gt; should find proposals by round ID" time="0.00457475">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/proposals/repository.test.ts" name="Proposal Repository &gt; findByRoundId &gt; should return empty array when no proposals found for round" time="0.000487583">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/proposals/repository.test.ts" name="Proposal Repository &gt; findById &gt; should find proposal by ID" time="0.000554917">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/proposals/repository.test.ts" name="Proposal Repository &gt; findById &gt; should return undefined when proposal not found" time="0.000645167">
+        </testcase>
+    </testsuite>
+    <testsuite name="packages/deepfunding-portal-api/tests/unit/resources/reviews/api.test.ts" timestamp="2026-03-02T19:46:26.891Z" hostname="Behzads-Mac-mini.local" tests="1" failures="0" errors="0" skipped="0" time="0.001957125">
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/reviews/api.test.ts" name="Review API &gt; fetchReviews &gt; should fetch reviews with pagination" time="0.001533459">
+        </testcase>
+    </testsuite>
+    <testsuite name="packages/deepfunding-portal-api/tests/unit/resources/reviews/normalize.test.ts" timestamp="2026-03-02T19:46:26.891Z" hostname="Behzads-Mac-mini.local" tests="6" failures="0" errors="0" skipped="0" time="0.013230167">
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/reviews/normalize.test.ts" name="Review Normalization &gt; normalizeReviewToRecord &gt; should transform API response to DB record format" time="0.010983875">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/reviews/normalize.test.ts" name="Review Normalization &gt; normalizeReviewToRecord &gt; should not include reviewId field (auto-generated by DB)" time="0.000512916">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/reviews/normalize.test.ts" name="Review Normalization &gt; normalizeReviewToRecord &gt; should handle null proposal_id" time="0.00010075">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/reviews/normalize.test.ts" name="Review Normalization &gt; normalizeReviewToRecord &gt; should handle null reviewer_id" time="0.0000965">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/reviews/normalize.test.ts" name="Review Normalization &gt; normalizeReviewToRecord &gt; should handle null created_at" time="0.000040375">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/reviews/normalize.test.ts" name="Review Normalization &gt; normalizeReviewToRecord &gt; should serialize raw JSON correctly" time="0.000067416">
+        </testcase>
+    </testsuite>
+    <testsuite name="packages/deepfunding-portal-api/tests/unit/resources/reviews/repository.test.ts" timestamp="2026-03-02T19:46:26.891Z" hostname="Behzads-Mac-mini.local" tests="6" failures="0" errors="0" skipped="0" time="0.011210541">
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/reviews/repository.test.ts" name="Review Repository &gt; create &gt; should insert a single review" time="0.006449708">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/reviews/repository.test.ts" name="Review Repository &gt; createMany &gt; should insert multiple reviews" time="0.001001416">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/reviews/repository.test.ts" name="Review Repository &gt; findAll &gt; should return all reviews" time="0.000547209">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/reviews/repository.test.ts" name="Review Repository &gt; findByProposalId &gt; should find reviews by proposal ID" time="0.000699375">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/reviews/repository.test.ts" name="Review Repository &gt; findByReviewerId &gt; should find reviews by reviewer ID" time="0.00067775">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/reviews/repository.test.ts" name="Review Repository &gt; findById &gt; should find review by ID" time="0.001024958">
+        </testcase>
+    </testsuite>
+    <testsuite name="packages/deepfunding-portal-api/tests/unit/resources/rounds/api.test.ts" timestamp="2026-03-02T19:46:26.892Z" hostname="Behzads-Mac-mini.local" tests="2" failures="0" errors="0" skipped="0" time="0.003621542">
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/rounds/api.test.ts" name="Round API &gt; fetchRounds &gt; should fetch all rounds" time="0.002545292">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/rounds/api.test.ts" name="Round API &gt; fetchRounds &gt; should return empty array when no rounds" time="0.000189167">
+        </testcase>
+    </testsuite>
+    <testsuite name="packages/deepfunding-portal-api/tests/unit/resources/rounds/normalize.test.ts" timestamp="2026-03-02T19:46:26.892Z" hostname="Behzads-Mac-mini.local" tests="5" failures="0" errors="0" skipped="0" time="0.001777333">
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/rounds/normalize.test.ts" name="Round Normalization &gt; normalizeRoundToRecord &gt; should transform API response to DB record format" time="0.000890458">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/rounds/normalize.test.ts" name="Round Normalization &gt; normalizeRoundToRecord &gt; should handle null description" time="0.000092125">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/rounds/normalize.test.ts" name="Round Normalization &gt; normalizeRoundToRecord &gt; should extract pool IDs from array" time="0.000057667">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/rounds/normalize.test.ts" name="Round Normalization &gt; normalizeRoundToRecord &gt; should handle empty pool_id array" time="0.000088167">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/rounds/normalize.test.ts" name="Round Normalization &gt; normalizeRoundToRecord &gt; should serialize raw JSON correctly" time="0.000089292">
+        </testcase>
+    </testsuite>
+    <testsuite name="packages/deepfunding-portal-api/tests/unit/resources/rounds/repository.test.ts" timestamp="2026-03-02T19:46:26.892Z" hostname="Behzads-Mac-mini.local" tests="4" failures="0" errors="0" skipped="0" time="0.008757">
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/rounds/repository.test.ts" name="Round Repository &gt; create &gt; should insert a single round" time="0.005443333">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/rounds/repository.test.ts" name="Round Repository &gt; createMany &gt; should insert multiple rounds" time="0.001219375">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/rounds/repository.test.ts" name="Round Repository &gt; findAll &gt; should return all rounds" time="0.0006615">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/rounds/repository.test.ts" name="Round Repository &gt; findById &gt; should find round by ID" time="0.00080125">
+        </testcase>
+    </testsuite>
+    <testsuite name="packages/deepfunding-portal-api/tests/unit/resources/users/api.test.ts" timestamp="2026-03-02T19:46:26.893Z" hostname="Behzads-Mac-mini.local" tests="2" failures="0" errors="0" skipped="0" time="0.024915083">
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/users/api.test.ts" name="User API &gt; fetchUsers &gt; should fetch users with pagination" time="0.019668292">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/users/api.test.ts" name="User API &gt; fetchUsers &gt; should handle multiple pages" time="0.001509292">
+        </testcase>
+    </testsuite>
+    <testsuite name="packages/deepfunding-portal-api/tests/unit/resources/users/normalize.test.ts" timestamp="2026-03-02T19:46:26.893Z" hostname="Behzads-Mac-mini.local" tests="2" failures="0" errors="0" skipped="0" time="0.001433584">
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/users/normalize.test.ts" name="User Normalization &gt; normalizeUserToRecord &gt; should transform API response to DB record format" time="0.000678125">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/users/normalize.test.ts" name="User Normalization &gt; normalizeUserToRecord &gt; should serialize raw JSON correctly" time="0.000129875">
+        </testcase>
+    </testsuite>
+    <testsuite name="packages/deepfunding-portal-api/tests/unit/resources/users/repository.test.ts" timestamp="2026-03-02T19:46:26.893Z" hostname="Behzads-Mac-mini.local" tests="5" failures="0" errors="0" skipped="0" time="0.011376125">
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/users/repository.test.ts" name="User Repository &gt; create &gt; should insert a single user" time="0.005883958">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/users/repository.test.ts" name="User Repository &gt; createMany &gt; should insert multiple users" time="0.002348625">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/users/repository.test.ts" name="User Repository &gt; findAll &gt; should return all users" time="0.000966875">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/users/repository.test.ts" name="User Repository &gt; findById &gt; should find user by ID" time="0.000545833">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/users/repository.test.ts" name="User Repository &gt; findById &gt; should return undefined when user not found" time="0.000443709">
+        </testcase>
+    </testsuite>
+    <testsuite name="packages/deepfunding-portal-api/tests/unit/resources/milestones/api.test.ts" timestamp="2026-03-02T19:46:26.893Z" hostname="Behzads-Mac-mini.local" tests="4" failures="0" errors="0" skipped="0" time="0.004808417">
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/milestones/api.test.ts" name="Milestone API &gt; fetchMilestones &gt; should fetch milestones with pagination" time="0.0033195">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/milestones/api.test.ts" name="Milestone API &gt; fetchMilestones &gt; should flatten nested milestone structure" time="0.000292667">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/milestones/api.test.ts" name="Milestone API &gt; fetchMilestones &gt; should handle multiple pages" time="0.0002865">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/milestones/api.test.ts" name="Milestone API &gt; fetchMilestones &gt; should use custom page and limit options" time="0.000283417">
+        </testcase>
+    </testsuite>
+    <testsuite name="packages/deepfunding-portal-api/tests/unit/resources/milestones/normalize.test.ts" timestamp="2026-03-02T19:46:26.894Z" hostname="Behzads-Mac-mini.local" tests="4" failures="0" errors="0" skipped="0" time="0.006240792">
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/milestones/normalize.test.ts" name="Milestone Normalization &gt; normalizeMilestoneToRecord &gt; should transform API response to DB record format" time="0.001953583">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/milestones/normalize.test.ts" name="Milestone Normalization &gt; normalizeMilestoneToRecord &gt; should not include id field (auto-generated by DB)" time="0.000293958">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/milestones/normalize.test.ts" name="Milestone Normalization &gt; normalizeMilestoneToRecord &gt; should handle all milestone statuses" time="0.000089916">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/milestones/normalize.test.ts" name="Milestone Normalization &gt; normalizeMilestoneToRecord &gt; should serialize raw JSON correctly" time="0.000176417">
+        </testcase>
+    </testsuite>
+    <testsuite name="packages/deepfunding-portal-api/tests/unit/resources/milestones/repository.test.ts" timestamp="2026-03-02T19:46:26.894Z" hostname="Behzads-Mac-mini.local" tests="10" failures="0" errors="0" skipped="0" time="0.0385065">
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/milestones/repository.test.ts" name="Milestone Repository &gt; create &gt; should insert a single milestone" time="0.013366083">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/milestones/repository.test.ts" name="Milestone Repository &gt; createMany &gt; should insert multiple milestones" time="0.002993875">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/milestones/repository.test.ts" name="Milestone Repository &gt; createMany &gt; should handle chunking for large batches" time="0.009259875">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/milestones/repository.test.ts" name="Milestone Repository &gt; createMany &gt; should use default chunk size when not specified" time="0.005820916">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/milestones/repository.test.ts" name="Milestone Repository &gt; findAll &gt; should return all milestones" time="0.002064667">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/milestones/repository.test.ts" name="Milestone Repository &gt; findAll &gt; should return empty array when no milestones exist" time="0.000947125">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/milestones/repository.test.ts" name="Milestone Repository &gt; findByProposalId &gt; should find milestones by proposal ID" time="0.000709792">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/milestones/repository.test.ts" name="Milestone Repository &gt; findByProposalId &gt; should return empty array when no milestones found for proposal" time="0.000591625">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/milestones/repository.test.ts" name="Milestone Repository &gt; findById &gt; should find milestone by ID" time="0.000799333">
+        </testcase>
+        <testcase classname="packages/deepfunding-portal-api/tests/unit/resources/milestones/repository.test.ts" name="Milestone Repository &gt; findById &gt; should return undefined when milestone not found" time="0.0003775">
+        </testcase>
+    </testsuite>
+    <testsuite name="packages/reputation-algorithms/tests/unit/api/registry.test.ts" timestamp="2026-03-02T19:46:26.895Z" hostname="Behzads-Mac-mini.local" tests="37" failures="0" errors="0" skipped="0" time="0.03730475">
+        <testcase classname="packages/reputation-algorithms/tests/unit/api/registry.test.ts" name="API: getAlgorithmDefinitionKeys &gt; should return all algorithm keys sorted alphabetically (ASCII)" time="0.000978166">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/api/registry.test.ts" name="API: getAlgorithmDefinitionKeys &gt; should include all algorithms from the registry" time="0.001234959">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/api/registry.test.ts" name="API: getAlgorithmDefinitionKeys &gt; should maintain alphabetical sorting even with different key formats" time="0.000225959">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/api/registry.test.ts" name="API: searchAlgorithmDefinitions &gt; should return all latest definitions when called without filters" time="0.000613334">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/api/registry.test.ts" name="API: searchAlgorithmDefinitions &gt; should return all latest definitions when called with empty filters object" time="0.000226791">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/api/registry.test.ts" name="API: searchAlgorithmDefinitions &gt; should search by key with exact case-insensitive match" time="0.000257083">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/api/registry.test.ts" name="API: searchAlgorithmDefinitions &gt; should search by key with partial substring match" time="0.0001355">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/api/registry.test.ts" name="API: searchAlgorithmDefinitions &gt; should search by name with exact case-insensitive match" time="0.000060084">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/api/registry.test.ts" name="API: searchAlgorithmDefinitions &gt; should search by name with partial substring match" time="0.000249666">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/api/registry.test.ts" name="API: searchAlgorithmDefinitions &gt; should search by category with exact case-insensitive match" time="0.000082125">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/api/registry.test.ts" name="API: searchAlgorithmDefinitions &gt; should search by category with partial substring match" time="0.00005075">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/api/registry.test.ts" name="API: searchAlgorithmDefinitions &gt; should use OR logic across filters" time="0.000068542">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/api/registry.test.ts" name="API: searchAlgorithmDefinitions &gt; should return empty array when no algorithms match" time="0.000040042">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/api/registry.test.ts" name="API: getAlgorithmDefinitionVersions &gt; should return versions for algorithms with multiple versions" time="0.000338875">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/api/registry.test.ts" name="API: getAlgorithmDefinitionVersions &gt; should return versions for algorithms with single version" time="0.000104917">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/api/registry.test.ts" name="API: getAlgorithmDefinitionVersions &gt; should return versions sorted by SemVer ascending" time="0.000145583">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/api/registry.test.ts" name="API: getAlgorithmDefinitionVersions &gt; should handle algorithms with 0.x.x pre-release versions" time="0.000041584">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/api/registry.test.ts" name="API: getAlgorithmDefinitionVersions &gt; should throw NotFoundError with KEY_NOT_FOUND for unknown key" time="0.000197083">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/api/registry.test.ts" name="API: getAlgorithmDefinitionVersions &gt; should handle algorithms with major version jumps" time="0.000042416">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/api/registry.test.ts" name="API: getAlgorithmDefinition &gt; valid requests &gt; should return definition for valid key and version" time="0.000112834">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/api/registry.test.ts" name="API: getAlgorithmDefinition &gt; valid requests &gt; should return specific version when requested" time="0.000110792">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/api/registry.test.ts" name="API: getAlgorithmDefinition &gt; valid requests &gt; should return latest version when version is &quot;latest&quot;" time="0.000029375">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/api/registry.test.ts" name="API: getAlgorithmDefinition &gt; valid requests &gt; should return latest version when version is not specified" time="0.000026583">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/api/registry.test.ts" name="API: getAlgorithmDefinition &gt; valid requests &gt; should handle single-version algorithms" time="0.000031375">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/api/registry.test.ts" name="API: getAlgorithmDefinition &gt; valid requests &gt; should return different definitions for different versions" time="0.000670292">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/api/registry.test.ts" name="API: getAlgorithmDefinition &gt; structure validation &gt; should have valid inputs array structure" time="0.000285125">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/api/registry.test.ts" name="API: getAlgorithmDefinition &gt; structure validation &gt; should have valid outputs array structure with at least one output" time="0.000252875">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/api/registry.test.ts" name="API: getAlgorithmDefinition &gt; structure validation &gt; should handle algorithms with multiple outputs" time="0.000355834">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/api/registry.test.ts" name="API: getAlgorithmDefinition &gt; structure validation &gt; should validate inputs evolve across versions" time="0.000225542">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/api/registry.test.ts" name="API: getAlgorithmDefinition &gt; structure validation &gt; should ensure all algorithms have required metadata" time="0.000719584">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/api/registry.test.ts" name="API: getAlgorithmDefinition &gt; error handling &gt; should throw NotFoundError for unknown key" time="0.000304916">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/api/registry.test.ts" name="API: getAlgorithmDefinition &gt; error handling &gt; should throw NotFoundError for unknown version" time="0.000226833">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/api/registry.test.ts" name="API: getAlgorithmDefinition &gt; error handling &gt; should throw NotFoundError for versions that do not exist" time="0.000121916">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/api/registry.test.ts" name="API: getAlgorithmDefinition &gt; error handling &gt; should throw NotFoundError when requesting an unsupported version" time="0.019114083">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/api/registry.test.ts" name="API: getAlgorithmDefinition &gt; immutability &gt; should return JSON string representation" time="0.000251708">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/api/registry.test.ts" name="API: getAlgorithmDefinition &gt; version evolution &gt; should show progression of features across versions" time="0.000336625">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/api/registry.test.ts" name="API: getAlgorithmDefinition &gt; version evolution &gt; should handle major version changes correctly" time="0.000085">
+        </testcase>
+    </testsuite>
+    <testsuite name="packages/reputation-algorithms/tests/unit/cli/build-registry.test.ts" timestamp="2026-03-02T19:46:26.896Z" hostname="Behzads-Mac-mini.local" tests="8" failures="0" errors="0" skipped="0" time="0.021197584">
+        <testcase classname="packages/reputation-algorithms/tests/unit/cli/build-registry.test.ts" name="CLI: buildRegistry &gt; should build registry for empty directory" time="0.00246">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/cli/build-registry.test.ts" name="CLI: buildRegistry &gt; should build registry with algorithms" time="0.001368375">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/cli/build-registry.test.ts" name="CLI: buildRegistry &gt; should skip writing when content is unchanged" time="0.001623583">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/cli/build-registry.test.ts" name="CLI: buildRegistry &gt; should update existing registry when content changes" time="0.0047025">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/cli/build-registry.test.ts" name="CLI: buildRegistry &gt; should handle multiple algorithms and versions" time="0.006605209">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/cli/build-registry.test.ts" name="CLI: buildRegistry &gt; should handle error during scanning" time="0.00062925">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/cli/build-registry.test.ts" name="CLI: buildRegistry &gt; should create output directory if it does not exist" time="0.001211041">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/cli/build-registry.test.ts" name="CLI: buildRegistry &gt; should handle includeMetadata option" time="0.001825667">
+        </testcase>
+    </testsuite>
+    <testsuite name="packages/reputation-algorithms/tests/unit/cli/create-algorithm.test.ts" timestamp="2026-03-02T19:46:26.897Z" hostname="Behzads-Mac-mini.local" tests="16" failures="0" errors="0" skipped="0" time="0.030598375">
+        <testcase classname="packages/reputation-algorithms/tests/unit/cli/create-algorithm.test.ts" name="CLI: createAlgorithm &gt; valid inputs &gt; should create algorithm with valid key and version" time="0.002548792">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/cli/create-algorithm.test.ts" name="CLI: createAlgorithm &gt; valid inputs &gt; should create algorithm with custom config" time="0.000897125">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/cli/create-algorithm.test.ts" name="CLI: createAlgorithm &gt; valid inputs &gt; should create algorithm with prerelease version" time="0.000914292">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/cli/create-algorithm.test.ts" name="CLI: createAlgorithm &gt; valid inputs &gt; should create nested directory structure" time="0.001728042">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/cli/create-algorithm.test.ts" name="CLI: createAlgorithm &gt; valid inputs &gt; should overwrite existing file when overwrite is true" time="0.002740916">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/cli/create-algorithm.test.ts" name="CLI: createAlgorithm &gt; valid inputs &gt; should include proper JSON formatting" time="0.001206667">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/cli/create-algorithm.test.ts" name="CLI: createAlgorithm &gt; validation errors &gt; should reject invalid key format" time="0.002807">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/cli/create-algorithm.test.ts" name="CLI: createAlgorithm &gt; validation errors &gt; should reject invalid version format" time="0.001339917">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/cli/create-algorithm.test.ts" name="CLI: createAlgorithm &gt; validation errors &gt; should show validation examples on error" time="0.002370958">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/cli/create-algorithm.test.ts" name="CLI: createAlgorithm &gt; validation errors &gt; should reject when file already exists and overwrite is false" time="0.001109667">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/cli/create-algorithm.test.ts" name="CLI: createAlgorithm &gt; validation errors &gt; should reject when file already exists and overwrite is not specified" time="0.001917959">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/cli/create-algorithm.test.ts" name="CLI: createAlgorithm &gt; output messages &gt; should display helpful next steps" time="0.001145125">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/cli/create-algorithm.test.ts" name="CLI: createAlgorithm &gt; output messages &gt; should display file path" time="0.001693333">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/cli/create-algorithm.test.ts" name="CLI: createAlgorithm &gt; edge cases &gt; should handle algorithm keys with numbers" time="0.001486333">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/cli/create-algorithm.test.ts" name="CLI: createAlgorithm &gt; edge cases &gt; should handle complex semantic versions" time="0.004418458">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/cli/create-algorithm.test.ts" name="CLI: createAlgorithm &gt; edge cases &gt; should handle minimal config" time="0.000781708">
+        </testcase>
+    </testsuite>
+    <testsuite name="packages/reputation-algorithms/tests/unit/cli/validate-registry.test.ts" timestamp="2026-03-02T19:46:26.897Z" hostname="Behzads-Mac-mini.local" tests="20" failures="0" errors="0" skipped="0" time="0.31346725">
+        <testcase classname="packages/reputation-algorithms/tests/unit/cli/validate-registry.test.ts" name="CLI: validateRegistry &gt; scanRegistryFiles &gt; should scan empty registry" time="0.002073">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/cli/validate-registry.test.ts" name="CLI: validateRegistry &gt; scanRegistryFiles &gt; should scan registry with valid algorithms" time="0.002344708">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/cli/validate-registry.test.ts" name="CLI: validateRegistry &gt; scanRegistryFiles &gt; should scan multiple algorithms and versions" time="0.002336542">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/cli/validate-registry.test.ts" name="CLI: validateRegistry &gt; validateEntry &gt; should validate correct entry" time="0.103031542">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/cli/validate-registry.test.ts" name="CLI: validateRegistry &gt; validateEntry &gt; should throw ValidationError for invalid schema" time="0.032859459">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/cli/validate-registry.test.ts" name="CLI: validateRegistry &gt; validateEntry &gt; should throw KeyMismatchError for folder/content key mismatch" time="0.01183775">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/cli/validate-registry.test.ts" name="CLI: validateRegistry &gt; validateEntry &gt; should throw VersionMismatchError for filename/content version mismatch" time="0.01945225">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/cli/validate-registry.test.ts" name="CLI: validateRegistry &gt; validateEntry &gt; should throw ValidationError for non-object content" time="0.020958833">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/cli/validate-registry.test.ts" name="CLI: validateRegistry &gt; validateEntry &gt; should throw ValidationError for null content" time="0.009440416">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/cli/validate-registry.test.ts" name="CLI: validateRegistry &gt; checkDuplicates &gt; should pass for unique entries" time="0.000269125">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/cli/validate-registry.test.ts" name="CLI: validateRegistry &gt; checkDuplicates &gt; should throw DuplicateError for duplicate key@version" time="0.000174916">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/cli/validate-registry.test.ts" name="CLI: validateRegistry &gt; checkDuplicates &gt; should skip entries with invalid content" time="0.00021725">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/cli/validate-registry.test.ts" name="CLI: validateRegistry &gt; checkDuplicates &gt; should skip entries with missing key or version" time="0.000177625">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/cli/validate-registry.test.ts" name="CLI: validateRegistry &gt; validateRegistry &gt; should validate empty registry" time="0.014506292">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/cli/validate-registry.test.ts" name="CLI: validateRegistry &gt; validateRegistry &gt; should validate registry with correct algorithms" time="0.011944416">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/cli/validate-registry.test.ts" name="CLI: validateRegistry &gt; validateRegistry &gt; should throw for invalid algorithm schema" time="0.01664925">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/cli/validate-registry.test.ts" name="CLI: validateRegistry &gt; validateRegistry &gt; should throw for key mismatch" time="0.013508708">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/cli/validate-registry.test.ts" name="CLI: validateRegistry &gt; validateRegistry &gt; should throw for version mismatch" time="0.014212">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/cli/validate-registry.test.ts" name="CLI: validateRegistry &gt; validateRegistry &gt; should throw for duplicate algorithms" time="0.020733">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/cli/validate-registry.test.ts" name="CLI: validateRegistry &gt; validateRegistry &gt; should validate multiple correct algorithms" time="0.015242625">
+        </testcase>
+    </testsuite>
+    <testsuite name="packages/reputation-algorithms/tests/unit/shared/errors/error.test.ts" timestamp="2026-03-02T19:46:26.899Z" hostname="Behzads-Mac-mini.local" tests="10" failures="0" errors="0" skipped="0" time="0.008077125">
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/errors/error.test.ts" name="Errors: NotFoundError &gt; KEY_NOT_FOUND &gt; should create error with correct properties" time="0.001336">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/errors/error.test.ts" name="Errors: NotFoundError &gt; KEY_NOT_FOUND &gt; should have proper stack trace" time="0.003376167">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/errors/error.test.ts" name="Errors: NotFoundError &gt; VERSION_NOT_FOUND &gt; should create error with correct properties" time="0.000108">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/errors/error.test.ts" name="Errors: NotFoundError &gt; should be throwable and catchable" time="0.000100292">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/errors/error.test.ts" name="Errors: DuplicateError &gt; should create error with proper properties" time="0.000146917">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/errors/error.test.ts" name="Errors: VersionMismatchError &gt; should create error with proper properties" time="0.000111416">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/errors/error.test.ts" name="Errors: KeyMismatchError &gt; should create error with proper properties" time="0.000092125">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/errors/error.test.ts" name="Errors: ValidationError &gt; should create error with single validation error" time="0.001205875">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/errors/error.test.ts" name="Errors: ValidationError &gt; should create error with multiple validation errors" time="0.000462333">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/errors/error.test.ts" name="Errors: ValidationError &gt; should handle errors without message property" time="0.000091708">
+        </testcase>
+    </testsuite>
+    <testsuite name="packages/reputation-algorithms/tests/unit/shared/utils/filesystem.test.ts" timestamp="2026-03-02T19:46:26.899Z" hostname="Behzads-Mac-mini.local" tests="20" failures="0" errors="0" skipped="0" time="0.015881375">
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/utils/filesystem.test.ts" name="Filesystem Utils &gt; getModuleFileAndDir &gt; should extract filename and dirname from import.meta.url" time="0.000992875">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/utils/filesystem.test.ts" name="Filesystem Utils &gt; getModuleFileAndDir &gt; should handle Windows-style paths" time="0.000208958">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/utils/filesystem.test.ts" name="Filesystem Utils &gt; getModuleFileAndDir &gt; should handle URLs with special characters" time="0.000264">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/utils/filesystem.test.ts" name="Filesystem Utils &gt; getModuleFileAndDir &gt; should work with actual import.meta.url" time="0.000261708">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/utils/filesystem.test.ts" name="Filesystem Utils &gt; resolveRegistryPath &gt; should resolve registry path relative to given directory" time="0.000830875">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/utils/filesystem.test.ts" name="Filesystem Utils &gt; resolveRegistryPath &gt; should use custom output path when provided" time="0.000617875">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/utils/filesystem.test.ts" name="Filesystem Utils &gt; resolveRegistryPath &gt; should handle nested directory structures" time="0.000646709">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/utils/filesystem.test.ts" name="Filesystem Utils &gt; resolveRegistryPath &gt; should handle Windows-style paths" time="0.000538166">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/utils/filesystem.test.ts" name="Filesystem Utils &gt; resolveRegistryPath &gt; should work with relative paths" time="0.00091225">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/utils/filesystem.test.ts" name="Filesystem Utils &gt; resolveRegistryIndexPath &gt; should resolve index path relative to given directory" time="0.000435542">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/utils/filesystem.test.ts" name="Filesystem Utils &gt; resolveRegistryIndexPath &gt; should use custom output path when provided" time="0.000318625">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/utils/filesystem.test.ts" name="Filesystem Utils &gt; resolveRegistryIndexPath &gt; should handle nested directory structures" time="0.000305792">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/utils/filesystem.test.ts" name="Filesystem Utils &gt; resolveRegistryIndexPath &gt; should handle Windows-style paths" time="0.000322375">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/utils/filesystem.test.ts" name="Filesystem Utils &gt; resolveRegistryIndexPath &gt; should work with relative paths" time="0.000290208">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/utils/filesystem.test.ts" name="Filesystem Utils &gt; integration with actual file system &gt; should create valid paths that can be used for file operations" time="0.003236375">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/utils/filesystem.test.ts" name="Filesystem Utils &gt; integration with actual file system &gt; should handle complex project structures" time="0.002028875">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/utils/filesystem.test.ts" name="Filesystem Utils &gt; edge cases &gt; should handle empty and root directory paths" time="0.001136708">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/utils/filesystem.test.ts" name="Filesystem Utils &gt; edge cases &gt; should handle paths with trailing slashes" time="0.000436917">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/utils/filesystem.test.ts" name="Filesystem Utils &gt; edge cases &gt; should handle paths with double slashes" time="0.000379083">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/utils/filesystem.test.ts" name="Filesystem Utils &gt; edge cases &gt; should handle very deep directory structures" time="0.000351709">
+        </testcase>
+    </testsuite>
+    <testsuite name="packages/reputation-algorithms/tests/unit/shared/utils/registry.test.ts" timestamp="2026-03-02T19:46:26.900Z" hostname="Behzads-Mac-mini.local" tests="14" failures="0" errors="0" skipped="0" time="0.012895166">
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/utils/registry.test.ts" name="Registry Utils &gt; scanRegistryDirectory &gt; should scan empty directory" time="0.001591334">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/utils/registry.test.ts" name="Registry Utils &gt; scanRegistryDirectory &gt; should scan directory with algorithms" time="0.001804125">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/utils/registry.test.ts" name="Registry Utils &gt; scanRegistryDirectory &gt; should ignore non-JSON files" time="0.001908583">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/utils/registry.test.ts" name="Registry Utils &gt; scanRegistryDirectory &gt; should handle multiple algorithms" time="0.003224208">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/utils/registry.test.ts" name="Registry Utils &gt; scanRegistryDirectory &gt; should handle directories without JSON files" time="0.000852">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/utils/registry.test.ts" name="Registry Utils &gt; scanRegistryDirectory &gt; should throw error for non-existent directory" time="0.000490333">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/utils/registry.test.ts" name="Registry Utils &gt; generateRegistryIndexContent &gt; should generate content for empty registry" time="0.00026875">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/utils/registry.test.ts" name="Registry Utils &gt; generateRegistryIndexContent &gt; should generate content for registry with algorithms" time="0.000778">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/utils/registry.test.ts" name="Registry Utils &gt; generateRegistryIndexContent &gt; should sort algorithms alphabetically" time="0.000352584">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/utils/registry.test.ts" name="Registry Utils &gt; generateRegistryIndexContent &gt; should sort versions using semantic versioning" time="0.00019525">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/utils/registry.test.ts" name="Registry Utils &gt; generateRegistryIndexContent &gt; should sanitize import names" time="0.000160833">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/utils/registry.test.ts" name="Registry Utils &gt; generateRegistryStats &gt; should generate stats for empty registry" time="0.000149458">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/utils/registry.test.ts" name="Registry Utils &gt; generateRegistryStats &gt; should generate stats for registry with algorithms" time="0.000138833">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/utils/registry.test.ts" name="Registry Utils &gt; generateRegistryStats &gt; should sort versions in stats output" time="0.000110666">
+        </testcase>
+    </testsuite>
+    <testsuite name="packages/reputation-algorithms/tests/unit/shared/utils/schema-validation.test.ts" timestamp="2026-03-02T19:46:26.901Z" hostname="Behzads-Mac-mini.local" tests="14" failures="0" errors="0" skipped="0" time="0.350629583">
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/utils/schema-validation.test.ts" name="Build: Schema Validation &gt; Valid Fixtures &gt; should validate sample-algorithm.json" time="0.047922958">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/utils/schema-validation.test.ts" name="Build: Schema Validation &gt; Valid Fixtures &gt; should validate voting_engagement from registry" time="0.046807833">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/utils/schema-validation.test.ts" name="Build: Schema Validation &gt; Invalid Fixtures &gt; should reject invalid-key.json with invalid key format" time="0.016369042">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/utils/schema-validation.test.ts" name="Build: Schema Validation &gt; Invalid Fixtures &gt; should reject invalid-version.json with invalid version format" time="0.012474959">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/utils/schema-validation.test.ts" name="Build: Schema Validation &gt; Invalid Fixtures &gt; should reject missing-fields.json with missing required category" time="0.039398417">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/utils/schema-validation.test.ts" name="Build: Schema Validation &gt; Schema Constraints &gt; should require snake_case keys" time="0.024381458">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/utils/schema-validation.test.ts" name="Build: Schema Validation &gt; Schema Constraints &gt; should require semantic version format" time="0.018895292">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/utils/schema-validation.test.ts" name="Build: Schema Validation &gt; Schema Constraints &gt; should require at least one output" time="0.02204575">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/utils/schema-validation.test.ts" name="Build: Schema Validation &gt; Schema Constraints &gt; should require csv metadata when type is csv" time="0.029052208">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/utils/schema-validation.test.ts" name="Build: Schema Validation &gt; Schema Constraints &gt; should require csv property when type is csv" time="0.0171225">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/utils/schema-validation.test.ts" name="Build: Schema Validation &gt; Schema Constraints &gt; should accept valid categories" time="0.013677209">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/utils/schema-validation.test.ts" name="Build: Schema Validation &gt; Runtime &gt; should accept valid runtime values" time="0.016352125">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/utils/schema-validation.test.ts" name="Build: Schema Validation &gt; Runtime &gt; should reject algorithm without runtime (required)" time="0.011532375">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/utils/schema-validation.test.ts" name="Build: Schema Validation &gt; Runtime &gt; should reject unsupported runtime values" time="0.032146125">
+        </testcase>
+    </testsuite>
+    <testsuite name="packages/reputation-algorithms/tests/unit/shared/utils/templates.test.ts" timestamp="2026-03-02T19:46:26.901Z" hostname="Behzads-Mac-mini.local" tests="16" failures="0" errors="0" skipped="0" time="0.004333417">
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/utils/templates.test.ts" name="Template Utils &gt; keyToDisplayName &gt; should convert snake_case to Title Case" time="0.001514625">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/utils/templates.test.ts" name="Template Utils &gt; keyToDisplayName &gt; should handle single words" time="0.000089042">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/utils/templates.test.ts" name="Template Utils &gt; keyToDisplayName &gt; should handle empty strings" time="0.000044833">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/utils/templates.test.ts" name="Template Utils &gt; keyToDisplayName &gt; should handle keys with numbers" time="0.000052167">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/utils/templates.test.ts" name="Template Utils &gt; keyToDisplayName &gt; should handle consecutive underscores" time="0.0000745">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/utils/templates.test.ts" name="Template Utils &gt; createAlgorithmTemplate &gt; should create basic template with default config" time="0.000410125">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/utils/templates.test.ts" name="Template Utils &gt; createAlgorithmTemplate &gt; should create template with custom category" time="0.000262208">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/utils/templates.test.ts" name="Template Utils &gt; createAlgorithmTemplate &gt; should create template with custom description" time="0.000050458">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/utils/templates.test.ts" name="Template Utils &gt; createAlgorithmTemplate &gt; should create template without example input" time="0.000180291">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/utils/templates.test.ts" name="Template Utils &gt; createAlgorithmTemplate &gt; should create template without example output" time="0.000054625">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/utils/templates.test.ts" name="Template Utils &gt; createAlgorithmTemplate &gt; should create minimal template with no examples" time="0.000040875">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/utils/templates.test.ts" name="Template Utils &gt; createAlgorithmTemplate &gt; should create template with all custom options" time="0.000045459">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/utils/templates.test.ts" name="Template Utils &gt; createAlgorithmTemplate &gt; should handle complex algorithm names" time="0.000034792">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/utils/templates.test.ts" name="Template Utils &gt; createAlgorithmTemplate &gt; should create consistent output structure" time="0.000171917">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/utils/templates.test.ts" name="Template Utils &gt; createAlgorithmTemplate &gt; should include runtime with default value" time="0.000063666">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/utils/templates.test.ts" name="Template Utils &gt; createAlgorithmTemplate &gt; should set runtime to typescript by default" time="0.000045958">
+        </testcase>
+    </testsuite>
+    <testsuite name="packages/reputation-algorithms/tests/unit/shared/utils/validation.test.ts" timestamp="2026-03-02T19:46:26.902Z" hostname="Behzads-Mac-mini.local" tests="20" failures="0" errors="0" skipped="0" time="0.211103125">
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/utils/validation.test.ts" name="Validation Utils &gt; validateKey &gt; should accept valid snake_case keys" time="0.00103225">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/utils/validation.test.ts" name="Validation Utils &gt; validateKey &gt; should reject keys with invalid format" time="0.000194417">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/utils/validation.test.ts" name="Validation Utils &gt; validateKey &gt; should provide helpful error messages" time="0.000083">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/utils/validation.test.ts" name="Validation Utils &gt; validateVersion &gt; should accept valid semantic versions" time="0.000364">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/utils/validation.test.ts" name="Validation Utils &gt; validateVersion &gt; should reject invalid version formats" time="0.0005745">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/utils/validation.test.ts" name="Validation Utils &gt; validateVersion &gt; should provide helpful error messages" time="0.000347375">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/utils/validation.test.ts" name="Validation Utils &gt; compareSemVer &gt; should sort versions in ascending order" time="0.000402">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/utils/validation.test.ts" name="Validation Utils &gt; compareSemVer &gt; should handle prerelease versions correctly" time="0.000063625">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/utils/validation.test.ts" name="Validation Utils &gt; compareSemVer &gt; should handle build metadata (ignored in comparison)" time="0.000310167">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/utils/validation.test.ts" name="Validation Utils &gt; compareSemVer &gt; should compare major versions correctly" time="0.000262875">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/utils/validation.test.ts" name="Validation Utils &gt; compareSemVer &gt; should compare minor versions correctly" time="0.000140333">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/utils/validation.test.ts" name="Validation Utils &gt; compareSemVer &gt; should compare patch versions correctly" time="0.000227">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/utils/validation.test.ts" name="Validation Utils &gt; compareSemVer &gt; should return 0 for equal versions" time="0.000103667">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/utils/validation.test.ts" name="Validation Utils &gt; compareSemVer &gt; should handle complex prerelease sorting" time="0.000127541">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/utils/validation.test.ts" name="Validation Utils &gt; AlgorithmValidator &gt; should validate a correct algorithm definition" time="0.050547417">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/utils/validation.test.ts" name="Validation Utils &gt; AlgorithmValidator &gt; should reject invalid algorithm definition" time="0.028696458">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/utils/validation.test.ts" name="Validation Utils &gt; AlgorithmValidator &gt; should throw ValidationError when using validateAndThrow" time="0.050097875">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/utils/validation.test.ts" name="Validation Utils &gt; AlgorithmValidator &gt; should return definition when validateAndThrow succeeds" time="0.022902333">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/utils/validation.test.ts" name="Validation Utils &gt; AlgorithmValidator &gt; should provide access to underlying AJV instance" time="0.028362334">
+        </testcase>
+        <testcase classname="packages/reputation-algorithms/tests/unit/shared/utils/validation.test.ts" name="Validation Utils &gt; createValidatorWithSchema &gt; should create a validator with loaded schema" time="0.024632584">
+        </testcase>
+    </testsuite>
+</testsuites>
