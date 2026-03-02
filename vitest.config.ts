@@ -8,6 +8,11 @@ export default defineConfig({
             provider: 'v8',
             all: true,
             reportsDirectory: './coverage',
+            exclude: [
+                '**/dist/**',
+                '**/node_modules/**',
+                '**/.next/**',
+            ],
         },
         watch: false,
     },
