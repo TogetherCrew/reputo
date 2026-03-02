@@ -10,6 +10,17 @@ volumes:
         driver: local
 
 services:
+    preview-proxy:
+        image: caddy:2
+        restart: unless-stopped
+        networks: [preview]
+        ports:
+            - '80:80'
+        volumes:
+            - ./Caddyfile:/etc/caddy/Caddyfile:ro
+        depends_on:
+            - ui
+            - api
     mongodb:
         container_name: mongodb
         image: mongo:7.0.5
@@ -30,9 +41,9 @@ services:
             - MONGO_INITDB_DATABASE=reputo_preview
 
         volumes:
-            - ./mongo/init.js:/docker-entrypoint-initdb.d/init.js:ro
-            - ./mongo/healthcheck.js:/etc/mongo/healthcheck.js:ro
-            - ./mongo/keyfile.txt:/etc/mongo/keyfile.txt
+            - ../mongo/init.js:/docker-entrypoint-initdb.d/init.js:ro
+            - ../mongo/healthcheck.js:/etc/mongo/healthcheck.js:ro
+            - ../mongo/keyfile.txt:/etc/mongo/keyfile.txt
             - mongodb_data:/data/db
 
         healthcheck:
@@ -42,68 +53,23 @@ services:
             retries: 5
             start_period: 40s
 
-    traefik:
-        image: traefik:v3.5.0
-        container_name: traefik
-        ports:
-            - '80:80'
-        volumes:
-            - /var/run/docker.sock:/var/run/docker.sock:ro
-        networks: [preview]
-        healthcheck:
-            test: ['CMD', 'traefik', 'healthcheck', '--ping']
-            interval: 30s
-            timeout: 10s
-            retries: 3
-            start_period: 10s
-        command:
-            - --api=true
-            - --ping=true
-            - --providers.docker=true
-            - --providers.docker.exposedByDefault=false
-            - --entrypoints.web.address=:80
-            - --metrics.prometheus=true
-            - --metrics.prometheus.addRoutersLabels=true
-
     ui:
-        container_name: ui
-        depends_on:
-            - traefik
-        build:
-            context: ..
-            dockerfile: docker/Dockerfile
-            target: ui
-            args:
-                NEXT_PUBLIC_API_URL: http://api.${PULLPREVIEW_PUBLIC_DNS}/api/v1
+        image: ghcr.io/togethercrew/reputo/ui:${PREVIEW_IMAGE_TAG}
         restart: unless-stopped
         networks: [preview]
         environment:
-            - NEXT_PUBLIC_API_URL=http://api.${PULLPREVIEW_PUBLIC_DNS}/api/v1
             - PORT=8080
-        labels:
-            - traefik.enable=true
-            - traefik.http.routers.ui.rule=Host(`${PULLPREVIEW_PUBLIC_DNS}`)
-            - traefik.http.routers.ui.entrypoints=web
-            - traefik.http.services.ui.loadbalancer.server.port=8080
 
     api:
         container_name: api
+        image: ghcr.io/togethercrew/reputo/api:${PREVIEW_IMAGE_TAG}
         depends_on:
             mongodb:
                 condition: service_healthy
             temporal:
                 condition: service_healthy
-        build:
-            context: ..
-            dockerfile: docker/Dockerfile
-            target: api
         restart: unless-stopped
         networks: [preview]
-        labels:
-            - traefik.enable=true
-            - traefik.http.routers.api.rule=Host(`api.${PULLPREVIEW_PUBLIC_DNS}`)
-            - traefik.http.routers.api.entrypoints=web
-            - traefik.http.services.api.loadbalancer.server.port=3000
         environment:
             - NODE_ENV=development
             - PORT=3000
@@ -204,15 +170,12 @@ services:
 
     orchestrator-worker:
         container_name: orchestrator-worker
+        image: ghcr.io/togethercrew/reputo/workflows:${PREVIEW_IMAGE_TAG}
         depends_on:
             mongodb:
                 condition: service_healthy
             temporal:
                 condition: service_healthy
-        build:
-            context: ..
-            dockerfile: docker/Dockerfile
-            target: workflows
         command: ['pnpm', 'start:orchestrator']
         restart: unless-stopped
         networks: [preview]
@@ -234,20 +197,17 @@ services:
             - STORAGE_PRESIGN_GET_TTL=300
             - STORAGE_MAX_SIZE_BYTES=52428800
             - STORAGE_CONTENT_TYPE_ALLOWLIST=text/csv,text/plain,application/json
-            - DEEPFUNDING_API_BASE_URL=https://deepfunding.ai/wp-json/deepfunding/v1
+            - DEEPFUNDING_API_BASE_URL=https://deep-projects.ai/wp-json/deepfunding/v1
             - DEEPFUNDING_API_KEY=${DEEPFUNDING_API_KEY}
             - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
             - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
             - AWS_REGION=eu-central-1
     typescript-worker:
         container_name: typescript-worker
+        image: ghcr.io/togethercrew/reputo/workflows:${PREVIEW_IMAGE_TAG}
         depends_on:
             temporal:
                 condition: service_healthy
-        build:
-            context: ..
-            dockerfile: docker/Dockerfile
-            target: workflows
         command: ['pnpm', 'start:algorithm-typescript']
         restart: unless-stopped
         networks: [preview]
@@ -269,7 +229,7 @@ services:
             - STORAGE_PRESIGN_GET_TTL=300
             - STORAGE_MAX_SIZE_BYTES=52428800
             - STORAGE_CONTENT_TYPE_ALLOWLIST=text/csv,text/plain,application/json
-            - DEEPFUNDING_API_BASE_URL=https://deepfunding.ai/wp-json/deepfunding/v1
+            - DEEPFUNDING_API_BASE_URL=https://deep-projects.ai/wp-json/deepfunding/v1
             - DEEPFUNDING_API_KEY=${DEEPFUNDING_API_KEY}
             - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
             - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
