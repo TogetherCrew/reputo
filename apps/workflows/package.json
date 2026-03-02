@@ -31,8 +31,7 @@
     "test": "vitest",
     "test:watch": "vitest --watch",
     "test:cov": "vitest --coverage",
-    "typecheck": "tsc --noEmit",
-    "release": "semantic-release"
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "catalog:",
