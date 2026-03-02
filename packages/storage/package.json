@@ -23,7 +23,6 @@
         "test:cov": "vitest --coverage",
         "typecheck": "tsc --noEmit",
         "build": "tsc",
-        "release": "semantic-release",
         "docs": "typedoc",
         "clean": "rm -rf coverage dist docs node_modules tsconfig.tsbuildinfo"
     },
@@ -32,13 +31,7 @@
         "@aws-sdk/s3-request-presigner": "catalog:"
     },
     "devDependencies": {
-        "@semantic-release/changelog": "catalog:",
-        "@semantic-release/commit-analyzer": "catalog:",
-        "@semantic-release/git": "catalog:",
-        "@semantic-release/release-notes-generator": "catalog:",
         "@types/node": "catalog:",
-        "semantic-release": "catalog:",
-        "semantic-release-commits-lint": "catalog:",
         "tsx": "catalog:",
         "typedoc": "catalog:",
         "typedoc-plugin-markdown": "catalog:",

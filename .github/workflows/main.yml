@@ -20,13 +20,15 @@ jobs:
             ref: ${{ github.sha }}
             push: true
 
+    release:
+        needs: build-and-push
+        uses: ./.github/workflows/release.yml
+        secrets: inherit
+
     wait-for-watchtower:
         name: wait-for-watchtower
         needs: build-and-push
-        runs-on: ${{ matrix.os }}
-        strategy:
-            matrix:
-                os: [ubuntu-latest]
+        runs-on: ubuntu-22.04
         environment:
             name: staging
             url: https://staging.logid.xyz

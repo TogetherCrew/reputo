@@ -23,7 +23,7 @@ env:
 
 jobs:
     promote:
-        runs-on: ubuntu-latest
+        runs-on: ubuntu-22.04
         strategy:
             matrix:
                 image: [api, ui, workflows]
@@ -58,7 +58,7 @@ jobs:
     wait-for-watchtower:
         name: wait-for-watchtower
         needs: promote
-        runs-on: ubuntu-latest
+        runs-on: ubuntu-22.04
         environment:
             name: production
             url: https://logid.xyz

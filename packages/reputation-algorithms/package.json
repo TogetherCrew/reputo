@@ -37,7 +37,6 @@
         "typecheck": "tsc --noEmit",
         "prebuild": "pnpm registry:validate && pnpm registry:build",
         "build": "tsc",
-        "release": "semantic-release",
         "docs": "typedoc",
         "clean": "rm -rf coverage dist docs node_modules tsconfig.tsbuildinfo"
     },
@@ -49,9 +48,7 @@
         "typedoc": "catalog:",
         "typedoc-plugin-markdown": "catalog:",
         "typescript": "catalog:",
-        "vitest": "catalog:",
-        "semantic-release": "catalog:",
-        "semantic-release-commits-lint": "catalog:"
+        "vitest": "catalog:"
     },
     "keywords": [
         "typescript",
