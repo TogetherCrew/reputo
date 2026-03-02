@@ -1,6 +1,6 @@
 prepare-commit-msg:
     commands:
-        commitzen:
+        commitizen:
             interactive: true
             run: pnpm run cz --hook
             env:
