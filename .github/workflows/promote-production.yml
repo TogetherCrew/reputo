@@ -19,7 +19,7 @@ permissions:
 
 env:
     REGISTRY: ghcr.io
-    IMAGE_PREFIX: ghcr.io/togethercrew/reputo
+    IMAGE_PREFIX: ghcr.io/reputo-org/reputo
 
 jobs:
     promote:

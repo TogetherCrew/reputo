@@ -8,7 +8,7 @@
 
 <div align="center">
 
-[![CI](https://github.com/togethercrew/reputo/actions/workflows/main.yml/badge.svg)](https://github.com/togethercrew/reputo/actions/workflows/main.yml)&nbsp;[![Coverage Status](https://codecov.io/gh/togethercrew/reputo/branch/main/graph/badge.svg)](https://codecov.io/gh/togethercrew/reputo)&nbsp;[![License: GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-blue.svg)](LICENSE)
+[![CI](https://github.com/reputo-org/reputo/actions/workflows/main.yml/badge.svg)](https://github.com/reputo-org/reputo/actions/workflows/main.yml)&nbsp;[![Coverage Status](https://codecov.io/gh/reputo-org/reputo/branch/main/graph/badge.svg)](https://codecov.io/gh/reputo-org/reputo)&nbsp;[![License: GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-blue.svg)](LICENSE)
 
 </div>
 

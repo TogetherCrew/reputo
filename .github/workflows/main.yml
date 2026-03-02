@@ -19,7 +19,7 @@ jobs:
         with:
             ref: ${{ github.sha }}
             push: true
-            
+
     wait-for-watchtower:
         name: wait-for-watchtower
         needs: build-and-push

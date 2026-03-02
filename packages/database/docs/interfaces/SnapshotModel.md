@@ -6,7 +6,7 @@
 
 # Interface: SnapshotModel
 
-Defined in: [packages/database/src/shared/types/Snapshot.interface.ts:83](https://github.com/TogetherCrew/reputo/blob/bc7521151e0cf79ab1c29321ef1e6ee87b55063d/packages/database/src/shared/types/Snapshot.interface.ts#L83)
+Defined in: [packages/database/src/shared/types/Snapshot.interface.ts:83](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/database/src/shared/types/Snapshot.interface.ts#L83)
 
 Interface extending Mongoose Model with additional methods for Snapshot.
 
@@ -20,7 +20,7 @@ Interface extending Mongoose Model with additional methods for Snapshot.
 
 > **new SnapshotModel**\<`DocType`\>(`doc?`, `fields?`, `options?`): `Document`\<`unknown`, \{ \}, [`Snapshot`](Snapshot.md), \{ \}, \{ \}\> & [`Snapshot`](Snapshot.md) & `object` & `object`
 
-Defined in: [packages/database/src/shared/types/Snapshot.interface.ts:83](https://github.com/TogetherCrew/reputo/blob/bc7521151e0cf79ab1c29321ef1e6ee87b55063d/packages/database/src/shared/types/Snapshot.interface.ts#L83)
+Defined in: [packages/database/src/shared/types/Snapshot.interface.ts:83](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/database/src/shared/types/Snapshot.interface.ts#L83)
 
 #### Parameters
 
@@ -50,7 +50,7 @@ Defined in: [packages/database/src/shared/types/Snapshot.interface.ts:83](https:
 
 > **paginate**: (`filter`, `options`) => `Promise`\<[`PaginateResult`](PaginateResult.md)\<[`SnapshotDoc`](../type-aliases/SnapshotDoc.md)\>\>
 
-Defined in: [packages/database/src/shared/types/Snapshot.interface.ts:85](https://github.com/TogetherCrew/reputo/blob/bc7521151e0cf79ab1c29321ef1e6ee87b55063d/packages/database/src/shared/types/Snapshot.interface.ts#L85)
+Defined in: [packages/database/src/shared/types/Snapshot.interface.ts:85](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/database/src/shared/types/Snapshot.interface.ts#L85)
 
 Pagination method for querying snapshots
 

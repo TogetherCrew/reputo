@@ -9,7 +9,7 @@ on:
             tags: { type: string, required: false, default: '' }
 
 env:
-    IMAGE_PREFIX: ghcr.io/togethercrew/reputo
+    IMAGE_PREFIX: ghcr.io/reputo-org/reputo
 
 jobs:
     docker-images:

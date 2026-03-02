@@ -8,7 +8,7 @@
 
 > **Round** = `object`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/rounds/types.ts:4](https://github.com/TogetherCrew/reputo/blob/bc7521151e0cf79ab1c29321ef1e6ee87b55063d/packages/deepfunding-portal-api/src/resources/rounds/types.ts#L4)
+Defined in: [packages/deepfunding-portal-api/src/resources/rounds/types.ts:4](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/deepfunding-portal-api/src/resources/rounds/types.ts#L4)
 
 Round entity from API response
 
@@ -22,7 +22,7 @@ Round entity from API response
 
 > **id**: `number`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/rounds/types.ts:5](https://github.com/TogetherCrew/reputo/blob/bc7521151e0cf79ab1c29321ef1e6ee87b55063d/packages/deepfunding-portal-api/src/resources/rounds/types.ts#L5)
+Defined in: [packages/deepfunding-portal-api/src/resources/rounds/types.ts:5](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/deepfunding-portal-api/src/resources/rounds/types.ts#L5)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [packages/deepfunding-portal-api/src/resources/rounds/types.ts:5](ht
 
 > **name**: `string`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/rounds/types.ts:6](https://github.com/TogetherCrew/reputo/blob/bc7521151e0cf79ab1c29321ef1e6ee87b55063d/packages/deepfunding-portal-api/src/resources/rounds/types.ts#L6)
+Defined in: [packages/deepfunding-portal-api/src/resources/rounds/types.ts:6](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/deepfunding-portal-api/src/resources/rounds/types.ts#L6)
 
 ***
 
@@ -38,7 +38,7 @@ Defined in: [packages/deepfunding-portal-api/src/resources/rounds/types.ts:6](ht
 
 > **slug**: `string`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/rounds/types.ts:7](https://github.com/TogetherCrew/reputo/blob/bc7521151e0cf79ab1c29321ef1e6ee87b55063d/packages/deepfunding-portal-api/src/resources/rounds/types.ts#L7)
+Defined in: [packages/deepfunding-portal-api/src/resources/rounds/types.ts:7](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/deepfunding-portal-api/src/resources/rounds/types.ts#L7)
 
 ***
 
@@ -46,7 +46,7 @@ Defined in: [packages/deepfunding-portal-api/src/resources/rounds/types.ts:7](ht
 
 > **description**: `string` \| `null`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/rounds/types.ts:8](https://github.com/TogetherCrew/reputo/blob/bc7521151e0cf79ab1c29321ef1e6ee87b55063d/packages/deepfunding-portal-api/src/resources/rounds/types.ts#L8)
+Defined in: [packages/deepfunding-portal-api/src/resources/rounds/types.ts:8](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/deepfunding-portal-api/src/resources/rounds/types.ts#L8)
 
 ***
 
@@ -54,7 +54,7 @@ Defined in: [packages/deepfunding-portal-api/src/resources/rounds/types.ts:8](ht
 
 > **pool\_id**: `object`[]
 
-Defined in: [packages/deepfunding-portal-api/src/resources/rounds/types.ts:9](https://github.com/TogetherCrew/reputo/blob/bc7521151e0cf79ab1c29321ef1e6ee87b55063d/packages/deepfunding-portal-api/src/resources/rounds/types.ts#L9)
+Defined in: [packages/deepfunding-portal-api/src/resources/rounds/types.ts:9](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/deepfunding-portal-api/src/resources/rounds/types.ts#L9)
 
 #### id
 

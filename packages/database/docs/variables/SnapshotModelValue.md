@@ -8,6 +8,6 @@
 
 > **SnapshotModelValue**: [`SnapshotModel`](../interfaces/SnapshotModel.md)
 
-Defined in: [packages/database/src/models/Snapshot.model.ts:9](https://github.com/TogetherCrew/reputo/blob/bc7521151e0cf79ab1c29321ef1e6ee87b55063d/packages/database/src/models/Snapshot.model.ts#L9)
+Defined in: [packages/database/src/models/Snapshot.model.ts:9](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/database/src/models/Snapshot.model.ts#L9)
 
 Mongoose model for Snapshot documents.

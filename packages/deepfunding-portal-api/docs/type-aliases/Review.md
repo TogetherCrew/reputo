@@ -8,7 +8,7 @@
 
 > **Review** = `object`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/reviews/types.ts:11](https://github.com/TogetherCrew/reputo/blob/bc7521151e0cf79ab1c29321ef1e6ee87b55063d/packages/deepfunding-portal-api/src/resources/reviews/types.ts#L11)
+Defined in: [packages/deepfunding-portal-api/src/resources/reviews/types.ts:11](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/deepfunding-portal-api/src/resources/reviews/types.ts#L11)
 
 Review entity from API response
 
@@ -22,7 +22,7 @@ Review entity from API response
 
 > **review\_id**: `number`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/reviews/types.ts:12](https://github.com/TogetherCrew/reputo/blob/bc7521151e0cf79ab1c29321ef1e6ee87b55063d/packages/deepfunding-portal-api/src/resources/reviews/types.ts#L12)
+Defined in: [packages/deepfunding-portal-api/src/resources/reviews/types.ts:12](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/deepfunding-portal-api/src/resources/reviews/types.ts#L12)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [packages/deepfunding-portal-api/src/resources/reviews/types.ts:12](
 
 > **proposal\_id**: `number`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/reviews/types.ts:13](https://github.com/TogetherCrew/reputo/blob/bc7521151e0cf79ab1c29321ef1e6ee87b55063d/packages/deepfunding-portal-api/src/resources/reviews/types.ts#L13)
+Defined in: [packages/deepfunding-portal-api/src/resources/reviews/types.ts:13](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/deepfunding-portal-api/src/resources/reviews/types.ts#L13)
 
 ***
 
@@ -38,7 +38,7 @@ Defined in: [packages/deepfunding-portal-api/src/resources/reviews/types.ts:13](
 
 > **reviewer\_id**: `number`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/reviews/types.ts:14](https://github.com/TogetherCrew/reputo/blob/bc7521151e0cf79ab1c29321ef1e6ee87b55063d/packages/deepfunding-portal-api/src/resources/reviews/types.ts#L14)
+Defined in: [packages/deepfunding-portal-api/src/resources/reviews/types.ts:14](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/deepfunding-portal-api/src/resources/reviews/types.ts#L14)
 
 ***
 
@@ -46,7 +46,7 @@ Defined in: [packages/deepfunding-portal-api/src/resources/reviews/types.ts:14](
 
 > **review\_type**: [`ReviewType`](ReviewType.md)
 
-Defined in: [packages/deepfunding-portal-api/src/resources/reviews/types.ts:15](https://github.com/TogetherCrew/reputo/blob/bc7521151e0cf79ab1c29321ef1e6ee87b55063d/packages/deepfunding-portal-api/src/resources/reviews/types.ts#L15)
+Defined in: [packages/deepfunding-portal-api/src/resources/reviews/types.ts:15](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/deepfunding-portal-api/src/resources/reviews/types.ts#L15)
 
 ***
 
@@ -54,7 +54,7 @@ Defined in: [packages/deepfunding-portal-api/src/resources/reviews/types.ts:15](
 
 > **overall\_rating**: `string`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/reviews/types.ts:16](https://github.com/TogetherCrew/reputo/blob/bc7521151e0cf79ab1c29321ef1e6ee87b55063d/packages/deepfunding-portal-api/src/resources/reviews/types.ts#L16)
+Defined in: [packages/deepfunding-portal-api/src/resources/reviews/types.ts:16](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/deepfunding-portal-api/src/resources/reviews/types.ts#L16)
 
 ***
 
@@ -62,7 +62,7 @@ Defined in: [packages/deepfunding-portal-api/src/resources/reviews/types.ts:16](
 
 > **feasibility\_rating**: `string`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/reviews/types.ts:17](https://github.com/TogetherCrew/reputo/blob/bc7521151e0cf79ab1c29321ef1e6ee87b55063d/packages/deepfunding-portal-api/src/resources/reviews/types.ts#L17)
+Defined in: [packages/deepfunding-portal-api/src/resources/reviews/types.ts:17](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/deepfunding-portal-api/src/resources/reviews/types.ts#L17)
 
 ***
 
@@ -70,7 +70,7 @@ Defined in: [packages/deepfunding-portal-api/src/resources/reviews/types.ts:17](
 
 > **viability\_rating**: `string`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/reviews/types.ts:18](https://github.com/TogetherCrew/reputo/blob/bc7521151e0cf79ab1c29321ef1e6ee87b55063d/packages/deepfunding-portal-api/src/resources/reviews/types.ts#L18)
+Defined in: [packages/deepfunding-portal-api/src/resources/reviews/types.ts:18](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/deepfunding-portal-api/src/resources/reviews/types.ts#L18)
 
 ***
 
@@ -78,7 +78,7 @@ Defined in: [packages/deepfunding-portal-api/src/resources/reviews/types.ts:18](
 
 > **desirability\_rating**: `string`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/reviews/types.ts:19](https://github.com/TogetherCrew/reputo/blob/bc7521151e0cf79ab1c29321ef1e6ee87b55063d/packages/deepfunding-portal-api/src/resources/reviews/types.ts#L19)
+Defined in: [packages/deepfunding-portal-api/src/resources/reviews/types.ts:19](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/deepfunding-portal-api/src/resources/reviews/types.ts#L19)
 
 ***
 
@@ -86,7 +86,7 @@ Defined in: [packages/deepfunding-portal-api/src/resources/reviews/types.ts:19](
 
 > **usefulness\_rating**: `string`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/reviews/types.ts:20](https://github.com/TogetherCrew/reputo/blob/bc7521151e0cf79ab1c29321ef1e6ee87b55063d/packages/deepfunding-portal-api/src/resources/reviews/types.ts#L20)
+Defined in: [packages/deepfunding-portal-api/src/resources/reviews/types.ts:20](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/deepfunding-portal-api/src/resources/reviews/types.ts#L20)
 
 ***
 
@@ -94,4 +94,4 @@ Defined in: [packages/deepfunding-portal-api/src/resources/reviews/types.ts:20](
 
 > **created\_at**: `string`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/reviews/types.ts:21](https://github.com/TogetherCrew/reputo/blob/bc7521151e0cf79ab1c29321ef1e6ee87b55063d/packages/deepfunding-portal-api/src/resources/reviews/types.ts#L21)
+Defined in: [packages/deepfunding-portal-api/src/resources/reviews/types.ts:21](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/deepfunding-portal-api/src/resources/reviews/types.ts#L21)

@@ -8,6 +8,6 @@
 
 > `const` **DEFAULT\_CONFIG**: `Omit`\<[`DeepFundingPortalApiConfig`](../type-aliases/DeepFundingPortalApiConfig.md), `"baseUrl"` \| `"apiKey"`\>
 
-Defined in: [packages/deepfunding-portal-api/src/shared/types/api-config.ts:46](https://github.com/TogetherCrew/reputo/blob/bc7521151e0cf79ab1c29321ef1e6ee87b55063d/packages/deepfunding-portal-api/src/shared/types/api-config.ts#L46)
+Defined in: [packages/deepfunding-portal-api/src/shared/types/api-config.ts:46](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/deepfunding-portal-api/src/shared/types/api-config.ts#L46)
 
 Default configuration values

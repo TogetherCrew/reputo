@@ -51,7 +51,7 @@ export class AlgorithmPresetDto {
 
   @ApiProperty({
     description: 'Description of the preset (10-500 characters)',
-    example: 'TogetherCrew test',
+    example: 'Reputo test',
     required: false,
     minLength: 10,
     maxLength: 500,

@@ -8,7 +8,7 @@
 
 > **fetchProposals**(`client`, `roundId`, `options`): `Promise`\<[`Proposal`](../type-aliases/Proposal.md)[]\>
 
-Defined in: [packages/deepfunding-portal-api/src/resources/proposals/api.ts:8](https://github.com/TogetherCrew/reputo/blob/bc7521151e0cf79ab1c29321ef1e6ee87b55063d/packages/deepfunding-portal-api/src/resources/proposals/api.ts#L8)
+Defined in: [packages/deepfunding-portal-api/src/resources/proposals/api.ts:8](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/deepfunding-portal-api/src/resources/proposals/api.ts#L8)
 
 Fetch proposals for a specific round
 

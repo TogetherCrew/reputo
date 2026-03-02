@@ -6,7 +6,7 @@
 
 # Interface: AlgorithmPresetModel
 
-Defined in: [packages/database/src/shared/types/AlgorithmPreset.interface.ts:45](https://github.com/TogetherCrew/reputo/blob/bc7521151e0cf79ab1c29321ef1e6ee87b55063d/packages/database/src/shared/types/AlgorithmPreset.interface.ts#L45)
+Defined in: [packages/database/src/shared/types/AlgorithmPreset.interface.ts:45](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/database/src/shared/types/AlgorithmPreset.interface.ts#L45)
 
 Interface extending Mongoose Model with additional methods for AlgorithmPreset.
 
@@ -20,7 +20,7 @@ Interface extending Mongoose Model with additional methods for AlgorithmPreset.
 
 > **new AlgorithmPresetModel**\<`DocType`\>(`doc?`, `fields?`, `options?`): `Document`\<`unknown`, \{ \}, [`AlgorithmPreset`](AlgorithmPreset.md), \{ \}, \{ \}\> & [`AlgorithmPreset`](AlgorithmPreset.md) & `object` & `object`
 
-Defined in: [packages/database/src/shared/types/AlgorithmPreset.interface.ts:45](https://github.com/TogetherCrew/reputo/blob/bc7521151e0cf79ab1c29321ef1e6ee87b55063d/packages/database/src/shared/types/AlgorithmPreset.interface.ts#L45)
+Defined in: [packages/database/src/shared/types/AlgorithmPreset.interface.ts:45](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/database/src/shared/types/AlgorithmPreset.interface.ts#L45)
 
 #### Parameters
 
@@ -50,7 +50,7 @@ Defined in: [packages/database/src/shared/types/AlgorithmPreset.interface.ts:45]
 
 > **paginate**: (`filter`, `options`) => `Promise`\<[`PaginateResult`](PaginateResult.md)\<[`AlgorithmPresetDoc`](../type-aliases/AlgorithmPresetDoc.md)\>\>
 
-Defined in: [packages/database/src/shared/types/AlgorithmPreset.interface.ts:47](https://github.com/TogetherCrew/reputo/blob/bc7521151e0cf79ab1c29321ef1e6ee87b55063d/packages/database/src/shared/types/AlgorithmPreset.interface.ts#L47)
+Defined in: [packages/database/src/shared/types/AlgorithmPreset.interface.ts:47](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/database/src/shared/types/AlgorithmPreset.interface.ts#L47)
 
 Pagination method for querying presets
 
