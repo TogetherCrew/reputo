@@ -12,6 +12,8 @@ concurrency:
 jobs:
     quality-gate:
         uses: ./.github/workflows/_quality-gate.yml
+        secrets: inherit
+
 
     build:
         needs: quality-gate
