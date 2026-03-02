@@ -74,7 +74,7 @@ docker compose -f docker/docker-compose.dev.yml up --build
 ### Development Environment
 
 - **Node.js**: 20.x or higher
-- **pnpm**: 10.12.4 or higher
+- **pnpm**: 10.30.3 or higher
 - **Docker**: For containerized development
 - **Git**: With Lefthook for git hooks
 
@@ -107,9 +107,10 @@ reputo/
 ├── docker/
 │   ├── docker-compose.yml          # Production/staging setup
 │   ├── docker-compose.dev.yml      # Local development
-│   ├── preview/                    # PR preview environments
-│   ├── Dockerfile                  # Multi-stage build
-│   └── traefik.yml                 # Reverse proxy config
+│   ├── preview/                    # PR preview (Caddy + compose)
+│   ├── traefik/                    # Traefik config (staging/production)
+│   │   └── traefik.yml
+│   └── Dockerfile                  # Multi-stage build
 ├── .github/
 │   ├── workflows/                  # CI/CD pipelines
 │   └── PULL_REQUEST_TEMPLATE.md
