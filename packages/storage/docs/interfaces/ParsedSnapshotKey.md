@@ -6,7 +6,7 @@
 
 # Interface: ParsedSnapshotKey
 
-Defined in: [shared/types/types.ts:182](https://github.com/TogetherCrew/reputo/blob/bc7521151e0cf79ab1c29321ef1e6ee87b55063d/packages/storage/src/shared/types/types.ts#L182)
+Defined in: [shared/types/types.ts:182](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/storage/src/shared/types/types.ts#L182)
 
 Parsed snapshot key components.
 Pattern: `snapshots/{snapshotId}/{filename}.{ext}`
@@ -21,7 +21,7 @@ Pattern: `snapshots/{snapshotId}/{filename}.{ext}`
 
 > **filename**: `string`
 
-Defined in: [shared/types/types.ts:155](https://github.com/TogetherCrew/reputo/blob/bc7521151e0cf79ab1c29321ef1e6ee87b55063d/packages/storage/src/shared/types/types.ts#L155)
+Defined in: [shared/types/types.ts:155](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/storage/src/shared/types/types.ts#L155)
 
 Full filename including extension.
 
@@ -41,7 +41,7 @@ Full filename including extension.
 
 > **ext**: `string`
 
-Defined in: [shared/types/types.ts:162](https://github.com/TogetherCrew/reputo/blob/bc7521151e0cf79ab1c29321ef1e6ee87b55063d/packages/storage/src/shared/types/types.ts#L162)
+Defined in: [shared/types/types.ts:162](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/storage/src/shared/types/types.ts#L162)
 
 File extension without the dot.
 
@@ -61,7 +61,7 @@ File extension without the dot.
 
 > **type**: `"snapshot"`
 
-Defined in: [shared/types/types.ts:183](https://github.com/TogetherCrew/reputo/blob/bc7521151e0cf79ab1c29321ef1e6ee87b55063d/packages/storage/src/shared/types/types.ts#L183)
+Defined in: [shared/types/types.ts:183](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/storage/src/shared/types/types.ts#L183)
 
 ***
 
@@ -69,6 +69,6 @@ Defined in: [shared/types/types.ts:183](https://github.com/TogetherCrew/reputo/b
 
 > **snapshotId**: `string`
 
-Defined in: [shared/types/types.ts:188](https://github.com/TogetherCrew/reputo/blob/bc7521151e0cf79ab1c29321ef1e6ee87b55063d/packages/storage/src/shared/types/types.ts#L188)
+Defined in: [shared/types/types.ts:188](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/storage/src/shared/types/types.ts#L188)
 
 Unique identifier of the snapshot.

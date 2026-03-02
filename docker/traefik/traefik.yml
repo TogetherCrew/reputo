@@ -22,7 +22,7 @@ entryPoints:
 certificatesResolvers:
     cloudflare:
         acme:
-            email: 'info@togethercrew.com'
+            email: 'info@reputo.org'
             storage: /var/traefik/certs/cloudflare-acme.json
             caServer: 'https://acme-v02.api.letsencrypt.org/directory'
             dnsChallenge:

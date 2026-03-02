@@ -8,7 +8,7 @@
 
 > **detectKeyType**(`key`): [`StorageKeyType`](../type-aliases/StorageKeyType.md) \| `null`
 
-Defined in: [shared/utils/keys.ts:58](https://github.com/TogetherCrew/reputo/blob/bc7521151e0cf79ab1c29321ef1e6ee87b55063d/packages/storage/src/shared/utils/keys.ts#L58)
+Defined in: [shared/utils/keys.ts:58](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/storage/src/shared/utils/keys.ts#L58)
 
 Detects the type of a storage key based on its path prefix.
 

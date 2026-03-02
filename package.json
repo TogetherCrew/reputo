@@ -32,7 +32,6 @@
     "devDependencies": {
         "@anolilab/semantic-release-pnpm": "catalog:",
         "@biomejs/biome": "catalog:",
-        "@types/node": "catalog:",
         "@commitlint/cli": "catalog:",
         "@commitlint/config-conventional": "catalog:",
         "@semantic-release/changelog": "catalog:",
@@ -41,6 +40,7 @@
         "@semantic-release/git": "catalog:",
         "@semantic-release/npm": "catalog:",
         "@semantic-release/release-notes-generator": "catalog:",
+        "@types/node": "catalog:",
         "@vitest/coverage-v8": "catalog:",
         "@vitest/ui": "catalog:",
         "commitizen": "^4.3.1",
@@ -61,5 +61,5 @@
     "keywords": [],
     "author": "",
     "license": "ISC",
-    "packageManager": "pnpm@10.12.4"
+    "packageManager": "pnpm@10.30.3"
 }

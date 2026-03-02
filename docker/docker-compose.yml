@@ -66,7 +66,7 @@ services:
 
     ui:
         container_name: ui
-        image: ghcr.io/togethercrew/reputo/ui:${IMAGE_TAG}
+        image: ghcr.io/reputo-org/reputo/ui:${IMAGE_TAG}
         restart: unless-stopped
         networks: [production]
         env_file:
@@ -83,7 +83,7 @@ services:
 
     api:
         container_name: api
-        image: ghcr.io/togethercrew/reputo/api:${IMAGE_TAG}
+        image: ghcr.io/reputo-org/reputo/api:${IMAGE_TAG}
         restart: unless-stopped
         networks: [production]
         depends_on:
@@ -201,7 +201,7 @@ services:
 
     orchestrator-worker:
         container_name: orchestrator-worker
-        image: ghcr.io/togethercrew/reputo/workflows:${IMAGE_TAG}
+        image: ghcr.io/reputo-org/reputo/workflows:${IMAGE_TAG}
         command: ['pnpm', 'start:orchestrator']
         restart: unless-stopped
         networks: [production]
@@ -217,7 +217,7 @@ services:
 
     typescript-worker:
         container_name: typescript-worker
-        image: ghcr.io/togethercrew/reputo/workflows:${IMAGE_TAG}
+        image: ghcr.io/reputo-org/reputo/workflows:${IMAGE_TAG}
         command: ['pnpm', 'start:algorithm-typescript']
         restart: unless-stopped
         networks: [production]

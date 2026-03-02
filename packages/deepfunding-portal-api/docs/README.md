@@ -57,7 +57,7 @@ closeDeepFundingPortalDb(db);
 
 ## API Reference
 
-See the [generated documentation](_media/README.md) for full API details.
+See the [generated documentation](./docs/README.md) for full API details.
 
 ## License
 

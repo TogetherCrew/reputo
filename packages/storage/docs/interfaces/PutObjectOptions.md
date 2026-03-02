@@ -6,7 +6,7 @@
 
 # Interface: PutObjectOptions
 
-Defined in: [shared/types/types.ts:118](https://github.com/TogetherCrew/reputo/blob/bc7521151e0cf79ab1c29321ef1e6ee87b55063d/packages/storage/src/shared/types/types.ts#L118)
+Defined in: [shared/types/types.ts:118](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/storage/src/shared/types/types.ts#L118)
 
 Options for writing an object to S3.
 
@@ -16,7 +16,7 @@ Options for writing an object to S3.
 
 > **bucket**: `string`
 
-Defined in: [shared/types/types.ts:122](https://github.com/TogetherCrew/reputo/blob/bc7521151e0cf79ab1c29321ef1e6ee87b55063d/packages/storage/src/shared/types/types.ts#L122)
+Defined in: [shared/types/types.ts:122](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/storage/src/shared/types/types.ts#L122)
 
 S3 bucket name where the object will be stored.
 
@@ -26,7 +26,7 @@ S3 bucket name where the object will be stored.
 
 > **key**: `string`
 
-Defined in: [shared/types/types.ts:127](https://github.com/TogetherCrew/reputo/blob/bc7521151e0cf79ab1c29321ef1e6ee87b55063d/packages/storage/src/shared/types/types.ts#L127)
+Defined in: [shared/types/types.ts:127](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/storage/src/shared/types/types.ts#L127)
 
 S3 key where the object should be stored.
 
@@ -36,7 +36,7 @@ S3 key where the object should be stored.
 
 > **body**: `string` \| `Buffer`\<`ArrayBufferLike`\> \| `Uint8Array`\<`ArrayBufferLike`\>
 
-Defined in: [shared/types/types.ts:132](https://github.com/TogetherCrew/reputo/blob/bc7521151e0cf79ab1c29321ef1e6ee87b55063d/packages/storage/src/shared/types/types.ts#L132)
+Defined in: [shared/types/types.ts:132](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/storage/src/shared/types/types.ts#L132)
 
 Object contents to write.
 
@@ -46,7 +46,7 @@ Object contents to write.
 
 > `optional` **contentType**: `string`
 
-Defined in: [shared/types/types.ts:137](https://github.com/TogetherCrew/reputo/blob/bc7521151e0cf79ab1c29321ef1e6ee87b55063d/packages/storage/src/shared/types/types.ts#L137)
+Defined in: [shared/types/types.ts:137](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/storage/src/shared/types/types.ts#L137)
 
 Optional MIME type for the object.
 
@@ -56,7 +56,7 @@ Optional MIME type for the object.
 
 > `optional` **contentTypeAllowlist**: `string`[]
 
-Defined in: [shared/types/types.ts:143](https://github.com/TogetherCrew/reputo/blob/bc7521151e0cf79ab1c29321ef1e6ee87b55063d/packages/storage/src/shared/types/types.ts#L143)
+Defined in: [shared/types/types.ts:143](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/storage/src/shared/types/types.ts#L143)
 
 Optional allowed content types for validation.
 Only validated for upload keys, not snapshot keys.

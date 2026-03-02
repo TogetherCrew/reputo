@@ -35,7 +35,7 @@ class AlgorithmPresetFrozenDto {
 
   @ApiPropertyOptional({
     description: 'Description of the preset',
-    example: 'TogetherCrew test',
+    example: 'Reputo test',
   })
   description?: string;
 

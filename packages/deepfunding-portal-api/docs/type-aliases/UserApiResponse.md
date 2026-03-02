@@ -8,7 +8,7 @@
 
 > **UserApiResponse** = `object`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/users/types.ts:18](https://github.com/TogetherCrew/reputo/blob/bc7521151e0cf79ab1c29321ef1e6ee87b55063d/packages/deepfunding-portal-api/src/resources/users/types.ts#L18)
+Defined in: [packages/deepfunding-portal-api/src/resources/users/types.ts:18](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/deepfunding-portal-api/src/resources/users/types.ts#L18)
 
 Users API response
 
@@ -18,7 +18,7 @@ Users API response
 
 > **users**: [`User`](User.md)[]
 
-Defined in: [packages/deepfunding-portal-api/src/resources/users/types.ts:19](https://github.com/TogetherCrew/reputo/blob/bc7521151e0cf79ab1c29321ef1e6ee87b55063d/packages/deepfunding-portal-api/src/resources/users/types.ts#L19)
+Defined in: [packages/deepfunding-portal-api/src/resources/users/types.ts:19](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/deepfunding-portal-api/src/resources/users/types.ts#L19)
 
 ***
 
@@ -26,4 +26,4 @@ Defined in: [packages/deepfunding-portal-api/src/resources/users/types.ts:19](ht
 
 > **pagination**: [`Pagination`](Pagination.md)
 
-Defined in: [packages/deepfunding-portal-api/src/resources/users/types.ts:20](https://github.com/TogetherCrew/reputo/blob/bc7521151e0cf79ab1c29321ef1e6ee87b55063d/packages/deepfunding-portal-api/src/resources/users/types.ts#L20)
+Defined in: [packages/deepfunding-portal-api/src/resources/users/types.ts:20](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/deepfunding-portal-api/src/resources/users/types.ts#L20)

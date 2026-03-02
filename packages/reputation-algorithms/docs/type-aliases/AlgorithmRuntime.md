@@ -8,7 +8,7 @@
 
 > **AlgorithmRuntime** = `"typescript"` \| `"python"`
 
-Defined in: [shared/types/algorithm.ts:138](https://github.com/TogetherCrew/reputo/blob/bc7521151e0cf79ab1c29321ef1e6ee87b55063d/packages/reputation-algorithms/src/shared/types/algorithm.ts#L138)
+Defined in: [shared/types/algorithm.ts:138](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/reputation-algorithms/src/shared/types/algorithm.ts#L138)
 
 Supported runtimes (languages) for algorithm execution.
 

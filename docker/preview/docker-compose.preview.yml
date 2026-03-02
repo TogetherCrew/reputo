@@ -54,7 +54,7 @@ services:
             start_period: 40s
 
     ui:
-        image: ghcr.io/togethercrew/reputo/ui:${PREVIEW_IMAGE_TAG}
+        image: ghcr.io/reputo-org/reputo/ui:${PREVIEW_IMAGE_TAG}
         restart: unless-stopped
         networks: [preview]
         environment:
@@ -62,7 +62,7 @@ services:
 
     api:
         container_name: api
-        image: ghcr.io/togethercrew/reputo/api:${PREVIEW_IMAGE_TAG}
+        image: ghcr.io/reputo-org/reputo/api:${PREVIEW_IMAGE_TAG}
         depends_on:
             mongodb:
                 condition: service_healthy
@@ -170,7 +170,7 @@ services:
 
     orchestrator-worker:
         container_name: orchestrator-worker
-        image: ghcr.io/togethercrew/reputo/workflows:${PREVIEW_IMAGE_TAG}
+        image: ghcr.io/reputo-org/reputo/workflows:${PREVIEW_IMAGE_TAG}
         depends_on:
             mongodb:
                 condition: service_healthy
@@ -204,7 +204,7 @@ services:
             - AWS_REGION=eu-central-1
     typescript-worker:
         container_name: typescript-worker
-        image: ghcr.io/togethercrew/reputo/workflows:${PREVIEW_IMAGE_TAG}
+        image: ghcr.io/reputo-org/reputo/workflows:${PREVIEW_IMAGE_TAG}
         depends_on:
             temporal:
                 condition: service_healthy

@@ -6,7 +6,7 @@
 
 # Interface: DeleteObjectsResult
 
-Defined in: [shared/types/types.ts:326](https://github.com/TogetherCrew/reputo/blob/bc7521151e0cf79ab1c29321ef1e6ee87b55063d/packages/storage/src/shared/types/types.ts#L326)
+Defined in: [shared/types/types.ts:326](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/storage/src/shared/types/types.ts#L326)
 
 Result from a batch delete operation.
 
@@ -16,7 +16,7 @@ Result from a batch delete operation.
 
 > **deleted**: `string`[]
 
-Defined in: [shared/types/types.ts:330](https://github.com/TogetherCrew/reputo/blob/bc7521151e0cf79ab1c29321ef1e6ee87b55063d/packages/storage/src/shared/types/types.ts#L330)
+Defined in: [shared/types/types.ts:330](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/storage/src/shared/types/types.ts#L330)
 
 Keys that were successfully deleted.
 
@@ -26,7 +26,7 @@ Keys that were successfully deleted.
 
 > **errors**: `object`[]
 
-Defined in: [shared/types/types.ts:335](https://github.com/TogetherCrew/reputo/blob/bc7521151e0cf79ab1c29321ef1e6ee87b55063d/packages/storage/src/shared/types/types.ts#L335)
+Defined in: [shared/types/types.ts:335](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/storage/src/shared/types/types.ts#L335)
 
 Keys that failed to delete, with error messages.
 

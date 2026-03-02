@@ -22,7 +22,7 @@ pnpm add @reputo/reputation-algorithms
 
 ## Usage
 
-The public API provides helpers to discover and retrieve algorithm definitions from the read-only registry. See the full API reference in [docs](_media/globals.md).
+The public API provides helpers to discover and retrieve algorithm definitions from the read-only registry. See the full API reference in [docs](docs/globals.md).
 
 ```ts
 import {
