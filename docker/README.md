@@ -9,6 +9,9 @@ docker/
 ├── docker-compose.yml          # Production/Staging deployment
 ├── docker-compose.dev.yml      # Local development (builds from source)
 ├── docker-compose.preview.yml  # PullPreview CI environment
+├── preview/                   # Preview env (Caddy + compose)
+│   ├── Caddyfile
+│   └── docker-compose.preview.yml
 ├── Dockerfile                  # Multi-stage build for all services
 ├── env/                        # Environment variables
 │   ├── examples/               # Templates (copy to parent)
@@ -63,7 +66,7 @@ docker-compose -f docker-compose.dev.yml up -d
 Used by PullPreview for ephemeral PR environments. Features:
 
 - Pre-built images from GHCR (built in CI, not on the instance)
-- Traefik without TLS (HTTP only)
+- **Caddy** reverse proxy (HTTP only; see `preview/Caddyfile`)
 - Uses `PULLPREVIEW_PUBLIC_DNS` for dynamic routing
 - Image tag controlled by `PREVIEW_IMAGE_TAG` env var
 

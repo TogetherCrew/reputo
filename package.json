@@ -56,6 +56,6 @@
     },
     "keywords": [],
     "author": "",
-    "license": "ISC",
+    "license": "GPL-3.0-only",
     "packageManager": "pnpm@10.30.3"
 }
