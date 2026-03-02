@@ -1,57 +1,50 @@
 packages:
-    - packages/*
-    - apps/*
+  - packages/*
+  - apps/*
 
 catalog:
-    # Semantic release (root-only; tag + GitHub Release, no changelog/npm)
-    '@commitlint/cli': ^19.8.1
-    '@commitlint/config-conventional': ^19.8.1
-    '@semantic-release/commit-analyzer': ^13.0.1
-    '@semantic-release/github': ^11.0.6
-    '@semantic-release/release-notes-generator': ^14.1.0
-    semantic-release: ^24.2.0
-    # AWS SDK
-    '@aws-sdk/client-s3': ^3.922.0
-    '@aws-sdk/s3-request-presigner': ^3.922.0
-    # Tooling
-    '@biomejs/biome': ^2.3.7
-    '@swc/cli': ^0.6.0
-    '@swc/core': ^1.12.7
-    tsx: ^4.7.0
-    ts-node: 10.9.2
-    typescript: 5.9.2
-    # Types
-    '@types/js-yaml': ^4.0.9
-    '@types/node': ^22.17.0
-    '@types/react-dom': ^19
-    '@types/supertest': ^6.0.3
-    # Vitest
-    '@vitest/coverage-v8': 3.2.4
-    '@vitest/spy': ^3.2.4
-    '@vitest/ui': 3.2.4
-    vitest: 3.2.4
-    # Docs & validation
-    ajv: ^8.17.1
-    ajv-formats: ^3.0.1
-    axios: ^1.12.2
-    supertest: ^7.1.4
-    typedoc: ^0.28.13
-    typedoc-plugin-markdown: ^4.9.0
-    # Runtime (shared)
-    mongoose: ^8.19.1
-    pino: ^9.8.0
-    pino-pretty: ^13.1.2
-    zod: ^4.1.0
-    # Temporal
-    '@temporalio/activity': ^1.11.3
-    '@temporalio/client': ^1.11.3
-    '@temporalio/worker': ^1.11.3
-    '@temporalio/workflow': ^1.11.3
-    # Paths
-    tsconfig-paths: ^4.2.0
+  '@aws-sdk/client-s3': ^3.922.0
+  '@aws-sdk/s3-request-presigner': ^3.922.0
+  '@biomejs/biome': ^2.3.7
+  '@commitlint/cli': ^19.8.1
+  '@commitlint/config-conventional': ^19.8.1
+  '@semantic-release/commit-analyzer': ^13.0.1
+  '@semantic-release/github': ^12.0.6
+  '@semantic-release/release-notes-generator': ^14.1.0
+  '@swc/cli': ^0.6.0
+  '@swc/core': ^1.12.7
+  '@temporalio/activity': ^1.11.3
+  '@temporalio/client': ^1.11.3
+  '@temporalio/worker': ^1.11.3
+  '@temporalio/workflow': ^1.11.3
+  '@types/js-yaml': ^4.0.9
+  '@types/node': ^22.17.0
+  '@types/react-dom': ^19
+  '@types/supertest': ^6.0.3
+  '@vitest/coverage-v8': 3.2.4
+  '@vitest/spy': ^3.2.4
+  '@vitest/ui': 3.2.4
+  ajv: ^8.17.1
+  ajv-formats: ^3.0.1
+  axios: ^1.12.2
+  mongoose: ^8.19.1
+  pino: ^9.8.0
+  pino-pretty: ^13.1.2
+  semantic-release: ^25.0.3
+  semantic-release-commits-lint: ^1.1.0
+  supertest: ^7.1.4
+  ts-node: 10.9.2
+  tsconfig-paths: ^4.2.0
+  tsx: ^4.7.0
+  typedoc: ^0.28.13
+  typedoc-plugin-markdown: ^4.9.0
+  typescript: 5.9.2
+  vitest: 3.2.4
+  zod: ^4.1.0
 
 catalogMode: strict
+
 injectWorkspacePackages: true
 
 syncInjectedDepsAfterScripts:
-    - build
+  - build

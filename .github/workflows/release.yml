@@ -1,13 +1,19 @@
 name: Release 📝
 run-name: Release 📝
 
+
 on:
     workflow_call:
 
 jobs:
     release:
-        name: Semantic Release
+        name: Release
         runs-on: ubuntu-22.04
+        permissions:
+          contents: write
+          issues: write
+          pull-requests: write
+          id-token: write
         steps:
             - name: Checkout 
               uses: actions/checkout@v4
@@ -23,7 +29,7 @@ jobs:
             - name: Setup Node.js
               uses: actions/setup-node@v4
               with:
-                  node-version: '22.20.0'
+                  node-version: '24.14.0'
                   cache: pnpm
                   cache-dependency-path: pnpm-lock.yaml
 

@@ -43,6 +43,7 @@
         "cz-conventional-changelog": "^3.3.0",
         "lefthook": "^1.11.16",
         "semantic-release": "catalog:",
+        "semantic-release-commits-lint": "catalog:",
         "tsconfig-paths": "catalog:",
         "tsx": "catalog:",
         "typescript": "catalog:",
