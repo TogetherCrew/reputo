@@ -61,7 +61,7 @@ jobs:
               with:
                   label: pullpreview
                   provider: lightsail
-                  instance_type: medium
+                  instance_type: large
                   compose_files: docker/preview/docker-compose.preview.yml
                   compose_options: ''
                   ttl: 24h
