@@ -32,6 +32,9 @@ jobs:
             deployments: write
             pull-requests: write
             statuses: write
+        environment:
+            name: preview
+            url: ${{ steps.pullpreview.outputs.url }}
         steps:
             - uses: actions/checkout@v4
 
@@ -53,15 +56,17 @@ jobs:
                   openssl rand -base64 768 > docker/mongo/keyfile.txt
                   chmod 400 docker/mongo/keyfile.txt
 
-            - uses: pullpreview/action@v6
+            - id: pullpreview
+              uses: pullpreview/action@v6
               with:
                   label: pullpreview
                   provider: lightsail
-                  instance_type: large
+                  instance_type: medium
                   compose_files: docker/preview/docker-compose.preview.yml
                   compose_options: ''
-                  ttl: 48h
+                  ttl: 24h
               env:
                   AWS_ACCESS_KEY_ID: '${{ secrets.AWS_ACCESS_KEY_ID }}'
                   AWS_SECRET_ACCESS_KEY: '${{ secrets.AWS_SECRET_ACCESS_KEY }}'
                   AWS_REGION: 'eu-central-1'
+
