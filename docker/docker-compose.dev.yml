@@ -222,7 +222,7 @@ services:
             - ./observability/loki/loki-config.yml:/etc/loki/loki-config.yml:ro
             - loki_data:/loki
         healthcheck:
-            test: ['CMD', '/usr/bin/loki', '-version']
+            test: ['CMD', '/usr/bin/loki', '-health']
             interval: 15s
             timeout: 5s
             retries: 10
