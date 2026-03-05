@@ -159,16 +159,17 @@ services:
             test:
                 [
                     'CMD',
-                    'tctl',
+                    'temporal',
+                    'operator',
+                    'cluster',
+                    'health',
                     '--address',
-                    'temporal:7233',
-                    'workflow',
-                    'list',
+                    'localhost:7233',
                 ]
             interval: 10s
             timeout: 5s
-            retries: 5
-            start_period: 90s
+            retries: 12
+            start_period: 120s
 
     temporal-ui:
         container_name: temporal-ui
