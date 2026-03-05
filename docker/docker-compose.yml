@@ -9,6 +9,12 @@ volumes:
         driver: local
     temporal_postgresql_data:
         driver: local
+    loki_data:
+        driver: local
+    grafana_data:
+        driver: local
+    prometheus_data:
+        driver: local
 
 services:
     mongodb:
@@ -49,7 +55,15 @@ services:
             - ./certs/:/var/traefik/certs/:rw
         networks: [production]
         healthcheck:
-            test: ['CMD', 'traefik', 'healthcheck', '--ping']
+            test:
+                [
+                    'CMD',
+                    'traefik',
+                    'healthcheck',
+                    '--ping=true',
+                    '--ping.entrypoint=web',
+                    '--entrypoints.web.address=:80',
+                ]
             interval: 30s
             timeout: 10s
             retries: 3
@@ -60,6 +74,7 @@ services:
             - traefik.http.routers.traefik.service=api@internal
             - traefik.http.routers.traefik.middlewares=auth
             - traefik.http.middlewares.auth.basicauth.users=${TRAEFIK_AUTH}
+            - traefik.http.middlewares.grafana-auth.basicauth.users=${GRAFANA_AUTH}
             - traefik.http.routers.traefik.entrypoints=websecure
             - traefik.http.routers.traefik.tls=true
             - traefik.http.routers.traefik.tls.certresolver=cloudflare
@@ -143,17 +158,13 @@ services:
         healthcheck:
             test:
                 [
-                    'CMD',
-                    'tctl',
-                    '--address',
-                    'temporal:7233',
-                    'workflow',
-                    'list',
+                    'CMD-SHELL',
+                    'temporal operator cluster health --address $(hostname -i):7233',
                 ]
             interval: 10s
             timeout: 5s
-            retries: 5
-            start_period: 90s
+            retries: 12
+            start_period: 120s
 
     temporal-ui:
         container_name: temporal-ui
@@ -228,3 +239,132 @@ services:
             - ./env/workflows.env
         labels:
             - com.centurylinklabs.watchtower.enable=true
+
+    loki:
+        container_name: loki
+        image: grafana/loki:3.6.7
+        restart: unless-stopped
+        networks: [production]
+        command: -config.file=/etc/loki/loki-config.yml
+        volumes:
+            - ./observability/loki/loki-config.yml:/etc/loki/loki-config.yml:ro
+            - loki_data:/loki
+        healthcheck:
+            test: ['CMD', '/usr/bin/loki', '-health']
+            interval: 15s
+            timeout: 5s
+            retries: 10
+            start_period: 60s
+        deploy:
+            resources:
+                limits:
+                    memory: 512M
+        labels:
+            - com.centurylinklabs.watchtower.enable=false
+
+    promtail:
+        container_name: promtail
+        image: grafana/promtail:3.6.7
+        restart: unless-stopped
+        networks: [production]
+        command: -config.file=/etc/promtail/promtail-config.yml -config.expand-env=true
+        environment:
+            - OBSERVABILITY_ENV=${OBSERVABILITY_ENV:-production}
+        volumes:
+            - ./observability/promtail/promtail-config.yml:/etc/promtail/promtail-config.yml:ro
+            - /var/run/docker.sock:/var/run/docker.sock:ro
+            - /var/lib/docker/containers:/var/lib/docker/containers:ro
+        depends_on:
+            loki:
+                condition: service_healthy
+        deploy:
+            resources:
+                limits:
+                    memory: 256M
+        labels:
+            - com.centurylinklabs.watchtower.enable=false
+
+    prometheus:
+        container_name: prometheus
+        image: prom/prometheus:v3.3.0
+        restart: unless-stopped
+        networks: [production]
+        command:
+            - --config.file=/etc/prometheus/prometheus.yml
+            - --storage.tsdb.retention.time=15d
+            - --storage.tsdb.path=/prometheus
+        volumes:
+            - ./observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+            - prometheus_data:/prometheus
+        depends_on:
+            - cadvisor
+            - node-exporter
+        deploy:
+            resources:
+                limits:
+                    memory: 512M
+        labels:
+            - com.centurylinklabs.watchtower.enable=false
+
+    cadvisor:
+        container_name: cadvisor
+        image: gcr.io/cadvisor/cadvisor:v0.52.1
+        restart: unless-stopped
+        networks: [production]
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock:ro
+            - /sys:/sys:ro
+            - /var/lib/docker:/var/lib/docker:ro
+        deploy:
+            resources:
+                limits:
+                    memory: 256M
+        labels:
+            - com.centurylinklabs.watchtower.enable=false
+
+    node-exporter:
+        container_name: node-exporter
+        image: prom/node-exporter:v1.9.0
+        restart: unless-stopped
+        networks: [production]
+        command:
+            - --path.rootfs=/host
+        volumes:
+            - /:/host:ro
+        deploy:
+            resources:
+                limits:
+                    memory: 128M
+        labels:
+            - com.centurylinklabs.watchtower.enable=false
+
+    grafana:
+        container_name: grafana
+        image: grafana/grafana:12.4.0
+        restart: unless-stopped
+        networks: [production]
+        env_file:
+            - ./env/grafana.env
+        volumes:
+            - grafana_data:/var/lib/grafana
+            - ./observability/grafana/provisioning:/etc/grafana/provisioning:ro
+        depends_on:
+            loki:
+                condition: service_healthy
+            prometheus:
+                condition: service_started
+        healthcheck:
+            test: ['CMD-SHELL', 'wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1']
+            interval: 15s
+            timeout: 5s
+            retries: 5
+            start_period: 30s
+        labels:
+            - com.centurylinklabs.watchtower.enable=false
+            - traefik.enable=true
+            - traefik.http.routers.grafana.rule=Host(`${GRAFANA_DOMAIN}`)
+            - traefik.http.routers.grafana.tls=true
+            - traefik.http.routers.grafana.tls.certresolver=cloudflare
+            - traefik.http.routers.grafana.entrypoints=websecure
+            - traefik.http.routers.grafana.middlewares=grafana-auth
+            - traefik.http.services.grafana.loadbalancer.server.port=3000

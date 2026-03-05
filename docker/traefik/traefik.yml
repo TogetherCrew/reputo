@@ -5,8 +5,22 @@ global:
 log:
     level: DEBUG
 
+accessLog:
+    format: json
+    fields:
+        defaultMode: keep
+        names:
+            ClientUsername: drop
+        headers:
+            defaultMode: drop
+            names:
+                User-Agent: keep
+                Content-Type: keep
+                X-Request-Id: keep
+
 api: { dashboard: true, insecure: false }
-ping: true
+ping:
+    entryPoint: web
 
 entryPoints:
     web:

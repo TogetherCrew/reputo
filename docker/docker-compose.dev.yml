@@ -9,6 +9,12 @@ volumes:
         driver: local
     temporal_postgresql_data:
         driver: local
+    loki_data:
+        driver: local
+    grafana_data:
+        driver: local
+    prometheus_data:
+        driver: local
 
 services:
     mongodb:
@@ -43,7 +49,15 @@ services:
             - /var/run/docker.sock:/var/run/docker.sock:ro
         networks: [dev]
         healthcheck:
-            test: ['CMD', 'traefik', 'healthcheck', '--ping']
+            test:
+                [
+                    'CMD',
+                    'traefik',
+                    'healthcheck',
+                    '--ping=true',
+                    '--ping.entrypoint=web8080',
+                    '--entrypoints.web8080.address=:8080',
+                ]
             interval: 30s
             timeout: 10s
             retries: 3
@@ -51,6 +65,7 @@ services:
         command:
             - --api=true
             - --ping=true
+            - --ping.entrypoint=web8080
             - --providers.docker=true
             - --providers.docker.exposedByDefault=false
             - --entrypoints.web.address=:80
@@ -112,17 +127,13 @@ services:
         healthcheck:
             test:
                 [
-                    'CMD',
-                    'tctl',
-                    '--address',
-                    'temporal:7233',
-                    'workflow',
-                    'list',
+                    'CMD-SHELL',
+                    'temporal operator cluster health --address $(hostname -i):7233',
                 ]
             interval: 10s
             timeout: 5s
-            retries: 5
-            start_period: 90s
+            retries: 12
+            start_period: 120s
 
     temporal-ui:
         container_name: temporal-ui
@@ -196,3 +207,96 @@ services:
                 condition: service_healthy
         env_file:
             - ./env/workflows.env
+
+    loki:
+        container_name: loki
+        image: grafana/loki:3.6.7
+        restart: unless-stopped
+        networks: [dev]
+        command: -config.file=/etc/loki/loki-config.yml
+        volumes:
+            - ./observability/loki/loki-config.yml:/etc/loki/loki-config.yml:ro
+            - loki_data:/loki
+        healthcheck:
+            test: ['CMD', '/usr/bin/loki', '-health']
+            interval: 15s
+            timeout: 5s
+            retries: 10
+            start_period: 60s
+
+    promtail:
+        container_name: promtail
+        image: grafana/promtail:3.6.7
+        restart: unless-stopped
+        networks: [dev]
+        command: -config.file=/etc/promtail/promtail-config.yml -config.expand-env=true
+        environment:
+            - OBSERVABILITY_ENV=development
+        volumes:
+            - ./observability/promtail/promtail-config.yml:/etc/promtail/promtail-config.yml:ro
+            - /var/run/docker.sock:/var/run/docker.sock:ro
+            - /var/lib/docker/containers:/var/lib/docker/containers:ro
+        depends_on:
+            loki:
+                condition: service_healthy
+
+    prometheus:
+        container_name: prometheus
+        image: prom/prometheus:v3.3.0
+        restart: unless-stopped
+        networks: [dev]
+        ports:
+            - '9099:9090'
+        command:
+            - --config.file=/etc/prometheus/prometheus.yml
+            - --storage.tsdb.retention.time=7d
+            - --storage.tsdb.path=/prometheus
+        volumes:
+            - ./observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+            - prometheus_data:/prometheus
+        depends_on:
+            - cadvisor
+            - node-exporter
+
+    cadvisor:
+        container_name: cadvisor
+        image: gcr.io/cadvisor/cadvisor:v0.52.1
+        restart: unless-stopped
+        networks: [dev]
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock:ro
+            - /sys:/sys:ro
+            - /var/lib/docker:/var/lib/docker:ro
+
+    node-exporter:
+        container_name: node-exporter
+        image: prom/node-exporter:v1.9.0
+        restart: unless-stopped
+        networks: [dev]
+        command:
+            - --path.rootfs=/host
+        volumes:
+            - /:/host:ro
+
+    grafana:
+        container_name: grafana
+        image: grafana/grafana:12.4.0
+        restart: unless-stopped
+        networks: [dev]
+        ports:
+            - '3001:3000'
+        environment:
+            - GF_SECURITY_ADMIN_USER=admin
+            - GF_SECURITY_ADMIN_PASSWORD=admin
+            - GF_USERS_ALLOW_SIGN_UP=false
+            - GF_AUTH_ANONYMOUS_ENABLED=true
+            - GF_AUTH_ANONYMOUS_ORG_ROLE=Viewer
+            - GF_LOG_LEVEL=warn
+        volumes:
+            - grafana_data:/var/lib/grafana
+            - ./observability/grafana/provisioning:/etc/grafana/provisioning:ro
+        depends_on:
+            loki:
+                condition: service_healthy
+            prometheus:
+                condition: service_started

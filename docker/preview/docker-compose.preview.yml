@@ -115,17 +115,13 @@ services:
         healthcheck:
             test:
                 [
-                    'CMD',
-                    'tctl',
-                    '--address',
-                    'temporal:7233',
-                    'workflow',
-                    'list',
+                    'CMD-SHELL',
+                    'temporal operator cluster health --address $(hostname -i):7233',
                 ]
             interval: 10s
             timeout: 5s
-            retries: 5
-            start_period: 90s
+            retries: 12
+            start_period: 120s
 
     temporal-ui:
         container_name: temporal-ui
@@ -234,3 +230,4 @@ services:
             - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
             - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
             - AWS_REGION=eu-central-1
+
