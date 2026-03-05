@@ -199,12 +199,16 @@ docker exec prometheus wget -qO- http://localhost:9090/api/v1/targets | head -c 
 
 ### Environment Setup
 
-1. Copy `env/examples/grafana.env.example` to `env/grafana.env` and set a strong admin password.
-2. Add `GRAFANA_DOMAIN` and `OBSERVABILITY_ENV` to `env/shared.env` (see `env/examples/shared.env.example`).
+1. Copy `env/examples/grafana.env.example` to `env/grafana.env` and set a strong admin password (required in staging and production).
+2. Add `GRAFANA_DOMAIN`, `GRAFANA_AUTH`, and `OBSERVABILITY_ENV` to `env/shared.env` (see `env/examples/shared.env.example`). Generate `GRAFANA_AUTH` with: `htpasswd -nbB user yourpassword` (use the raw output as the value).
 
 ### Grafana Access
 
-Grafana is exposed via Traefik at `https://<GRAFANA_DOMAIN>` and protected by the same basic-auth middleware used for the Traefik dashboard.
+In **staging and production**, Grafana is exposed via Traefik at `https://<GRAFANA_DOMAIN>` and protected by:
+- **Traefik basic auth** — set `GRAFANA_AUTH` in `shared.env` (htpasswd format). Users must pass this before reaching Grafana.
+- **Grafana login** — set admin credentials in `grafana.env`; anonymous access is disabled.
+
+Both layers apply; use distinct credentials per environment. Local dev (`docker-compose.dev.yml`) keeps anonymous access for convenience.
 
 ### Prebuilt Dashboards
 

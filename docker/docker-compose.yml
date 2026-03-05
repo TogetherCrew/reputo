@@ -74,6 +74,7 @@ services:
             - traefik.http.routers.traefik.service=api@internal
             - traefik.http.routers.traefik.middlewares=auth
             - traefik.http.middlewares.auth.basicauth.users=${TRAEFIK_AUTH}
+            - traefik.http.middlewares.grafana-auth.basicauth.users=${GRAFANA_AUTH}
             - traefik.http.routers.traefik.entrypoints=websecure
             - traefik.http.routers.traefik.tls=true
             - traefik.http.routers.traefik.tls.certresolver=cloudflare
@@ -369,5 +370,5 @@ services:
             - traefik.http.routers.grafana.tls=true
             - traefik.http.routers.grafana.tls.certresolver=cloudflare
             - traefik.http.routers.grafana.entrypoints=websecure
-            - traefik.http.routers.grafana.middlewares=auth
+            - traefik.http.routers.grafana.middlewares=grafana-auth
             - traefik.http.services.grafana.loadbalancer.server.port=3000
