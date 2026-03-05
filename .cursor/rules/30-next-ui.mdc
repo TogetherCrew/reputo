@@ -1,11 +1,11 @@
 ---
-description: Next.js UI rules (App Router, server-first, route handlers)
+description: Next.js App Router conventions (server-first, minimal client JS)
 globs:
   - "apps/ui/**"
 ---
 
 # Next.js (App Router)
 
-## Backend calls
-
-## Safety
+- Default to Server Components; add `"use client"` only when needed (state, effects, browser APIs).
+- Call the API from Server Components or Route Handlers — never expose internal endpoints to the browser.
+- Keep `page.tsx` files thin; extract logic into components and utilities.

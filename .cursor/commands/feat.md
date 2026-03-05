@@ -2,22 +2,17 @@
 
 Steps:
 
-1. Clarify intent + acceptance criteria from the chat context (no guessing).
+1. Clarify intent and acceptance criteria from chat context (no guessing).
 2. Identify impacted package(s), entrypoints, and existing patterns to follow.
-3. Implement incrementally in small diffs:
-    - Avoid cross-package boundary leaks in the monorepo
-4. Add tests at the right level
-5. Add “feature completeness” essentials (as applicable):
-    - Validation + good errors
-    - Logging/metrics for key actions
-    - Docs/readme/ADR if behavior/contract changed
-6. Verify (run build, lint and test command at root level)
+3. Implement incrementally — avoid cross-package boundary leaks.
+4. Add validation, meaningful errors, and tests at the right level.
+5. Verify: run build, lint, and test at root level.
 
-Output (required):
+Output:
 
 - What was added (1–2 sentences).
-- Acceptance criteria checklist (what’s satisfied).
-- Key code changes (files + intent).
-- Tests added/updated + cases covered.
-- Commands run + results (exact).
-- Any rollout notes / migrations / env vars / CI considerations.
+- Acceptance criteria checklist.
+- Files changed + intent.
+- Tests added + cases covered.
+- Commands run + results.
+- Rollout notes (migrations, env vars, CI) if applicable.
