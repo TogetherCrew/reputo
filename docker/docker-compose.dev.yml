@@ -13,6 +13,8 @@ volumes:
         driver: local
     grafana_data:
         driver: local
+    prometheus_data:
+        driver: local
 
 services:
     mongodb:
@@ -47,7 +49,15 @@ services:
             - /var/run/docker.sock:/var/run/docker.sock:ro
         networks: [dev]
         healthcheck:
-            test: ['CMD', 'traefik', 'healthcheck', '--ping']
+            test:
+                [
+                    'CMD',
+                    'traefik',
+                    'healthcheck',
+                    '--ping=true',
+                    '--ping.entrypoint=web8080',
+                    '--entrypoints.web8080.address=:8080',
+                ]
             interval: 30s
             timeout: 10s
             retries: 3
@@ -55,6 +65,7 @@ services:
         command:
             - --api=true
             - --ping=true
+            - --ping.entrypoint=web8080
             - --providers.docker=true
             - --providers.docker.exposedByDefault=false
             - --entrypoints.web.address=:80
@@ -211,11 +222,11 @@ services:
             - ./observability/loki/loki-config.yml:/etc/loki/loki-config.yml:ro
             - loki_data:/loki
         healthcheck:
-            test: ['CMD-SHELL', 'wget --no-verbose --tries=1 --spider http://localhost:3100/ready || exit 1']
+            test: ['CMD', '/usr/bin/loki', '-version']
             interval: 15s
             timeout: 5s
-            retries: 5
-            start_period: 20s
+            retries: 10
+            start_period: 60s
 
     promtail:
         container_name: promtail
@@ -232,6 +243,44 @@ services:
         depends_on:
             loki:
                 condition: service_healthy
+
+    prometheus:
+        container_name: prometheus
+        image: prom/prometheus:v3.3.0
+        restart: unless-stopped
+        networks: [dev]
+        ports:
+            - '9099:9090'
+        command:
+            - --config.file=/etc/prometheus/prometheus.yml
+            - --storage.tsdb.retention.time=7d
+            - --storage.tsdb.path=/prometheus
+        volumes:
+            - ./observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+            - prometheus_data:/prometheus
+        depends_on:
+            - cadvisor
+            - node-exporter
+
+    cadvisor:
+        container_name: cadvisor
+        image: gcr.io/cadvisor/cadvisor:v0.52.1
+        restart: unless-stopped
+        networks: [dev]
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock:ro
+            - /sys:/sys:ro
+            - /var/lib/docker:/var/lib/docker:ro
+
+    node-exporter:
+        container_name: node-exporter
+        image: prom/node-exporter:v1.9.0
+        restart: unless-stopped
+        networks: [dev]
+        command:
+            - --path.rootfs=/host
+        volumes:
+            - /:/host:ro
 
     grafana:
         container_name: grafana
@@ -253,3 +302,5 @@ services:
         depends_on:
             loki:
                 condition: service_healthy
+            prometheus:
+                condition: service_started

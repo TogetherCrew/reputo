@@ -19,7 +19,8 @@ accessLog:
                 X-Request-Id: keep
 
 api: { dashboard: true, insecure: false }
-ping: true
+ping:
+    entryPoint: web
 
 entryPoints:
     web:

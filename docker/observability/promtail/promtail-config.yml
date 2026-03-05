@@ -29,7 +29,7 @@ scrape_configs:
             target_label: compose_service
             # Exclude observability containers from shipping their own logs
           - source_labels: ['__meta_docker_container_label_com_docker_compose_service']
-            regex: '(loki|grafana|promtail)'
+            regex: '(loki|grafana|promtail|prometheus|cadvisor|node-exporter)'
             action: drop
       pipeline_stages:
           - docker: {}

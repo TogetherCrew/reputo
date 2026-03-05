@@ -12,6 +12,8 @@ volumes:
         driver: local
     grafana_data:
         driver: local
+    prometheus_data:
+        driver: local
 
 services:
     preview-proxy:
@@ -249,11 +251,11 @@ services:
             - ../observability/loki/loki-config.yml:/etc/loki/loki-config.yml:ro
             - loki_data:/loki
         healthcheck:
-            test: ['CMD-SHELL', 'wget --no-verbose --tries=1 --spider http://localhost:3100/ready || exit 1']
+            test: ['CMD', '/usr/bin/loki', '-version']
             interval: 15s
             timeout: 5s
-            retries: 5
-            start_period: 20s
+            retries: 10
+            start_period: 60s
         deploy:
             resources:
                 limits:
@@ -279,6 +281,54 @@ services:
                 limits:
                     memory: 128M
 
+    prometheus:
+        container_name: prometheus
+        image: prom/prometheus:v3.3.0
+        restart: unless-stopped
+        networks: [preview]
+        command:
+            - --config.file=/etc/prometheus/prometheus.yml
+            - --storage.tsdb.retention.time=7d
+            - --storage.tsdb.path=/prometheus
+        volumes:
+            - ../observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+            - prometheus_data:/prometheus
+        depends_on:
+            - cadvisor
+            - node-exporter
+        deploy:
+            resources:
+                limits:
+                    memory: 256M
+
+    cadvisor:
+        container_name: cadvisor
+        image: gcr.io/cadvisor/cadvisor:v0.52.1
+        restart: unless-stopped
+        networks: [preview]
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock:ro
+            - /sys:/sys:ro
+            - /var/lib/docker:/var/lib/docker:ro
+        deploy:
+            resources:
+                limits:
+                    memory: 128M
+
+    node-exporter:
+        container_name: node-exporter
+        image: prom/node-exporter:v1.9.0
+        restart: unless-stopped
+        networks: [preview]
+        command:
+            - --path.rootfs=/host
+        volumes:
+            - /:/host:ro
+        deploy:
+            resources:
+                limits:
+                    memory: 64M
+
     grafana:
         container_name: grafana
         image: grafana/grafana:12.4.0
@@ -299,3 +349,5 @@ services:
         depends_on:
             loki:
                 condition: service_healthy
+            prometheus:
+                condition: service_started

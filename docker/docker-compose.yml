@@ -13,6 +13,8 @@ volumes:
         driver: local
     grafana_data:
         driver: local
+    prometheus_data:
+        driver: local
 
 services:
     mongodb:
@@ -53,7 +55,15 @@ services:
             - ./certs/:/var/traefik/certs/:rw
         networks: [production]
         healthcheck:
-            test: ['CMD', 'traefik', 'healthcheck', '--ping']
+            test:
+                [
+                    'CMD',
+                    'traefik',
+                    'healthcheck',
+                    '--ping=true',
+                    '--ping.entrypoint=web',
+                    '--entrypoints.web.address=:80',
+                ]
             interval: 30s
             timeout: 10s
             retries: 3
@@ -243,11 +253,11 @@ services:
             - ./observability/loki/loki-config.yml:/etc/loki/loki-config.yml:ro
             - loki_data:/loki
         healthcheck:
-            test: ['CMD-SHELL', 'wget --no-verbose --tries=1 --spider http://localhost:3100/ready || exit 1']
+            test: ['CMD', '/usr/bin/loki', '-version']
             interval: 15s
             timeout: 5s
-            retries: 5
-            start_period: 20s
+            retries: 10
+            start_period: 60s
         deploy:
             resources:
                 limits:
@@ -277,6 +287,60 @@ services:
         labels:
             - com.centurylinklabs.watchtower.enable=false
 
+    prometheus:
+        container_name: prometheus
+        image: prom/prometheus:v3.3.0
+        restart: unless-stopped
+        networks: [production]
+        command:
+            - --config.file=/etc/prometheus/prometheus.yml
+            - --storage.tsdb.retention.time=15d
+            - --storage.tsdb.path=/prometheus
+        volumes:
+            - ./observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+            - prometheus_data:/prometheus
+        depends_on:
+            - cadvisor
+            - node-exporter
+        deploy:
+            resources:
+                limits:
+                    memory: 512M
+        labels:
+            - com.centurylinklabs.watchtower.enable=false
+
+    cadvisor:
+        container_name: cadvisor
+        image: gcr.io/cadvisor/cadvisor:v0.52.1
+        restart: unless-stopped
+        networks: [production]
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock:ro
+            - /sys:/sys:ro
+            - /var/lib/docker:/var/lib/docker:ro
+        deploy:
+            resources:
+                limits:
+                    memory: 256M
+        labels:
+            - com.centurylinklabs.watchtower.enable=false
+
+    node-exporter:
+        container_name: node-exporter
+        image: prom/node-exporter:v1.9.0
+        restart: unless-stopped
+        networks: [production]
+        command:
+            - --path.rootfs=/host
+        volumes:
+            - /:/host:ro
+        deploy:
+            resources:
+                limits:
+                    memory: 128M
+        labels:
+            - com.centurylinklabs.watchtower.enable=false
+
     grafana:
         container_name: grafana
         image: grafana/grafana:12.4.0
@@ -290,6 +354,8 @@ services:
         depends_on:
             loki:
                 condition: service_healthy
+            prometheus:
+                condition: service_started
         healthcheck:
             test: ['CMD-SHELL', 'wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1']
             interval: 15s

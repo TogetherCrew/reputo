@@ -32,13 +32,18 @@ docker/
 │   │   └── loki-config.yml           # Loki storage, retention, limits
 │   ├── promtail/
 │   │   └── promtail-config.yml       # Docker log scraping and relabeling
+│   ├── prometheus/
+│   │   └── prometheus.yml            # Scrape targets (cAdvisor, node-exporter)
 │   └── grafana/
 │       └── provisioning/
 │           ├── datasources/
-│           │   └── loki.yml          # Auto-provisioned Loki datasource
+│           │   ├── loki.yml          # Auto-provisioned Loki datasource
+│           │   └── prometheus.yml    # Auto-provisioned Prometheus datasource
 │           └── dashboards/
 │               ├── dashboards.yml    # Dashboard provider config
-│               └── service-overview.json
+│               ├── service-overview.json
+│               ├── container-metrics.json
+│               └── service-logs.json
 └── traefik/                          # Traefik configuration
     └── traefik.yml                   # Reverse proxy + JSON access logs
 ```
@@ -129,9 +134,12 @@ for f in *.env.example; do cp "$f" "../${f%.example}"; done
 | `temporal-elasticsearch` | Elasticsearch for Temporal         | -       |
 | `traefik`                | Reverse proxy (production only)    | 80, 443 |
 | `watchtower`             | Auto-updater (production only)     | -       |
-| `grafana`                | Log dashboards (observability)     | 3000    |
+| `grafana`                | Dashboards (observability)         | 3000    |
 | `loki`                   | Log aggregation (observability)    | 3100    |
 | `promtail`               | Log shipping (observability)       | -       |
+| `prometheus`             | Metrics storage (observability)    | 9090    |
+| `cadvisor`               | Container metrics (observability)  | -       |
+| `node-exporter`          | Host metrics (observability)       | -       |
 
 ## MongoDB Replica Set
 
@@ -156,17 +164,23 @@ The `traefik/` folder contains:
     - Docker provider configuration
     - JSON access logs (used by observability for latency/error panels)
 
-## Observability (Grafana + Loki + Promtail)
+## Observability
 
-The observability stack (Grafana + Loki + Promtail) is included in every compose file and
-ships logs from all services into Loki with Grafana dashboards for troubleshooting.
+The observability stack is included in every compose file and provides both **logs** and **metrics**.
 
 ### Architecture
 
+**Logs pipeline:**
 - **Promtail** scrapes container logs via the Docker socket and ships them to Loki with labels (`env`, `service`, `container`, `compose_project`).
 - **Loki** stores and indexes logs with configurable retention (default 7 days).
-- **Grafana** provides the query UI and prebuilt dashboards.
 - **Traefik** JSON access logs feed latency and status-code panels.
+
+**Metrics pipeline:**
+- **cAdvisor** exports per-container CPU, memory, network I/O, and disk metrics.
+- **node-exporter** exports host-level CPU, RAM, disk, and network metrics.
+- **Prometheus** scrapes cAdvisor and node-exporter every 15s and stores time-series data.
+
+**Grafana** provides the query UI and prebuilt dashboards for both logs and metrics.
 
 ### Verify Observability
 
@@ -174,10 +188,13 @@ ships logs from all services into Loki with Grafana dashboards for troubleshooti
 cd docker
 
 # Verify containers are running
-docker ps | grep -E "grafana|loki|promtail"
+docker ps | grep -E "grafana|loki|promtail|prometheus|cadvisor|node-exporter"
 
 # Verify Loki is ready (from within the Docker network)
 docker exec loki wget -qO- http://localhost:3100/ready
+
+# Verify Prometheus targets are up
+docker exec prometheus wget -qO- http://localhost:9090/api/v1/targets | head -c 500
 ```
 
 ### Environment Setup
@@ -194,6 +211,8 @@ Grafana is exposed via Traefik at `https://<GRAFANA_DOMAIN>` and protected by th
 | Dashboard          | Description                                                          |
 | ------------------ | -------------------------------------------------------------------- |
 | Service Overview   | Log volume, error rate, latency (p50/p95/p99), top errors by service |
+| Container Metrics  | Host CPU/RAM/disk gauges, per-container CPU, memory, network I/O     |
+| Service Logs       | Per-service log viewer with search, volume chart, error/warning count |
 
 Dashboards are auto-provisioned from `observability/grafana/provisioning/dashboards/`.
 Drop additional JSON files there and restart Grafana to add more.
@@ -220,26 +239,51 @@ quantile_over_time(0.95, {service="traefik"} | json | unwrap Duration | __error_
 {service="api"} | json | level="error"
 ```
 
+### Useful PromQL Queries
+
+```promql
+# Host CPU usage (%)
+1 - avg(rate(node_cpu_seconds_total{mode="idle"}[5m]))
+
+# Host memory usage (%)
+1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)
+
+# CPU usage per container
+sum by (name) (rate(container_cpu_usage_seconds_total[5m]))
+
+# Memory usage per container
+container_memory_usage_bytes{name!=""}
+
+# Network receive rate per container
+sum by (name) (rate(container_network_receive_bytes_total[5m]))
+
+# Top 5 containers by CPU
+topk(5, sum by (name) (rate(container_cpu_usage_seconds_total[5m])))
+```
+
 ### Configuration Reference
 
-| File                                            | Purpose                                   |
-| ----------------------------------------------- | ----------------------------------------- |
-| `observability/loki/loki-config.yml`            | Storage, retention (7 d), ingestion limits |
-| `observability/promtail/promtail-config.yml`    | Docker SD, relabeling, pipeline stages    |
-| `observability/grafana/provisioning/datasources/loki.yml` | Auto-provisioned Loki datasource |
-| `observability/grafana/provisioning/dashboards/` | Dashboard JSON files                     |
+| File                                            | Purpose                                      |
+| ----------------------------------------------- | -------------------------------------------- |
+| `observability/loki/loki-config.yml`            | Storage, retention (7 d), ingestion limits    |
+| `observability/promtail/promtail-config.yml`    | Docker SD, relabeling, pipeline stages        |
+| `observability/prometheus/prometheus.yml`        | Scrape config (cAdvisor, node-exporter, self) |
+| `observability/grafana/provisioning/datasources/loki.yml` | Auto-provisioned Loki datasource    |
+| `observability/grafana/provisioning/datasources/prometheus.yml` | Auto-provisioned Prometheus datasource |
+| `observability/grafana/provisioning/dashboards/` | Dashboard JSON files                        |
 
 ### Retention & Resource Limits
 
 - **Loki** retention is 7 days by default — change `reject_old_samples_max_age` in `loki-config.yml`.
-- **Loki** memory limit: 512 MB. **Promtail** memory limit: 256 MB. Adjust `deploy.resources.limits` in the compose file as needed.
-- All three observability images are pinned and excluded from Watchtower (`com.centurylinklabs.watchtower.enable=false`).
+- **Prometheus** retention is 15 days in production (7 days in dev/preview) — change `--storage.tsdb.retention.time` in the compose file.
+- **Loki** memory limit: 512 MB. **Promtail** memory limit: 256 MB. **Prometheus** memory limit: 512 MB. **cAdvisor** memory limit: 256 MB. **node-exporter** memory limit: 128 MB. Adjust `deploy.resources.limits` in the compose file as needed.
+- All observability images are pinned and excluded from Watchtower (`com.centurylinklabs.watchtower.enable=false`).
 
 ### Security & Sensitive Data
 
 - Observability containers do not expose ports publicly — they communicate only on the Docker network.
 - Grafana is the only service exposed externally, via Traefik with TLS + basic auth.
-- Promtail drops its own container logs (loki, grafana, promtail) to avoid feedback loops.
+- Promtail drops observability container logs (loki, grafana, promtail, prometheus, cadvisor, node-exporter) to avoid feedback loops.
 - **Log redaction guidance:** avoid logging request bodies, tokens, or credentials. If structured logging is used, omit sensitive fields at the logger level rather than relying on Promtail filters.
 
 ## Security Notes
