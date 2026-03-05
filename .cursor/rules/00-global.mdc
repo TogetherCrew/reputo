@@ -3,7 +3,6 @@ description: Monorepo-wide standards (pnpm workspace, boundaries, quality)
 alwaysApply: true
 ---
 
-
 # Repo shape
 
 - apps/
@@ -12,15 +11,14 @@ alwaysApply: true
   - workflows/ (Temporal)
 - packages/ are reusable libraries. apps/* are deployables.
 
-## Workspace conventions
+## Conventions
 
-- Prefer running scripts from repo root using pnpm filtering.
-
-## Dependency boundaries
+- Run scripts from repo root using pnpm filtering.
+- packages/ must never import from apps/.
+- apps/ may depend on packages/ but not on sibling apps/.
 
 ## Quality bar
 
-- Code must stay clean, modular, and follow best practices.
-- If behavior changes, update/add tests.
-- No secrets in logs. No tokens/credentials in code.
-- Prefer small PR-sized changes: keep diffs focused.
+- If behavior changes, update or add tests.
+- No secrets in logs. No tokens or credentials in code.
+- Keep diffs small and PR-sized.

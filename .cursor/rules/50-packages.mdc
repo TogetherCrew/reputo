@@ -1,13 +1,11 @@
 ---
-description: Shared packages rules (public API, boundaries, versioning)
+description: Shared packages rules (public API, boundaries)
 globs:
   - "packages/**"
 ---
 
 # Package design
 
-- Keep packages framework-agnostic unless the package is explicitly framework-specific.
-- Avoid hidden coupling: no importing from apps/*.
-- Expose a clean public API (barrel export), keep internals internal.
-
-## Workspace deps
+- Keep packages framework-agnostic unless explicitly framework-specific.
+- Expose a clean public API via barrel export (`src/index.ts`); keep internals private.
+- Never import from apps/.
