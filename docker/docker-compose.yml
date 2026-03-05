@@ -158,13 +158,8 @@ services:
         healthcheck:
             test:
                 [
-                    'CMD',
-                    'temporal',
-                    'operator',
-                    'cluster',
-                    'health',
-                    '--address',
-                    'localhost:7233',
+                    'CMD-SHELL',
+                    'temporal operator cluster health --address $(hostname -i):7233',
                 ]
             interval: 10s
             timeout: 5s
