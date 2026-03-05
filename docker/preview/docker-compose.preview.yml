@@ -8,6 +8,10 @@ volumes:
         driver: local
     temporal_postgresql_data:
         driver: local
+    loki_data:
+        driver: local
+    grafana_data:
+        driver: local
 
 services:
     preview-proxy:
@@ -234,3 +238,64 @@ services:
             - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
             - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
             - AWS_REGION=eu-central-1
+
+    loki:
+        container_name: loki
+        image: grafana/loki:3.6.7
+        restart: unless-stopped
+        networks: [preview]
+        command: -config.file=/etc/loki/loki-config.yml
+        volumes:
+            - ../observability/loki/loki-config.yml:/etc/loki/loki-config.yml:ro
+            - loki_data:/loki
+        healthcheck:
+            test: ['CMD-SHELL', 'wget --no-verbose --tries=1 --spider http://localhost:3100/ready || exit 1']
+            interval: 15s
+            timeout: 5s
+            retries: 5
+            start_period: 20s
+        deploy:
+            resources:
+                limits:
+                    memory: 256M
+
+    promtail:
+        container_name: promtail
+        image: grafana/promtail:3.6.7
+        restart: unless-stopped
+        networks: [preview]
+        command: -config.file=/etc/promtail/promtail-config.yml -config.expand-env=true
+        environment:
+            - OBSERVABILITY_ENV=preview
+        volumes:
+            - ../observability/promtail/promtail-config.yml:/etc/promtail/promtail-config.yml:ro
+            - /var/run/docker.sock:/var/run/docker.sock:ro
+            - /var/lib/docker/containers:/var/lib/docker/containers:ro
+        depends_on:
+            loki:
+                condition: service_healthy
+        deploy:
+            resources:
+                limits:
+                    memory: 128M
+
+    grafana:
+        container_name: grafana
+        image: grafana/grafana:12.4.0
+        restart: unless-stopped
+        networks: [preview]
+        environment:
+            - GF_SECURITY_ADMIN_USER=admin
+            - GF_SECURITY_ADMIN_PASSWORD=preview
+            - GF_USERS_ALLOW_SIGN_UP=false
+            - GF_AUTH_ANONYMOUS_ENABLED=true
+            - GF_AUTH_ANONYMOUS_ORG_ROLE=Viewer
+            - GF_SERVER_ROOT_URL=http://localhost/grafana
+            - GF_SERVER_SERVE_FROM_SUB_PATH=true
+            - GF_LOG_LEVEL=warn
+        volumes:
+            - grafana_data:/var/lib/grafana
+            - ../observability/grafana/provisioning:/etc/grafana/provisioning:ro
+        depends_on:
+            loki:
+                condition: service_healthy

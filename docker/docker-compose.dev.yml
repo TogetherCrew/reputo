@@ -9,6 +9,10 @@ volumes:
         driver: local
     temporal_postgresql_data:
         driver: local
+    loki_data:
+        driver: local
+    grafana_data:
+        driver: local
 
 services:
     mongodb:
@@ -196,3 +200,56 @@ services:
                 condition: service_healthy
         env_file:
             - ./env/workflows.env
+
+    loki:
+        container_name: loki
+        image: grafana/loki:3.6.7
+        restart: unless-stopped
+        networks: [dev]
+        command: -config.file=/etc/loki/loki-config.yml
+        volumes:
+            - ./observability/loki/loki-config.yml:/etc/loki/loki-config.yml:ro
+            - loki_data:/loki
+        healthcheck:
+            test: ['CMD-SHELL', 'wget --no-verbose --tries=1 --spider http://localhost:3100/ready || exit 1']
+            interval: 15s
+            timeout: 5s
+            retries: 5
+            start_period: 20s
+
+    promtail:
+        container_name: promtail
+        image: grafana/promtail:3.6.7
+        restart: unless-stopped
+        networks: [dev]
+        command: -config.file=/etc/promtail/promtail-config.yml -config.expand-env=true
+        environment:
+            - OBSERVABILITY_ENV=development
+        volumes:
+            - ./observability/promtail/promtail-config.yml:/etc/promtail/promtail-config.yml:ro
+            - /var/run/docker.sock:/var/run/docker.sock:ro
+            - /var/lib/docker/containers:/var/lib/docker/containers:ro
+        depends_on:
+            loki:
+                condition: service_healthy
+
+    grafana:
+        container_name: grafana
+        image: grafana/grafana:12.4.0
+        restart: unless-stopped
+        networks: [dev]
+        ports:
+            - '3001:3000'
+        environment:
+            - GF_SECURITY_ADMIN_USER=admin
+            - GF_SECURITY_ADMIN_PASSWORD=admin
+            - GF_USERS_ALLOW_SIGN_UP=false
+            - GF_AUTH_ANONYMOUS_ENABLED=true
+            - GF_AUTH_ANONYMOUS_ORG_ROLE=Viewer
+            - GF_LOG_LEVEL=warn
+        volumes:
+            - grafana_data:/var/lib/grafana
+            - ./observability/grafana/provisioning:/etc/grafana/provisioning:ro
+        depends_on:
+            loki:
+                condition: service_healthy
