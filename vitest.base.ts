@@ -1,5 +1,8 @@
-import type { PluginOption, UserConfig } from 'vite'
 import { defineConfig } from 'vitest/config'
+
+type VitestConfig = Awaited<
+  Exclude<Parameters<typeof defineConfig>[0], (...args: never[]) => unknown>
+>
 
 const sharedCoverageExcludes = [
   '**/coverage/**',
@@ -23,8 +26,8 @@ interface SharedVitestConfigOptions {
   setupFiles?: string[]
   testTimeout?: number
   hookTimeout?: number
-  resolve?: UserConfig['resolve']
-  plugins?: PluginOption[]
+  resolve?: VitestConfig['resolve']
+  plugins?: VitestConfig['plugins']
 }
 
 export function createVitestConfig({
