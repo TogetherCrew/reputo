@@ -11,6 +11,8 @@ const sharedCoverageExcludes = [
   '**/.next/**',
   '**/*.d.ts',
   'src/**/index.ts',
+  '**/vitest.config*.ts',
+  'vitest.base.ts',
 ]
 
 export function extendCoverageExcludes(extraExcludes: string[] = []): string[] {

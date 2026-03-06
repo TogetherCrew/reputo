@@ -14,8 +14,6 @@ export default defineConfig({
             exclude: extendCoverageExcludes([
                 'commitlint.config.mjs',
                 'scripts/**',
-                'vitest.base.ts',
-                'vitest.config.ts',
             ]),
         },
     },
