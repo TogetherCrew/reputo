@@ -28,7 +28,7 @@
     "check": "pnpm exec biome check --write",
     "lint": "pnpm exec biome lint --write",
     "format": "pnpm exec biome format --write",
-    "test": "vitest",
+    "test": "vitest run",
     "test:watch": "vitest --watch",
     "test:cov": "vitest --coverage",
     "typecheck": "tsc --noEmit"

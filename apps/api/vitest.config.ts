@@ -1,15 +1,18 @@
 import { resolve } from 'path'
 import swc from 'unplugin-swc'
 import tsconfigPaths from 'vite-tsconfig-paths'
-import { defineConfig } from 'vitest/config'
-export default defineConfig({
-    test: {
-        globals: true,
-        coverage: {
-            provider: 'v8',
-            exclude: ['**/dist/**', '**/node_modules/**'],
-        },
-    },
+import { createVitestConfig } from '../../vitest.base'
+
+export default createVitestConfig({
+    name: '@reputo/api',
+    include: ['tests/**/*.unit.spec.ts'],
+    coverageInclude: ['src/**/*.ts'],
+    coverageExclude: [
+        'src/main.ts',
+        'src/**/*.module.ts',
+        'src/**/dto/*.ts',
+        'src/config/*.ts',
+    ],
     plugins: [
         swc.vite({
             module: { type: 'es6' },

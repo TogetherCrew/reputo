@@ -1,17 +1,14 @@
 import { resolve } from 'path'
-import { defineConfig } from 'vitest/config'
+import { createVitestConfig } from '../../vitest.base'
 
-export default defineConfig({
-    test: {
-        globals: true,
-        environment: 'node',
-        include: ['tests/**/*.test.ts'],
-        coverage: {
-            provider: 'v8',
-            reporter: ['text', 'html', 'lcov'],
-            exclude: ['**/dist/**', '**/node_modules/**'],
-        },
-    },
+export default createVitestConfig({
+    name: '@reputo/workflows',
+    include: ['tests/**/*.test.ts'],
+    coverageInclude: ['src/**/*.ts'],
+    coverageExclude: [
+        'src/workers/typescript/*.worker.ts',
+        'src/shared/types/**/*.ts',
+    ],
     resolve: {
         alias: {
             '@reputo/reputation-algorithms': resolve(
