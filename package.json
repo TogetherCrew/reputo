@@ -18,8 +18,10 @@
         "start:backend": "pnpm --filter @reputo/api dev",
         "start:frontend": "pnpm --filter @reputo/ui dev",
         "start:temporal": "pnpm --filter @reputo/workflows dev",
-        "test": "vitest",
-        "ci:test": "pnpm --filter \"./packages/*\" run build && pnpm exec vitest run --coverage",
+        "test": "vitest run",
+        "test:watch": "vitest",
+        "test:cov": "vitest run --coverage",
+        "ci:test": "pnpm --filter \"./packages/*\" run build && pnpm run test:cov",
         "postinstall": "command -v git >/dev/null 2>&1 && lefthook install || echo 'Git not found, skipping lefthook install'",
         "algorithm:create": "tsx scripts/create-algorithm.ts",
         "algorithm:validate": "tsx scripts/validate-algorithms.ts"

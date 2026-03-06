@@ -163,8 +163,10 @@ describe('contribution-score benchmark', () => {
       });
 
       expect(result.users).toHaveLength(1);
-      expect(result.users[0]!.user_id).toBe(35);
-      expect(result.users[0]!.contribution_score).toBe(5);
+      const [user] = result.users;
+      expect(user).toBeDefined();
+      expect(user?.user_id).toBe(35);
+      expect(user?.contribution_score).toBe(5);
     });
   });
 });

@@ -76,7 +76,16 @@ export function computeProposalScore(input: ProposalScoreInput): ProposalScoreRe
   }
 
   const tw = timeWeight.tw;
-  const norm = communityScore.norm!;
+  const norm = communityScore.norm;
+
+  if (norm === null) {
+    return {
+      proposalReward: 0,
+      proposalPenalty: 0,
+      scored: false,
+      skipReason: 'no_community_reviews',
+    };
+  }
 
   let proposalReward = 0;
   let proposalPenalty = 0;

@@ -1,15 +1,9 @@
-import { defineConfig } from 'vitest/config';
+import { createVitestConfig } from '../../vitest.base';
 
-export default defineConfig({
-  test: {
-    globals: true,
-    environment: 'node',
-    include: ['tests/**/*.test.ts'],
-    coverage: {
-      provider: 'v8',
-      reporter: ['text', 'html', 'lcov'],
-      exclude: ['**/dist/**', '**/node_modules/**'],
-    },
-  },
+export default createVitestConfig({
+  name: '@reputo/deepfunding-portal-api',
+  include: ['tests/**/*.test.ts'],
+  coverageInclude: ['src/**/*.ts'],
+  coverageExclude: ['src/shared/types/**/*.ts'],
 });
 

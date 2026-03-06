@@ -20,7 +20,7 @@ describe('voting-engagement benchmark', () => {
 
       expect(record.collection_id).toBe('voter-abc');
       expect(record.total_votes).toBe(5);
-      expect(record.vote_distribution['skip']).toBe(1);
+      expect(record.vote_distribution.skip).toBe(1);
       expect(record.vote_distribution['1']).toBe(1);
       expect(record.vote_distribution['5']).toBe(2);
       expect(record.vote_distribution['10']).toBe(1);
