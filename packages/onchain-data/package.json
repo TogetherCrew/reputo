@@ -1,7 +1,7 @@
 {
     "name": "@reputo/onchain-data",
     "version": "0.0.0",
-    "description": "Framework-agnostic onchain data layer for the Reputo ecosystem.",
+    "description": "TypeScript package for fetching onchain data and persisting to SQLite via Drizzle ORM.",
     "main": "./dist/index.js",
     "types": "./dist/index.d.ts",
     "private": true,
@@ -26,10 +26,16 @@
         "docs": "typedoc",
         "clean": "rm -rf coverage dist docs node_modules tsconfig.tsbuildinfo"
     },
-    "dependencies": {},
+    "dependencies": {
+        "better-sqlite3": "catalog:",
+        "drizzle-orm": "catalog:",
+        "p-limit": "catalog:",
+        "pino": "catalog:",
+        "undici": "catalog:"
+    },
     "devDependencies": {
+        "@types/better-sqlite3": "catalog:",
         "@types/node": "catalog:",
-        "tsx": "catalog:",
         "typedoc": "catalog:",
         "typedoc-plugin-markdown": "catalog:",
         "typescript": "catalog:",
@@ -39,7 +45,9 @@
         "typescript",
         "onchain",
         "blockchain",
-        "data"
+        "data",
+        "sqlite",
+        "drizzle"
     ],
     "files": [
         "dist",
