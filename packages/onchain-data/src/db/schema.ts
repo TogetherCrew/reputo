@@ -7,3 +7,6 @@ export const meta = sqliteTable('meta', {
   key: text('key').primaryKey(),
   value: text('value').notNull(),
 });
+
+export * from '../resources/syncCursors/schema.js';
+export * from '../resources/transfers/schema.js';
