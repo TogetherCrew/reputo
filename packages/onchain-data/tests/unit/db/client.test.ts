@@ -22,10 +22,12 @@ describe('Database Client', () => {
       expect(db.drizzle).toBeDefined();
     });
 
-    it('should initialize database with meta table', () => {
+    it('should initialize database with all tables', () => {
       db = createDb({ path: ':memory:' });
 
       expect(tableExists(db, 'meta')).toBe(true);
+      expect(tableExists(db, 'transfers')).toBe(true);
+      expect(tableExists(db, 'sync_cursors')).toBe(true);
     });
 
     it('should return independent instances', () => {
