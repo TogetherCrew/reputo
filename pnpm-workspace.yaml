@@ -40,6 +40,11 @@ catalog:
   typedoc-plugin-markdown: ^4.9.0
   typescript: 5.9.2
   vitest: 3.2.4
+  better-sqlite3: ^11.10.0
+  '@types/better-sqlite3': ^7.6.13
+  drizzle-orm: ^0.44.2
+  p-limit: ^6.2.0
+  undici: ^7.10.0
   zod: ^4.1.0
 
 catalogMode: strict

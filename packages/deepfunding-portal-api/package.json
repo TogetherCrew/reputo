@@ -30,14 +30,14 @@
     "clean": "rm -rf coverage dist docs node_modules tsconfig.tsbuildinfo"
   },
   "dependencies": {
-    "better-sqlite3": "^11.10.0",
-    "drizzle-orm": "^0.44.2",
-    "p-limit": "^6.2.0",
+    "better-sqlite3": "catalog:",
+    "drizzle-orm": "catalog:",
+    "p-limit": "catalog:",
     "pino": "catalog:",
-    "undici": "^7.10.0"
+    "undici": "catalog:"
   },
   "devDependencies": {
-    "@types/better-sqlite3": "^7.6.13",
+    "@types/better-sqlite3": "catalog:",
     "@types/node": "catalog:",
     "typedoc": "catalog:",
     "typedoc-plugin-markdown": "catalog:",
