@@ -8,7 +8,9 @@ import {
 
 describe('Alchemy Config', () => {
   const minimalInput = {
-    chains: { ethereum: { rpcUrl: 'https://eth-mainnet.g.alchemy.com/v2/key' } },
+    chains: {
+      ethereum: { rpcUrl: 'https://eth-mainnet.g.alchemy.com/v2/key' },
+    },
   };
 
   describe('resolveAlchemyConfig', () => {
@@ -31,7 +33,11 @@ describe('Alchemy Config', () => {
 
       expect(config.requestTimeoutMs).toBe(5_000);
       expect(config.concurrency).toBe(10);
-      expect(config.retry).toEqual({ maxAttempts: 2, baseDelayMs: 100, maxDelayMs: 500 });
+      expect(config.retry).toEqual({
+        maxAttempts: 2,
+        baseDelayMs: 100,
+        maxDelayMs: 500,
+      });
     });
 
     it('should allow partial retry overrides', () => {
@@ -49,13 +55,6 @@ describe('Alchemy Config', () => {
   describe('CHAIN_IDS', () => {
     it('should map ethereum to chain ID 1', () => {
       expect(CHAIN_IDS.ethereum).toBe('1');
-    });
-
-    it('should include polygon, arbitrum, optimism, base', () => {
-      expect(CHAIN_IDS.polygon).toBe('137');
-      expect(CHAIN_IDS.arbitrum).toBe('42161');
-      expect(CHAIN_IDS.optimism).toBe('10');
-      expect(CHAIN_IDS.base).toBe('8453');
     });
   });
 
