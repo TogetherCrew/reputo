@@ -9,4 +9,5 @@ export const meta = sqliteTable('meta', {
 });
 
 export * from '../resources/syncCursors/schema.js';
+export * from '../resources/syncRuns/schema.js';
 export * from '../resources/transfers/schema.js';

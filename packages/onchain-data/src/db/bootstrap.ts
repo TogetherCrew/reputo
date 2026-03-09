@@ -43,6 +43,19 @@ export const BOOTSTRAP_SQL: string[] = [
       PRIMARY KEY (chain_id, token_address)
    );`,
 
+  `CREATE TABLE IF NOT EXISTS sync_runs (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      chain_id TEXT NOT NULL,
+      token_address TEXT NOT NULL,
+      requested_from_block INTEGER NOT NULL,
+      requested_to_block INTEGER NOT NULL,
+      effective_to_block INTEGER,
+      status TEXT NOT NULL,
+      error_summary TEXT,
+      started_at TEXT NOT NULL,
+      completed_at TEXT
+   );`,
+
   'CREATE INDEX IF NOT EXISTS idx_transfers_chain_token ON transfers(chain_id, token_address);',
   'CREATE INDEX IF NOT EXISTS idx_transfers_chain_block ON transfers(chain_id, block_number);',
   'CREATE INDEX IF NOT EXISTS idx_transfers_from ON transfers(from_address);',
