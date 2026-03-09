@@ -58,6 +58,7 @@ export const BOOTSTRAP_SQL: string[] = [
 
   'CREATE INDEX IF NOT EXISTS idx_transfers_chain_token ON transfers(chain_id, token_address);',
   'CREATE INDEX IF NOT EXISTS idx_transfers_chain_block ON transfers(chain_id, block_number);',
+  'CREATE INDEX IF NOT EXISTS idx_transfers_chain_token_block ON transfers(chain_id, token_address, block_number);',
   'CREATE INDEX IF NOT EXISTS idx_transfers_from ON transfers(from_address);',
   'CREATE INDEX IF NOT EXISTS idx_transfers_to ON transfers(to_address);',
 ];

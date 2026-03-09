@@ -62,7 +62,7 @@ export const CHAIN_IDS: Record<string, string> = {
  * Example configuration for the initial production use case:
  * Ethereum mainnet FET ERC-20 transfers via Alchemy.
  *
- * Usage:
+ * Use for sync/ingestion:
  * ```ts
  * const provider = createAlchemyProvider({
  *   chains: {
@@ -73,6 +73,15 @@ export const CHAIN_IDS: Record<string, string> = {
  *   ...ETHEREUM_FET_EXAMPLE,
  *   fromBlock: 0,
  *   requestedToBlock: 20_000_000,
+ * });
+ * ```
+ *
+ * Same shape for deterministic transfer queries (from persisted DB):
+ * ```ts
+ * const repos = createRepos(db);
+ * const rows = repos.transferQueries.listTransfers({
+ *   ...ETHEREUM_FET_EXAMPLE,
+ *   toBlock: 20_000_000,
  * });
  * ```
  */
