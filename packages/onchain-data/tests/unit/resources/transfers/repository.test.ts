@@ -122,7 +122,8 @@ describe('Transfers Repository', () => {
     });
 
     it('should filter by chainId and tokenAddress', () => {
-      const result = repo.findByQuery({ chainId: '1', tokenAddress: '0xtokenA' });
+      // Addresses are stored canonicalized (lowercase)
+      const result = repo.findByQuery({ chainId: '1', tokenAddress: '0xtokena' });
       expect(result).toHaveLength(2);
     });
 
