@@ -55,7 +55,11 @@ export function createTransfersRepo(db: OnchainDataDb) {
         .select()
         .from(schema.transfers)
         .where(and(...conditions))
-        .orderBy(asc(schema.transfers.blockNumber), asc(schema.transfers.logIndex))
+        .orderBy(
+          asc(schema.transfers.blockNumber),
+          asc(schema.transfers.transactionHash),
+          asc(schema.transfers.logIndex),
+        )
         .all();
     },
 
@@ -76,7 +80,11 @@ export function createTransfersRepo(db: OnchainDataDb) {
         .select()
         .from(schema.transfers)
         .where(and(chainCondition, addressCondition))
-        .orderBy(asc(schema.transfers.blockNumber), asc(schema.transfers.logIndex))
+        .orderBy(
+          asc(schema.transfers.blockNumber),
+          asc(schema.transfers.transactionHash),
+          asc(schema.transfers.logIndex),
+        )
         .all();
     },
   };

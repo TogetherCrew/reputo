@@ -38,11 +38,28 @@ export type TransferRecord = {
 };
 
 /**
- * Options for querying transfers
+ * Options for querying transfers (low-level, chain ID and canonical addresses).
  */
 export type TransferQueryOptions = {
   chainId: string;
   tokenAddress?: string;
   fromBlock?: number;
   toBlock?: number;
+};
+
+/**
+ * Parameters for deterministic transfer queries (public API).
+ * Uses runtime inputs: chain name and raw token contract address.
+ * Point-in-time: toBlock is inclusive (all events where block_number <= toBlock).
+ * Bounded range: optional fromBlock; when both are set, only rows in [fromBlock, toBlock].
+ */
+export type DeterministicTransferQueryParams = {
+  /** Chain name (e.g. 'ethereum'), resolved to chain_id for DB lookup */
+  chain: string;
+  /** Token contract address (EVM: canonicalized before filtering) */
+  tokenContractAddress: string;
+  /** Optional lower bound (inclusive). Omit for point-in-time from genesis */
+  fromBlock?: number;
+  /** Upper bound (inclusive). Required. Point-in-time semantics: block_number <= toBlock */
+  toBlock: number;
 };

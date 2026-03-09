@@ -1,4 +1,4 @@
-import { integer, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core';
+import { index, integer, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core';
 
 export const transfers = sqliteTable(
   'transfers',
@@ -19,5 +19,10 @@ export const transfers = sqliteTable(
   },
   (table) => ({
     chainTxLogIdx: uniqueIndex('uq_transfers_chain_tx_log').on(table.chainId, table.transactionHash, table.logIndex),
+    chainTokenBlockIdx: index('idx_transfers_chain_token_block').on(
+      table.chainId,
+      table.tokenAddress,
+      table.blockNumber,
+    ),
   }),
 );
