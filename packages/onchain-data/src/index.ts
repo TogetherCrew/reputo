@@ -11,3 +11,4 @@ export * from './db/index.js';
 export * from './providers/index.js';
 export * from './resources/index.js';
 export * from './shared/index.js';
+export * from './sync/index.js';
