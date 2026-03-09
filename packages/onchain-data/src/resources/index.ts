@@ -10,6 +10,7 @@
 
 import type { OnchainDataDb } from '../shared/types/db.js';
 import { createSyncCursorsRepo } from './syncCursors/repository.js';
+import { createSyncRunsRepo } from './syncRuns/repository.js';
 import { createTransfersRepo } from './transfers/repository.js';
 
 /**
@@ -22,6 +23,7 @@ export function createRepos(db: OnchainDataDb) {
   return {
     transfers: createTransfersRepo(db),
     syncCursors: createSyncCursorsRepo(db),
+    syncRuns: createSyncRunsRepo(db),
   };
 }
 
@@ -30,6 +32,9 @@ export type Repos = ReturnType<typeof createRepos>;
 export { createSyncCursorsRepo, type SyncCursorsRepo } from './syncCursors/repository.js';
 export * from './syncCursors/schema.js';
 export type * from './syncCursors/types.js';
+export { createSyncRunsRepo, type SyncRunsRepo } from './syncRuns/repository.js';
+export * from './syncRuns/schema.js';
+export type * from './syncRuns/types.js';
 export * from './transfers/normalize.js';
 export { createTransfersRepo, type TransfersRepo } from './transfers/repository.js';
 export * from './transfers/schema.js';
