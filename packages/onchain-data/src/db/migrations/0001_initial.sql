@@ -1,25 +1,3 @@
-export type TokenTransferRow = {
-  id: string;
-  token_chain: string;
-  contract_address: string;
-  block_number: number;
-  transaction_hash: string;
-  log_index: number;
-  from_address: string | null;
-  to_address: string | null;
-  amount: string;
-  block_timestamp: string | null;
-  raw_json: string;
-  created_at: string;
-};
-
-export type TokenTransferSyncStateRow = {
-  token_chain: string;
-  last_synced_block: number;
-  updated_at: string;
-};
-
-export const INITIAL_MIGRATION = `
 CREATE TABLE IF NOT EXISTS token_transfers (
   id TEXT PRIMARY KEY,
   token_chain TEXT NOT NULL,
@@ -43,4 +21,3 @@ CREATE TABLE IF NOT EXISTS token_transfer_sync_state (
   last_synced_block INTEGER NOT NULL,
   updated_at TEXT NOT NULL
 );
-`;
