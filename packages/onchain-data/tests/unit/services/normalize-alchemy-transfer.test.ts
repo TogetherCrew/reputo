@@ -1,0 +1,105 @@
+import { describe, expect, it } from 'vitest';
+import { normalizeAlchemyEthereumTransfer } from '../../../src/services/sync-token-transfers-service.js';
+import { SupportedTokenChain } from '../../../src/shared/index.js';
+import { createMockAlchemyTransfer } from '../../utils/mock-helpers.js';
+
+describe('normalizeAlchemyEthereumTransfer', () => {
+  const fixedCreatedAt = '2024-01-15T12:00:00.000Z';
+
+  it('normalizes a standard transfer', () => {
+    const transfer = createMockAlchemyTransfer({
+      blockNum: '0x100',
+      uniqueId: '0xdeadbeef:log:0x3',
+      hash: '0xdeadbeef',
+      from: '0xAAAA000000000000000000000000000000000001',
+      to: '0xBBBB000000000000000000000000000000000002',
+      value: 42.5,
+      metadata: { blockTimestamp: '2024-01-15T10:30:00.000Z' },
+    });
+
+    const result = normalizeAlchemyEthereumTransfer({
+      tokenChain: SupportedTokenChain.FET_ETHEREUM,
+      contractAddress: '0xAeA46A60368A7bD060eEC7DF8CBa43b7EF41aD85',
+      transfer,
+      createdAt: fixedCreatedAt,
+    });
+
+    expect(result.id).toBe('fet-ethereum:0xdeadbeef:3');
+    expect(result.tokenChain).toBe(SupportedTokenChain.FET_ETHEREUM);
+    expect(result.contractAddress).toBe('0xaea46a60368a7bd060eec7df8cba43b7ef41ad85');
+    expect(result.blockNumber).toBe(256);
+    expect(result.transactionHash).toBe('0xdeadbeef');
+    expect(result.logIndex).toBe(3);
+    expect(result.fromAddress).toBe('0xaaaa000000000000000000000000000000000001');
+    expect(result.toAddress).toBe('0xbbbb000000000000000000000000000000000002');
+    expect(result.amount).toBe('42.5');
+    expect(result.blockTimestamp).toBe('2024-01-15T10:30:00.000Z');
+    expect(result.rawJson).toBe(JSON.stringify(transfer));
+    expect(result.createdAt).toBe(fixedCreatedAt);
+  });
+
+  it('handles null to address (mint)', () => {
+    const transfer = createMockAlchemyTransfer({ to: null });
+    const result = normalizeAlchemyEthereumTransfer({
+      tokenChain: SupportedTokenChain.FET_ETHEREUM,
+      contractAddress: '0xaea46a60368a7bd060eec7df8cba43b7ef41ad85',
+      transfer,
+      createdAt: fixedCreatedAt,
+    });
+    expect(result.toAddress).toBeNull();
+  });
+
+  it('handles null value as "0"', () => {
+    const transfer = createMockAlchemyTransfer({ value: null });
+    const result = normalizeAlchemyEthereumTransfer({
+      tokenChain: SupportedTokenChain.FET_ETHEREUM,
+      contractAddress: '0xaea46a60368a7bd060eec7df8cba43b7ef41ad85',
+      transfer,
+      createdAt: fixedCreatedAt,
+    });
+    expect(result.amount).toBe('0');
+  });
+
+  it('lowercases addresses correctly', () => {
+    const transfer = createMockAlchemyTransfer({
+      from: '0xABCDEF0000000000000000000000000000000001',
+      to: '0xFEDCBA0000000000000000000000000000000002',
+    });
+    const result = normalizeAlchemyEthereumTransfer({
+      tokenChain: SupportedTokenChain.FET_ETHEREUM,
+      contractAddress: '0xAEA46A60368A7BD060EEC7DF8CBA43B7EF41AD85',
+      transfer,
+      createdAt: fixedCreatedAt,
+    });
+    expect(result.contractAddress).toBe('0xaea46a60368a7bd060eec7df8cba43b7ef41ad85');
+    expect(result.fromAddress).toBe('0xabcdef0000000000000000000000000000000001');
+    expect(result.toAddress).toBe('0xfedcba0000000000000000000000000000000002');
+  });
+
+  it('parses logIndex from uniqueId with hex value', () => {
+    const transfer = createMockAlchemyTransfer({
+      uniqueId: '0xdeadbeef:log:0xa',
+    });
+    const result = normalizeAlchemyEthereumTransfer({
+      tokenChain: SupportedTokenChain.FET_ETHEREUM,
+      contractAddress: '0xaea46a60368a7bd060eec7df8cba43b7ef41ad85',
+      transfer,
+      createdAt: fixedCreatedAt,
+    });
+    expect(result.logIndex).toBe(10);
+  });
+
+  it('throws on invalid uniqueId format', () => {
+    const transfer = createMockAlchemyTransfer({
+      uniqueId: 'invalid-format',
+    });
+    expect(() =>
+      normalizeAlchemyEthereumTransfer({
+        tokenChain: SupportedTokenChain.FET_ETHEREUM,
+        contractAddress: '0xaea46a60368a7bd060eec7df8cba43b7ef41ad85',
+        transfer,
+        createdAt: fixedCreatedAt,
+      }),
+    ).toThrow('Cannot parse logIndex from uniqueId');
+  });
+});

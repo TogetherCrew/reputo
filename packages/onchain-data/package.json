@@ -1,7 +1,7 @@
 {
     "name": "@reputo/onchain-data",
     "version": "0.0.0",
-    "description": "TypeScript package for fetching onchain data and persisting to SQLite via Drizzle ORM.",
+    "description": "Sync token transfer data into SQLite with provider abstraction.",
     "main": "./dist/index.js",
     "types": "./dist/index.d.ts",
     "private": true,
@@ -28,9 +28,6 @@
     },
     "dependencies": {
         "better-sqlite3": "catalog:",
-        "drizzle-orm": "catalog:",
-        "p-limit": "catalog:",
-        "pino": "catalog:",
         "undici": "catalog:"
     },
     "devDependencies": {
@@ -46,8 +43,7 @@
         "onchain",
         "blockchain",
         "data",
-        "sqlite",
-        "drizzle"
+        "sqlite"
     ],
     "files": [
         "dist",
