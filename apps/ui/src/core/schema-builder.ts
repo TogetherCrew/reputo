@@ -245,10 +245,14 @@ function transformInputToFormInput(
         }
       }
 
+      const numericType =
+        (fullInput as { type?: string })?.type === "integer"
+          ? "integer"
+          : "number"
       return {
         key: inputKey,
         label: algoInput.label,
-        type: "number",
+        type: numericType,
         description: numericProps.description,
         min: numericProps.min,
         max: numericProps.max,

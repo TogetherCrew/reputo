@@ -73,7 +73,14 @@ function NumberFieldInner({
 
   const handleBlur = () => {
     hasFocusRef.current = false
-    const parsed = fromDisplayValue(localValue)
+    let parsed = fromDisplayValue(localValue)
+    if (
+      input.type === "integer" &&
+      typeof parsed === "number" &&
+      Number.isFinite(parsed)
+    ) {
+      parsed = Math.round(parsed)
+    }
     field.onChange(parsed)
     setLocalValue(toDisplayValue(parsed))
     field.onBlur()
@@ -98,7 +105,7 @@ function NumberFieldInner({
         <div className="flex items-center gap-2">
           <Input
             type="text"
-            inputMode="decimal"
+            inputMode={input.type === "integer" ? "numeric" : "decimal"}
             placeholder={input.description || input.label}
             min={input.min}
             max={input.max}

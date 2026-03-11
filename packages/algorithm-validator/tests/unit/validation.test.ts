@@ -131,4 +131,50 @@ describe('validation', () => {
       ],
     });
   });
+
+  it('rejects duplicate chain_id + contract_address in array inputs', () => {
+    const defWithTokenConfigs: AlgorithmDefinition = {
+      ...definition,
+      inputs: [
+        {
+          key: 'token_configs',
+          label: 'Tokens to Include',
+          type: 'array',
+          minItems: 1,
+          required: true,
+          item: {
+            type: 'object',
+            properties: [
+              { key: 'chain_id', label: 'Chain', type: 'string', required: true },
+              { key: 'contract_address', label: 'Token', type: 'string', required: true },
+            ],
+          },
+        },
+      ],
+    };
+
+    const valid = validatePayload(defWithTokenConfigs, {
+      token_configs: [
+        { chain_id: '1', contract_address: '0xaaa' },
+        { chain_id: '1', contract_address: '0xbbb' },
+      ],
+    });
+    expect(valid.success).toBe(true);
+
+    const duplicate = validatePayload(defWithTokenConfigs, {
+      token_configs: [
+        { chain_id: '1', contract_address: '0xaaa' },
+        { chain_id: '1', contract_address: '0xaaa' },
+      ],
+    });
+    expect(duplicate.success).toBe(false);
+    expect(duplicate.errors).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          field: 'token_configs',
+          message: 'Tokens to Include must not contain duplicate chain + token pairs',
+        }),
+      ]),
+    );
+  });
 });
