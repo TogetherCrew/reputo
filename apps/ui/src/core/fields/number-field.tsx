@@ -65,27 +65,10 @@ function NumberFieldInner({
     setLocalValue(next)
   }, [field.value])
 
-  const isIntegerField =
-    input.type === "integer" ||
-    (input.step === 1 &&
-      typeof input.min === "number" &&
-      typeof input.max === "number" &&
-      Number.isInteger(input.min) &&
-      Number.isInteger(input.max))
+  const isIntegerField = input.type === "integer"
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let raw = e.target.value
-    if (isIntegerField && raw !== "") {
-      const normalized = raw.replace(",", ".")
-      const n = parseFloat(normalized)
-      if (Number.isFinite(n)) {
-        const rounded = Math.round(n)
-        raw = String(rounded)
-        field.onChange(rounded)
-      } else {
-        raw = raw.replace(/\D/g, "")
-      }
-    }
+    const raw = e.target.value
     setLocalValue(raw)
     if (raw === "") field.onChange("")
   }

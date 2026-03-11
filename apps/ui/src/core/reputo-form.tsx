@@ -83,6 +83,7 @@ function ReputoFormInner({
       case "text":
         return <TextField key={input.key} {...commonProps} />
       case "number":
+      case "integer":
         return <NumberField key={input.key} {...commonProps} />
       case "boolean":
         return <BooleanField key={input.key} {...commonProps} />
@@ -206,6 +207,7 @@ function getDefaultValues(
           defaults[input.key] = false
           break
         case "number":
+        case "integer":
         case "slider":
           defaults[input.key] = ""
           break
