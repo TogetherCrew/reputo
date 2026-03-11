@@ -8,7 +8,7 @@
 
 > **createProposalsRepo**(`db`): `object`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/proposals/repository.ts:11](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/deepfunding-portal-api/src/resources/proposals/repository.ts#L11)
+Defined in: [packages/deepfunding-portal-api/src/resources/proposals/repository.ts:11](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/deepfunding-portal-api/src/resources/proposals/repository.ts#L11)
 
 Create a proposals repository bound to the given database instance.
 

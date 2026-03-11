@@ -8,7 +8,7 @@
 
 > **UserRecord** = `object`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/users/types.ts:26](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/deepfunding-portal-api/src/resources/users/types.ts#L26)
+Defined in: [packages/deepfunding-portal-api/src/resources/users/types.ts:26](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/deepfunding-portal-api/src/resources/users/types.ts#L26)
 
 User database record
 
@@ -18,7 +18,7 @@ User database record
 
 > **id**: `number`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/users/types.ts:27](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/deepfunding-portal-api/src/resources/users/types.ts#L27)
+Defined in: [packages/deepfunding-portal-api/src/resources/users/types.ts:27](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/deepfunding-portal-api/src/resources/users/types.ts#L27)
 
 ***
 
@@ -26,7 +26,7 @@ Defined in: [packages/deepfunding-portal-api/src/resources/users/types.ts:27](ht
 
 > **collectionId**: `string`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/users/types.ts:28](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/deepfunding-portal-api/src/resources/users/types.ts#L28)
+Defined in: [packages/deepfunding-portal-api/src/resources/users/types.ts:28](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/deepfunding-portal-api/src/resources/users/types.ts#L28)
 
 ***
 
@@ -34,7 +34,7 @@ Defined in: [packages/deepfunding-portal-api/src/resources/users/types.ts:28](ht
 
 > **userName**: `string`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/users/types.ts:29](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/deepfunding-portal-api/src/resources/users/types.ts#L29)
+Defined in: [packages/deepfunding-portal-api/src/resources/users/types.ts:29](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/deepfunding-portal-api/src/resources/users/types.ts#L29)
 
 ***
 
@@ -42,7 +42,7 @@ Defined in: [packages/deepfunding-portal-api/src/resources/users/types.ts:29](ht
 
 > **email**: `string`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/users/types.ts:30](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/deepfunding-portal-api/src/resources/users/types.ts#L30)
+Defined in: [packages/deepfunding-portal-api/src/resources/users/types.ts:30](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/deepfunding-portal-api/src/resources/users/types.ts#L30)
 
 ***
 
@@ -50,7 +50,7 @@ Defined in: [packages/deepfunding-portal-api/src/resources/users/types.ts:30](ht
 
 > **totalProposals**: `number`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/users/types.ts:31](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/deepfunding-portal-api/src/resources/users/types.ts#L31)
+Defined in: [packages/deepfunding-portal-api/src/resources/users/types.ts:31](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/deepfunding-portal-api/src/resources/users/types.ts#L31)
 
 ***
 
@@ -58,4 +58,4 @@ Defined in: [packages/deepfunding-portal-api/src/resources/users/types.ts:31](ht
 
 > **rawJson**: `string`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/users/types.ts:32](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/deepfunding-portal-api/src/resources/users/types.ts#L32)
+Defined in: [packages/deepfunding-portal-api/src/resources/users/types.ts:32](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/deepfunding-portal-api/src/resources/users/types.ts#L32)

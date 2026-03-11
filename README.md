@@ -35,6 +35,7 @@
 | `packages/reputation-algorithms`  | ![typescript](https://img.shields.io/badge/-TypeScript-3178C6?logo=typescript&logoColor=white&style=flat)                                                                                                       | ✅ Ready | [📚 README](packages/reputation-algorithms/README.md)                                    |
 | `packages/algorithm-validator`    | ![typescript](https://img.shields.io/badge/-TypeScript-3178C6?logo=typescript&logoColor=white&style=flat)                                                                                                       | ✅ Ready | [📚 README](packages/algorithm-validator/README.md)                                      |
 | `packages/database`               | ![mongoose](https://img.shields.io/badge/-Mongoose-880000?logo=mongoose&logoColor=white&style=flat) + ![typescript](https://img.shields.io/badge/-TypeScript-3178C6?logo=typescript&logoColor=white&style=flat) | ✅ Ready | [📚 README](packages/database/README.md)                                                 |
+| `packages/onchain-data`           | ![typescript](https://img.shields.io/badge/-TypeScript-3178C6?logo=typescript&logoColor=white&style=flat)                                                                                                       | ✅ Ready | [📚 README](packages/onchain-data/README.md)                                              |
 | `packages/storage`                | ![typescript](https://img.shields.io/badge/-TypeScript-3178C6?logo=typescript&logoColor=white&style=flat)                                                                                                       | ✅ Ready | [📚 README](packages/storage/README.md)                                                  |
 | `packages/deepfunding-portal-api` | ![typescript](https://img.shields.io/badge/-TypeScript-3178C6?logo=typescript&logoColor=white&style=flat)                                                                                                       | ✅ Ready | [📚 README](packages/deepfunding-portal-api/README.md)                                   |
 
@@ -99,6 +100,7 @@ reputo/
 │   ├── algorithm-validator/        # Shared Zod validation library
 │   ├── database/                   # Mongoose database layer
 │   ├── deepfunding-portal-api/     # DeepFunding Portal API client & SQLite ingest
+│   ├── onchain-data/               # Token transfer sync to SQLite (provider abstraction)
 │   ├── reputation-algorithms/      # Algorithm definitions registry
 │   └── storage/                    # Framework-agnostic S3 utilities
 ├── scripts/

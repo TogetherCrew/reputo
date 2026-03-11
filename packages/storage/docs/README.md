@@ -345,7 +345,7 @@ Parses a storage key into its component parts.
 
 ### Types
 
-See the full API reference in [docs](docs/globals.md).
+See the full API reference in [docs](_media/globals.md).
 
 ## Error Handling
 

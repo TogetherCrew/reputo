@@ -8,7 +8,7 @@
 
 > **CommentVote** = `object`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/commentVotes/types.ts:11](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/deepfunding-portal-api/src/resources/commentVotes/types.ts#L11)
+Defined in: [packages/deepfunding-portal-api/src/resources/commentVotes/types.ts:11](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/deepfunding-portal-api/src/resources/commentVotes/types.ts#L11)
 
 CommentVote entity from API response
 
@@ -22,7 +22,7 @@ CommentVote entity from API response
 
 > **voter\_id**: `number`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/commentVotes/types.ts:12](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/deepfunding-portal-api/src/resources/commentVotes/types.ts#L12)
+Defined in: [packages/deepfunding-portal-api/src/resources/commentVotes/types.ts:12](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/deepfunding-portal-api/src/resources/commentVotes/types.ts#L12)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [packages/deepfunding-portal-api/src/resources/commentVotes/types.ts
 
 > **comment\_id**: `number`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/commentVotes/types.ts:13](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/deepfunding-portal-api/src/resources/commentVotes/types.ts#L13)
+Defined in: [packages/deepfunding-portal-api/src/resources/commentVotes/types.ts:13](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/deepfunding-portal-api/src/resources/commentVotes/types.ts#L13)
 
 ***
 
@@ -38,7 +38,7 @@ Defined in: [packages/deepfunding-portal-api/src/resources/commentVotes/types.ts
 
 > **vote\_type**: [`VoteType`](VoteType.md)
 
-Defined in: [packages/deepfunding-portal-api/src/resources/commentVotes/types.ts:14](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/deepfunding-portal-api/src/resources/commentVotes/types.ts#L14)
+Defined in: [packages/deepfunding-portal-api/src/resources/commentVotes/types.ts:14](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/deepfunding-portal-api/src/resources/commentVotes/types.ts#L14)
 
 ***
 
@@ -46,4 +46,4 @@ Defined in: [packages/deepfunding-portal-api/src/resources/commentVotes/types.ts
 
 > **created\_at**: `string`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/commentVotes/types.ts:15](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/deepfunding-portal-api/src/resources/commentVotes/types.ts#L15)
+Defined in: [packages/deepfunding-portal-api/src/resources/commentVotes/types.ts:15](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/deepfunding-portal-api/src/resources/commentVotes/types.ts#L15)

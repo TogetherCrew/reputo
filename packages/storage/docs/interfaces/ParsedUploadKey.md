@@ -6,7 +6,7 @@
 
 # Interface: ParsedUploadKey
 
-Defined in: [shared/types/types.ts:169](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/storage/src/shared/types/types.ts#L169)
+Defined in: [shared/types/types.ts:169](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/storage/src/shared/types/types.ts#L169)
 
 Parsed upload key components.
 Pattern: `uploads/{uuid}/{filename}.{ext}`
@@ -21,7 +21,7 @@ Pattern: `uploads/{uuid}/{filename}.{ext}`
 
 > **filename**: `string`
 
-Defined in: [shared/types/types.ts:155](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/storage/src/shared/types/types.ts#L155)
+Defined in: [shared/types/types.ts:155](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/storage/src/shared/types/types.ts#L155)
 
 Full filename including extension.
 
@@ -41,7 +41,7 @@ Full filename including extension.
 
 > **ext**: `string`
 
-Defined in: [shared/types/types.ts:162](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/storage/src/shared/types/types.ts#L162)
+Defined in: [shared/types/types.ts:162](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/storage/src/shared/types/types.ts#L162)
 
 File extension without the dot.
 
@@ -61,7 +61,7 @@ File extension without the dot.
 
 > **type**: `"upload"`
 
-Defined in: [shared/types/types.ts:170](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/storage/src/shared/types/types.ts#L170)
+Defined in: [shared/types/types.ts:170](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/storage/src/shared/types/types.ts#L170)
 
 ***
 
@@ -69,6 +69,6 @@ Defined in: [shared/types/types.ts:170](https://github.com/reputo-org/reputo/blo
 
 > **uuid**: `string`
 
-Defined in: [shared/types/types.ts:175](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/storage/src/shared/types/types.ts#L175)
+Defined in: [shared/types/types.ts:175](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/storage/src/shared/types/types.ts#L175)
 
 UUID v4 identifier for the upload.

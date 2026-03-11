@@ -8,7 +8,7 @@
 
 > **ReviewApiResponse** = `object`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/reviews/types.ts:28](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/deepfunding-portal-api/src/resources/reviews/types.ts#L28)
+Defined in: [packages/deepfunding-portal-api/src/resources/reviews/types.ts:28](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/deepfunding-portal-api/src/resources/reviews/types.ts#L28)
 
 Reviews API response
 
@@ -18,7 +18,7 @@ Reviews API response
 
 > **reviews**: [`Review`](Review.md)[]
 
-Defined in: [packages/deepfunding-portal-api/src/resources/reviews/types.ts:29](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/deepfunding-portal-api/src/resources/reviews/types.ts#L29)
+Defined in: [packages/deepfunding-portal-api/src/resources/reviews/types.ts:29](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/deepfunding-portal-api/src/resources/reviews/types.ts#L29)
 
 ***
 
@@ -26,4 +26,4 @@ Defined in: [packages/deepfunding-portal-api/src/resources/reviews/types.ts:29](
 
 > **pagination**: [`Pagination`](Pagination.md)
 
-Defined in: [packages/deepfunding-portal-api/src/resources/reviews/types.ts:30](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/deepfunding-portal-api/src/resources/reviews/types.ts#L30)
+Defined in: [packages/deepfunding-portal-api/src/resources/reviews/types.ts:30](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/deepfunding-portal-api/src/resources/reviews/types.ts#L30)

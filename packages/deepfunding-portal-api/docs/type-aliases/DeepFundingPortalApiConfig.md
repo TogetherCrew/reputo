@@ -8,7 +8,7 @@
 
 > **DeepFundingPortalApiConfig** = `object`
 
-Defined in: [packages/deepfunding-portal-api/src/shared/types/api-config.ts:16](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/deepfunding-portal-api/src/shared/types/api-config.ts#L16)
+Defined in: [packages/deepfunding-portal-api/src/shared/types/api-config.ts:16](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/deepfunding-portal-api/src/shared/types/api-config.ts#L16)
 
 Configuration for the DeepFunding Portal API client
 
@@ -18,7 +18,7 @@ Configuration for the DeepFunding Portal API client
 
 > **baseUrl**: `string`
 
-Defined in: [packages/deepfunding-portal-api/src/shared/types/api-config.ts:18](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/deepfunding-portal-api/src/shared/types/api-config.ts#L18)
+Defined in: [packages/deepfunding-portal-api/src/shared/types/api-config.ts:18](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/deepfunding-portal-api/src/shared/types/api-config.ts#L18)
 
 Base URL of the API (required)
 
@@ -28,7 +28,7 @@ Base URL of the API (required)
 
 > **apiKey**: `string`
 
-Defined in: [packages/deepfunding-portal-api/src/shared/types/api-config.ts:20](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/deepfunding-portal-api/src/shared/types/api-config.ts#L20)
+Defined in: [packages/deepfunding-portal-api/src/shared/types/api-config.ts:20](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/deepfunding-portal-api/src/shared/types/api-config.ts#L20)
 
 API key for authentication (required)
 
@@ -38,7 +38,7 @@ API key for authentication (required)
 
 > **requestTimeoutMs**: `number`
 
-Defined in: [packages/deepfunding-portal-api/src/shared/types/api-config.ts:22](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/deepfunding-portal-api/src/shared/types/api-config.ts#L22)
+Defined in: [packages/deepfunding-portal-api/src/shared/types/api-config.ts:22](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/deepfunding-portal-api/src/shared/types/api-config.ts#L22)
 
 Request timeout in milliseconds (default: 45000)
 
@@ -48,7 +48,7 @@ Request timeout in milliseconds (default: 45000)
 
 > **concurrency**: `number`
 
-Defined in: [packages/deepfunding-portal-api/src/shared/types/api-config.ts:24](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/deepfunding-portal-api/src/shared/types/api-config.ts#L24)
+Defined in: [packages/deepfunding-portal-api/src/shared/types/api-config.ts:24](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/deepfunding-portal-api/src/shared/types/api-config.ts#L24)
 
 Maximum concurrent requests (default: 4)
 
@@ -58,7 +58,7 @@ Maximum concurrent requests (default: 4)
 
 > **retry**: [`RetryConfig`](RetryConfig.md)
 
-Defined in: [packages/deepfunding-portal-api/src/shared/types/api-config.ts:26](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/deepfunding-portal-api/src/shared/types/api-config.ts#L26)
+Defined in: [packages/deepfunding-portal-api/src/shared/types/api-config.ts:26](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/deepfunding-portal-api/src/shared/types/api-config.ts#L26)
 
 Retry configuration
 
@@ -68,6 +68,6 @@ Retry configuration
 
 > **defaultPageLimit**: `number`
 
-Defined in: [packages/deepfunding-portal-api/src/shared/types/api-config.ts:28](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/deepfunding-portal-api/src/shared/types/api-config.ts#L28)
+Defined in: [packages/deepfunding-portal-api/src/shared/types/api-config.ts:28](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/deepfunding-portal-api/src/shared/types/api-config.ts#L28)
 
 Default page limit for paginated requests (default: 500)

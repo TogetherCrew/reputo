@@ -8,7 +8,7 @@
 
 > **normalizeReviewToRecord**(`data`): `Omit`\<[`ReviewRecord`](../type-aliases/ReviewRecord.md), `"reviewId"`\>
 
-Defined in: [packages/deepfunding-portal-api/src/resources/reviews/normalize.ts:13](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/deepfunding-portal-api/src/resources/reviews/normalize.ts#L13)
+Defined in: [packages/deepfunding-portal-api/src/resources/reviews/normalize.ts:13](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/deepfunding-portal-api/src/resources/reviews/normalize.ts#L13)
 
 Normalize a Review API response to a database record
 

@@ -6,7 +6,7 @@
 
 # Interface: PaginateResult\<T\>
 
-Defined in: [packages/database/src/shared/plugins/paginate.plugin.ts:22](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/database/src/shared/plugins/paginate.plugin.ts#L22)
+Defined in: [packages/database/src/shared/plugins/paginate.plugin.ts:22](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/database/src/shared/plugins/paginate.plugin.ts#L22)
 
 Result of a paginated query
 
@@ -22,7 +22,7 @@ Result of a paginated query
 
 > **results**: `T`[]
 
-Defined in: [packages/database/src/shared/plugins/paginate.plugin.ts:24](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/database/src/shared/plugins/paginate.plugin.ts#L24)
+Defined in: [packages/database/src/shared/plugins/paginate.plugin.ts:24](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/database/src/shared/plugins/paginate.plugin.ts#L24)
 
 Results found
 
@@ -32,7 +32,7 @@ Results found
 
 > **page**: `number`
 
-Defined in: [packages/database/src/shared/plugins/paginate.plugin.ts:26](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/database/src/shared/plugins/paginate.plugin.ts#L26)
+Defined in: [packages/database/src/shared/plugins/paginate.plugin.ts:26](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/database/src/shared/plugins/paginate.plugin.ts#L26)
 
 Current page
 
@@ -42,7 +42,7 @@ Current page
 
 > **limit**: `number`
 
-Defined in: [packages/database/src/shared/plugins/paginate.plugin.ts:28](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/database/src/shared/plugins/paginate.plugin.ts#L28)
+Defined in: [packages/database/src/shared/plugins/paginate.plugin.ts:28](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/database/src/shared/plugins/paginate.plugin.ts#L28)
 
 Maximum number of results per page
 
@@ -52,7 +52,7 @@ Maximum number of results per page
 
 > **totalPages**: `number`
 
-Defined in: [packages/database/src/shared/plugins/paginate.plugin.ts:30](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/database/src/shared/plugins/paginate.plugin.ts#L30)
+Defined in: [packages/database/src/shared/plugins/paginate.plugin.ts:30](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/database/src/shared/plugins/paginate.plugin.ts#L30)
 
 Total number of pages
 
@@ -62,6 +62,6 @@ Total number of pages
 
 > **totalResults**: `number`
 
-Defined in: [packages/database/src/shared/plugins/paginate.plugin.ts:32](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/database/src/shared/plugins/paginate.plugin.ts#L32)
+Defined in: [packages/database/src/shared/plugins/paginate.plugin.ts:32](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/database/src/shared/plugins/paginate.plugin.ts#L32)
 
 Total number of documents

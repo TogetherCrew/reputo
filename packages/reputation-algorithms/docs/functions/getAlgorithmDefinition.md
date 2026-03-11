@@ -8,7 +8,7 @@
 
 > **getAlgorithmDefinition**(`filters`): `string`
 
-Defined in: [api/registry.ts:107](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/reputation-algorithms/src/api/registry.ts#L107)
+Defined in: [api/registry.ts:107](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/reputation-algorithms/src/api/registry.ts#L107)
 
 Retrieves a complete algorithm definition by key and version.
 
