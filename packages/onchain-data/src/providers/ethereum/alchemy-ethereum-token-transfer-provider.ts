@@ -4,6 +4,12 @@ import type { AlchemyAssetTransfer, AlchemyAssetTransfersResponse, AlchemyBlockR
 /** Alchemy maxCount per page; we yield once per page so sync persists every 1000 records. */
 const ALCHEMY_PAGE_SIZE = 1000;
 const MAX_RETRY_ATTEMPTS = 5;
+
+type TransferPage = {
+  items: AlchemyAssetTransfer[];
+  lastBlock: string;
+  pageKey?: string;
+};
 const BASE_RETRY_DELAY_MS = 1000;
 const MAX_RETRY_DELAY_MS = 30_000;
 const REQUEST_TIMEOUT_MS = 30_000;
@@ -60,6 +66,36 @@ export function createAlchemyEthereumTokenTransferProvider(
     });
   }
 
+  async function fetchPage(input: {
+    contractAddress: string;
+    fromBlock: string;
+    toBlock: string;
+    pageKey?: string;
+  }): Promise<TransferPage> {
+    const result = await jsonRpc<AlchemyAssetTransfersResponse>('alchemy_getAssetTransfers', [
+      {
+        fromBlock: input.fromBlock,
+        toBlock: input.toBlock,
+        contractAddresses: [input.contractAddress],
+        category: ['erc20'],
+        excludeZeroValue: false,
+        order: 'asc',
+        maxCount: toHex(ALCHEMY_PAGE_SIZE),
+        withMetadata: true,
+        ...(input.pageKey ? { pageKey: input.pageKey } : {}),
+      },
+    ]);
+
+    const lastBlock =
+      result.transfers.length > 0 ? result.transfers[result.transfers.length - 1].blockNum : input.toBlock;
+
+    return {
+      items: result.transfers,
+      lastBlock,
+      pageKey: result.pageKey,
+    };
+  }
+
   return {
     async getToBlock(): Promise<string> {
       const block = await jsonRpc<AlchemyBlockResponse>('eth_getBlockByNumber', ['finalized', false]);
@@ -67,32 +103,19 @@ export function createAlchemyEthereumTokenTransferProvider(
     },
 
     async *fetchTokenTransfers(input) {
-      const { fromBlock, toBlock, contractAddress } = input;
-      let counter = 0;
-      let pageKey: string | undefined;
-      do {
-        const result = await jsonRpc<AlchemyAssetTransfersResponse>('alchemy_getAssetTransfers', [
-          {
-            fromBlock,
-            toBlock,
-            contractAddresses: [contractAddress],
-            category: ['erc20'],
-            excludeZeroValue: false,
-            order: 'asc',
-            maxCount: toHex(ALCHEMY_PAGE_SIZE),
-            withMetadata: true,
-            ...(pageKey ? { pageKey } : {}),
-          },
-        ]);
+      let current = await fetchPage(input);
 
-        const lastBlockInPage =
-          result.transfers.length > 0 ? result.transfers[result.transfers.length - 1].blockNum : toBlock;
+      for (;;) {
+        const nextPromise = current.pageKey ? fetchPage({ ...input, pageKey: current.pageKey }) : null;
 
-        counter++;
-        console.log(result.transfers.length, counter, lastBlockInPage);
-        yield { items: result.transfers, lastBlock: lastBlockInPage };
-        pageKey = result.pageKey;
-      } while (pageKey);
+        yield {
+          items: current.items,
+          lastBlock: current.lastBlock,
+        };
+
+        if (!nextPromise) break;
+        current = await nextPromise;
+      }
     },
   };
 }
