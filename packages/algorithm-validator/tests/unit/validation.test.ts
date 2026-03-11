@@ -132,6 +132,49 @@ describe('validation', () => {
     });
   });
 
+  it('builds correct zod schema when array input uses itemProperties (FormSchema format)', () => {
+    const formSchema = {
+      ...definition,
+      inputs: [
+        {
+          key: 'token_configs',
+          label: 'Tokens to Include',
+          type: 'array',
+          minItems: 1,
+          required: true,
+          // FormSchema uses itemProperties instead of item.properties
+          itemProperties: [
+            {
+              key: 'chain_id',
+              label: 'Chain',
+              type: 'select',
+              required: true,
+              enum: ['1'],
+            },
+            {
+              key: 'contract_address',
+              label: 'Token',
+              type: 'select',
+              required: true,
+              enum: ['0xaea46A60368A7bD060eec7DF8CBa43b7EF41Ad85'],
+            },
+          ],
+        },
+      ],
+    } as unknown as AlgorithmDefinition;
+
+    const valid = validatePayload(formSchema, {
+      token_configs: [{ chain_id: '1', contract_address: '0xaea46A60368A7bD060eec7DF8CBa43b7EF41Ad85' }],
+    });
+    expect(valid.success).toBe(true);
+
+    const invalid = validatePayload(formSchema, {
+      token_configs: [{}],
+    });
+    expect(invalid.success).toBe(false);
+    expect(invalid.errors?.some((e) => e.field.includes('chain_id'))).toBe(true);
+  });
+
   it('rejects duplicate chain_id + contract_address in array inputs', () => {
     const defWithTokenConfigs: AlgorithmDefinition = {
       ...definition,

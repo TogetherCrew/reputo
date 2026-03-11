@@ -242,7 +242,7 @@ function buildFieldSchema(input: any): z.ZodType {
 
     case 'array': {
       const arrayInput = input as ArrayIoItem;
-      const itemProps = arrayInput.item?.properties ?? [];
+      const itemProps = arrayInput.item?.properties ?? input.itemProperties ?? [];
 
       const objectShape: Record<string, z.ZodType> = {};
       for (const prop of itemProps) {
