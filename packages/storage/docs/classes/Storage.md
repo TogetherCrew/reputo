@@ -6,7 +6,7 @@
 
 # Class: Storage
 
-Defined in: [storage.ts:92](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/storage/src/storage.ts#L92)
+Defined in: [storage.ts:92](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/storage/src/storage.ts#L92)
 
 Main storage class that wraps an S3Client instance.
 
@@ -65,7 +65,7 @@ console.log(download.url);
 
 > **new Storage**(`s3Client`): `Storage`
 
-Defined in: [storage.ts:98](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/storage/src/storage.ts#L98)
+Defined in: [storage.ts:98](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/storage/src/storage.ts#L98)
 
 Creates a new Storage instance.
 
@@ -87,7 +87,7 @@ Configured S3Client instance to use for all operations
 
 > **presignPut**(`options`): `Promise`\<[`PresignedUpload`](../interfaces/PresignedUpload.md)\>
 
-Defined in: [storage.ts:125](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/storage/src/storage.ts#L125)
+Defined in: [storage.ts:125](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/storage/src/storage.ts#L125)
 
 Generates a presigned URL for uploading a file.
 
@@ -134,7 +134,7 @@ const result = await storage.presignPut({
 
 > **verify**(`options`): `Promise`\<\{ `key`: `string`; `metadata`: [`StorageMetadata`](../interfaces/StorageMetadata.md); \}\>
 
-Defined in: [storage.ts:182](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/storage/src/storage.ts#L182)
+Defined in: [storage.ts:182](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/storage/src/storage.ts#L182)
 
 Verifies that a file meets size requirements and optionally content-type policies.
 
@@ -197,7 +197,7 @@ const result = await storage.verify({
 
 > **presignGet**(`options`): `Promise`\<[`PresignedDownload`](../interfaces/PresignedDownload.md)\>
 
-Defined in: [storage.ts:245](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/storage/src/storage.ts#L245)
+Defined in: [storage.ts:245](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/storage/src/storage.ts#L245)
 
 Generates a presigned URL for downloading a file.
 
@@ -253,7 +253,7 @@ const result = await storage.presignGet({
 
 > **getObject**(`options`): `Promise`\<`Buffer`\<`ArrayBufferLike`\>\>
 
-Defined in: [storage.ts:298](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/storage/src/storage.ts#L298)
+Defined in: [storage.ts:298](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/storage/src/storage.ts#L298)
 
 Reads an object from S3 and returns its contents as a Buffer.
 
@@ -295,7 +295,7 @@ console.log(text);
 
 > **putObject**(`options`): `Promise`\<`string`\>
 
-Defined in: [storage.ts:364](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/storage/src/storage.ts#L364)
+Defined in: [storage.ts:364](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/storage/src/storage.ts#L364)
 
 Writes an object to S3.
 
@@ -351,7 +351,7 @@ await storage.putObject({
 
 > **deleteObject**(`options`): `Promise`\<`void`\>
 
-Defined in: [storage.ts:401](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/storage/src/storage.ts#L401)
+Defined in: [storage.ts:401](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/storage/src/storage.ts#L401)
 
 Deletes a single object from S3.
 
@@ -386,7 +386,7 @@ await storage.deleteObject({
 
 > **listObjectsByPrefix**(`options`): `Promise`\<`string`[]\>
 
-Defined in: [storage.ts:429](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/storage/src/storage.ts#L429)
+Defined in: [storage.ts:429](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/storage/src/storage.ts#L429)
 
 Lists all objects under a given prefix.
 
@@ -422,7 +422,7 @@ const keys = await storage.listObjectsByPrefix({
 
 > **deleteObjects**(`options`): `Promise`\<[`DeleteObjectsResult`](../interfaces/DeleteObjectsResult.md)\>
 
-Defined in: [storage.ts:478](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/storage/src/storage.ts#L478)
+Defined in: [storage.ts:478](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/storage/src/storage.ts#L478)
 
 Deletes multiple objects from S3 in a single batch request.
 

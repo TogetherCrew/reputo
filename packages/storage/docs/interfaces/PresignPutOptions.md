@@ -6,7 +6,7 @@
 
 # Interface: PresignPutOptions
 
-Defined in: [shared/types/types.ts:22](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/storage/src/shared/types/types.ts#L22)
+Defined in: [shared/types/types.ts:22](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/storage/src/shared/types/types.ts#L22)
 
 Options for generating a presigned PUT URL.
 
@@ -16,7 +16,7 @@ Options for generating a presigned PUT URL.
 
 > **bucket**: `string`
 
-Defined in: [shared/types/types.ts:26](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/storage/src/shared/types/types.ts#L26)
+Defined in: [shared/types/types.ts:26](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/storage/src/shared/types/types.ts#L26)
 
 S3 bucket name where the object will be stored.
 
@@ -26,7 +26,7 @@ S3 bucket name where the object will be stored.
 
 > **filename**: `string`
 
-Defined in: [shared/types/types.ts:31](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/storage/src/shared/types/types.ts#L31)
+Defined in: [shared/types/types.ts:31](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/storage/src/shared/types/types.ts#L31)
 
 Original filename for the upload.
 
@@ -36,7 +36,7 @@ Original filename for the upload.
 
 > **contentType**: `string`
 
-Defined in: [shared/types/types.ts:36](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/storage/src/shared/types/types.ts#L36)
+Defined in: [shared/types/types.ts:36](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/storage/src/shared/types/types.ts#L36)
 
 MIME type of the file being uploaded.
 
@@ -46,7 +46,7 @@ MIME type of the file being uploaded.
 
 > **ttl**: `number`
 
-Defined in: [shared/types/types.ts:41](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/storage/src/shared/types/types.ts#L41)
+Defined in: [shared/types/types.ts:41](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/storage/src/shared/types/types.ts#L41)
 
 Time-to-live for the presigned URL in seconds.
 
@@ -56,7 +56,7 @@ Time-to-live for the presigned URL in seconds.
 
 > **maxSizeBytes**: `number`
 
-Defined in: [shared/types/types.ts:46](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/storage/src/shared/types/types.ts#L46)
+Defined in: [shared/types/types.ts:46](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/storage/src/shared/types/types.ts#L46)
 
 Maximum allowed file size in bytes.
 
@@ -66,6 +66,6 @@ Maximum allowed file size in bytes.
 
 > **contentTypeAllowlist**: `string`[]
 
-Defined in: [shared/types/types.ts:51](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/storage/src/shared/types/types.ts#L51)
+Defined in: [shared/types/types.ts:51](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/storage/src/shared/types/types.ts#L51)
 
 Allowed content types (MIME types) for uploads.

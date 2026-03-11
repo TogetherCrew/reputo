@@ -8,7 +8,7 @@
 
 > **Comment** = `object`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/comments/types.ts:6](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/deepfunding-portal-api/src/resources/comments/types.ts#L6)
+Defined in: [packages/deepfunding-portal-api/src/resources/comments/types.ts:6](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/deepfunding-portal-api/src/resources/comments/types.ts#L6)
 
 Comment entity from API response
 
@@ -22,7 +22,7 @@ Comment entity from API response
 
 > **comment\_id**: `number`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/comments/types.ts:7](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/deepfunding-portal-api/src/resources/comments/types.ts#L7)
+Defined in: [packages/deepfunding-portal-api/src/resources/comments/types.ts:7](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/deepfunding-portal-api/src/resources/comments/types.ts#L7)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [packages/deepfunding-portal-api/src/resources/comments/types.ts:7](
 
 > **parent\_id**: `number`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/comments/types.ts:8](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/deepfunding-portal-api/src/resources/comments/types.ts#L8)
+Defined in: [packages/deepfunding-portal-api/src/resources/comments/types.ts:8](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/deepfunding-portal-api/src/resources/comments/types.ts#L8)
 
 ***
 
@@ -38,7 +38,7 @@ Defined in: [packages/deepfunding-portal-api/src/resources/comments/types.ts:8](
 
 > **is\_reply**: `boolean`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/comments/types.ts:9](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/deepfunding-portal-api/src/resources/comments/types.ts#L9)
+Defined in: [packages/deepfunding-portal-api/src/resources/comments/types.ts:9](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/deepfunding-portal-api/src/resources/comments/types.ts#L9)
 
 ***
 
@@ -46,7 +46,7 @@ Defined in: [packages/deepfunding-portal-api/src/resources/comments/types.ts:9](
 
 > **user\_id**: `number`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/comments/types.ts:10](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/deepfunding-portal-api/src/resources/comments/types.ts#L10)
+Defined in: [packages/deepfunding-portal-api/src/resources/comments/types.ts:10](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/deepfunding-portal-api/src/resources/comments/types.ts#L10)
 
 ***
 
@@ -54,7 +54,7 @@ Defined in: [packages/deepfunding-portal-api/src/resources/comments/types.ts:10]
 
 > **proposal\_id**: `number`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/comments/types.ts:11](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/deepfunding-portal-api/src/resources/comments/types.ts#L11)
+Defined in: [packages/deepfunding-portal-api/src/resources/comments/types.ts:11](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/deepfunding-portal-api/src/resources/comments/types.ts#L11)
 
 ***
 
@@ -62,7 +62,7 @@ Defined in: [packages/deepfunding-portal-api/src/resources/comments/types.ts:11]
 
 > **content**: `string`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/comments/types.ts:12](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/deepfunding-portal-api/src/resources/comments/types.ts#L12)
+Defined in: [packages/deepfunding-portal-api/src/resources/comments/types.ts:12](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/deepfunding-portal-api/src/resources/comments/types.ts#L12)
 
 ***
 
@@ -70,7 +70,7 @@ Defined in: [packages/deepfunding-portal-api/src/resources/comments/types.ts:12]
 
 > **comment\_votes**: `number` \| `string`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/comments/types.ts:13](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/deepfunding-portal-api/src/resources/comments/types.ts#L13)
+Defined in: [packages/deepfunding-portal-api/src/resources/comments/types.ts:13](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/deepfunding-portal-api/src/resources/comments/types.ts#L13)
 
 ***
 
@@ -78,7 +78,7 @@ Defined in: [packages/deepfunding-portal-api/src/resources/comments/types.ts:13]
 
 > **votes**: `object`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/comments/types.ts:14](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/deepfunding-portal-api/src/resources/comments/types.ts#L14)
+Defined in: [packages/deepfunding-portal-api/src/resources/comments/types.ts:14](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/deepfunding-portal-api/src/resources/comments/types.ts#L14)
 
 #### up
 
@@ -94,7 +94,7 @@ Defined in: [packages/deepfunding-portal-api/src/resources/comments/types.ts:14]
 
 > **created\_at**: `string`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/comments/types.ts:18](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/deepfunding-portal-api/src/resources/comments/types.ts#L18)
+Defined in: [packages/deepfunding-portal-api/src/resources/comments/types.ts:18](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/deepfunding-portal-api/src/resources/comments/types.ts#L18)
 
 ***
 
@@ -102,4 +102,4 @@ Defined in: [packages/deepfunding-portal-api/src/resources/comments/types.ts:18]
 
 > **updated\_at**: `string`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/comments/types.ts:19](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/deepfunding-portal-api/src/resources/comments/types.ts#L19)
+Defined in: [packages/deepfunding-portal-api/src/resources/comments/types.ts:19](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/deepfunding-portal-api/src/resources/comments/types.ts#L19)

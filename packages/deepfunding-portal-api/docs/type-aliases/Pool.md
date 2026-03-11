@@ -8,7 +8,7 @@
 
 > **Pool** = `object`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/pools/types.ts:4](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/deepfunding-portal-api/src/resources/pools/types.ts#L4)
+Defined in: [packages/deepfunding-portal-api/src/resources/pools/types.ts:4](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/deepfunding-portal-api/src/resources/pools/types.ts#L4)
 
 Pool entity from API response
 
@@ -22,7 +22,7 @@ Pool entity from API response
 
 > **id**: `number`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/pools/types.ts:5](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/deepfunding-portal-api/src/resources/pools/types.ts#L5)
+Defined in: [packages/deepfunding-portal-api/src/resources/pools/types.ts:5](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/deepfunding-portal-api/src/resources/pools/types.ts#L5)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [packages/deepfunding-portal-api/src/resources/pools/types.ts:5](htt
 
 > **name**: `string`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/pools/types.ts:6](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/deepfunding-portal-api/src/resources/pools/types.ts#L6)
+Defined in: [packages/deepfunding-portal-api/src/resources/pools/types.ts:6](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/deepfunding-portal-api/src/resources/pools/types.ts#L6)
 
 ***
 
@@ -38,7 +38,7 @@ Defined in: [packages/deepfunding-portal-api/src/resources/pools/types.ts:6](htt
 
 > **slug**: `string`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/pools/types.ts:7](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/deepfunding-portal-api/src/resources/pools/types.ts#L7)
+Defined in: [packages/deepfunding-portal-api/src/resources/pools/types.ts:7](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/deepfunding-portal-api/src/resources/pools/types.ts#L7)
 
 ***
 
@@ -46,7 +46,7 @@ Defined in: [packages/deepfunding-portal-api/src/resources/pools/types.ts:7](htt
 
 > **max\_funding\_amount**: `number`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/pools/types.ts:8](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/deepfunding-portal-api/src/resources/pools/types.ts#L8)
+Defined in: [packages/deepfunding-portal-api/src/resources/pools/types.ts:8](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/deepfunding-portal-api/src/resources/pools/types.ts#L8)
 
 ***
 
@@ -54,4 +54,4 @@ Defined in: [packages/deepfunding-portal-api/src/resources/pools/types.ts:8](htt
 
 > **description**: `string` \| `null`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/pools/types.ts:9](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/deepfunding-portal-api/src/resources/pools/types.ts#L9)
+Defined in: [packages/deepfunding-portal-api/src/resources/pools/types.ts:9](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/deepfunding-portal-api/src/resources/pools/types.ts#L9)

@@ -8,7 +8,7 @@
 
 > **SnapshotDoc** = `HydratedDocument`\<[`Snapshot`](../interfaces/Snapshot.md)\> & `object`
 
-Defined in: [packages/database/src/shared/types/Snapshot.interface.ts:73](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/database/src/shared/types/Snapshot.interface.ts#L73)
+Defined in: [packages/database/src/shared/types/Snapshot.interface.ts:73](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/database/src/shared/types/Snapshot.interface.ts#L73)
 
 Type representing a hydrated Snapshot document with Mongoose methods and explicit _id.
 

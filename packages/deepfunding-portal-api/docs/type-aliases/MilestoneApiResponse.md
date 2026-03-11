@@ -8,7 +8,7 @@
 
 > **MilestoneApiResponse** = `object`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/milestones/types.ts:43](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/deepfunding-portal-api/src/resources/milestones/types.ts#L43)
+Defined in: [packages/deepfunding-portal-api/src/resources/milestones/types.ts:43](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/deepfunding-portal-api/src/resources/milestones/types.ts#L43)
 
 Milestones API response
 Note: The API returns milestones grouped by proposal.
@@ -19,7 +19,7 @@ Note: The API returns milestones grouped by proposal.
 
 > **milestones**: `object`[]
 
-Defined in: [packages/deepfunding-portal-api/src/resources/milestones/types.ts:44](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/deepfunding-portal-api/src/resources/milestones/types.ts#L44)
+Defined in: [packages/deepfunding-portal-api/src/resources/milestones/types.ts:44](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/deepfunding-portal-api/src/resources/milestones/types.ts#L44)
 
 #### proposal\_id
 
@@ -43,4 +43,4 @@ Defined in: [packages/deepfunding-portal-api/src/resources/milestones/types.ts:4
 
 > **pagination**: [`Pagination`](Pagination.md)
 
-Defined in: [packages/deepfunding-portal-api/src/resources/milestones/types.ts:50](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/deepfunding-portal-api/src/resources/milestones/types.ts#L50)
+Defined in: [packages/deepfunding-portal-api/src/resources/milestones/types.ts:50](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/deepfunding-portal-api/src/resources/milestones/types.ts#L50)

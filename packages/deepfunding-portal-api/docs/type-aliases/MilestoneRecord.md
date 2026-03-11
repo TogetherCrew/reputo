@@ -8,7 +8,7 @@
 
 > **MilestoneRecord** = `object`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/milestones/types.ts:56](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/deepfunding-portal-api/src/resources/milestones/types.ts#L56)
+Defined in: [packages/deepfunding-portal-api/src/resources/milestones/types.ts:56](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/deepfunding-portal-api/src/resources/milestones/types.ts#L56)
 
 Milestone database record
 
@@ -18,7 +18,7 @@ Milestone database record
 
 > **id**: `number`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/milestones/types.ts:57](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/deepfunding-portal-api/src/resources/milestones/types.ts#L57)
+Defined in: [packages/deepfunding-portal-api/src/resources/milestones/types.ts:57](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/deepfunding-portal-api/src/resources/milestones/types.ts#L57)
 
 ***
 
@@ -26,7 +26,7 @@ Defined in: [packages/deepfunding-portal-api/src/resources/milestones/types.ts:5
 
 > **proposalId**: `number`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/milestones/types.ts:58](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/deepfunding-portal-api/src/resources/milestones/types.ts#L58)
+Defined in: [packages/deepfunding-portal-api/src/resources/milestones/types.ts:58](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/deepfunding-portal-api/src/resources/milestones/types.ts#L58)
 
 ***
 
@@ -34,7 +34,7 @@ Defined in: [packages/deepfunding-portal-api/src/resources/milestones/types.ts:5
 
 > **title**: `string`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/milestones/types.ts:59](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/deepfunding-portal-api/src/resources/milestones/types.ts#L59)
+Defined in: [packages/deepfunding-portal-api/src/resources/milestones/types.ts:59](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/deepfunding-portal-api/src/resources/milestones/types.ts#L59)
 
 ***
 
@@ -42,7 +42,7 @@ Defined in: [packages/deepfunding-portal-api/src/resources/milestones/types.ts:5
 
 > **status**: `string`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/milestones/types.ts:60](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/deepfunding-portal-api/src/resources/milestones/types.ts#L60)
+Defined in: [packages/deepfunding-portal-api/src/resources/milestones/types.ts:60](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/deepfunding-portal-api/src/resources/milestones/types.ts#L60)
 
 ***
 
@@ -50,7 +50,7 @@ Defined in: [packages/deepfunding-portal-api/src/resources/milestones/types.ts:6
 
 > **description**: `string`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/milestones/types.ts:61](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/deepfunding-portal-api/src/resources/milestones/types.ts#L61)
+Defined in: [packages/deepfunding-portal-api/src/resources/milestones/types.ts:61](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/deepfunding-portal-api/src/resources/milestones/types.ts#L61)
 
 ***
 
@@ -58,7 +58,7 @@ Defined in: [packages/deepfunding-portal-api/src/resources/milestones/types.ts:6
 
 > **developmentDescription**: `string`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/milestones/types.ts:62](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/deepfunding-portal-api/src/resources/milestones/types.ts#L62)
+Defined in: [packages/deepfunding-portal-api/src/resources/milestones/types.ts:62](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/deepfunding-portal-api/src/resources/milestones/types.ts#L62)
 
 ***
 
@@ -66,7 +66,7 @@ Defined in: [packages/deepfunding-portal-api/src/resources/milestones/types.ts:6
 
 > **budget**: `number`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/milestones/types.ts:63](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/deepfunding-portal-api/src/resources/milestones/types.ts#L63)
+Defined in: [packages/deepfunding-portal-api/src/resources/milestones/types.ts:63](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/deepfunding-portal-api/src/resources/milestones/types.ts#L63)
 
 ***
 
@@ -74,7 +74,7 @@ Defined in: [packages/deepfunding-portal-api/src/resources/milestones/types.ts:6
 
 > **createdAt**: `string` \| `null`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/milestones/types.ts:64](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/deepfunding-portal-api/src/resources/milestones/types.ts#L64)
+Defined in: [packages/deepfunding-portal-api/src/resources/milestones/types.ts:64](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/deepfunding-portal-api/src/resources/milestones/types.ts#L64)
 
 ***
 
@@ -82,7 +82,7 @@ Defined in: [packages/deepfunding-portal-api/src/resources/milestones/types.ts:6
 
 > **updatedAt**: `string` \| `null`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/milestones/types.ts:65](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/deepfunding-portal-api/src/resources/milestones/types.ts#L65)
+Defined in: [packages/deepfunding-portal-api/src/resources/milestones/types.ts:65](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/deepfunding-portal-api/src/resources/milestones/types.ts#L65)
 
 ***
 
@@ -90,4 +90,4 @@ Defined in: [packages/deepfunding-portal-api/src/resources/milestones/types.ts:6
 
 > **rawJson**: `string`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/milestones/types.ts:66](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/deepfunding-portal-api/src/resources/milestones/types.ts#L66)
+Defined in: [packages/deepfunding-portal-api/src/resources/milestones/types.ts:66](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/deepfunding-portal-api/src/resources/milestones/types.ts#L66)

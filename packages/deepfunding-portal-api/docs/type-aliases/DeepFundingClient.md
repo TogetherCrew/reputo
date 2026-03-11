@@ -8,7 +8,7 @@
 
 > **DeepFundingClient** = `object`
 
-Defined in: [packages/deepfunding-portal-api/src/api/client.ts:10](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/deepfunding-portal-api/src/api/client.ts#L10)
+Defined in: [packages/deepfunding-portal-api/src/api/client.ts:10](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/deepfunding-portal-api/src/api/client.ts#L10)
 
 DeepFunding Portal API client
 
@@ -18,7 +18,7 @@ DeepFunding Portal API client
 
 > **config**: [`DeepFundingPortalApiConfig`](DeepFundingPortalApiConfig.md)
 
-Defined in: [packages/deepfunding-portal-api/src/api/client.ts:12](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/deepfunding-portal-api/src/api/client.ts#L12)
+Defined in: [packages/deepfunding-portal-api/src/api/client.ts:12](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/deepfunding-portal-api/src/api/client.ts#L12)
 
 Full configuration
 
@@ -28,7 +28,7 @@ Full configuration
 
 > **limiter**: `ReturnType`\<*typeof* `pLimit`\>
 
-Defined in: [packages/deepfunding-portal-api/src/api/client.ts:14](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/deepfunding-portal-api/src/api/client.ts#L14)
+Defined in: [packages/deepfunding-portal-api/src/api/client.ts:14](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/deepfunding-portal-api/src/api/client.ts#L14)
 
 Concurrency limiter
 
@@ -38,7 +38,7 @@ Concurrency limiter
 
 > **get**: \<`T`\>(`path`, `params?`) => `Promise`\<`T`\>
 
-Defined in: [packages/deepfunding-portal-api/src/api/client.ts:16](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/deepfunding-portal-api/src/api/client.ts#L16)
+Defined in: [packages/deepfunding-portal-api/src/api/client.ts:16](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/deepfunding-portal-api/src/api/client.ts#L16)
 
 Execute a GET request with retry logic
 

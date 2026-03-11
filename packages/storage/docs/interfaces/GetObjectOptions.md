@@ -6,7 +6,7 @@
 
 # Interface: GetObjectOptions
 
-Defined in: [shared/types/types.ts:103](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/storage/src/shared/types/types.ts#L103)
+Defined in: [shared/types/types.ts:103](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/storage/src/shared/types/types.ts#L103)
 
 Options for reading an object from S3.
 
@@ -16,7 +16,7 @@ Options for reading an object from S3.
 
 > **bucket**: `string`
 
-Defined in: [shared/types/types.ts:107](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/storage/src/shared/types/types.ts#L107)
+Defined in: [shared/types/types.ts:107](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/storage/src/shared/types/types.ts#L107)
 
 S3 bucket name where the object is stored.
 
@@ -26,6 +26,6 @@ S3 bucket name where the object is stored.
 
 > **key**: `string`
 
-Defined in: [shared/types/types.ts:112](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/storage/src/shared/types/types.ts#L112)
+Defined in: [shared/types/types.ts:112](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/storage/src/shared/types/types.ts#L112)
 
 S3 key of the object to read.

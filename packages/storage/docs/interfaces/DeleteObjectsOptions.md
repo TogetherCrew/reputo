@@ -6,7 +6,7 @@
 
 # Interface: DeleteObjectsOptions
 
-Defined in: [shared/types/types.ts:311](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/storage/src/shared/types/types.ts#L311)
+Defined in: [shared/types/types.ts:311](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/storage/src/shared/types/types.ts#L311)
 
 Options for deleting multiple objects from S3.
 
@@ -16,7 +16,7 @@ Options for deleting multiple objects from S3.
 
 > **bucket**: `string`
 
-Defined in: [shared/types/types.ts:315](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/storage/src/shared/types/types.ts#L315)
+Defined in: [shared/types/types.ts:315](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/storage/src/shared/types/types.ts#L315)
 
 S3 bucket name where the objects are stored.
 
@@ -26,6 +26,6 @@ S3 bucket name where the objects are stored.
 
 > **keys**: `string`[]
 
-Defined in: [shared/types/types.ts:320](https://github.com/reputo-org/reputo/blob/ca839466775a08b98a6b539646013f806761756b/packages/storage/src/shared/types/types.ts#L320)
+Defined in: [shared/types/types.ts:320](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/storage/src/shared/types/types.ts#L320)
 
 Array of S3 keys to delete.

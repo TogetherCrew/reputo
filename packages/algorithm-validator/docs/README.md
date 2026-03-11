@@ -26,7 +26,7 @@ pnpm add @reputo/algorithm-validator
 
 ## Usage
 
-See the full API reference in [docs](docs/globals.md).
+See the full API reference in [docs](_media/globals.md).
 
 ### Payload Validation
 
