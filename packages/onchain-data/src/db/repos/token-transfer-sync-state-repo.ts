@@ -13,10 +13,12 @@ export function createTokenTransferSyncStateRepository(
   const findStmt = sqlite.prepare('SELECT * FROM token_transfer_sync_state WHERE token_chain = ?');
 
   const upsertStmt = sqlite.prepare(`
-    INSERT INTO token_transfer_sync_state (token_chain, last_synced_block, updated_at)
-    VALUES (@tokenChain, @lastSyncedBlock, @updatedAt)
+    INSERT INTO token_transfer_sync_state (token_chain, last_synced_block, last_transaction_hash, last_log_index, updated_at)
+    VALUES (@tokenChain, @lastSyncedBlock, @lastTransactionHash, @lastLogIndex, @updatedAt)
     ON CONFLICT (token_chain) DO UPDATE SET
       last_synced_block = @lastSyncedBlock,
+      last_transaction_hash = @lastTransactionHash,
+      last_log_index = @lastLogIndex,
       updated_at = @updatedAt
   `);
 
@@ -27,6 +29,8 @@ export function createTokenTransferSyncStateRepository(
       return {
         tokenChain: row.token_chain as SupportedTokenChain,
         lastSyncedBlock: normalizeHexBlock(row.last_synced_block),
+        ...(row.last_transaction_hash != null && { lastTransactionHash: row.last_transaction_hash }),
+        ...(row.last_log_index != null && { lastLogIndex: row.last_log_index }),
         updatedAt: row.updated_at,
       };
     },
@@ -35,6 +39,8 @@ export function createTokenTransferSyncStateRepository(
       upsertStmt.run({
         tokenChain: input.tokenChain,
         lastSyncedBlock: normalizeHexBlock(input.lastSyncedBlock),
+        lastTransactionHash: input.lastTransactionHash ?? null,
+        lastLogIndex: input.lastLogIndex ?? null,
         updatedAt: input.updatedAt,
       });
     },

@@ -15,6 +15,7 @@ export function createDatabase(dbPath: string): Database {
   migrateLegacyBlockColumns(sqlite);
   migrateDropRedundantTransferColumns(sqlite);
   migrateDropContractAddress(sqlite);
+  migrateSyncStateLastEventColumns(sqlite);
 
   return {
     sqlite,
@@ -201,6 +202,14 @@ DROP TABLE token_transfers;
 ALTER TABLE token_transfers__no_contract RENAME TO token_transfers;
     `);
   })();
+}
+
+function migrateSyncStateLastEventColumns(sqlite: BetterSqlite3.Database): void {
+  const hasLastTxHash = getColumnType(sqlite, 'token_transfer_sync_state', 'last_transaction_hash') !== null;
+  if (hasLastTxHash) return;
+
+  sqlite.exec('ALTER TABLE token_transfer_sync_state ADD COLUMN last_transaction_hash TEXT');
+  sqlite.exec('ALTER TABLE token_transfer_sync_state ADD COLUMN last_log_index INTEGER');
 }
 
 function getColumnType(sqlite: BetterSqlite3.Database, tableName: string, columnName: string): string | null {

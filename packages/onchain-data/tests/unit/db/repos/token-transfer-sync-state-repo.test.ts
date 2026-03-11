@@ -69,5 +69,19 @@ describe('TokenTransferSyncStateRepository', () => {
       expect(result?.lastSyncedBlock).toBe('0x2710');
       expect(result?.updatedAt).toBe('2024-01-15T11:00:00.000Z');
     });
+
+    it('stores and returns last_transaction_hash and last_log_index', () => {
+      repo.upsert({
+        tokenChain: SupportedTokenChain.FET_ETHEREUM,
+        lastSyncedBlock: '0x1388',
+        lastTransactionHash: '0xabc123',
+        lastLogIndex: 5,
+        updatedAt: '2024-01-15T10:00:00.000Z',
+      });
+
+      const result = repo.findByTokenChain(SupportedTokenChain.FET_ETHEREUM);
+      expect(result?.lastTransactionHash).toBe('0xabc123');
+      expect(result?.lastLogIndex).toBe(5);
+    });
   });
 });

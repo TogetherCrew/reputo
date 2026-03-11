@@ -110,12 +110,16 @@ export class DefaultSyncTokenTransfersService implements SyncTokenTransfersServi
       }),
     );
 
+    const lastItem = normalizedItems.length > 0 ? normalizedItems[normalizedItems.length - 1] : null;
+
     return this.db.transaction(() => {
       const insertedCount = this.tokenTransferRepo.insertMany(normalizedItems);
 
       this.syncStateRepo.upsert({
         tokenChain: this.tokenChain,
         lastSyncedBlock: normalizeHexBlock(batch.lastBlock),
+        lastTransactionHash: lastItem?.transactionHash ?? null,
+        lastLogIndex: lastItem?.logIndex ?? null,
         updatedAt: this.clock(),
       });
 

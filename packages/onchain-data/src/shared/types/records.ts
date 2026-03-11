@@ -15,5 +15,7 @@ export type TokenTransferRecord = {
 export type TokenTransferSyncState = {
   tokenChain: SupportedTokenChain;
   lastSyncedBlock: string;
+  lastTransactionHash?: string | null;
+  lastLogIndex?: number | null;
   updatedAt: string;
 };

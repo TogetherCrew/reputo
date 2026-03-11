@@ -12,6 +12,8 @@ export type TokenTransferRow = {
 export type TokenTransferSyncStateRow = {
   token_chain: string;
   last_synced_block: string;
+  last_transaction_hash: string | null;
+  last_log_index: number | null;
   updated_at: string;
 };
 
@@ -31,6 +33,8 @@ CREATE TABLE IF NOT EXISTS token_transfers (
 CREATE TABLE IF NOT EXISTS token_transfer_sync_state (
   token_chain TEXT PRIMARY KEY,
   last_synced_block TEXT NOT NULL,
+  last_transaction_hash TEXT,
+  last_log_index INTEGER,
   updated_at TEXT NOT NULL
 );
 `;

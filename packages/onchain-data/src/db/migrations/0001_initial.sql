@@ -13,5 +13,7 @@ CREATE TABLE IF NOT EXISTS token_transfers (
 CREATE TABLE IF NOT EXISTS token_transfer_sync_state (
   token_chain TEXT PRIMARY KEY,
   last_synced_block TEXT NOT NULL,
+  last_transaction_hash TEXT,
+  last_log_index INTEGER,
   updated_at TEXT NOT NULL
 );
