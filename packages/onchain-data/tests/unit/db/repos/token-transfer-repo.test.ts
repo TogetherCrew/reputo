@@ -60,7 +60,7 @@ describe('TokenTransferRepository', () => {
           logIndex: 0,
           fromAddress: sender,
           toAddress: receiver,
-          blockNumber: 100,
+          blockNumber: '0x64',
         }),
         createMockTokenTransferRecord({
           id: 'r2',
@@ -68,7 +68,7 @@ describe('TokenTransferRepository', () => {
           logIndex: 0,
           fromAddress: receiver,
           toAddress: sender,
-          blockNumber: 200,
+          blockNumber: '0xc8',
         }),
         createMockTokenTransferRecord({
           id: 'r3',
@@ -76,7 +76,7 @@ describe('TokenTransferRepository', () => {
           logIndex: 0,
           fromAddress: sender,
           toAddress: receiver,
-          blockNumber: 300,
+          blockNumber: '0x12c',
         }),
       ]);
     });
@@ -113,28 +113,28 @@ describe('TokenTransferRepository', () => {
       const results = repo.findByAddress({
         tokenChain: SupportedTokenChain.FET_ETHEREUM,
         address: sender,
-        fromBlock: 200,
+        fromBlock: '0xc8',
       });
       expect(results).toHaveLength(2);
-      expect(results.every((r) => r.blockNumber >= 200)).toBe(true);
+      expect(results.every((r) => BigInt(r.blockNumber) >= BigInt('0xc8'))).toBe(true);
     });
 
     it('filters by toBlock', () => {
       const results = repo.findByAddress({
         tokenChain: SupportedTokenChain.FET_ETHEREUM,
         address: sender,
-        toBlock: 200,
+        toBlock: '0xc8',
       });
       expect(results).toHaveLength(2);
-      expect(results.every((r) => r.blockNumber <= 200)).toBe(true);
+      expect(results.every((r) => BigInt(r.blockNumber) <= BigInt('0xc8'))).toBe(true);
     });
 
     it('filters by both fromBlock and toBlock', () => {
       const results = repo.findByAddress({
         tokenChain: SupportedTokenChain.FET_ETHEREUM,
         address: sender,
-        fromBlock: 100,
-        toBlock: 200,
+        fromBlock: '0x64',
+        toBlock: '0xc8',
       });
       expect(results).toHaveLength(2);
     });
@@ -161,7 +161,7 @@ describe('TokenTransferRepository', () => {
         address: sender,
       });
       for (let i = 1; i < results.length; i++) {
-        expect(results[i].blockNumber).toBeGreaterThanOrEqual(results[i - 1].blockNumber);
+        expect(BigInt(results[i].blockNumber)).toBeGreaterThanOrEqual(BigInt(results[i - 1].blockNumber));
       }
     });
   });

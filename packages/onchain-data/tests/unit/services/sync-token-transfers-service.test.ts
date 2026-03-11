@@ -8,6 +8,15 @@ import type { Database } from '../../../src/db/sqlite.js';
 import type { AlchemyEthereumTokenTransferProvider } from '../../../src/providers/ethereum/alchemy-ethereum-token-transfer-provider.js';
 import { DefaultSyncTokenTransfersService } from '../../../src/services/sync-token-transfers-service.js';
 import { SupportedTokenChain, TOKEN_CHAIN_METADATA, TOKEN_TRANSFER_START_BLOCKS } from '../../../src/shared/index.js';
+
+/** FET_ETHEREUM start block (0xa7d13c); tests need toBlock >= this for sync to run. */
+const FET_START_BLOCK = TOKEN_TRANSFER_START_BLOCKS[SupportedTokenChain.FET_ETHEREUM];
+const FET_START_BLOCK_NUM = parseInt(FET_START_BLOCK, 16);
+
+function blockToHex(n: number): string {
+  return `0x${n.toString(16)}`;
+}
+
 import { closeTestDatabase, createTestDatabase } from '../../utils/db-helpers.js';
 import { createMockAlchemyTransfer } from '../../utils/mock-helpers.js';
 
@@ -27,7 +36,7 @@ function createMockProvider(
   overrides?: Partial<AlchemyEthereumTokenTransferProvider>,
 ): AlchemyEthereumTokenTransferProvider {
   return {
-    getToBlock: vi.fn().mockResolvedValue(8000000),
+    getToBlock: vi.fn().mockResolvedValue(blockToHex(8000000)),
     fetchTokenTransfers: overrides?.fetchTokenTransfers ?? async function* () {},
     ...overrides,
   };
@@ -72,7 +81,11 @@ describe('DefaultSyncTokenTransfersService', () => {
   });
 
   it('first sync starts from package-owned startBlock', async () => {
-    const provider = createMockProvider();
+    const fetchTokenTransfers = vi.fn(async function* () {});
+    const provider = createMockProvider({
+      getToBlock: vi.fn().mockResolvedValue(blockToHex(FET_START_BLOCK_NUM + 100)),
+      fetchTokenTransfers,
+    });
 
     const service = new DefaultSyncTokenTransfersService(
       SupportedTokenChain.FET_ETHEREUM,
@@ -85,16 +98,22 @@ describe('DefaultSyncTokenTransfersService', () => {
 
     const result = await service.sync();
     expect(result.fromBlock).toBe(TOKEN_TRANSFER_START_BLOCKS[SupportedTokenChain.FET_ETHEREUM]);
+    expect(fetchTokenTransfers).toHaveBeenCalledWith({
+      contractAddress: TOKEN_CHAIN_METADATA[SupportedTokenChain.FET_ETHEREUM].contractAddress,
+      fromBlock: TOKEN_TRANSFER_START_BLOCKS[SupportedTokenChain.FET_ETHEREUM],
+      toBlock: blockToHex(FET_START_BLOCK_NUM + 100),
+    });
   });
 
-  it('later sync starts from lastSyncedBlock + 1', async () => {
+  it('later sync resumes from lastSyncedBlock exactly', async () => {
     syncStateRepo.upsert({
       tokenChain: SupportedTokenChain.FET_ETHEREUM,
-      lastSyncedBlock: 7500000,
+      lastSyncedBlock: blockToHex(7500000),
       updatedAt: '2024-01-14T10:00:00.000Z',
     });
 
-    const provider = createMockProvider();
+    const fetchTokenTransfers = vi.fn(async function* () {});
+    const provider = createMockProvider({ fetchTokenTransfers });
 
     const service = new DefaultSyncTokenTransfersService(
       SupportedTokenChain.FET_ETHEREUM,
@@ -106,12 +125,17 @@ describe('DefaultSyncTokenTransfersService', () => {
     );
 
     const result = await service.sync();
-    expect(result.fromBlock).toBe(7500001);
+    expect(result.fromBlock).toBe(blockToHex(7500000));
+    expect(fetchTokenTransfers).toHaveBeenCalledWith({
+      contractAddress: TOKEN_CHAIN_METADATA[SupportedTokenChain.FET_ETHEREUM].contractAddress,
+      fromBlock: blockToHex(7500000),
+      toBlock: blockToHex(8000000),
+    });
   });
 
   it('provider getToBlock() value is used as sync upper bound', async () => {
     const provider = createMockProvider({
-      getToBlock: vi.fn().mockResolvedValue(9999999),
+      getToBlock: vi.fn().mockResolvedValue(blockToHex(9999999)),
     });
 
     const service = new DefaultSyncTokenTransfersService(
@@ -124,18 +148,18 @@ describe('DefaultSyncTokenTransfersService', () => {
     );
 
     const result = await service.sync();
-    expect(result.toBlock).toBe(9999999);
+    expect(result.toBlock).toBe(blockToHex(9999999));
   });
 
   it('returns zero insertedCount when fromBlock > toBlock', async () => {
     syncStateRepo.upsert({
       tokenChain: SupportedTokenChain.FET_ETHEREUM,
-      lastSyncedBlock: 9000000,
+      lastSyncedBlock: blockToHex(9000000),
       updatedAt: '2024-01-14T10:00:00.000Z',
     });
 
     const provider = createMockProvider({
-      getToBlock: vi.fn().mockResolvedValue(8000000),
+      getToBlock: vi.fn().mockResolvedValue(blockToHex(8000000)),
     });
 
     const service = new DefaultSyncTokenTransfersService(
@@ -149,14 +173,16 @@ describe('DefaultSyncTokenTransfersService', () => {
 
     const result = await service.sync();
     expect(result.insertedCount).toBe(0);
-    expect(result.fromBlock).toBe(9000001);
-    expect(result.toBlock).toBe(8000000);
+    expect(result.fromBlock).toBe(blockToHex(9000000));
+    expect(result.toBlock).toBe(blockToHex(8000000));
   });
 
   it('inserts transfers and updates sync state per batch', async () => {
+    const block1 = FET_START_BLOCK_NUM;
+    const block2 = FET_START_BLOCK_NUM + 1;
     const transfers = [
       createMockAlchemyTransfer({
-        blockNum: '0x6e9875',
+        blockNum: blockToHex(block1),
         uniqueId: '0xaaa:log:0x0',
         hash: '0xaaa',
         from: '0x1111111111111111111111111111111111111111',
@@ -164,7 +190,7 @@ describe('DefaultSyncTokenTransfersService', () => {
         value: 50,
       }),
       createMockAlchemyTransfer({
-        blockNum: '0x6e9876',
+        blockNum: blockToHex(block2),
         uniqueId: '0xbbb:log:0x0',
         hash: '0xbbb',
         from: '0x3333333333333333333333333333333333333333',
@@ -173,12 +199,13 @@ describe('DefaultSyncTokenTransfersService', () => {
       }),
     ];
 
+    const toBlock = FET_START_BLOCK_NUM + 100;
     async function* mockFetch() {
-      yield { items: transfers, lastBlock: 7280000 };
+      yield { items: transfers, lastBlock: blockToHex(block2) };
     }
 
     const provider = createMockProvider({
-      getToBlock: vi.fn().mockResolvedValue(7280000),
+      getToBlock: vi.fn().mockResolvedValue(blockToHex(toBlock)),
       fetchTokenTransfers: mockFetch,
     });
 
@@ -195,22 +222,23 @@ describe('DefaultSyncTokenTransfersService', () => {
     expect(result.insertedCount).toBe(2);
 
     const syncState = syncStateRepo.findByTokenChain(SupportedTokenChain.FET_ETHEREUM);
-    expect(syncState?.lastSyncedBlock).toBe(7280000);
+    expect(syncState?.lastSyncedBlock).toBe(blockToHex(block2));
   });
 
   it('duplicate transfer rows are ignored', async () => {
     const transfer = createMockAlchemyTransfer({
-      blockNum: '0x6e9875',
+      blockNum: FET_START_BLOCK,
       uniqueId: '0xdup:log:0x0',
       hash: '0xdup',
     });
 
+    const toBlock = FET_START_BLOCK_NUM + 100;
     async function* mockFetch() {
-      yield { items: [transfer, transfer], lastBlock: 7280000 };
+      yield { items: [transfer, transfer], lastBlock: FET_START_BLOCK };
     }
 
     const provider = createMockProvider({
-      getToBlock: vi.fn().mockResolvedValue(7280000),
+      getToBlock: vi.fn().mockResolvedValue(blockToHex(toBlock)),
       fetchTokenTransfers: mockFetch,
     });
 
@@ -228,31 +256,34 @@ describe('DefaultSyncTokenTransfersService', () => {
   });
 
   it('handles multiple batches correctly', async () => {
+    const block1 = FET_START_BLOCK_NUM;
+    const block2 = FET_START_BLOCK_NUM + 1;
+    const toBlock = FET_START_BLOCK_NUM + 100;
     async function* mockFetch() {
       yield {
         items: [
           createMockAlchemyTransfer({
-            blockNum: '0x6e9875',
+            blockNum: blockToHex(block1),
             uniqueId: '0xfirst:log:0x0',
             hash: '0xfirst',
           }),
         ],
-        lastBlock: 7270000,
+        lastBlock: blockToHex(block1),
       };
       yield {
         items: [
           createMockAlchemyTransfer({
-            blockNum: '0x6f4241',
+            blockNum: blockToHex(block2),
             uniqueId: '0xsecond:log:0x0',
             hash: '0xsecond',
           }),
         ],
-        lastBlock: 7280000,
+        lastBlock: blockToHex(block2),
       };
     }
 
     const provider = createMockProvider({
-      getToBlock: vi.fn().mockResolvedValue(7280000),
+      getToBlock: vi.fn().mockResolvedValue(blockToHex(toBlock)),
       fetchTokenTransfers: mockFetch,
     });
 
@@ -269,6 +300,6 @@ describe('DefaultSyncTokenTransfersService', () => {
     expect(result.insertedCount).toBe(2);
 
     const syncState = syncStateRepo.findByTokenChain(SupportedTokenChain.FET_ETHEREUM);
-    expect(syncState?.lastSyncedBlock).toBe(7280000);
+    expect(syncState?.lastSyncedBlock).toBe(blockToHex(block2));
   });
 });

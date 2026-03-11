@@ -8,7 +8,9 @@ import type { AlchemyEthereumTokenTransferProvider } from '../providers/ethereum
 import { createAlchemyEthereumTokenTransferProvider } from '../providers/ethereum/alchemy-ethereum-token-transfer-provider.js';
 import type { AlchemyAssetTransfer } from '../providers/ethereum/alchemy-types.js';
 import {
+  compareHexBlocks,
   normalizeEvmAddress,
+  normalizeHexBlock,
   type SupportedTokenChain,
   TOKEN_CHAIN_METADATA,
   type TokenTransferRecord,
@@ -16,8 +18,8 @@ import {
 
 export type SyncTokenTransfersResult = {
   tokenChain: SupportedTokenChain;
-  fromBlock: number;
-  toBlock: number;
+  fromBlock: string;
+  toBlock: string;
   insertedCount: number;
 };
 
@@ -57,8 +59,13 @@ export class DefaultSyncTokenTransfersService implements SyncTokenTransfersServi
     const metadata = TOKEN_CHAIN_METADATA[this.tokenChain];
     const { fromBlock, toBlock } = await this.resolveSyncRange(metadata.startBlock);
 
-    if (fromBlock > toBlock) {
-      return { tokenChain: this.tokenChain, fromBlock, toBlock, insertedCount: 0 };
+    if (compareHexBlocks(fromBlock, toBlock) > 0) {
+      return {
+        tokenChain: this.tokenChain,
+        fromBlock,
+        toBlock,
+        insertedCount: 0,
+      };
     }
 
     let insertedCount = 0;
@@ -71,30 +78,36 @@ export class DefaultSyncTokenTransfersService implements SyncTokenTransfersServi
       insertedCount += this.persistBatch(metadata.contractAddress, batch);
     }
 
-    return { tokenChain: this.tokenChain, fromBlock, toBlock, insertedCount };
+    return {
+      tokenChain: this.tokenChain,
+      fromBlock,
+      toBlock,
+      insertedCount,
+    };
   }
 
   close(): void {
     this.db.close();
   }
 
-  private async resolveSyncRange(startBlock: number): Promise<{
-    fromBlock: number;
-    toBlock: number;
+  private async resolveSyncRange(startBlock: string): Promise<{
+    fromBlock: string;
+    toBlock: string;
   }> {
+    console.log(startBlock);
     const syncState = this.syncStateRepo.findByTokenChain(this.tokenChain);
-    const fromBlock = syncState ? syncState.lastSyncedBlock + 1 : startBlock;
-    const toBlock = await this.provider.getToBlock();
+    const fromBlock = syncState ? normalizeHexBlock(syncState.lastSyncedBlock) : normalizeHexBlock(startBlock);
+    console.log(syncState, fromBlock);
+    const toBlock = normalizeHexBlock(await this.provider.getToBlock());
     return { fromBlock, toBlock };
   }
 
-  private persistBatch(contractAddress: string, batch: { items: AlchemyAssetTransfer[]; lastBlock: number }): number {
+  private persistBatch(contractAddress: string, batch: { items: AlchemyAssetTransfer[]; lastBlock: string }): number {
     const normalizedItems = batch.items.map((transfer) =>
       normalizeAlchemyEthereumTransfer({
         tokenChain: this.tokenChain,
         contractAddress,
         transfer,
-        createdAt: this.clock(),
       }),
     );
 
@@ -103,7 +116,7 @@ export class DefaultSyncTokenTransfersService implements SyncTokenTransfersServi
 
       this.syncStateRepo.upsert({
         tokenChain: this.tokenChain,
-        lastSyncedBlock: batch.lastBlock,
+        lastSyncedBlock: normalizeHexBlock(batch.lastBlock),
         updatedAt: this.clock(),
       });
 
@@ -116,22 +129,19 @@ export function normalizeAlchemyEthereumTransfer(input: {
   tokenChain: SupportedTokenChain;
   contractAddress: string;
   transfer: AlchemyAssetTransfer;
-  createdAt?: string;
 }): TokenTransferRecord {
   const logIndex = parseLogIndex(input.transfer.uniqueId);
   return {
     id: `${input.tokenChain}:${input.transfer.hash}:${logIndex}`,
     tokenChain: input.tokenChain,
     contractAddress: normalizeEvmAddress(input.contractAddress),
-    blockNumber: Number(input.transfer.blockNum),
+    blockNumber: normalizeHexBlock(input.transfer.blockNum),
     transactionHash: input.transfer.hash,
     logIndex,
     fromAddress: input.transfer.from ? normalizeEvmAddress(input.transfer.from) : null,
     toAddress: input.transfer.to ? normalizeEvmAddress(input.transfer.to) : null,
     amount: String(input.transfer.value ?? '0'),
     blockTimestamp: input.transfer.metadata?.blockTimestamp ?? null,
-    rawJson: JSON.stringify(input.transfer),
-    createdAt: input.createdAt ?? new Date().toISOString(),
   };
 }
 

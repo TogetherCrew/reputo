@@ -1,5 +1,5 @@
 import type BetterSqlite3 from 'better-sqlite3';
-import type { SupportedTokenChain, TokenTransferSyncState } from '../../shared/index.js';
+import { normalizeHexBlock, type SupportedTokenChain, type TokenTransferSyncState } from '../../shared/index.js';
 import type { TokenTransferSyncStateRow } from '../schema.js';
 
 export interface TokenTransferSyncStateRepository {
@@ -26,7 +26,7 @@ export function createTokenTransferSyncStateRepository(
       if (!row) return null;
       return {
         tokenChain: row.token_chain as SupportedTokenChain,
-        lastSyncedBlock: row.last_synced_block,
+        lastSyncedBlock: normalizeHexBlock(row.last_synced_block),
         updatedAt: row.updated_at,
       };
     },
@@ -34,7 +34,7 @@ export function createTokenTransferSyncStateRepository(
     upsert(input: TokenTransferSyncState): void {
       upsertStmt.run({
         tokenChain: input.tokenChain,
-        lastSyncedBlock: input.lastSyncedBlock,
+        lastSyncedBlock: normalizeHexBlock(input.lastSyncedBlock),
         updatedAt: input.updatedAt,
       });
     },

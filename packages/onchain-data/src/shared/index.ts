@@ -17,4 +17,9 @@ export type {
   TokenTransferSyncState,
 } from './types/index.js';
 
-export { normalizeEvmAddress } from './utils/index.js';
+export {
+  compareHexBlocks,
+  createHexBlockSortKey,
+  normalizeEvmAddress,
+  normalizeHexBlock,
+} from './utils/index.js';

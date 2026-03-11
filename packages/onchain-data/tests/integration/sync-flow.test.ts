@@ -8,7 +8,16 @@ import type { Database } from '../../src/db/sqlite.js';
 import type { AlchemyEthereumTokenTransferProvider } from '../../src/providers/ethereum/alchemy-ethereum-token-transfer-provider.js';
 import type { AlchemyAssetTransfer } from '../../src/providers/ethereum/alchemy-types.js';
 import { DefaultSyncTokenTransfersService } from '../../src/services/sync-token-transfers-service.js';
-import { SupportedTokenChain, TransferDirection } from '../../src/shared/index.js';
+import { SupportedTokenChain, TOKEN_TRANSFER_START_BLOCKS, TransferDirection } from '../../src/shared/index.js';
+
+/** FET_ETHEREUM start block (hex); tests need toBlock >= this for sync to run. */
+const FET_START_BLOCK = TOKEN_TRANSFER_START_BLOCKS[SupportedTokenChain.FET_ETHEREUM];
+const FET_START_BLOCK_NUM = parseInt(FET_START_BLOCK, 16);
+
+function blockToHex(n: number): string {
+  return `0x${n.toString(16)}`;
+}
+
 import { closeTestDatabase, createTestDatabase } from '../utils/db-helpers.js';
 import { createMockAlchemyTransfer } from '../utils/mock-helpers.js';
 
@@ -44,18 +53,21 @@ describe('Sync Flow Integration', () => {
 
   function makeProvider(
     toBlock: number,
-    batchesFn: () => AsyncGenerator<{ items: AlchemyAssetTransfer[]; lastBlock: number }>,
+    batchesFn: () => AsyncGenerator<{ items: AlchemyAssetTransfer[]; lastBlock: string }>,
   ): AlchemyEthereumTokenTransferProvider {
     return {
-      getToBlock: vi.fn().mockResolvedValue(toBlock),
+      getToBlock: vi.fn().mockResolvedValue(blockToHex(toBlock)),
       fetchTokenTransfers: batchesFn,
     };
   }
 
   it('first sync writes transfers and creates sync state', async () => {
+    const block1 = FET_START_BLOCK_NUM;
+    const block2 = FET_START_BLOCK_NUM + 1;
+    const toBlock = FET_START_BLOCK_NUM + 100;
     const transfers = [
       createMockAlchemyTransfer({
-        blockNum: '0x6e9875',
+        blockNum: blockToHex(block1),
         uniqueId: '0xaaa:log:0x0',
         hash: '0xaaa',
         from: '0x1111111111111111111111111111111111111111',
@@ -63,7 +75,7 @@ describe('Sync Flow Integration', () => {
         value: 100,
       }),
       createMockAlchemyTransfer({
-        blockNum: '0x6e9876',
+        blockNum: blockToHex(block2),
         uniqueId: '0xbbb:log:0x1',
         hash: '0xbbb',
         from: '0x3333333333333333333333333333333333333333',
@@ -73,10 +85,10 @@ describe('Sync Flow Integration', () => {
     ];
 
     async function* batches() {
-      yield { items: transfers, lastBlock: 7280000 };
+      yield { items: transfers, lastBlock: blockToHex(block2) };
     }
 
-    const provider = makeProvider(7280000, batches);
+    const provider = makeProvider(toBlock, batches);
     const service = new DefaultSyncTokenTransfersService(
       SupportedTokenChain.FET_ETHEREUM,
       db,
@@ -88,35 +100,39 @@ describe('Sync Flow Integration', () => {
 
     const result = await service.sync();
     expect(result.insertedCount).toBe(2);
+    expect(result.fromBlock).toBe(FET_START_BLOCK);
 
     const syncState = syncStateRepo.findByTokenChain(SupportedTokenChain.FET_ETHEREUM);
     expect(syncState).not.toBeNull();
-    expect(syncState?.lastSyncedBlock).toBe(7280000);
+    expect(syncState?.lastSyncedBlock).toBe(blockToHex(block2));
   });
 
   it('second sync only fetches new blocks', async () => {
+    const lastSynced = FET_START_BLOCK_NUM + 50;
     syncStateRepo.upsert({
       tokenChain: SupportedTokenChain.FET_ETHEREUM,
-      lastSyncedBlock: 7280000,
+      lastSyncedBlock: blockToHex(lastSynced),
       updatedAt: '2024-01-14T00:00:00.000Z',
     });
 
     const fetchFn = vi.fn();
+    const newBlock = lastSynced;
+    const toBlock = FET_START_BLOCK_NUM + 200;
     async function* batches() {
       fetchFn();
       yield {
         items: [
           createMockAlchemyTransfer({
-            blockNum: '0x6f4241',
+            blockNum: blockToHex(newBlock),
             uniqueId: '0xccc:log:0x0',
             hash: '0xccc',
           }),
         ],
-        lastBlock: 7300000,
+        lastBlock: blockToHex(newBlock),
       };
     }
 
-    const provider = makeProvider(7300000, batches);
+    const provider = makeProvider(toBlock, batches);
     const service = new DefaultSyncTokenTransfersService(
       SupportedTokenChain.FET_ETHEREUM,
       db,
@@ -127,26 +143,28 @@ describe('Sync Flow Integration', () => {
     );
 
     const result = await service.sync();
-    expect(result.fromBlock).toBe(7280001);
-    expect(result.toBlock).toBe(7300000);
+    expect(result.fromBlock).toBe(blockToHex(lastSynced));
+    expect(result.toBlock).toBe(blockToHex(toBlock));
     expect(result.insertedCount).toBe(1);
   });
 
   it('failure inside a batch does not update sync state beyond committed data', async () => {
+    const block1 = FET_START_BLOCK_NUM;
+    const toBlock = FET_START_BLOCK_NUM + 100;
     const transfer1 = createMockAlchemyTransfer({
-      blockNum: '0x6e9875',
+      blockNum: blockToHex(block1),
       uniqueId: '0xfirst:log:0x0',
       hash: '0xfirst',
     });
 
     let batchIndex = 0;
     async function* batches() {
-      yield { items: [transfer1], lastBlock: 7270000 };
+      yield { items: [transfer1], lastBlock: blockToHex(block1) };
       batchIndex++;
-      throw new Error('Provider failure on second batch');
+      throw new Error('Provider failure');
     }
 
-    const provider = makeProvider(7280000, batches);
+    const provider = makeProvider(toBlock, batches);
     const service = new DefaultSyncTokenTransfersService(
       SupportedTokenChain.FET_ETHEREUM,
       db,
@@ -159,7 +177,7 @@ describe('Sync Flow Integration', () => {
     await expect(service.sync()).rejects.toThrow('Provider failure');
 
     const syncState = syncStateRepo.findByTokenChain(SupportedTokenChain.FET_ETHEREUM);
-    expect(syncState?.lastSyncedBlock).toBe(7270000);
+    expect(syncState?.lastSyncedBlock).toBe(blockToHex(block1));
     expect(batchIndex).toBe(1);
   });
 
@@ -167,10 +185,13 @@ describe('Sync Flow Integration', () => {
     const addr = '0xaaaa000000000000000000000000000000000001';
     const other = '0xbbbb000000000000000000000000000000000002';
 
-    // 0x6ecf30 = 7262000, 0x6ecf31 = 7262001, 0x6ecf32 = 7262002
+    const block1 = FET_START_BLOCK_NUM;
+    const block2 = FET_START_BLOCK_NUM + 1;
+    const block3 = FET_START_BLOCK_NUM + 2;
+    const toBlock = FET_START_BLOCK_NUM + 100;
     const transfers = [
       createMockAlchemyTransfer({
-        blockNum: '0x6ecf30',
+        blockNum: blockToHex(block1),
         uniqueId: '0xout1:log:0x0',
         hash: '0xout1',
         from: addr,
@@ -178,7 +199,7 @@ describe('Sync Flow Integration', () => {
         value: 10,
       }),
       createMockAlchemyTransfer({
-        blockNum: '0x6ecf31',
+        blockNum: blockToHex(block2),
         uniqueId: '0xin1:log:0x0',
         hash: '0xin1',
         from: other,
@@ -186,7 +207,7 @@ describe('Sync Flow Integration', () => {
         value: 20,
       }),
       createMockAlchemyTransfer({
-        blockNum: '0x6ecf32',
+        blockNum: blockToHex(block3),
         uniqueId: '0xout2:log:0x0',
         hash: '0xout2',
         from: addr,
@@ -196,10 +217,10 @@ describe('Sync Flow Integration', () => {
     ];
 
     async function* batches() {
-      yield { items: transfers, lastBlock: 7280000 };
+      yield { items: transfers, lastBlock: blockToHex(block3) };
     }
 
-    const provider = makeProvider(7280000, batches);
+    const provider = makeProvider(toBlock, batches);
     const service = new DefaultSyncTokenTransfersService(
       SupportedTokenChain.FET_ETHEREUM,
       db,
@@ -234,16 +255,16 @@ describe('Sync Flow Integration', () => {
     const rangeFiltered = transferRepo.findByAddress({
       tokenChain: SupportedTokenChain.FET_ETHEREUM,
       address: addr,
-      fromBlock: 7262000,
-      toBlock: 7262001,
+      fromBlock: blockToHex(block1),
+      toBlock: blockToHex(block2),
     });
     expect(rangeFiltered).toHaveLength(2);
 
     const noResults = transferRepo.findByAddress({
       tokenChain: SupportedTokenChain.FET_ETHEREUM,
       address: addr,
-      fromBlock: 9000000,
-      toBlock: 9999999,
+      fromBlock: blockToHex(FET_START_BLOCK_NUM + 1_000_000),
+      toBlock: blockToHex(FET_START_BLOCK_NUM + 2_000_000),
     });
     expect(noResults).toHaveLength(0);
   });

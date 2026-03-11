@@ -28,15 +28,13 @@ export function createMockTokenTransferRecord(overrides?: Partial<TokenTransferR
     id: 'fet-ethereum:0xabc123:0',
     tokenChain: SupportedTokenChain.FET_ETHEREUM,
     contractAddress: '0xaea46a60368a7bd060eec7df8cba43b7ef41ad85',
-    blockNumber: 7261990,
+    blockNumber: '0x6ecf26',
     transactionHash: '0xabc123',
     logIndex: 0,
     fromAddress: '0x1234567890abcdef1234567890abcdef12345678',
     toAddress: '0xabcdef1234567890abcdef1234567890abcdef12',
     amount: '100',
     blockTimestamp: '2024-01-15T10:30:00.000Z',
-    rawJson: '{}',
-    createdAt: '2024-01-15T10:30:00.000Z',
     ...overrides,
   };
 }
@@ -44,7 +42,7 @@ export function createMockTokenTransferRecord(overrides?: Partial<TokenTransferR
 export function createMockSyncState(overrides?: Partial<TokenTransferSyncState>): TokenTransferSyncState {
   return {
     tokenChain: SupportedTokenChain.FET_ETHEREUM,
-    lastSyncedBlock: 7261989,
+    lastSyncedBlock: '0x6ecf25',
     updatedAt: '2024-01-15T10:30:00.000Z',
     ...overrides,
   };

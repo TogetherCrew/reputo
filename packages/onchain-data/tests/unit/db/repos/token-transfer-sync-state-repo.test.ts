@@ -27,14 +27,14 @@ describe('TokenTransferSyncStateRepository', () => {
     it('returns sync state after upsert', () => {
       repo.upsert({
         tokenChain: SupportedTokenChain.FET_ETHEREUM,
-        lastSyncedBlock: 1000,
+        lastSyncedBlock: '0x3e8',
         updatedAt: '2024-01-15T10:00:00.000Z',
       });
 
       const result = repo.findByTokenChain(SupportedTokenChain.FET_ETHEREUM);
       expect(result).toEqual({
         tokenChain: SupportedTokenChain.FET_ETHEREUM,
-        lastSyncedBlock: 1000,
+        lastSyncedBlock: '0x3e8',
         updatedAt: '2024-01-15T10:00:00.000Z',
       });
     });
@@ -44,29 +44,29 @@ describe('TokenTransferSyncStateRepository', () => {
     it('creates new sync state', () => {
       repo.upsert({
         tokenChain: SupportedTokenChain.FET_ETHEREUM,
-        lastSyncedBlock: 5000,
+        lastSyncedBlock: '0x1388',
         updatedAt: '2024-01-15T10:00:00.000Z',
       });
 
       const result = repo.findByTokenChain(SupportedTokenChain.FET_ETHEREUM);
-      expect(result?.lastSyncedBlock).toBe(5000);
+      expect(result?.lastSyncedBlock).toBe('0x1388');
     });
 
     it('updates existing sync state', () => {
       repo.upsert({
         tokenChain: SupportedTokenChain.FET_ETHEREUM,
-        lastSyncedBlock: 5000,
+        lastSyncedBlock: '0x1388',
         updatedAt: '2024-01-15T10:00:00.000Z',
       });
 
       repo.upsert({
         tokenChain: SupportedTokenChain.FET_ETHEREUM,
-        lastSyncedBlock: 10000,
+        lastSyncedBlock: '0x2710',
         updatedAt: '2024-01-15T11:00:00.000Z',
       });
 
       const result = repo.findByTokenChain(SupportedTokenChain.FET_ETHEREUM);
-      expect(result?.lastSyncedBlock).toBe(10000);
+      expect(result?.lastSyncedBlock).toBe('0x2710');
       expect(result?.updatedAt).toBe('2024-01-15T11:00:00.000Z');
     });
   });

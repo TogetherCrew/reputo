@@ -37,7 +37,7 @@ describe('AlchemyEthereumTokenTransferProvider', () => {
   });
 
   describe('getToBlock', () => {
-    it('returns finalized block number', async () => {
+    it('returns finalized block number as hex', async () => {
       mockRequest.mockResolvedValueOnce(
         mockJsonRpcResponse({ number: '0x1234', hash: '0xabc', timestamp: '0x5f5e100' }) as never,
       );
@@ -45,7 +45,7 @@ describe('AlchemyEthereumTokenTransferProvider', () => {
       const provider = createAlchemyEthereumTokenTransferProvider('test-key');
       const block = await provider.getToBlock();
 
-      expect(block).toBe(0x1234);
+      expect(block).toBe('0x1234');
       expect(mockRequest).toHaveBeenCalledWith(
         'https://eth-mainnet.g.alchemy.com/v2/test-key',
         expect.objectContaining({
@@ -90,22 +90,27 @@ describe('AlchemyEthereumTokenTransferProvider', () => {
       );
 
       const provider = createAlchemyEthereumTokenTransferProvider('test-key');
-      const batches: Array<{ items: unknown[]; lastBlock: number }> = [];
+      const batches: Array<{ items: unknown[]; lastBlock: string }> = [];
 
       for await (const batch of provider.fetchTokenTransfers({
         contractAddress: '0xcontract',
-        fromBlock: 256,
-        toBlock: 512,
+        fromBlock: '0x100',
+        toBlock: '0x200',
       })) {
         batches.push(batch);
       }
 
       expect(batches).toHaveLength(1);
       expect(batches[0].items).toHaveLength(1);
-      expect(batches[0].lastBlock).toBe(512);
+      expect(batches[0].lastBlock).toBe('0x100');
+
+      const callBody = JSON.parse((mockRequest.mock.calls[0][1] as { body: string }).body);
+      expect(callBody.params[0].fromBlock).toBe('0x100');
+      expect(callBody.params[0].toBlock).toBe('0x200');
+      expect(callBody.params[0].withMetadata).toBe(true);
     });
 
-    it('handles pagination within a single window', async () => {
+    it('yields one batch per page (store-and-iterate every 1000 records)', async () => {
       mockRequest
         .mockResolvedValueOnce(
           mockJsonRpcResponse({
@@ -146,39 +151,44 @@ describe('AlchemyEthereumTokenTransferProvider', () => {
         );
 
       const provider = createAlchemyEthereumTokenTransferProvider('test-key');
-      const batches: Array<{ items: unknown[]; lastBlock: number }> = [];
+      const batches: Array<{ items: unknown[]; lastBlock: string }> = [];
 
       for await (const batch of provider.fetchTokenTransfers({
         contractAddress: '0xcontract',
-        fromBlock: 256,
-        toBlock: 512,
-      })) {
-        batches.push(batch);
-      }
-
-      expect(batches).toHaveLength(1);
-      expect(batches[0].items).toHaveLength(2);
-    });
-
-    it('yields multiple batches for multiple windows', async () => {
-      mockRequest
-        .mockResolvedValueOnce(mockJsonRpcResponse({ transfers: [] }) as never)
-        .mockResolvedValueOnce(mockJsonRpcResponse({ transfers: [] }) as never);
-
-      const provider = createAlchemyEthereumTokenTransferProvider('test-key');
-      const batches: Array<{ items: unknown[]; lastBlock: number }> = [];
-
-      for await (const batch of provider.fetchTokenTransfers({
-        contractAddress: '0xcontract',
-        fromBlock: 0,
-        toBlock: 3999,
+        fromBlock: '0x100',
+        toBlock: '0x200',
       })) {
         batches.push(batch);
       }
 
       expect(batches).toHaveLength(2);
-      expect(batches[0].lastBlock).toBe(1999);
-      expect(batches[1].lastBlock).toBe(3999);
+      expect(batches[0].items).toHaveLength(1);
+      expect(batches[0].lastBlock).toBe('0x100');
+      expect(batches[1].items).toHaveLength(1);
+      expect(batches[1].lastBlock).toBe('0x101');
+
+      const firstCallBody = JSON.parse((mockRequest.mock.calls[0][1] as { body: string }).body);
+      expect(firstCallBody.params[0].fromBlock).toBe('0x100');
+      expect(firstCallBody.params[0].toBlock).toBe('0x200');
+    });
+
+    it('yields one batch for empty range with lastBlock = toBlock', async () => {
+      mockRequest.mockResolvedValueOnce(mockJsonRpcResponse({ transfers: [] }) as never);
+
+      const provider = createAlchemyEthereumTokenTransferProvider('test-key');
+      const batches: Array<{ items: unknown[]; lastBlock: string }> = [];
+
+      for await (const batch of provider.fetchTokenTransfers({
+        contractAddress: '0xcontract',
+        fromBlock: '0x0',
+        toBlock: '0xf9f',
+      })) {
+        batches.push(batch);
+      }
+
+      expect(batches).toHaveLength(1);
+      expect(batches[0].items).toHaveLength(0);
+      expect(batches[0].lastBlock).toBe('0xf9f');
     });
   });
 

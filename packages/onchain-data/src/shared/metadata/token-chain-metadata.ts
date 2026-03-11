@@ -7,7 +7,7 @@ export type TokenChainMetadata = {
   token: SupportedToken;
   chain: SupportedChain;
   contractAddress: string;
-  startBlock: number;
+  startBlock: string;
 };
 
 export const TOKEN_CHAIN_METADATA: Record<SupportedTokenChain, TokenChainMetadata> = {

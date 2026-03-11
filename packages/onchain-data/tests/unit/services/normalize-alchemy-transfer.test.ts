@@ -4,8 +4,6 @@ import { SupportedTokenChain } from '../../../src/shared/index.js';
 import { createMockAlchemyTransfer } from '../../utils/mock-helpers.js';
 
 describe('normalizeAlchemyEthereumTransfer', () => {
-  const fixedCreatedAt = '2024-01-15T12:00:00.000Z';
-
   it('normalizes a standard transfer', () => {
     const transfer = createMockAlchemyTransfer({
       blockNum: '0x100',
@@ -21,21 +19,30 @@ describe('normalizeAlchemyEthereumTransfer', () => {
       tokenChain: SupportedTokenChain.FET_ETHEREUM,
       contractAddress: '0xAeA46A60368A7bD060eEC7DF8CBa43b7EF41aD85',
       transfer,
-      createdAt: fixedCreatedAt,
     });
 
     expect(result.id).toBe('fet-ethereum:0xdeadbeef:3');
     expect(result.tokenChain).toBe(SupportedTokenChain.FET_ETHEREUM);
     expect(result.contractAddress).toBe('0xaea46a60368a7bd060eec7df8cba43b7ef41ad85');
-    expect(result.blockNumber).toBe(256);
+    expect(result.blockNumber).toBe('0x100');
     expect(result.transactionHash).toBe('0xdeadbeef');
     expect(result.logIndex).toBe(3);
     expect(result.fromAddress).toBe('0xaaaa000000000000000000000000000000000001');
     expect(result.toAddress).toBe('0xbbbb000000000000000000000000000000000002');
     expect(result.amount).toBe('42.5');
     expect(result.blockTimestamp).toBe('2024-01-15T10:30:00.000Z');
-    expect(result.rawJson).toBe(JSON.stringify(transfer));
-    expect(result.createdAt).toBe(fixedCreatedAt);
+  });
+
+  it('sets blockTimestamp to null when metadata is missing', () => {
+    const transfer = createMockAlchemyTransfer({
+      metadata: undefined,
+    });
+    const result = normalizeAlchemyEthereumTransfer({
+      tokenChain: SupportedTokenChain.FET_ETHEREUM,
+      contractAddress: '0xaea46a60368a7bd060eec7df8cba43b7ef41ad85',
+      transfer,
+    });
+    expect(result.blockTimestamp).toBeNull();
   });
 
   it('handles null to address (mint)', () => {
@@ -44,7 +51,6 @@ describe('normalizeAlchemyEthereumTransfer', () => {
       tokenChain: SupportedTokenChain.FET_ETHEREUM,
       contractAddress: '0xaea46a60368a7bd060eec7df8cba43b7ef41ad85',
       transfer,
-      createdAt: fixedCreatedAt,
     });
     expect(result.toAddress).toBeNull();
   });
@@ -55,7 +61,6 @@ describe('normalizeAlchemyEthereumTransfer', () => {
       tokenChain: SupportedTokenChain.FET_ETHEREUM,
       contractAddress: '0xaea46a60368a7bd060eec7df8cba43b7ef41ad85',
       transfer,
-      createdAt: fixedCreatedAt,
     });
     expect(result.amount).toBe('0');
   });
@@ -69,7 +74,6 @@ describe('normalizeAlchemyEthereumTransfer', () => {
       tokenChain: SupportedTokenChain.FET_ETHEREUM,
       contractAddress: '0xAEA46A60368A7BD060EEC7DF8CBA43B7EF41AD85',
       transfer,
-      createdAt: fixedCreatedAt,
     });
     expect(result.contractAddress).toBe('0xaea46a60368a7bd060eec7df8cba43b7ef41ad85');
     expect(result.fromAddress).toBe('0xabcdef0000000000000000000000000000000001');
@@ -84,7 +88,6 @@ describe('normalizeAlchemyEthereumTransfer', () => {
       tokenChain: SupportedTokenChain.FET_ETHEREUM,
       contractAddress: '0xaea46a60368a7bd060eec7df8cba43b7ef41ad85',
       transfer,
-      createdAt: fixedCreatedAt,
     });
     expect(result.logIndex).toBe(10);
   });
@@ -98,7 +101,6 @@ describe('normalizeAlchemyEthereumTransfer', () => {
         tokenChain: SupportedTokenChain.FET_ETHEREUM,
         contractAddress: '0xaea46a60368a7bd060eec7df8cba43b7ef41ad85',
         transfer,
-        createdAt: fixedCreatedAt,
       }),
     ).toThrow('Cannot parse logIndex from uniqueId');
   });

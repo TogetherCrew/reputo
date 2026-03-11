@@ -4,19 +4,17 @@ export type TokenTransferRecord = {
   id: string;
   tokenChain: SupportedTokenChain;
   contractAddress: string;
-  blockNumber: number;
+  blockNumber: string;
   transactionHash: string;
   logIndex: number;
   fromAddress: string | null;
   toAddress: string | null;
   amount: string;
   blockTimestamp: string | null;
-  rawJson: string;
-  createdAt: string;
 };
 
 export type TokenTransferSyncState = {
   tokenChain: SupportedTokenChain;
-  lastSyncedBlock: number;
+  lastSyncedBlock: string;
   updatedAt: string;
 };

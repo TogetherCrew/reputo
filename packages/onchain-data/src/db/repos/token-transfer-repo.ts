@@ -1,19 +1,23 @@
 import type BetterSqlite3 from 'better-sqlite3';
 import {
+  createHexBlockSortKey,
   normalizeEvmAddress,
+  normalizeHexBlock,
   type SupportedTokenChain,
   type TokenTransferRecord,
   TransferDirection,
 } from '../../shared/index.js';
 import type { TokenTransferRow } from '../schema.js';
 
+const BLOCK_SORT_SQL = `substr('${'0'.repeat(64)}' || substr(lower(block_number), 3), -64, 64)`;
+
 export interface TokenTransferRepository {
   insertMany(items: TokenTransferRecord[]): number;
   findByAddress(input: {
     tokenChain: SupportedTokenChain;
     address: string;
-    fromBlock?: number;
-    toBlock?: number;
+    fromBlock?: string;
+    toBlock?: string;
     direction?: TransferDirection;
   }): TokenTransferRecord[];
 }
@@ -21,11 +25,11 @@ export interface TokenTransferRepository {
 export function createTokenTransferRepository(sqlite: BetterSqlite3.Database): TokenTransferRepository {
   const insertStmt = sqlite.prepare(`
     INSERT OR IGNORE INTO token_transfers
-      (id, token_chain, contract_address, block_number, transaction_hash, log_index,
-       from_address, to_address, amount, block_timestamp, raw_json, created_at)
+      (token_chain, contract_address, block_number, transaction_hash, log_index,
+       from_address, to_address, amount, block_timestamp)
     VALUES
-      (@id, @tokenChain, @contractAddress, @blockNumber, @transactionHash, @logIndex,
-       @fromAddress, @toAddress, @amount, @blockTimestamp, @rawJson, @createdAt)
+      (@tokenChain, @contractAddress, @blockNumber, @transactionHash, @logIndex,
+       @fromAddress, @toAddress, @amount, @blockTimestamp)
   `);
 
   return {
@@ -33,18 +37,15 @@ export function createTokenTransferRepository(sqlite: BetterSqlite3.Database): T
       let inserted = 0;
       for (const item of items) {
         const result = insertStmt.run({
-          id: item.id,
           tokenChain: item.tokenChain,
           contractAddress: item.contractAddress,
-          blockNumber: item.blockNumber,
+          blockNumber: normalizeHexBlock(item.blockNumber),
           transactionHash: item.transactionHash,
           logIndex: item.logIndex,
           fromAddress: item.fromAddress,
           toAddress: item.toAddress,
           amount: item.amount,
           blockTimestamp: item.blockTimestamp,
-          rawJson: item.rawJson,
-          createdAt: item.createdAt,
         });
         inserted += result.changes;
       }
@@ -68,15 +69,15 @@ export function createTokenTransferRepository(sqlite: BetterSqlite3.Database): T
       }
 
       if (input.fromBlock !== undefined) {
-        conditions.push('block_number >= @fromBlock');
-        params.fromBlock = input.fromBlock;
+        conditions.push(`${BLOCK_SORT_SQL} >= @fromBlockSortKey`);
+        params.fromBlockSortKey = createHexBlockSortKey(input.fromBlock);
       }
       if (input.toBlock !== undefined) {
-        conditions.push('block_number <= @toBlock');
-        params.toBlock = input.toBlock;
+        conditions.push(`${BLOCK_SORT_SQL} <= @toBlockSortKey`);
+        params.toBlockSortKey = createHexBlockSortKey(input.toBlock);
       }
 
-      const sql = `SELECT * FROM token_transfers WHERE ${conditions.join(' AND ')} ORDER BY block_number ASC, log_index ASC`;
+      const sql = `SELECT * FROM token_transfers WHERE ${conditions.join(' AND ')} ORDER BY ${BLOCK_SORT_SQL} ASC, log_index ASC`;
       const rows = sqlite.prepare(sql).all(params) as TokenTransferRow[];
       return rows.map(rowToRecord);
     },
@@ -85,17 +86,15 @@ export function createTokenTransferRepository(sqlite: BetterSqlite3.Database): T
 
 function rowToRecord(row: TokenTransferRow): TokenTransferRecord {
   return {
-    id: row.id,
+    id: `${row.token_chain}:${row.transaction_hash}:${row.log_index}`,
     tokenChain: row.token_chain as SupportedTokenChain,
     contractAddress: row.contract_address,
-    blockNumber: row.block_number,
+    blockNumber: normalizeHexBlock(row.block_number),
     transactionHash: row.transaction_hash,
     logIndex: row.log_index,
     fromAddress: row.from_address,
     toAddress: row.to_address,
     amount: row.amount,
     blockTimestamp: row.block_timestamp,
-    rawJson: row.raw_json,
-    createdAt: row.created_at,
   };
 }

@@ -1,17 +1,18 @@
 import { request } from 'undici';
 import type { AlchemyAssetTransfer, AlchemyAssetTransfersResponse, AlchemyBlockResponse } from './alchemy-types.js';
 
-const BLOCK_WINDOW_SIZE = 2000;
+/** Alchemy maxCount per page; we yield once per page so sync persists every 1000 records. */
+const ALCHEMY_PAGE_SIZE = 1000;
 const MAX_RETRY_ATTEMPTS = 5;
 const BASE_RETRY_DELAY_MS = 1000;
 const MAX_RETRY_DELAY_MS = 30_000;
 const REQUEST_TIMEOUT_MS = 30_000;
 
 export interface AlchemyEthereumTokenTransferProvider {
-  getToBlock(): Promise<number>;
-  fetchTokenTransfers(input: { contractAddress: string; fromBlock: number; toBlock: number }): AsyncGenerator<{
+  getToBlock(): Promise<string>;
+  fetchTokenTransfers(input: { contractAddress: string; fromBlock: string; toBlock: string }): AsyncGenerator<{
     items: AlchemyAssetTransfer[];
-    lastBlock: number;
+    lastBlock: string;
   }>;
 }
 
@@ -60,36 +61,38 @@ export function createAlchemyEthereumTokenTransferProvider(
   }
 
   return {
-    async getToBlock(): Promise<number> {
+    async getToBlock(): Promise<string> {
       const block = await jsonRpc<AlchemyBlockResponse>('eth_getBlockByNumber', ['finalized', false]);
-      return Number(block.number);
+      return block.number;
     },
 
     async *fetchTokenTransfers(input) {
-      for (let windowStart = input.fromBlock; windowStart <= input.toBlock; windowStart += BLOCK_WINDOW_SIZE) {
-        const windowEnd = Math.min(windowStart + BLOCK_WINDOW_SIZE - 1, input.toBlock);
-        const items: AlchemyAssetTransfer[] = [];
-        let pageKey: string | undefined;
+      const { fromBlock, toBlock, contractAddress } = input;
+      let counter = 0;
+      let pageKey: string | undefined;
+      do {
+        const result = await jsonRpc<AlchemyAssetTransfersResponse>('alchemy_getAssetTransfers', [
+          {
+            fromBlock,
+            toBlock,
+            contractAddresses: [contractAddress],
+            category: ['erc20'],
+            excludeZeroValue: false,
+            order: 'asc',
+            maxCount: toHex(ALCHEMY_PAGE_SIZE),
+            withMetadata: true,
+            ...(pageKey ? { pageKey } : {}),
+          },
+        ]);
 
-        do {
-          const result = await jsonRpc<AlchemyAssetTransfersResponse>('alchemy_getAssetTransfers', [
-            {
-              fromBlock: toHex(windowStart),
-              toBlock: toHex(windowEnd),
-              contractAddresses: [input.contractAddress],
-              category: ['erc20'],
-              excludeZeroValue: false,
-              order: 'asc',
-              maxCount: toHex(1000),
-              ...(pageKey ? { pageKey } : {}),
-            },
-          ]);
-          items.push(...result.transfers);
-          pageKey = result.pageKey;
-        } while (pageKey);
+        const lastBlockInPage =
+          result.transfers.length > 0 ? result.transfers[result.transfers.length - 1].blockNum : toBlock;
 
-        yield { items, lastBlock: windowEnd };
-      }
+        counter++;
+        console.log(result.transfers.length, counter, lastBlockInPage);
+        yield { items: result.transfers, lastBlock: lastBlockInPage };
+        pageKey = result.pageKey;
+      } while (pageKey);
     },
   };
 }
