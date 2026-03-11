@@ -25,10 +25,10 @@ export interface TokenTransferRepository {
 export function createTokenTransferRepository(sqlite: BetterSqlite3.Database): TokenTransferRepository {
   const insertStmt = sqlite.prepare(`
     INSERT OR IGNORE INTO token_transfers
-      (token_chain, contract_address, block_number, transaction_hash, log_index,
+      (token_chain, block_number, transaction_hash, log_index,
        from_address, to_address, amount, block_timestamp)
     VALUES
-      (@tokenChain, @contractAddress, @blockNumber, @transactionHash, @logIndex,
+      (@tokenChain, @blockNumber, @transactionHash, @logIndex,
        @fromAddress, @toAddress, @amount, @blockTimestamp)
   `);
 
@@ -38,7 +38,6 @@ export function createTokenTransferRepository(sqlite: BetterSqlite3.Database): T
       for (const item of items) {
         const result = insertStmt.run({
           tokenChain: item.tokenChain,
-          contractAddress: item.contractAddress,
           blockNumber: normalizeHexBlock(item.blockNumber),
           transactionHash: item.transactionHash,
           logIndex: item.logIndex,
@@ -88,7 +87,6 @@ function rowToRecord(row: TokenTransferRow): TokenTransferRecord {
   return {
     id: `${row.token_chain}:${row.transaction_hash}:${row.log_index}`,
     tokenChain: row.token_chain as SupportedTokenChain,
-    contractAddress: row.contract_address,
     blockNumber: normalizeHexBlock(row.block_number),
     transactionHash: row.transaction_hash,
     logIndex: row.log_index,

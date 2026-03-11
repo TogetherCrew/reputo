@@ -3,7 +3,6 @@ import type { SupportedTokenChain } from '../enums/index.js';
 export type TokenTransferRecord = {
   id: string;
   tokenChain: SupportedTokenChain;
-  contractAddress: string;
   blockNumber: string;
   transactionHash: string;
   logIndex: number;

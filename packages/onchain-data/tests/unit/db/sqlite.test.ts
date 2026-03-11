@@ -112,6 +112,7 @@ CREATE TABLE token_transfer_sync_state (
       expect(transferColumns.some((c) => c.name === 'id')).toBe(false);
       expect(transferColumns.some((c) => c.name === 'raw_json')).toBe(false);
       expect(transferColumns.some((c) => c.name === 'created_at')).toBe(false);
+      expect(transferColumns.some((c) => c.name === 'contract_address')).toBe(false);
 
       const syncStateColumns = db.sqlite.prepare(`PRAGMA table_info(token_transfer_sync_state)`).all() as Array<{
         name: string;

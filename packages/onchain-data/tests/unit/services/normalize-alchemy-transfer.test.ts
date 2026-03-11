@@ -17,13 +17,11 @@ describe('normalizeAlchemyEthereumTransfer', () => {
 
     const result = normalizeAlchemyEthereumTransfer({
       tokenChain: SupportedTokenChain.FET_ETHEREUM,
-      contractAddress: '0xAeA46A60368A7bD060eEC7DF8CBa43b7EF41aD85',
       transfer,
     });
 
     expect(result.id).toBe('fet-ethereum:0xdeadbeef:3');
     expect(result.tokenChain).toBe(SupportedTokenChain.FET_ETHEREUM);
-    expect(result.contractAddress).toBe('0xaea46a60368a7bd060eec7df8cba43b7ef41ad85');
     expect(result.blockNumber).toBe('0x100');
     expect(result.transactionHash).toBe('0xdeadbeef');
     expect(result.logIndex).toBe(3);
@@ -39,7 +37,6 @@ describe('normalizeAlchemyEthereumTransfer', () => {
     });
     const result = normalizeAlchemyEthereumTransfer({
       tokenChain: SupportedTokenChain.FET_ETHEREUM,
-      contractAddress: '0xaea46a60368a7bd060eec7df8cba43b7ef41ad85',
       transfer,
     });
     expect(result.blockTimestamp).toBeNull();
@@ -49,7 +46,6 @@ describe('normalizeAlchemyEthereumTransfer', () => {
     const transfer = createMockAlchemyTransfer({ to: null });
     const result = normalizeAlchemyEthereumTransfer({
       tokenChain: SupportedTokenChain.FET_ETHEREUM,
-      contractAddress: '0xaea46a60368a7bd060eec7df8cba43b7ef41ad85',
       transfer,
     });
     expect(result.toAddress).toBeNull();
@@ -59,7 +55,6 @@ describe('normalizeAlchemyEthereumTransfer', () => {
     const transfer = createMockAlchemyTransfer({ value: null });
     const result = normalizeAlchemyEthereumTransfer({
       tokenChain: SupportedTokenChain.FET_ETHEREUM,
-      contractAddress: '0xaea46a60368a7bd060eec7df8cba43b7ef41ad85',
       transfer,
     });
     expect(result.amount).toBe('0');
@@ -72,10 +67,8 @@ describe('normalizeAlchemyEthereumTransfer', () => {
     });
     const result = normalizeAlchemyEthereumTransfer({
       tokenChain: SupportedTokenChain.FET_ETHEREUM,
-      contractAddress: '0xAEA46A60368A7BD060EEC7DF8CBA43B7EF41AD85',
       transfer,
     });
-    expect(result.contractAddress).toBe('0xaea46a60368a7bd060eec7df8cba43b7ef41ad85');
     expect(result.fromAddress).toBe('0xabcdef0000000000000000000000000000000001');
     expect(result.toAddress).toBe('0xfedcba0000000000000000000000000000000002');
   });
@@ -86,7 +79,6 @@ describe('normalizeAlchemyEthereumTransfer', () => {
     });
     const result = normalizeAlchemyEthereumTransfer({
       tokenChain: SupportedTokenChain.FET_ETHEREUM,
-      contractAddress: '0xaea46a60368a7bd060eec7df8cba43b7ef41ad85',
       transfer,
     });
     expect(result.logIndex).toBe(10);
@@ -99,7 +91,6 @@ describe('normalizeAlchemyEthereumTransfer', () => {
     expect(() =>
       normalizeAlchemyEthereumTransfer({
         tokenChain: SupportedTokenChain.FET_ETHEREUM,
-        contractAddress: '0xaea46a60368a7bd060eec7df8cba43b7ef41ad85',
         transfer,
       }),
     ).toThrow('Cannot parse logIndex from uniqueId');

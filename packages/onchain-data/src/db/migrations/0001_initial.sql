@@ -1,6 +1,5 @@
 CREATE TABLE IF NOT EXISTS token_transfers (
   token_chain TEXT NOT NULL,
-  contract_address TEXT NOT NULL,
   block_number TEXT NOT NULL,
   transaction_hash TEXT NOT NULL,
   log_index INTEGER NOT NULL,

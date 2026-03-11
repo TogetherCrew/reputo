@@ -14,6 +14,7 @@ export function createDatabase(dbPath: string): Database {
   sqlite.exec(INITIAL_MIGRATION);
   migrateLegacyBlockColumns(sqlite);
   migrateDropRedundantTransferColumns(sqlite);
+  migrateDropContractAddress(sqlite);
 
   return {
     sqlite,
@@ -33,7 +34,6 @@ function migrateLegacyBlockColumns(sqlite: BetterSqlite3.Database): void {
       sqlite.exec(`
 CREATE TABLE token_transfers__migrated (
   token_chain TEXT NOT NULL,
-  contract_address TEXT NOT NULL,
   block_number TEXT NOT NULL,
   transaction_hash TEXT NOT NULL,
   log_index INTEGER NOT NULL,
@@ -46,7 +46,6 @@ CREATE TABLE token_transfers__migrated (
 
 INSERT INTO token_transfers__migrated (
   token_chain,
-  contract_address,
   block_number,
   transaction_hash,
   log_index,
@@ -57,7 +56,6 @@ INSERT INTO token_transfers__migrated (
 )
 SELECT
   token_chain,
-  contract_address,
   CASE
     WHEN typeof(block_number) IN ('integer', 'real') THEN printf('0x%x', block_number)
     ELSE '0x' || COALESCE(NULLIF(ltrim(substr(lower(block_number), 3), '0'), ''), '0')
@@ -118,7 +116,6 @@ function migrateDropRedundantTransferColumns(sqlite: BetterSqlite3.Database): vo
     sqlite.exec(`
 CREATE TABLE token_transfers__migrated (
   token_chain TEXT NOT NULL,
-  contract_address TEXT NOT NULL,
   block_number TEXT NOT NULL,
   transaction_hash TEXT NOT NULL,
   log_index INTEGER NOT NULL,
@@ -131,7 +128,6 @@ CREATE TABLE token_transfers__migrated (
 
 INSERT INTO token_transfers__migrated (
   token_chain,
-  contract_address,
   block_number,
   transaction_hash,
   log_index,
@@ -142,7 +138,6 @@ INSERT INTO token_transfers__migrated (
 )
 SELECT
   token_chain,
-  contract_address,
   CASE
     WHEN typeof(block_number) IN ('integer', 'real') THEN printf('0x%x', block_number)
     ELSE '0x' || COALESCE(NULLIF(ltrim(substr(lower(block_number), 3), '0'), ''), '0')
@@ -159,6 +154,52 @@ DROP TABLE token_transfers;
 
 ALTER TABLE token_transfers__migrated RENAME TO token_transfers;
         `);
+  })();
+}
+
+function migrateDropContractAddress(sqlite: BetterSqlite3.Database): void {
+  const hasContractAddress = getColumnType(sqlite, 'token_transfers', 'contract_address') !== null;
+  if (!hasContractAddress) return;
+
+  sqlite.transaction(() => {
+    sqlite.exec(`
+CREATE TABLE token_transfers__no_contract (
+  token_chain TEXT NOT NULL,
+  block_number TEXT NOT NULL,
+  transaction_hash TEXT NOT NULL,
+  log_index INTEGER NOT NULL,
+  from_address TEXT,
+  to_address TEXT,
+  amount TEXT NOT NULL,
+  block_timestamp TEXT,
+  PRIMARY KEY (token_chain, transaction_hash, log_index)
+);
+
+INSERT INTO token_transfers__no_contract (
+  token_chain,
+  block_number,
+  transaction_hash,
+  log_index,
+  from_address,
+  to_address,
+  amount,
+  block_timestamp
+)
+SELECT
+  token_chain,
+  block_number,
+  transaction_hash,
+  log_index,
+  from_address,
+  to_address,
+  amount,
+  block_timestamp
+FROM token_transfers;
+
+DROP TABLE token_transfers;
+
+ALTER TABLE token_transfers__no_contract RENAME TO token_transfers;
+    `);
   })();
 }
 

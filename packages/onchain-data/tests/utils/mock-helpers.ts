@@ -27,7 +27,6 @@ export function createMockTokenTransferRecord(overrides?: Partial<TokenTransferR
   return {
     id: 'fet-ethereum:0xabc123:0',
     tokenChain: SupportedTokenChain.FET_ETHEREUM,
-    contractAddress: '0xaea46a60368a7bd060eec7df8cba43b7ef41ad85',
     blockNumber: '0x6ecf26',
     transactionHash: '0xabc123',
     logIndex: 0,

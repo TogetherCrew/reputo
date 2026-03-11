@@ -75,7 +75,7 @@ export class DefaultSyncTokenTransfersService implements SyncTokenTransfersServi
       fromBlock,
       toBlock,
     })) {
-      insertedCount += this.persistBatch(metadata.contractAddress, batch);
+      insertedCount += this.persistBatch(batch);
     }
 
     return {
@@ -102,11 +102,10 @@ export class DefaultSyncTokenTransfersService implements SyncTokenTransfersServi
     return { fromBlock, toBlock };
   }
 
-  private persistBatch(contractAddress: string, batch: { items: AlchemyAssetTransfer[]; lastBlock: string }): number {
+  private persistBatch(batch: { items: AlchemyAssetTransfer[]; lastBlock: string }): number {
     const normalizedItems = batch.items.map((transfer) =>
       normalizeAlchemyEthereumTransfer({
         tokenChain: this.tokenChain,
-        contractAddress,
         transfer,
       }),
     );
@@ -127,14 +126,12 @@ export class DefaultSyncTokenTransfersService implements SyncTokenTransfersServi
 
 export function normalizeAlchemyEthereumTransfer(input: {
   tokenChain: SupportedTokenChain;
-  contractAddress: string;
   transfer: AlchemyAssetTransfer;
 }): TokenTransferRecord {
   const logIndex = parseLogIndex(input.transfer.uniqueId);
   return {
     id: `${input.tokenChain}:${input.transfer.hash}:${logIndex}`,
     tokenChain: input.tokenChain,
-    contractAddress: normalizeEvmAddress(input.contractAddress),
     blockNumber: normalizeHexBlock(input.transfer.blockNum),
     transactionHash: input.transfer.hash,
     logIndex,
