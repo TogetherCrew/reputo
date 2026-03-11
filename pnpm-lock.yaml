@@ -681,15 +681,6 @@ importers:
       better-sqlite3:
         specifier: 'catalog:'
         version: 11.10.0
-      drizzle-orm:
-        specifier: 'catalog:'
-        version: 0.44.7(@types/better-sqlite3@7.6.13)(better-sqlite3@11.10.0)
-      p-limit:
-        specifier: 'catalog:'
-        version: 6.2.0
-      pino:
-        specifier: 'catalog:'
-        version: 9.14.0
       undici:
         specifier: 'catalog:'
         version: 7.16.0
