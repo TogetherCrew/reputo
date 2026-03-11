@@ -89,6 +89,7 @@ export function createAlchemyEthereumTokenTransferProvider(
     const lastBlock =
       result.transfers.length > 0 ? result.transfers[result.transfers.length - 1].blockNum : input.toBlock;
 
+    console.log(result.transfers.length);
     return {
       items: result.transfers,
       lastBlock,
