@@ -65,8 +65,27 @@ function NumberFieldInner({
     setLocalValue(next)
   }, [field.value])
 
+  const isIntegerField =
+    input.type === "integer" ||
+    (input.step === 1 &&
+      typeof input.min === "number" &&
+      typeof input.max === "number" &&
+      Number.isInteger(input.min) &&
+      Number.isInteger(input.max))
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const raw = e.target.value
+    let raw = e.target.value
+    if (isIntegerField && raw !== "") {
+      const normalized = raw.replace(",", ".")
+      const n = parseFloat(normalized)
+      if (Number.isFinite(n)) {
+        const rounded = Math.round(n)
+        raw = String(rounded)
+        field.onChange(rounded)
+      } else {
+        raw = raw.replace(/\D/g, "")
+      }
+    }
     setLocalValue(raw)
     if (raw === "") field.onChange("")
   }
@@ -75,7 +94,7 @@ function NumberFieldInner({
     hasFocusRef.current = false
     let parsed = fromDisplayValue(localValue)
     if (
-      input.type === "integer" &&
+      isIntegerField &&
       typeof parsed === "number" &&
       Number.isFinite(parsed)
     ) {
@@ -105,7 +124,7 @@ function NumberFieldInner({
         <div className="flex items-center gap-2">
           <Input
             type="text"
-            inputMode={input.type === "integer" ? "numeric" : "decimal"}
+            inputMode={isIntegerField ? "numeric" : "decimal"}
             placeholder={input.description || input.label}
             min={input.min}
             max={input.max}

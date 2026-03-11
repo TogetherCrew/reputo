@@ -246,7 +246,8 @@ function transformInputToFormInput(
       }
 
       const numericType =
-        (fullInput as { type?: string })?.type === "integer"
+        (fullInput as { type?: string })?.type === "integer" ||
+        algoInput.type === "integer"
           ? "integer"
           : "number"
       return {

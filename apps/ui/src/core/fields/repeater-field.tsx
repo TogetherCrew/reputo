@@ -70,16 +70,23 @@ function PropertyField({
   control,
   rowValues,
   onDependentChange,
+  selectedPairsInOtherRows,
 }: {
   prop: FormInputProperty
   fieldPrefix: string
   control: Control<any>
   rowValues?: Record<string, unknown>
   onDependentChange?: (key: string) => void
+  /** When set, token (contract_address) options already selected in other rows are disabled */
+  selectedPairsInOtherRows?: Set<string>
 }) {
   const fieldName = `${fieldPrefix}.${prop.key}`
 
   if (prop.type === "select" && prop.options) {
+    const isTokenSelect =
+      prop.key === "contract_address" &&
+      selectedPairsInOtherRows &&
+      rowValues?.chain_id != null
     return (
       <FormField
         control={control}
@@ -130,11 +137,23 @@ function PropertyField({
               <SelectContent>
                 {(prop.options ?? []).map((option: SelectOption) => {
                   const icon = getIconForProperty(prop, option.value, rowValues)
+                  const pairKey =
+                    isTokenSelect && rowValues?.chain_id != null
+                      ? `${String(rowValues.chain_id)}:${option.value}`
+                      : null
+                  const disabled =
+                    pairKey != null &&
+                    (selectedPairsInOtherRows?.has(pairKey) ?? false)
                   return (
-                    <SelectItem key={option.value} value={option.value}>
+                    <SelectItem
+                      key={option.value}
+                      value={option.value}
+                      disabled={disabled}
+                    >
                       <span className="flex items-center gap-2">
                         {icon && <OptionIcon url={icon} label={option.label} />}
                         {option.label}
+                        {disabled && " (already added)"}
                       </span>
                     </SelectItem>
                   )
@@ -181,6 +200,7 @@ function RepeaterRow({
   control,
   canRemove,
   onRemove,
+  selectedPairsInOtherRows,
 }: {
   index: number
   fieldPrefix: string
@@ -188,6 +208,7 @@ function RepeaterRow({
   control: Control<any>
   canRemove: boolean
   onRemove: () => void
+  selectedPairsInOtherRows?: Set<string>
 }) {
   const { setValue } = useFormContext()
   const rowValues = useWatch({ control, name: fieldPrefix }) as
@@ -222,6 +243,7 @@ function RepeaterRow({
             control={control}
             rowValues={rowValues as Record<string, unknown>}
             onDependentChange={handleDependentChange}
+            selectedPairsInOtherRows={selectedPairsInOtherRows}
           />
         ))}
       </div>
@@ -240,9 +262,35 @@ function RepeaterRow({
   )
 }
 
+function getSelectedPairsInOtherRows(
+  values: Array<Record<string, unknown>> | undefined,
+  rowIndex: number
+): Set<string> {
+  if (!Array.isArray(values)) return new Set()
+  const set = new Set<string>()
+  for (let i = 0; i < values.length; i++) {
+    if (i === rowIndex) continue
+    const row = values[i]
+    const c = row?.chain_id
+    const t = row?.contract_address
+    if (c != null && c !== "" && t != null && t !== "") {
+      set.add(`${String(c)}:${String(t)}`)
+    }
+  }
+  return set
+}
+
 export function RepeaterField({ input, control }: RepeaterFieldProps) {
   const properties = input.itemProperties ?? []
   const minItems = input.minItems ?? 0
+
+  const values = useWatch({ control, name: input.key }) as
+    | Array<Record<string, unknown>>
+    | undefined
+
+  const hasChainTokenPair =
+    properties.some((p) => p.key === "chain_id") &&
+    properties.some((p) => p.key === "contract_address")
 
   const { fields, append, remove } = useFieldArray({
     control,
@@ -279,6 +327,11 @@ export function RepeaterField({ input, control }: RepeaterFieldProps) {
             control={control}
             canRemove={fields.length > minItems}
             onRemove={() => remove(index)}
+            selectedPairsInOtherRows={
+              hasChainTokenPair
+                ? getSelectedPairsInOtherRows(values, index)
+                : undefined
+            }
           />
         ))}
       </div>
