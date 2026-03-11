@@ -45,3 +45,5 @@ coverage/
 *.key
 *.pem
 keyfile.txt
+
+*.db*
