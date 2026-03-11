@@ -111,6 +111,8 @@ export function CreatePresetDialog({
           let inputValue: unknown
           if (value instanceof File) {
             inputValue = ""
+          } else if (input.type === "array" && Array.isArray(value)) {
+            inputValue = value
           } else {
             const raw = value !== undefined && value !== null ? value : ""
             inputValue =

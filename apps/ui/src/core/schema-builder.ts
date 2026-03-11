@@ -4,9 +4,29 @@
 
 import {
   type AlgorithmDefinition,
+  type ArrayIoItem,
   getAlgorithmDefinition,
 } from "@reputo/reputation-algorithms"
 import type { Algorithm } from "./algorithms"
+
+/** Value/label pair for select options. */
+export interface SelectOption {
+  value: string
+  label: string
+}
+
+/** Property definition for nested object fields inside a repeater. */
+export interface FormInputProperty {
+  key: string
+  label: string
+  type: string
+  description?: string
+  required?: boolean
+  enum?: string[]
+  default?: string | number
+  options?: SelectOption[]
+  dependsOn?: string
+}
 
 /**
  * Form input type for UI forms.
@@ -18,7 +38,21 @@ export interface FormInput {
   type: string
   description?: string
   required?: boolean
-  [key: string]: any // Allow additional properties for different input types
+  /** Suffix to display after the input (e.g. "days") */
+  suffix?: string
+  /** Preset quick-select values */
+  presets?: number[]
+  /** Min items for array fields */
+  minItems?: number
+  /** Add button label for repeater fields */
+  addButtonLabel?: string
+  /** Nested properties for array-of-object fields */
+  itemProperties?: FormInputProperty[]
+  /** Options for select/enum fields */
+  options?: SelectOption[]
+  /** Key of sibling field this depends on */
+  dependsOn?: string
+  [key: string]: any
 }
 
 /**
@@ -129,20 +163,22 @@ function transformInputToFormInput(
     (input) => input.key === inputKey || input.label === algoInput.label
   )
 
-  // Helper to extract common numeric props from a numeric input
   const getNumericProps = () => {
     if (
       fullInput &&
       (fullInput.type === "number" || fullInput.type === "integer")
     ) {
-      // Type assertion after narrowing - we know it's a NumericIoItem
       const numInput = fullInput as {
         min?: number
         max?: number
         step?: number
         default?: number
         required?: boolean
-        uiHint?: { widget?: string }
+        uiHint?: {
+          widget?: string
+          suffix?: string
+          presets?: number[]
+        }
         description?: string
       }
       return {
@@ -160,7 +196,6 @@ function transformInputToFormInput(
 
   switch (algoInput.type) {
     case "csv": {
-      // Build CSV config from full definition or use defaults
       const csvConfig =
         fullInput?.type === "csv" && fullInput.csv
           ? {
@@ -196,7 +231,6 @@ function transformInputToFormInput(
     case "integer": {
       const numericProps = getNumericProps()
 
-      // Check if this should be rendered as a slider
       if (numericProps.uiHint?.widget === "slider") {
         return {
           key: inputKey,
@@ -221,6 +255,8 @@ function transformInputToFormInput(
         step: numericProps.step,
         default: numericProps.default,
         required: numericProps.required,
+        suffix: numericProps.uiHint?.suffix,
+        presets: numericProps.uiHint?.presets,
       }
     }
 
@@ -238,7 +274,31 @@ function transformInputToFormInput(
           fullInput && "default" in fullInput ? fullInput.default : false,
       }
 
-    case "string":
+    case "string": {
+      const strInput = fullInput as {
+        description?: string
+        required?: boolean
+        enum?: string[]
+        uiHint?: {
+          widget?: string
+          options?: SelectOption[]
+          dependsOn?: string
+        }
+      } | null
+
+      if (strInput?.uiHint?.widget === "select" && strInput.uiHint.options) {
+        return {
+          key: inputKey,
+          label: algoInput.label,
+          type: "select",
+          description: strInput.description,
+          required: strInput.required !== false,
+          options: strInput.uiHint.options,
+          dependsOn: strInput.uiHint.dependsOn,
+          enum: strInput.enum,
+        }
+      }
+
       return {
         key: inputKey,
         label: algoInput.label,
@@ -249,9 +309,38 @@ function transformInputToFormInput(
             ? fullInput.required !== false
             : true,
       }
+    }
+
+    case "array": {
+      const arrayInput = fullInput as ArrayIoItem | null
+      const itemProps = arrayInput?.item?.properties ?? []
+
+      return {
+        key: inputKey,
+        label: algoInput.label,
+        type: "array",
+        description: arrayInput?.description,
+        required: arrayInput?.required !== false,
+        minItems: arrayInput?.minItems,
+        addButtonLabel: arrayInput?.uiHint?.addButtonLabel ?? "Add item",
+        itemProperties: itemProps.map((prop) => ({
+          key: prop.key,
+          label: prop.label ?? prop.key,
+          type:
+            prop.uiHint?.widget === "select" && prop.uiHint.options
+              ? "select"
+              : prop.type,
+          description: prop.description,
+          required: prop.required !== false,
+          enum: prop.enum,
+          default: prop.default,
+          options: prop.uiHint?.options,
+          dependsOn: prop.uiHint?.dependsOn,
+        })),
+      }
+    }
 
     default:
-      // Default to text for unknown types
       return {
         key: inputKey,
         label: algoInput.label,
