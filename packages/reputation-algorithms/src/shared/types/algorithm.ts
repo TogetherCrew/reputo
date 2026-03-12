@@ -146,7 +146,7 @@ export interface ObjectPropertyParam {
   required?: boolean;
   uiHint?: {
     widget?: 'select' | string;
-    options?: Array<{ value: string; label: string }>;
+    options?: Array<{ value: string; label: string; filterBy?: string }>;
     dependsOn?: string;
   };
 }
@@ -162,6 +162,7 @@ export interface ArrayIoItem extends BaseIoItem {
   uiHint?: {
     widget?: 'repeater' | string;
     addButtonLabel?: string;
+    presets?: Array<{ label: string; value: Array<Record<string, string>> }>;
   };
   item: {
     type: 'object';

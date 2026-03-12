@@ -254,14 +254,14 @@ function buildFieldSchema(input: any): z.ZodType {
         arrSchema = arrSchema.min(arrayInput.minItems, `${label} must have at least ${arrayInput.minItems} item(s)`);
       }
 
-      const keysForUniqueness = ['chain_id', 'contract_address'] as const;
+      const keysForUniqueness = ['chain', 'asset_identifier'] as const;
       const hasUniquenessKeys = keysForUniqueness.every((k) => itemProps.some((p) => p.key === k));
       if (hasUniquenessKeys) {
         arrSchema = arrSchema.refine(
           (items) => {
             const seen = new Set<string>();
             for (const item of items as Array<Record<string, unknown>>) {
-              const pair = `${item.chain_id ?? ''}:${item.contract_address ?? ''}`;
+              const pair = `${item.chain ?? ''}:${item.asset_identifier ?? ''}`;
               if (seen.has(pair)) return false;
               seen.add(pair);
             }

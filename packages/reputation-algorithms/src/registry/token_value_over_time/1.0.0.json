@@ -31,38 +31,67 @@
             "required": true,
             "uiHint": {
                 "widget": "repeater",
-                "addButtonLabel": "Add token"
+                "addButtonLabel": "Add token",
+                "presets": [
+                    {
+                        "label": "FET",
+                        "value": [
+                            { "chain": "ethereum", "asset_identifier": "0xaea46A60368A7bD060eec7DF8CBa43b7EF41Ad85" },
+                            { "chain": "cardano", "asset_identifier": "e824c0011176f0926ad51f492bcc63ac6a03a589653520839dc7e3d9" },
+                            { "chain": "cosmos", "asset_identifier": "afet" }
+                        ]
+                    }
+                ]
             },
             "item": {
                 "type": "object",
                 "properties": [
                     {
-                        "key": "chain_id",
+                        "key": "chain",
                         "label": "Chain",
                         "description": "Blockchain network for the token.",
                         "type": "string",
-                        "enum": ["1"],
-                        "default": "1",
+                        "enum": ["ethereum", "cardano", "cosmos"],
+                        "default": "ethereum",
                         "required": true,
                         "uiHint": {
                             "widget": "select",
-                            "options": [{ "value": "1", "label": "Ethereum" }]
+                            "options": [
+                                { "value": "ethereum", "label": "Ethereum" },
+                                { "value": "cardano", "label": "Cardano" },
+                                { "value": "cosmos", "label": "Cosmos" }
+                            ]
                         }
                     },
                     {
-                        "key": "contract_address",
+                        "key": "asset_identifier",
                         "label": "Token",
-                        "description": "Token contract on the selected chain.",
+                        "description": "Aset identifier on the selected chain.",
                         "type": "string",
-                        "enum": ["0xaea46A60368A7bD060eec7DF8CBa43b7EF41Ad85"],
+                        "enum": [
+                            "0xaea46A60368A7bD060eec7DF8CBa43b7EF41Ad85",
+                            "e824c0011176f0926ad51f492bcc63ac6a03a589653520839dc7e3d9",
+                            "afet"
+                        ],
                         "required": true,
                         "uiHint": {
                             "widget": "select",
-                            "dependsOn": "chain_id",
+                            "dependsOn": "chain",
                             "options": [
                                 {
                                     "value": "0xaea46A60368A7bD060eec7DF8CBa43b7EF41Ad85",
-                                    "label": "FET.ai"
+                                    "label": "FET",
+                                    "filterBy": "ethereum"
+                                },
+                                {
+                                    "value": "e824c0011176f0926ad51f492bcc63ac6a03a589653520839dc7e3d9",
+                                    "label": "FET",
+                                    "filterBy": "cardano"
+                                },
+                                {
+                                    "value": "afet",
+                                    "label": "FET",
+                                    "filterBy": "cosmos"
                                 }
                             ]
                         }

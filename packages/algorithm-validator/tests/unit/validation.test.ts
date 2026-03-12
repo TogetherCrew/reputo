@@ -145,14 +145,14 @@ describe('validation', () => {
           // FormSchema uses itemProperties instead of item.properties
           itemProperties: [
             {
-              key: 'chain_id',
+              key: 'chain',
               label: 'Chain',
               type: 'select',
               required: true,
-              enum: ['1'],
+              enum: ['ethereum'],
             },
             {
-              key: 'contract_address',
+              key: 'asset_identifier',
               label: 'Token',
               type: 'select',
               required: true,
@@ -164,7 +164,7 @@ describe('validation', () => {
     } as unknown as AlgorithmDefinition;
 
     const valid = validatePayload(formSchema, {
-      token_configs: [{ chain_id: '1', contract_address: '0xaea46A60368A7bD060eec7DF8CBa43b7EF41Ad85' }],
+      token_configs: [{ chain: 'ethereum', asset_identifier: '0xaea46A60368A7bD060eec7DF8CBa43b7EF41Ad85' }],
     });
     expect(valid.success).toBe(true);
 
@@ -172,10 +172,10 @@ describe('validation', () => {
       token_configs: [{}],
     });
     expect(invalid.success).toBe(false);
-    expect(invalid.errors?.some((e) => e.field.includes('chain_id'))).toBe(true);
+    expect(invalid.errors?.some((e) => e.field.includes('chain'))).toBe(true);
   });
 
-  it('rejects duplicate chain_id + contract_address in array inputs', () => {
+  it('rejects duplicate chain + asset_identifier in array inputs', () => {
     const defWithTokenConfigs: AlgorithmDefinition = {
       ...definition,
       inputs: [
@@ -188,8 +188,8 @@ describe('validation', () => {
           item: {
             type: 'object',
             properties: [
-              { key: 'chain_id', label: 'Chain', type: 'string', required: true },
-              { key: 'contract_address', label: 'Token', type: 'string', required: true },
+              { key: 'chain', label: 'Chain', type: 'string', required: true },
+              { key: 'asset_identifier', label: 'Token', type: 'string', required: true },
             ],
           },
         },
@@ -198,16 +198,16 @@ describe('validation', () => {
 
     const valid = validatePayload(defWithTokenConfigs, {
       token_configs: [
-        { chain_id: '1', contract_address: '0xaaa' },
-        { chain_id: '1', contract_address: '0xbbb' },
+        { chain: 'ethereum', asset_identifier: '0xaaa' },
+        { chain: 'ethereum', asset_identifier: '0xbbb' },
       ],
     });
     expect(valid.success).toBe(true);
 
     const duplicate = validatePayload(defWithTokenConfigs, {
       token_configs: [
-        { chain_id: '1', contract_address: '0xaaa' },
-        { chain_id: '1', contract_address: '0xaaa' },
+        { chain: 'ethereum', asset_identifier: '0xaaa' },
+        { chain: 'ethereum', asset_identifier: '0xaaa' },
       ],
     });
     expect(duplicate.success).toBe(false);
