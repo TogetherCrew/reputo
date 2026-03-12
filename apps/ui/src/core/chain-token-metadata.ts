@@ -55,7 +55,7 @@ const TOKEN_META: Record<string, TokenDisplayMeta> = {
     iconUrl:
       "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xaea46A60368A7bD060eec7DF8CBa43b7EF41Ad85/logo.png",
     explorerUrl:
-      "https://cardanoscan.io/token/e824c0011176f0926ad51f492bcc63ac6a03a589653520839dc7e3d9",
+      "https://cardanoscan.io/token/e824c0011176f0926ad51f492bcc63ac6a03a589653520839dc7e3d9464554?address=addr1qyq5d39ksne5v0sk3fphv8yhts6kydarzx6r3t3vvmmcdkt5r52wtka55ssha0mdrs8je9r60pp0ve9ys8he6jv88jvsmuztnz",
     explorerName: "Cardanoscan",
   },
   "cosmos:afet": {
