@@ -191,7 +191,8 @@
                                 "required": ["value", "label"],
                                 "properties": {
                                     "value": { "type": "string" },
-                                    "label": { "type": "string" }
+                                    "label": { "type": "string" },
+                                    "filterBy": { "type": "string" }
                                 }
                             }
                         },
@@ -242,7 +243,25 @@
                     "additionalProperties": false,
                     "properties": {
                         "widget": { "const": "repeater" },
-                        "addButtonLabel": { "type": "string" }
+                        "addButtonLabel": { "type": "string" },
+                        "presets": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "required": ["label", "value"],
+                                "additionalProperties": false,
+                                "properties": {
+                                    "label": { "type": "string", "minLength": 1 },
+                                    "value": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "additionalProperties": { "type": "string" }
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     },
                     "required": ["widget"]
                 }
@@ -284,7 +303,8 @@
                                 "required": ["value", "label"],
                                 "properties": {
                                     "value": { "type": "string" },
-                                    "label": { "type": "string" }
+                                    "label": { "type": "string" },
+                                    "filterBy": { "type": "string" }
                                 }
                             }
                         },

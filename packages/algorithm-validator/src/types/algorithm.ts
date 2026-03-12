@@ -145,12 +145,56 @@ export interface StringIoItem extends BaseIoItem {
   minLength?: number;
   /** Maximum length for the string */
   maxLength?: number;
+  /** Allowed values (enum constraint) */
+  enum?: string[];
+  /** UI rendering hints */
+  uiHint?: {
+    widget?: 'select' | string;
+    options?: Array<{ value: string; label: string }>;
+    dependsOn?: string;
+  };
+}
+
+/**
+ * Property definition inside an array item's object schema.
+ */
+export interface ObjectPropertyParam {
+  key: string;
+  label?: string;
+  description?: string;
+  type: 'string' | 'integer' | 'number';
+  enum?: string[];
+  default?: string | number;
+  required?: boolean;
+  uiHint?: {
+    widget?: 'select' | string;
+    options?: Array<{ value: string; label: string }>;
+    dependsOn?: string;
+  };
+}
+
+/**
+ * Array input item configuration for algorithm definitions.
+ * Represents arrays of objects with nested properties.
+ */
+export interface ArrayIoItem extends BaseIoItem {
+  type: 'array';
+  minItems?: number;
+  required?: boolean;
+  uiHint?: {
+    widget?: 'repeater' | string;
+    addButtonLabel?: string;
+  };
+  item: {
+    type: 'object';
+    properties: ObjectPropertyParam[];
+  };
 }
 
 /**
  * Union type for all supported input/output item types.
  */
-export type IoItem = CsvIoItem | JsonIoItem | NumericIoItem | BooleanIoItem | StringIoItem;
+export type IoItem = CsvIoItem | JsonIoItem | NumericIoItem | BooleanIoItem | StringIoItem | ArrayIoItem;
 
 /**
  * Supported runtimes (languages) for algorithm execution.

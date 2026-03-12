@@ -7,9 +7,11 @@ export type {
   AlgorithmCategory,
   AlgorithmDefinition,
   AlgorithmRuntime,
+  ArrayIoItem,
   CsvIoItem,
   IoItem,
   IoType,
+  ObjectPropertyParam,
 } from './algorithm.js';
 
 /**

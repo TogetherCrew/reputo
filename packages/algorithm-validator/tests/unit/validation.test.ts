@@ -131,4 +131,93 @@ describe('validation', () => {
       ],
     });
   });
+
+  it('builds correct zod schema when array input uses itemProperties (FormSchema format)', () => {
+    const formSchema = {
+      ...definition,
+      inputs: [
+        {
+          key: 'token_configs',
+          label: 'Tokens to Include',
+          type: 'array',
+          minItems: 1,
+          required: true,
+          // FormSchema uses itemProperties instead of item.properties
+          itemProperties: [
+            {
+              key: 'chain',
+              label: 'Chain',
+              type: 'select',
+              required: true,
+              enum: ['ethereum'],
+            },
+            {
+              key: 'asset_identifier',
+              label: 'Token',
+              type: 'select',
+              required: true,
+              enum: ['0xaea46A60368A7bD060eec7DF8CBa43b7EF41Ad85'],
+            },
+          ],
+        },
+      ],
+    } as unknown as AlgorithmDefinition;
+
+    const valid = validatePayload(formSchema, {
+      token_configs: [{ chain: 'ethereum', asset_identifier: '0xaea46A60368A7bD060eec7DF8CBa43b7EF41Ad85' }],
+    });
+    expect(valid.success).toBe(true);
+
+    const invalid = validatePayload(formSchema, {
+      token_configs: [{}],
+    });
+    expect(invalid.success).toBe(false);
+    expect(invalid.errors?.some((e) => e.field.includes('chain'))).toBe(true);
+  });
+
+  it('rejects duplicate chain + asset_identifier in array inputs', () => {
+    const defWithTokenConfigs: AlgorithmDefinition = {
+      ...definition,
+      inputs: [
+        {
+          key: 'token_configs',
+          label: 'Tokens to Include',
+          type: 'array',
+          minItems: 1,
+          required: true,
+          item: {
+            type: 'object',
+            properties: [
+              { key: 'chain', label: 'Chain', type: 'string', required: true },
+              { key: 'asset_identifier', label: 'Token', type: 'string', required: true },
+            ],
+          },
+        },
+      ],
+    };
+
+    const valid = validatePayload(defWithTokenConfigs, {
+      token_configs: [
+        { chain: 'ethereum', asset_identifier: '0xaaa' },
+        { chain: 'ethereum', asset_identifier: '0xbbb' },
+      ],
+    });
+    expect(valid.success).toBe(true);
+
+    const duplicate = validatePayload(defWithTokenConfigs, {
+      token_configs: [
+        { chain: 'ethereum', asset_identifier: '0xaaa' },
+        { chain: 'ethereum', asset_identifier: '0xaaa' },
+      ],
+    });
+    expect(duplicate.success).toBe(false);
+    expect(duplicate.errors).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          field: 'token_configs',
+          message: 'Tokens to Include must not contain duplicate chain + token pairs',
+        }),
+      ]),
+    );
+  });
 });

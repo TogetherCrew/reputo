@@ -2,8 +2,10 @@
 
 import {
   type AlgorithmDefinition,
+  type ArrayIoItem,
   getAlgorithmDefinition,
 } from "@reputo/reputation-algorithms"
+import Image from "next/image"
 import { useMemo } from "react"
 import { Button } from "@/components/ui/button"
 import {
@@ -14,6 +16,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { getChainMeta, getTokenMeta } from "@/core/chain-token-metadata"
 import type { AlgorithmPresetResponseDto } from "@/lib/api/types"
 import { FileDisplay } from "../file-display"
 
@@ -23,17 +26,11 @@ interface PresetDetailsDialogProps {
   preset: AlgorithmPresetResponseDto | null
 }
 
-/**
- * Check if a value looks like a storage key (file path)
- */
 function isStorageKey(value: unknown): value is string {
   if (typeof value !== "string" || !value) return false
   return value.includes("/") || value.startsWith("uploads/")
 }
 
-/**
- * Convert snake_case or camelCase to Title Case
- */
 function toTitleCase(str: string): string {
   return str
     .replace(/_/g, " ")
@@ -41,12 +38,86 @@ function toTitleCase(str: string): string {
     .replace(/\b\w/g, (c) => c.toUpperCase())
 }
 
+function MetaIcon({ url, label }: { url: string; label: string }) {
+  return (
+    <Image
+      src={url}
+      alt={label}
+      width={16}
+      height={16}
+      className="rounded-full shrink-0 inline-block"
+      unoptimized
+    />
+  )
+}
+
+function ArrayValueDisplay({
+  value,
+  definitionInput,
+}: {
+  value: unknown[]
+  definitionInput?: ArrayIoItem
+}) {
+  const properties = definitionInput?.item?.properties ?? []
+  const propLabels = new Map(properties.map((p) => [p.key, p.label ?? p.key]))
+
+  return (
+    <div className="space-y-1.5">
+      {value.map((item, idx) => {
+        const itemKey =
+          typeof item === "object" && item
+            ? Object.values(item as Record<string, unknown>).join("-")
+            : String(item)
+
+        if (typeof item !== "object" || !item) {
+          return (
+            <div key={itemKey} className="text-sm font-medium">
+              {String(item)}
+            </div>
+          )
+        }
+
+        const entries = Object.entries(item as Record<string, unknown>)
+        return (
+          <div
+            key={itemKey}
+            className="flex flex-wrap gap-x-4 gap-y-1 p-2 rounded border bg-muted/30 text-sm"
+          >
+            {entries.map(([k, v]) => {
+              const chain = (item as Record<string, unknown>).chain_id
+              const chainMeta =
+                k === "chain_id" ? getChainMeta(String(v)) : undefined
+              const tokenMeta =
+                k === "contract_address" && chain
+                  ? getTokenMeta(String(chain), String(v))
+                  : undefined
+
+              const displayLabel =
+                chainMeta?.label ?? tokenMeta?.label ?? String(v)
+              const iconUrl = chainMeta?.iconUrl ?? tokenMeta?.iconUrl
+
+              return (
+                <div key={k} className="flex items-center gap-1.5">
+                  <span className="text-muted-foreground">
+                    {propLabels.get(k) ?? toTitleCase(k)}:
+                  </span>
+                  {iconUrl && <MetaIcon url={iconUrl} label={displayLabel} />}
+                  <span className="font-medium">{displayLabel}</span>
+                </div>
+              )
+            })}
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
 export function PresetDetailsDialog({
   isOpen,
   onClose,
   preset,
 }: PresetDetailsDialogProps) {
-  // Fetch algorithm definition to get input labels
   const algorithmDefinition = useMemo(() => {
     if (!preset) return null
     try {
@@ -58,7 +129,6 @@ export function PresetDetailsDialog({
     }
   }, [preset])
 
-  // Create a map from input key to label
   const inputLabels = useMemo(() => {
     const labels: Record<string, string> = {}
     if (algorithmDefinition?.inputs) {
@@ -69,10 +139,12 @@ export function PresetDetailsDialog({
     return labels
   }, [algorithmDefinition])
 
-  // Get label for an input key
   const getLabel = (key: string): string => {
     return inputLabels[key] || toTitleCase(key)
   }
+
+  const getDefinitionInput = (key: string) =>
+    algorithmDefinition?.inputs.find((i) => i.key === key)
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -86,7 +158,6 @@ export function PresetDetailsDialog({
 
         {preset && (
           <div className="flex-1 overflow-y-auto space-y-4 pr-1">
-            {/* Metadata Grid - Compact 2-column layout */}
             <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Algorithm</span>
@@ -118,22 +189,43 @@ export function PresetDetailsDialog({
               </div>
             </div>
 
-            {/* Separator */}
             <div className="border-t" />
 
-            {/* Input Parameters - Compact table style */}
             <div>
               <h3 className="text-sm font-medium mb-2">Parameters</h3>
               <div className="rounded-lg border divide-y">
-                {preset.inputs.map((input) =>
-                  isStorageKey(input.value) ? (
-                    <div key={input.key} className="p-2.5">
-                      <FileDisplay
-                        label={getLabel(input.key)}
-                        storageKey={input.value}
-                      />
-                    </div>
-                  ) : (
+                {preset.inputs.map((input) => {
+                  if (Array.isArray(input.value)) {
+                    const defInput = getDefinitionInput(input.key)
+                    return (
+                      <div key={input.key} className="px-3 py-2 space-y-1.5">
+                        <span className="text-sm text-muted-foreground">
+                          {getLabel(input.key)}
+                        </span>
+                        <ArrayValueDisplay
+                          value={input.value}
+                          definitionInput={
+                            defInput?.type === "array"
+                              ? (defInput as ArrayIoItem)
+                              : undefined
+                          }
+                        />
+                      </div>
+                    )
+                  }
+
+                  if (isStorageKey(input.value)) {
+                    return (
+                      <div key={input.key} className="p-2.5">
+                        <FileDisplay
+                          label={getLabel(input.key)}
+                          storageKey={input.value}
+                        />
+                      </div>
+                    )
+                  }
+
+                  return (
                     <div
                       key={input.key}
                       className="flex items-center justify-between px-3 py-2"
@@ -146,7 +238,7 @@ export function PresetDetailsDialog({
                       </span>
                     </div>
                   )
-                )}
+                })}
               </div>
             </div>
           </div>

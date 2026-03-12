@@ -131,10 +131,14 @@ export function EditPresetDialog({
     preset.inputs.forEach((presetInput) => {
       const raw = presetInput.value
       const algoInput = algorithm.inputs.find((i) => i.key === presetInput.key)
-      const isNumeric = algoInput && NUMERIC_INPUT_TYPES.has(algoInput.type)
-      defaults[presetInput.key] = isNumeric
-        ? normalizeNumericPresetValue(raw)
-        : raw
+      if (algoInput?.type === "array" && Array.isArray(raw)) {
+        defaults[presetInput.key] = raw
+      } else {
+        const isNumeric = algoInput && NUMERIC_INPUT_TYPES.has(algoInput.type)
+        defaults[presetInput.key] = isNumeric
+          ? normalizeNumericPresetValue(raw)
+          : raw
+      }
     })
 
     return defaults
@@ -173,6 +177,8 @@ export function EditPresetDialog({
         let inputValue: unknown
         if (value instanceof File) {
           inputValue = ""
+        } else if (input.type === "array" && Array.isArray(value)) {
+          inputValue = value
         } else if (value !== undefined && value !== null && value !== "") {
           inputValue = NUMERIC_INPUT_TYPES.has(input.type)
             ? normalizeNumericPresetValue(value)

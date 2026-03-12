@@ -4,7 +4,7 @@
  */
 
 import { z } from 'zod/v4';
-import type { AlgorithmDefinition, CsvIoItem, ValidationResult } from './types/index.js';
+import type { AlgorithmDefinition, ArrayIoItem, CsvIoItem, ValidationResult } from './types/index.js';
 
 /**
  * Validates data against an AlgorithmDefinition.
@@ -218,11 +218,8 @@ function buildFieldSchema(input: any): z.ZodType {
 
     case 'text':
     case 'string': {
-      // Use .trim() to strip leading/trailing whitespace before validation
-      // This ensures "   " is treated as empty and fails required check
       let strSchema = z.string().trim();
 
-      // For required fields, add min(1) to show "is required" message for empty strings
       if (input.required !== false) {
         strSchema = strSchema.min(1, `${label} is required`);
       }
@@ -234,16 +231,89 @@ function buildFieldSchema(input: any): z.ZodType {
         strSchema = strSchema.max(input.maxLength, `${label} must be at most ${input.maxLength} characters`);
       }
 
-      schema = input.required === false ? strSchema.optional() : strSchema;
+      if (input.enum && input.enum.length > 0) {
+        const allowedValues = input.enum as [string, ...string[]];
+        schema = z.enum(allowedValues, { error: `${label} must be one of: ${allowedValues.join(', ')}` });
+      } else {
+        schema = input.required === false ? strSchema.optional() : strSchema;
+      }
+      break;
+    }
+
+    case 'array': {
+      const arrayInput = input as ArrayIoItem;
+      const itemProps = arrayInput.item?.properties ?? input.itemProperties ?? [];
+
+      const objectShape: Record<string, z.ZodType> = {};
+      for (const prop of itemProps) {
+        objectShape[prop.key] = buildObjectPropertySchema(prop, label);
+      }
+
+      let arrSchema = z.array(z.object(objectShape));
+      if (arrayInput.minItems !== undefined) {
+        arrSchema = arrSchema.min(arrayInput.minItems, `${label} must have at least ${arrayInput.minItems} item(s)`);
+      }
+
+      const keysForUniqueness = ['chain', 'asset_identifier'] as const;
+      const hasUniquenessKeys = keysForUniqueness.every((k) => itemProps.some((p) => p.key === k));
+      if (hasUniquenessKeys) {
+        arrSchema = arrSchema.refine(
+          (items) => {
+            const seen = new Set<string>();
+            for (const item of items as Array<Record<string, unknown>>) {
+              const pair = `${item.chain ?? ''}:${item.asset_identifier ?? ''}`;
+              if (seen.has(pair)) return false;
+              seen.add(pair);
+            }
+            return true;
+          },
+          { message: `${label} must not contain duplicate chain + token pairs` },
+        );
+      }
+
+      schema = arrayInput.required === false ? arrSchema.optional() : arrSchema;
       break;
     }
 
     default:
-      // Default to string for unknown types
       schema = z.string();
   }
 
   return schema;
+}
+
+/**
+ * Builds a Zod schema for a single property inside an array item's object.
+ * @internal
+ */
+function buildObjectPropertySchema(
+  prop: { key: string; label?: string; type: string; enum?: string[]; required?: boolean },
+  _parentLabel: string,
+): z.ZodType {
+  const propLabel = prop.label ?? prop.key;
+
+  if (prop.enum && prop.enum.length > 0) {
+    const allowed = prop.enum as [string, ...string[]];
+    const enumSchema = z.enum(allowed, { error: `${propLabel} must be one of: ${allowed.join(', ')}` });
+    return prop.required === false ? enumSchema.optional() : enumSchema;
+  }
+
+  switch (prop.type) {
+    case 'string': {
+      let s = z.string().trim();
+      if (prop.required !== false) {
+        s = s.min(1, `${propLabel} is required`);
+      }
+      return prop.required === false ? s.optional() : s;
+    }
+    case 'number':
+    case 'integer': {
+      const n = z.number({ error: `${propLabel} must be a valid number` });
+      return prop.required === false ? n.optional() : n;
+    }
+    default:
+      return z.string();
+  }
 }
 
 /**

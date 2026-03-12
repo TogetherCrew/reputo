@@ -12,6 +12,8 @@ import {
   DateField,
   EnumField,
   NumberField,
+  RepeaterField,
+  SelectField,
   SliderField,
   TextField,
 } from "./fields"
@@ -81,17 +83,22 @@ function ReputoFormInner({
       case "text":
         return <TextField key={input.key} {...commonProps} />
       case "number":
+      case "integer":
         return <NumberField key={input.key} {...commonProps} />
       case "boolean":
         return <BooleanField key={input.key} {...commonProps} />
       case "enum":
         return <EnumField key={input.key} {...commonProps} />
+      case "select":
+        return <SelectField key={input.key} {...commonProps} />
       case "slider":
         return <SliderField key={input.key} {...commonProps} />
       case "csv":
         return <CSVField key={input.key} {...commonProps} />
       case "date":
         return <DateField key={input.key} {...commonProps} />
+      case "array":
+        return <RepeaterField key={input.key} {...commonProps} />
       default:
         return null
     }
@@ -102,10 +109,8 @@ function ReputoFormInner({
     (input) => !hiddenFields.includes(input.key)
   )
 
-  // Check if all required fields have values
   const hasAllRequiredValues = schema.inputs
     .filter((input) => {
-      // Check if field is required (default to true if not specified)
       const required = "required" in input ? input.required !== false : true
       return required
     })
@@ -114,9 +119,11 @@ function ReputoFormInner({
       if (value === undefined || value === null || value === "") {
         return false
       }
-      // For CSV fields, make sure it's a string (uploaded key) not a File object
       if (input.type === "csv" && value instanceof File) {
-        return false // Still uploading or validating
+        return false
+      }
+      if (input.type === "array" && Array.isArray(value)) {
+        return value.length >= ((input as any).minItems ?? 1)
       }
       return true
     })
@@ -190,25 +197,39 @@ function getDefaultValues(
         ? normalizeNumeric(raw)
         : raw
     } else if ("default" in input && input.default !== undefined) {
-      // Use the default value from the input definition
       defaults[input.key] = isNumericType(input.type)
         ? normalizeNumeric(input.default)
         : input.default
     } else {
-      // Set type-appropriate defaults
       const isRequired = "required" in input ? input.required !== false : true
       switch (input.type) {
         case "boolean":
           defaults[input.key] = false
           break
         case "number":
+        case "integer":
         case "slider":
-          // Start empty - don't assume 0 or min value
-          // Validation will show error if required field is empty
           defaults[input.key] = ""
           break
+        case "array": {
+          const itemProps = (input as any).itemProperties as
+            | Array<{ key: string; default?: unknown }>
+            | undefined
+          const defaultRow: Record<string, unknown> = {}
+          if (itemProps) {
+            for (const prop of itemProps) {
+              defaultRow[prop.key] = prop.default ?? ""
+            }
+          }
+          const minItems = (input as any).minItems ?? 1
+          defaults[input.key] = Array.from({ length: minItems }, () => ({
+            ...defaultRow,
+          }))
+          break
+        }
         case "text":
         case "enum":
+        case "select":
         case "date":
         case "csv":
           if (!isRequired) {

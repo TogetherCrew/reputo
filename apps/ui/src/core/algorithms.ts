@@ -8,6 +8,7 @@ import {
 /** Display labels for known algorithm dependency keys (e.g. external data sources) */
 const DEPENDENCY_KEY_TO_LABEL: Record<string, string> = {
   "deepfunding-portal-api": "DeepFunding Portal API",
+  "onchain-data-service": "Onchain Data",
 }
 
 // Transform the AlgorithmDefinition from the package to match the UI's expected format
