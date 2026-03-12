@@ -1,6 +1,6 @@
 "use client"
 
-import { Plus, Trash2 } from "lucide-react"
+import { ExternalLink, Plus, Trash2 } from "lucide-react"
 import Image from "next/image"
 import {
   type Control,
@@ -8,6 +8,7 @@ import {
   useFormContext,
   useWatch,
 } from "react-hook-form"
+import { badgeVariants } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
   FormControl,
@@ -25,8 +26,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 import { getChainMeta, getTokenMeta } from "../chain-token-metadata"
 import type {
+  ArrayPreset,
   FormInput,
   FormInputProperty,
   SelectOption,
@@ -55,11 +62,11 @@ function getIconForProperty(
   value: string,
   rowValues?: Record<string, unknown>
 ): string | undefined {
-  if (prop.key === "chain_id") {
+  if (prop.key === "chain") {
     return getChainMeta(value)?.iconUrl
   }
-  if (prop.key === "contract_address" && rowValues?.chain_id) {
-    return getTokenMeta(String(rowValues.chain_id), value)?.iconUrl
+  if (prop.key === "asset_identifier" && rowValues?.chain) {
+    return getTokenMeta(String(rowValues.chain), value)?.iconUrl
   }
   return undefined
 }
@@ -84,9 +91,16 @@ function PropertyField({
 
   if (prop.type === "select" && prop.options) {
     const isTokenSelect =
-      prop.key === "contract_address" &&
+      prop.key === "asset_identifier" &&
       selectedPairsInOtherRows &&
-      rowValues?.chain_id != null
+      rowValues?.chain != null
+
+    const chainId =
+      rowValues?.chain != null ? String(rowValues.chain) : undefined
+    const visibleOptions = (prop.options ?? []).filter(
+      (o) => o.filterBy == null || o.filterBy === chainId
+    )
+
     return (
       <FormField
         control={control}
@@ -122,7 +136,7 @@ function PropertyField({
                           rowValues
                         )
                         if (!selected) return field.value
-                        return (
+                        const content = (
                           <span className="flex items-center gap-2">
                             {icon && (
                               <OptionIcon url={icon} label={selected.label} />
@@ -130,16 +144,29 @@ function PropertyField({
                             {selected.label}
                           </span>
                         )
+                        if (prop.key === "asset_identifier") {
+                          return (
+                            <Tooltip>
+                              <TooltipTrigger asChild>{content}</TooltipTrigger>
+                              <TooltipContent side="bottom">
+                                <span className="font-mono break-all">
+                                  {field.value}
+                                </span>
+                              </TooltipContent>
+                            </Tooltip>
+                          )
+                        }
+                        return content
                       })()}
                   </SelectValue>
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
-                {(prop.options ?? []).map((option: SelectOption) => {
+                {visibleOptions.map((option: SelectOption) => {
                   const icon = getIconForProperty(prop, option.value, rowValues)
                   const pairKey =
-                    isTokenSelect && rowValues?.chain_id != null
-                      ? `${String(rowValues.chain_id)}:${option.value}`
+                    isTokenSelect && rowValues?.chain != null
+                      ? `${String(rowValues.chain)}:${option.value}`
                       : null
                   const disabled =
                     pairKey != null &&
@@ -150,7 +177,14 @@ function PropertyField({
                       value={option.value}
                       disabled={disabled}
                     >
-                      <span className="flex items-center gap-2">
+                      <span
+                        className="flex items-center gap-2"
+                        title={
+                          prop.key === "asset_identifier"
+                            ? option.value
+                            : undefined
+                        }
+                      >
                         {icon && <OptionIcon url={icon} label={option.label} />}
                         {option.label}
                         {disabled && " (already added)"}
@@ -228,36 +262,60 @@ function RepeaterRow({
     const dependents = dependencyMap.get(changedKey)
     if (!dependents) return
     for (const depKey of dependents) {
-      setValue(`${fieldPrefix}.${depKey}`, "", { shouldValidate: true })
+      setValue(`${fieldPrefix}.${depKey}`, "", { shouldValidate: false })
     }
   }
 
+  const selectedChain =
+    rowValues?.chain != null ? String(rowValues.chain) : undefined
+  const selectedAsset =
+    rowValues?.asset_identifier != null && rowValues.asset_identifier !== ""
+      ? String(rowValues.asset_identifier)
+      : undefined
+  const tokenMeta =
+    selectedChain && selectedAsset
+      ? getTokenMeta(selectedChain, selectedAsset)
+      : undefined
+
   return (
-    <div className="flex items-end gap-3 p-3 rounded-lg border bg-muted/30">
-      <div className="flex-1 flex gap-3">
-        {properties.map((prop) => (
-          <PropertyField
-            key={prop.key}
-            prop={prop}
-            fieldPrefix={fieldPrefix}
-            control={control}
-            rowValues={rowValues as Record<string, unknown>}
-            onDependentChange={handleDependentChange}
-            selectedPairsInOtherRows={selectedPairsInOtherRows}
-          />
-        ))}
+    <div className="flex flex-col gap-2 p-3 rounded-lg border bg-muted/30">
+      <div className="flex items-end gap-3">
+        <div className="flex-1 flex gap-3">
+          {properties.map((prop) => (
+            <PropertyField
+              key={prop.key}
+              prop={prop}
+              fieldPrefix={fieldPrefix}
+              control={control}
+              rowValues={rowValues as Record<string, unknown>}
+              onDependentChange={handleDependentChange}
+              selectedPairsInOtherRows={selectedPairsInOtherRows}
+            />
+          ))}
+        </div>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          className="shrink-0 text-muted-foreground hover:text-destructive"
+          disabled={!canRemove}
+          onClick={onRemove}
+          aria-label={`Remove row ${index + 1}`}
+        >
+          <Trash2 className="size-4" />
+        </Button>
       </div>
-      <Button
-        type="button"
-        variant="ghost"
-        size="icon"
-        className="shrink-0 text-muted-foreground hover:text-destructive"
-        disabled={!canRemove}
-        onClick={onRemove}
-        aria-label={`Remove row ${index + 1}`}
-      >
-        <Trash2 className="size-4" />
-      </Button>
+      {tokenMeta?.explorerUrl && (
+        <a
+          href={tokenMeta.explorerUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-1 w-fit text-xs text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <ExternalLink className="size-3" />
+          View on {tokenMeta.explorerName}
+        </a>
+      )}
     </div>
   )
 }
@@ -271,8 +329,8 @@ function getSelectedPairsInOtherRows(
   for (let i = 0; i < values.length; i++) {
     if (i === rowIndex) continue
     const row = values[i]
-    const c = row?.chain_id
-    const t = row?.contract_address
+    const c = row?.chain
+    const t = row?.asset_identifier
     if (c != null && c !== "" && t != null && t !== "") {
       set.add(`${String(c)}:${String(t)}`)
     }
@@ -289,10 +347,10 @@ export function RepeaterField({ input, control }: RepeaterFieldProps) {
     | undefined
 
   const hasChainTokenPair =
-    properties.some((p) => p.key === "chain_id") &&
-    properties.some((p) => p.key === "contract_address")
+    properties.some((p) => p.key === "chain") &&
+    properties.some((p) => p.key === "asset_identifier")
 
-  const { fields, append, remove } = useFieldArray({
+  const { fields, append, remove, replace } = useFieldArray({
     control,
     name: input.key,
   })
@@ -315,6 +373,38 @@ export function RepeaterField({ input, control }: RepeaterFieldProps) {
       </FormLabel>
       {input.description && (
         <FormDescription>{input.description}</FormDescription>
+      )}
+
+      {input.arrayPresets && input.arrayPresets.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2 mt-1">
+          {input.arrayPresets.map((preset: ArrayPreset) => {
+            const chains = preset.value
+              .map((row) => row.chain)
+              .filter(Boolean)
+              .join(", ")
+            return (
+              <Tooltip key={preset.label}>
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    className={
+                      badgeVariants({ variant: "secondary" }) +
+                      " cursor-pointer hover:opacity-80 transition-opacity"
+                    }
+                    onClick={() => replace(preset.value)}
+                  >
+                    {preset.label}
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="top">
+                  <span>
+                    Fills {preset.label} on {chains}
+                  </span>
+                </TooltipContent>
+              </Tooltip>
+            )
+          })}
+        </div>
       )}
 
       <div className="space-y-2">

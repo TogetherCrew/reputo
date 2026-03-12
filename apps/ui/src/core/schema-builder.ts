@@ -9,10 +9,18 @@ import {
 } from "@reputo/reputation-algorithms"
 import type { Algorithm } from "./algorithms"
 
+/** A preset that populates the entire array field with a fixed set of rows when applied. */
+export interface ArrayPreset {
+  label: string
+  value: Array<Record<string, string>>
+}
+
 /** Value/label pair for select options. */
 export interface SelectOption {
   value: string
   label: string
+  /** When set, this option is shown only when the sibling `dependsOn` field equals this value. */
+  filterBy?: string
 }
 
 /** Property definition for nested object fields inside a repeater. */
@@ -26,6 +34,7 @@ export interface FormInputProperty {
   default?: string | number
   options?: SelectOption[]
   dependsOn?: string
+  filterBy?: string
 }
 
 /**
@@ -48,6 +57,8 @@ export interface FormInput {
   addButtonLabel?: string
   /** Nested properties for array-of-object fields */
   itemProperties?: FormInputProperty[]
+  /** Quick-fill presets for array fields */
+  arrayPresets?: ArrayPreset[]
   /** Options for select/enum fields */
   options?: SelectOption[]
   /** Key of sibling field this depends on */
@@ -328,6 +339,7 @@ function transformInputToFormInput(
         required: arrayInput?.required !== false,
         minItems: arrayInput?.minItems,
         addButtonLabel: arrayInput?.uiHint?.addButtonLabel ?? "Add item",
+        arrayPresets: arrayInput?.uiHint?.presets,
         itemProperties: itemProps.map((prop) => ({
           key: prop.key,
           label: prop.label ?? prop.key,
