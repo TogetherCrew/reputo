@@ -156,13 +156,7 @@
         "stringParamItem": {
             "type": "object",
             "additionalProperties": false,
-            "required": [
-                "key",
-                "label",
-                "description",
-                "type",
-                "required"
-            ],
+            "required": ["key", "label", "description", "type", "required"],
             "properties": {
                 "key": {
                     "type": "string",
@@ -251,12 +245,17 @@
                                 "required": ["label", "value"],
                                 "additionalProperties": false,
                                 "properties": {
-                                    "label": { "type": "string", "minLength": 1 },
+                                    "label": {
+                                        "type": "string",
+                                        "minLength": 1
+                                    },
                                     "value": {
                                         "type": "array",
                                         "items": {
                                             "type": "object",
-                                            "additionalProperties": { "type": "string" }
+                                            "additionalProperties": {
+                                                "type": "string"
+                                            }
                                         }
                                     }
                                 }
@@ -385,7 +384,7 @@
             "properties": {
                 "key": {
                     "type": "string",
-                    "minLength": 1
+                    "enum": ["onchain-data", "deepfunding-portal-api"]
                 }
             }
         }
