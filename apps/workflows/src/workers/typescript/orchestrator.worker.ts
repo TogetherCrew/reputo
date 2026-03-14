@@ -51,7 +51,14 @@ async function run(): Promise<void> {
     activities: {
       ...createDbActivities(),
       ...createAlgorithmLibraryActivities(),
-      ...createDependencyResolverActivities({ storage, storageConfig }),
+      ...createDependencyResolverActivities({
+        storage,
+        storageConfig,
+        onchainData: {
+          dbPath: config.onchainData.dbPath,
+          alchemyApiKey: config.onchainData.alchemyApiKey,
+        },
+      }),
     },
     bundlerOptions: {
       ignoreModules: ['fs', 'path', 'os', 'crypto'],

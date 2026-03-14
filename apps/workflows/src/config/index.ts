@@ -76,6 +76,8 @@ const envVarsSchema = Joi.object()
       .min(0)
       .default(20000)
       .description('DeepFunding API retry max delay in milliseconds'),
+    ONCHAIN_DATA_DB_PATH: Joi.string().required().description('Local filesystem path on-chain data SQLite database'),
+    ALCHEMY_API_KEY: Joi.string().required().description('Alchemy API key'),
   })
   .unknown();
 
@@ -128,5 +130,9 @@ export default {
     retryMaxAttempts: envVars.DEEPFUNDING_API_RETRY_MAX_ATTEMPTS,
     retryBaseDelayMs: envVars.DEEPFUNDING_API_RETRY_BASE_DELAY_MS,
     retryMaxDelayMs: envVars.DEEPFUNDING_API_RETRY_MAX_DELAY_MS,
+  },
+  onchainData: {
+    dbPath: envVars.ONCHAIN_DATA_DB_PATH,
+    alchemyApiKey: envVars.ALCHEMY_API_KEY,
   },
 };

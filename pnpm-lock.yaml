@@ -533,6 +533,9 @@ importers:
       '@reputo/deepfunding-portal-api':
         specifier: workspace:*
         version: link:../../packages/deepfunding-portal-api
+      '@reputo/onchain-data':
+        specifier: workspace:*
+        version: link:../../packages/onchain-data
       '@reputo/reputation-algorithms':
         specifier: workspace:*
         version: link:../../packages/reputation-algorithms
