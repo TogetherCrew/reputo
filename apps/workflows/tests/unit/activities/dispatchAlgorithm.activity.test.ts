@@ -21,6 +21,8 @@ describe('dispatchAlgorithm activity', () => {
     process.env.STORAGE_BUCKET = 'reputo-test-bucket';
     process.env.DEEPFUNDING_API_BASE_URL = 'https://api.deepfunding.xyz';
     process.env.DEEPFUNDING_API_KEY = '';
+    process.env.ONCHAIN_DATA_DB_PATH = '/tmp/test-onchain-data.db';
+    process.env.ALCHEMY_API_KEY = 'test-alchemy-key';
   });
 
   it('throws UnsupportedAlgorithmError for unknown algorithm keys', async () => {

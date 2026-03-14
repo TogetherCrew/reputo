@@ -5,7 +5,7 @@
 /**
  * Known dependency keys that can be resolved.
  */
-export type DependencyKey = 'deepfunding-portal-api';
+export type DependencyKey = 'deepfunding-portal-api' | 'onchain-data';
 
 /**
  * Input for resolving a single dependency.

@@ -37,6 +37,7 @@
     "@aws-sdk/client-s3": "catalog:",
     "@reputo/database": "workspace:*",
     "@reputo/deepfunding-portal-api": "workspace:*",
+    "@reputo/onchain-data": "workspace:*",
     "@reputo/reputation-algorithms": "workspace:*",
     "@reputo/storage": "workspace:*",
     "@temporalio/activity": "catalog:",

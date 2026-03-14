@@ -55,9 +55,15 @@ export interface AlgorithmLibraryActivities {
   getAlgorithmDefinition: (input: GetAlgorithmDefinitionInput) => Promise<GetAlgorithmDefinitionOutput>;
 }
 
+export interface OnchainDataSyncContext {
+  dbPath: string;
+  alchemyApiKey: string;
+}
+
 export interface DependencyResolverContext {
   storage: Storage;
   storageConfig: StorageConfig;
+  onchainData: OnchainDataSyncContext;
 }
 
 export interface DependencyResolverActivities {
