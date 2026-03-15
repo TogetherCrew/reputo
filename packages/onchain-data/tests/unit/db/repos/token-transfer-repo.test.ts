@@ -222,12 +222,14 @@ describe('TokenTransferRepository', () => {
       });
       expect(page1.items).toHaveLength(2);
       expect(page1.nextCursor).not.toBeNull();
+      const cursor = page1.nextCursor;
+      if (!cursor) throw new Error('Expected cursor to be present');
 
       const page2 = await repo.findTransfersByAddresses({
         tokenChain: SupportedTokenChain.FET_ETHEREUM,
         addresses: [addr1, addr2],
         limit: 2,
-        cursor: page1.nextCursor!,
+        cursor,
       });
       expect(page2.items).toHaveLength(1);
       expect(page2.nextCursor).toBeNull();
@@ -257,6 +259,44 @@ describe('TokenTransferRepository', () => {
             (BigInt(curr.blockNumber) === BigInt(prev.blockNumber) && curr.logIndex > prev.logIndex),
         ).toBe(true);
       }
+    });
+
+    it('filters inbound transfers only', async () => {
+      const result = await repo.findTransfersByAddresses({
+        tokenChain: SupportedTokenChain.FET_ETHEREUM,
+        addresses: [addr1, addr2],
+        limit: 10,
+        direction: TransferDirection.INBOUND,
+      });
+
+      expect(result.items).toHaveLength(2);
+      expect(result.items.every((item) => item.toAddress === addr1 || item.toAddress === addr2)).toBe(true);
+    });
+
+    it('filters outbound transfers only', async () => {
+      const result = await repo.findTransfersByAddresses({
+        tokenChain: SupportedTokenChain.FET_ETHEREUM,
+        addresses: [addr1, addr2],
+        limit: 10,
+        direction: TransferDirection.OUTBOUND,
+      });
+
+      expect(result.items).toHaveLength(2);
+      expect(result.items.every((item) => item.fromAddress === addr1 || item.fromAddress === addr2)).toBe(true);
+    });
+
+    it('filters by block range', async () => {
+      const result = await repo.findTransfersByAddresses({
+        tokenChain: SupportedTokenChain.FET_ETHEREUM,
+        addresses: [addr1, addr2],
+        limit: 10,
+        fromBlock: '0xc8',
+        toBlock: '0x12c',
+      });
+
+      expect(result.items).toHaveLength(2);
+      expect(result.items.every((item) => BigInt(item.blockNumber) >= BigInt('0xc8'))).toBe(true);
+      expect(result.items.every((item) => BigInt(item.blockNumber) <= BigInt('0x12c'))).toBe(true);
     });
   });
 });

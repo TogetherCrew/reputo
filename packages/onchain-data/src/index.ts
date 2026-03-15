@@ -1,5 +1,7 @@
 export type {
+  ChainPositionCursor,
   FindTransfersInput,
+  OrderedTokenTransferRecord,
   PaginatedTransfers,
   TokenTransferRepository,
 } from './db/repos/token-transfer-repo.js';
@@ -16,6 +18,7 @@ export {
   SupportedProvider,
   SupportedToken,
   SupportedTokenChain,
+  TOKEN_CHAIN_METADATA,
   type TokenChainMetadata,
   type TokenTransferRecord,
   type TokenTransferSyncState,
