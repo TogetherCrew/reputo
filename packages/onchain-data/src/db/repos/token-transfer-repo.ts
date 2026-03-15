@@ -11,17 +11,23 @@ import { type TokenTransferEntity, TokenTransferSchema } from '../schema.js';
 
 const BLOCK_SORT_SQL = `substr('${'0'.repeat(64)}' || substr(lower(t.block_number), 3), -64, 64)`;
 
+/** Cursor for paginating transfers by block number and log index. */
+export type ChainPositionCursor = { blockNumber: string; logIndex: number };
+
 export type FindTransfersInput = {
   tokenChain: SupportedTokenChain;
   addresses: string[];
   limit: number;
-  cursor?: { blockNumber: string; logIndex: number };
+  cursor?: ChainPositionCursor;
 };
 
 export type PaginatedTransfers = {
   items: TokenTransferRecord[];
-  nextCursor: { blockNumber: string; logIndex: number } | null;
+  nextCursor: ChainPositionCursor | null;
 };
+
+/** Token transfer record as returned from paginated queries (ordered by block, then log index). */
+export type OrderedTokenTransferRecord = TokenTransferRecord;
 
 export interface TokenTransferRepository {
   insertMany(items: TokenTransferRecord[]): Promise<number>;
