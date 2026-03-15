@@ -23,15 +23,15 @@ export function createAlgorithmLibraryActivities(): AlgorithmLibraryActivities {
         throw new Error(`Algorithm definition not found: ${identifier}`);
       }
 
-      const definition = JSON.parse(definitionJson);
+      const algorithmDefinition = JSON.parse(definitionJson);
 
       logger.info('Algorithm definition loaded successfully', {
-        key: definition.key,
-        version: definition.version,
-        runtime: definition.runtime,
+        key: algorithmDefinition.key,
+        version: algorithmDefinition.version,
+        runtime: algorithmDefinition.runtime,
       });
 
-      return { definition };
+      return { algorithmDefinition };
     },
   };
 }

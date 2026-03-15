@@ -73,18 +73,18 @@ export async function OrchestratorWorkflow(input: OrchestratorWorkflowInput): Pr
   const algorithmKey = snapshot.algorithmPresetFrozen.key;
   const algorithmVersion = snapshot.algorithmPresetFrozen.version;
 
-  const { AlgorithmDefinition } = await getAlgorithmDefinition({
+  const { algorithmDefinition } = await getAlgorithmDefinition({
     key: algorithmKey,
     version: algorithmVersion,
   });
 
   workflow.log.info('Algorithm definition loaded', {
     snapshotId,
-    algorithmKey: AlgorithmDefinition.key,
-    algorithmVersion: AlgorithmDefinition.version,
+    algorithmKey: algorithmDefinition.key,
+    algorithmVersion: algorithmDefinition.version,
   });
 
-  const runtime = AlgorithmDefinition.runtime;
+  const runtime = algorithmDefinition.runtime;
   const algorithmTaskQueue = getAlgorithmTaskQueueFromRuntime(runtime, taskQueues);
 
   const { resolveDependency } = workflow.proxyActivities<DependencyResolverActivities>({
@@ -101,14 +101,14 @@ export async function OrchestratorWorkflow(input: OrchestratorWorkflowInput): Pr
     retry: { maximumAttempts: ACTIVITY_MAX_ATTEMPTS },
   });
 
-  if (AlgorithmDefinition.dependencies && AlgorithmDefinition.dependencies.length > 0) {
+  if (algorithmDefinition.dependencies && algorithmDefinition.dependencies.length > 0) {
     workflow.log.info('Resolving algorithm dependencies', {
       snapshotId,
-      dependencies: AlgorithmDefinition.dependencies.map((d) => d.key),
+      dependencies: algorithmDefinition.dependencies.map((d) => d.key),
     });
 
     await Promise.all(
-      AlgorithmDefinition.dependencies.map(async (dependency) => {
+      algorithmDefinition.dependencies.map(async (dependency) => {
         await resolveDependency({
           dependencyKey: dependency.key as DependencyKey,
           snapshotId,

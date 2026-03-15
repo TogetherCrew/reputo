@@ -22,8 +22,12 @@ export function createAssetTransferSyncStateRepository(dataSource: DataSource): 
         chain: row.chain,
         assetIdentifier: row.asset_identifier,
         lastSyncedBlock: normalizeHexBlock(row.last_synced_block),
-        ...(row.last_transaction_hash != null && { lastTransactionHash: row.last_transaction_hash }),
-        ...(row.last_log_index != null && { lastLogIndex: row.last_log_index }),
+        ...(row.last_transaction_hash != null && {
+          lastTransactionHash: row.last_transaction_hash,
+        }),
+        ...(row.last_log_index != null && {
+          lastLogIndex: row.last_log_index,
+        }),
         updatedAt: row.updated_at,
       };
     },

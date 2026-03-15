@@ -6,7 +6,10 @@ export {
   OnchainAssets,
 } from './constants/index.js';
 
-export type { AssetTransferRecord, AssetTransferSyncState } from './types/index.js';
+export type {
+  AssetTransferRecord,
+  AssetTransferSyncState,
+} from './types/index.js';
 
 export {
   compareHexBlocks,

@@ -1,5 +1,4 @@
 export type AssetTransferRecord = {
-  id: string;
   chain: string;
   assetIdentifier: string;
   blockNumber: string;

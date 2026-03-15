@@ -82,7 +82,9 @@ export function createAssetTransferRepository(dataSource: DataSource): AssetTran
       const qb = repo
         .createQueryBuilder('t')
         .where('t.chain = :chain', { chain: asset.chain })
-        .andWhere('t.asset_identifier = :assetIdentifier', { assetIdentifier: asset.assetIdentifier })
+        .andWhere('t.asset_identifier = :assetIdentifier', {
+          assetIdentifier: asset.assetIdentifier,
+        })
         .andWhere('(t.from_address IN (:...addresses) OR t.to_address IN (:...addresses))', { addresses: normalized });
 
       if (input.fromBlock !== undefined) {
@@ -101,13 +103,19 @@ export function createAssetTransferRepository(dataSource: DataSource): AssetTran
         const cursorSortKey = createHexBlockSortKey(blockNumber);
         qb.andWhere(
           new Brackets((sub) => {
-            sub.where(`${BLOCK_SORT_SQL} > :cursorSortKey`, { cursorSortKey }).orWhere(
-              new Brackets((inner) => {
-                inner
-                  .where(`${BLOCK_SORT_SQL} = :cursorSortKey`, { cursorSortKey })
-                  .andWhere('t.log_index > :cursorLogIndex', { cursorLogIndex: logIndex });
-              }),
-            );
+            sub
+              .where(`${BLOCK_SORT_SQL} > :cursorSortKey`, {
+                cursorSortKey,
+              })
+              .orWhere(
+                new Brackets((inner) => {
+                  inner
+                    .where(`${BLOCK_SORT_SQL} = :cursorSortKey`, { cursorSortKey })
+                    .andWhere('t.log_index > :cursorLogIndex', {
+                      cursorLogIndex: logIndex,
+                    });
+                }),
+              );
           }),
         );
       }
@@ -123,7 +131,10 @@ export function createAssetTransferRepository(dataSource: DataSource): AssetTran
       const lastItem = items.length > 0 ? items[items.length - 1] : null;
       const nextCursor =
         hasMore && lastItem
-          ? { blockNumber: normalizeHexBlock(lastItem.block_number), logIndex: lastItem.log_index }
+          ? {
+              blockNumber: normalizeHexBlock(lastItem.block_number),
+              logIndex: lastItem.log_index,
+            }
           : null;
 
       return {
@@ -136,7 +147,6 @@ export function createAssetTransferRepository(dataSource: DataSource): AssetTran
 
 function entityToRecord(entity: AssetTransferEntity): AssetTransferRecord {
   return {
-    id: `${entity.chain}:${entity.asset_identifier}:${entity.transaction_hash}:${entity.log_index}`,
     chain: entity.chain,
     assetIdentifier: entity.asset_identifier,
     blockNumber: normalizeHexBlock(entity.block_number),

@@ -58,12 +58,22 @@ export class DefaultSyncAssetTransfersService implements SyncAssetTransfersServi
   async sync(): Promise<SyncAssetTransfersResult> {
     const asset = OnchainAssets[this.assetKey];
     if (asset.provider !== 'Alchemy') {
-      return { assetKey: this.assetKey, fromBlock: asset.startblock, toBlock: asset.startblock, insertedCount: 0 };
+      return {
+        assetKey: this.assetKey,
+        fromBlock: asset.startblock,
+        toBlock: asset.startblock,
+        insertedCount: 0,
+      };
     }
     const { fromBlock, toBlock } = await this.resolveSyncRange(asset.startblock);
 
     if (compareHexBlocks(fromBlock, toBlock) > 0) {
-      return { assetKey: this.assetKey, fromBlock, toBlock, insertedCount: 0 };
+      return {
+        assetKey: this.assetKey,
+        fromBlock,
+        toBlock,
+        insertedCount: 0,
+      };
     }
 
     let insertedCount = 0;
@@ -126,7 +136,6 @@ export function normalizeAlchemyEthereumTransfer(input: {
 }): AssetTransferRecord {
   const logIndex = parseLogIndex(input.transfer.uniqueId);
   return {
-    id: `${input.chain}:${input.assetIdentifier}:${input.transfer.hash}:${logIndex}`,
     chain: input.chain,
     assetIdentifier: input.assetIdentifier,
     blockNumber: normalizeHexBlock(input.transfer.blockNum),
