@@ -1,4 +1,4 @@
-import type { SupportedTokenChain, TokenTransferRecord } from '@reputo/onchain-data';
+import type { AssetKey, AssetTransferRecord } from '@reputo/onchain-data';
 
 export interface SelectedAssetInput {
   chain: string;
@@ -11,7 +11,7 @@ export interface TokenValueOverTimeParams {
 }
 
 export interface OrderedTransferEvent {
-  tokenChain: SupportedTokenChain;
+  assetKey: AssetKey;
   blockNumber: string;
   transactionHash: string;
   logIndex: number;
@@ -22,7 +22,7 @@ export interface OrderedTransferEvent {
 }
 
 export type WalletLot = {
-  tokenChain: SupportedTokenChain;
+  assetKey: AssetKey;
   amountRemaining: number;
   receivedAt: string | null;
   sourceTransferId: string;
@@ -37,7 +37,7 @@ export interface ReplayStats {
 }
 
 export interface LotScoreDetail {
-  token_chain: SupportedTokenChain;
+  asset_key: AssetKey;
   source_transfer_id: string;
   amount_remaining: number;
   age_days: number;
@@ -58,7 +58,7 @@ export interface TokenValueOverTimeBenchmark {
     computed_at: string;
     maturation_threshold_days: number;
     selected_assets: SelectedAssetInput[];
-    selected_token_chains: SupportedTokenChain[];
+    selected_asset_keys: AssetKey[];
     target_wallet_count: number;
     transfer_count: number;
     replay: ReplayStats;
@@ -71,9 +71,9 @@ export function roundScore(score: number): number {
   return Math.round(score * 10 ** SCORE_PRECISION) / 10 ** SCORE_PRECISION;
 }
 
-export function toTransferEvent(record: TokenTransferRecord): OrderedTransferEvent {
+export function toTransferEvent(record: AssetTransferRecord, assetKey: AssetKey): OrderedTransferEvent {
   return {
-    tokenChain: record.tokenChain,
+    assetKey,
     blockNumber: record.blockNumber,
     transactionHash: record.transactionHash,
     logIndex: record.logIndex,

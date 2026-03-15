@@ -1,9 +1,9 @@
-import { createTokenTransferRepository } from '@reputo/onchain-data';
+import { createAssetTransferRepository } from '@reputo/onchain-data';
 
 import config from '../../../../../config/index.js';
 
 export async function createOnchainTransferRepo() {
-  return createTokenTransferRepository({
+  return createAssetTransferRepository({
     dbPath: config.onchainData.dbPath,
   });
 }

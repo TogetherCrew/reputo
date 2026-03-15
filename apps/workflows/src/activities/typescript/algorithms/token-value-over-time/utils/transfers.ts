@@ -1,4 +1,4 @@
-import type { ChainPositionCursor, SupportedTokenChain, TokenTransferReadRepository } from '@reputo/onchain-data';
+import type { AssetKey, AssetTransferReadRepository, ChainPositionCursor } from '@reputo/onchain-data';
 
 import { type OrderedTransferEvent, toTransferEvent } from '../types.js';
 
@@ -8,8 +8,8 @@ export type TransferPage = {
 };
 
 export async function loadTransferPageForWallets(input: {
-  repo: TokenTransferReadRepository;
-  tokenChain: SupportedTokenChain;
+  repo: AssetTransferReadRepository;
+  assetKey: AssetKey;
   walletAddresses: string[];
   limit: number;
   cursor?: ChainPositionCursor;
@@ -19,7 +19,7 @@ export async function loadTransferPageForWallets(input: {
   }
 
   const page = await input.repo.findTransfersByAddresses({
-    tokenChain: input.tokenChain,
+    assetKey: input.assetKey,
     addresses: input.walletAddresses,
     limit: input.limit,
     cursor: input.cursor,
@@ -27,8 +27,8 @@ export async function loadTransferPageForWallets(input: {
 
   const byId = new Map<string, OrderedTransferEvent>();
   for (const record of page.items) {
-    const event = toTransferEvent(record);
-    const id = `${event.tokenChain}:${event.transactionHash}:${event.logIndex}`;
+    const event = toTransferEvent(record, input.assetKey);
+    const id = `${event.assetKey}:${event.transactionHash}:${event.logIndex}`;
     if (!byId.has(id)) byId.set(id, event);
   }
 

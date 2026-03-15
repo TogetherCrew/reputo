@@ -1,4 +1,4 @@
-import type { SupportedTokenChain } from '@reputo/onchain-data';
+import type { AssetKey } from '@reputo/onchain-data';
 
 import type { ReplayStats, SelectedAssetInput, TokenValueOverTimeBenchmark, WalletScoreDetail } from '../types.js';
 
@@ -6,7 +6,7 @@ export function formatBenchmarkOutput(input: {
   snapshotId: string;
   maturationThresholdDays: number;
   selectedAssets: SelectedAssetInput[];
-  selectedTokenChains: SupportedTokenChain[];
+  selectedAssetKeys: AssetKey[];
   targetWalletCount: number;
   transferCount: number;
   replay: ReplayStats;
@@ -19,7 +19,7 @@ export function formatBenchmarkOutput(input: {
       computed_at: new Date().toISOString(),
       maturation_threshold_days: input.maturationThresholdDays,
       selected_assets: input.selectedAssets,
-      selected_token_chains: input.selectedTokenChains,
+      selected_asset_keys: input.selectedAssetKeys,
       target_wallet_count: input.targetWalletCount,
       transfer_count: input.transferCount,
       replay: input.replay,

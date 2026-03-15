@@ -1,44 +1,42 @@
 export type {
+  AssetTransferRepository,
   ChainPositionCursor,
   FindTransfersInput,
-  OrderedTokenTransferRecord,
+  OrderedAssetTransferRecord,
   PaginatedTransfers,
-  TokenTransferRepository,
-} from './db/repos/token-transfer-repo.js';
+} from './db/repos/asset-transfer-repo.js';
 
 export {
-  type CreateSyncTokenTransfersServiceInput,
-  createSyncTokenTransfersService,
+  type CreateSyncAssetTransfersServiceInput,
+  createSyncAssetTransfersService,
   normalizeAlchemyEthereumTransfer,
-  type SyncTokenTransfersResult,
-  type SyncTokenTransfersService,
-} from './services/sync-token-transfers-service.js';
+  type SyncAssetTransfersResult,
+  type SyncAssetTransfersService,
+} from './services/sync-asset-transfers-service.js';
+
 export {
-  SupportedChain,
-  SupportedProvider,
-  SupportedToken,
-  SupportedTokenChain,
-  TOKEN_CHAIN_METADATA,
-  type TokenChainMetadata,
-  type TokenTransferRecord,
-  type TokenTransferSyncState,
-  TransferDirection,
+  type AssetKey,
+  type AssetTransferRecord,
+  type AssetTransferSyncState,
+  ONCHAIN_ASSET_KEYS,
+  ONCHAIN_ASSETS,
+  type OnchainAsset,
+  OnchainAssets,
 } from './shared/index.js';
 
-import type { TokenTransferRepository } from './db/repos/token-transfer-repo.js';
-import { createTokenTransferRepository as _createInternalRepo } from './db/repos/token-transfer-repo.js';
+import type { AssetTransferRepository } from './db/repos/asset-transfer-repo.js';
+import { createAssetTransferRepository as _createInternalRepo } from './db/repos/asset-transfer-repo.js';
 import { createDataSource } from './db/sqlite.js';
 
-export type TokenTransferReadRepository = TokenTransferRepository & {
+export type AssetTransferReadRepository = AssetTransferRepository & {
   close(): Promise<void>;
 };
 
-export async function createTokenTransferRepository(input: { dbPath: string }): Promise<TokenTransferReadRepository> {
+export async function createAssetTransferRepository(input: { dbPath: string }): Promise<AssetTransferReadRepository> {
   const dataSource = await createDataSource(input.dbPath);
   const repo = _createInternalRepo(dataSource);
   return {
     insertMany: repo.insertMany,
-    findByAddress: repo.findByAddress,
     findTransfersByAddresses: repo.findTransfersByAddresses,
     close: () => dataSource.destroy(),
   };

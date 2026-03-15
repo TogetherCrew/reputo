@@ -1,11 +1,11 @@
 import { DataSource } from 'typeorm';
-import { TokenTransferSchema, TokenTransferSyncStateSchema } from '../../src/db/schema.js';
+import { AssetTransferSchema, AssetTransferSyncStateSchema } from '../../src/db/schema.js';
 
 export async function createTestDataSource(): Promise<DataSource> {
   const ds = new DataSource({
     type: 'better-sqlite3',
     database: ':memory:',
-    entities: [TokenTransferSchema, TokenTransferSyncStateSchema],
+    entities: [AssetTransferSchema, AssetTransferSyncStateSchema],
     synchronize: true,
   });
   await ds.initialize();

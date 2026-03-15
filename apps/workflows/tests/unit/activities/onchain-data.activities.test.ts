@@ -4,13 +4,11 @@ const mockSync = vi.fn();
 const mockClose = vi.fn();
 
 vi.mock('@reputo/onchain-data', () => ({
-  createSyncTokenTransfersService: vi.fn(async () => ({
+  createSyncAssetTransfersService: vi.fn(async () => ({
     sync: mockSync,
     close: mockClose,
   })),
-  SupportedTokenChain: {
-    FET_ETHEREUM: 'fet-ethereum',
-  },
+  ONCHAIN_ASSET_KEYS: ['fet_ethereum', 'fet_cardano', 'fet_cosmos'],
 }));
 
 const mockHeartbeat = vi.fn();
@@ -28,7 +26,7 @@ vi.mock('@temporalio/activity', () => ({
   },
 }));
 
-import { createSyncTokenTransfersService } from '@reputo/onchain-data';
+import { createSyncAssetTransfersService } from '@reputo/onchain-data';
 import { createOnchainDataSyncActivity } from '../../../src/activities/orchestrator/onchain-data.activities.js';
 
 describe('Onchain Data Sync Activity', () => {
@@ -41,9 +39,9 @@ describe('Onchain Data Sync Activity', () => {
     vi.clearAllMocks();
   });
 
-  it('should sync all supported token chains', async () => {
+  it('should sync all asset keys', async () => {
     mockSync.mockResolvedValue({
-      tokenChain: 'fet-ethereum',
+      assetKey: 'fet_ethereum',
       fromBlock: '0xa7d13c',
       toBlock: '0xb00000',
       insertedCount: 150,
@@ -52,18 +50,18 @@ describe('Onchain Data Sync Activity', () => {
     const activity = createOnchainDataSyncActivity(ctx);
     await activity();
 
-    expect(createSyncTokenTransfersService).toHaveBeenCalledWith({
-      tokenChain: 'fet-ethereum',
+    expect(createSyncAssetTransfersService).toHaveBeenCalledWith({
+      assetKey: 'fet_ethereum',
       dbPath: '/tmp/test-onchain-data.db',
       alchemyApiKey: 'test-alchemy-key',
     });
-    expect(mockSync).toHaveBeenCalledOnce();
-    expect(mockClose).toHaveBeenCalledOnce();
+    expect(mockSync).toHaveBeenCalledTimes(3);
+    expect(mockClose).toHaveBeenCalledTimes(3);
   });
 
-  it('should heartbeat after each token chain sync', async () => {
+  it('should heartbeat after each asset sync', async () => {
     mockSync.mockResolvedValue({
-      tokenChain: 'fet-ethereum',
+      assetKey: 'fet_ethereum',
       fromBlock: '0xa7d13c',
       toBlock: '0xb00000',
       insertedCount: 0,
@@ -72,7 +70,9 @@ describe('Onchain Data Sync Activity', () => {
     const activity = createOnchainDataSyncActivity(ctx);
     await activity();
 
-    expect(mockHeartbeat).toHaveBeenCalledWith('fet-ethereum');
+    expect(mockHeartbeat).toHaveBeenCalledWith('fet_ethereum');
+    expect(mockHeartbeat).toHaveBeenCalledWith('fet_cardano');
+    expect(mockHeartbeat).toHaveBeenCalledWith('fet_cosmos');
   });
 
   it('should close the service even when sync throws', async () => {
@@ -86,7 +86,7 @@ describe('Onchain Data Sync Activity', () => {
 
   it('should work on first run when no database exists yet', async () => {
     mockSync.mockResolvedValue({
-      tokenChain: 'fet-ethereum',
+      assetKey: 'fet_ethereum',
       fromBlock: '0xa7d13c',
       toBlock: '0xb00000',
       insertedCount: 5000,
@@ -95,9 +95,9 @@ describe('Onchain Data Sync Activity', () => {
     const activity = createOnchainDataSyncActivity(ctx);
     await activity();
 
-    expect(createSyncTokenTransfersService).toHaveBeenCalledWith(
+    expect(createSyncAssetTransfersService).toHaveBeenCalledWith(
       expect.objectContaining({ dbPath: '/tmp/test-onchain-data.db' }),
     );
-    expect(mockSync).toHaveBeenCalledOnce();
+    expect(mockSync).toHaveBeenCalledTimes(3);
   });
 });

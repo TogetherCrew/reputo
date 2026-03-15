@@ -33,10 +33,10 @@ export function applyTransfer(
     const receiverLots = state.get(to);
     if (receiverLots) {
       pushLot(receiverLots, {
-        tokenChain: transfer.tokenChain,
+        assetKey: transfer.assetKey,
         amountRemaining: transfer.amount,
         receivedAt: transfer.blockTimestamp,
-        sourceTransferId: `${transfer.tokenChain}:${transfer.transactionHash}:${transfer.logIndex}`,
+        sourceTransferId: `${transfer.assetKey}:${transfer.transactionHash}:${transfer.logIndex}`,
       });
     }
   }

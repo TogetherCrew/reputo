@@ -1,5 +1,5 @@
 import type { AlgorithmPresetFrozen } from '@reputo/database';
-import { type SupportedTokenChain, TOKEN_CHAIN_METADATA } from '@reputo/onchain-data';
+import { type AssetKey, OnchainAssets } from '@reputo/onchain-data';
 
 import type { SelectedAssetInput, TokenValueOverTimeParams } from '../types.js';
 
@@ -17,21 +17,19 @@ export function extractInputs(inputs: AlgorithmPresetFrozen['inputs']): TokenVal
   };
 }
 
-export function resolveSelectedTokenChains(selectedAssets: SelectedAssetInput[]): SupportedTokenChain[] {
-  const metadataEntries = Object.entries(TOKEN_CHAIN_METADATA) as Array<
-    [SupportedTokenChain, (typeof TOKEN_CHAIN_METADATA)[SupportedTokenChain]]
-  >;
-  const tokenChains = new Set<SupportedTokenChain>();
+export function resolveSelectedAssetKeys(selectedAssets: SelectedAssetInput[]): AssetKey[] {
+  const keys = Object.entries(OnchainAssets) as [AssetKey, (typeof OnchainAssets)[AssetKey]][];
+  const result = new Set<AssetKey>();
 
   for (const asset of selectedAssets) {
-    for (const [tokenChain, metadata] of metadataEntries) {
-      const sameChain = metadata.chain === asset.chain;
-      const sameAssetIdentifier = metadata.contractAddress.toLowerCase() === asset.assetIdentifier.toLowerCase();
-      if (sameChain && sameAssetIdentifier) {
-        tokenChains.add(tokenChain);
+    for (const [key, meta] of keys) {
+      const sameChain = meta.chain.toLowerCase() === asset.chain.toLowerCase();
+      const sameIdentifier = meta.assetIdentifier.toLowerCase() === asset.assetIdentifier.toLowerCase();
+      if (sameChain && sameIdentifier) {
+        result.add(key);
       }
     }
   }
 
-  return [...tokenChains];
+  return [...result];
 }

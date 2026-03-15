@@ -1,12 +1,14 @@
-import { SupportedTokenChain } from '@reputo/onchain-data';
+import type { AssetKey } from '@reputo/onchain-data';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+const FET_ETHEREUM: AssetKey = 'fet_ethereum';
 
 const {
   mockGenerateKey,
   mockStringifyCsvAsync,
   mockLoadTransferPageForWallets,
   mockExtractInputs,
-  mockResolveSelectedTokenChains,
+  mockResolveSelectedAssetKeys,
   mockLoadTargetWallets,
   mockInitializeWalletLots,
   mockCreateOnchainTransferRepo,
@@ -20,7 +22,7 @@ const {
   mockStringifyCsvAsync: vi.fn(),
   mockLoadTransferPageForWallets: vi.fn(),
   mockExtractInputs: vi.fn(),
-  mockResolveSelectedTokenChains: vi.fn(),
+  mockResolveSelectedAssetKeys: vi.fn(),
   mockLoadTargetWallets: vi.fn(),
   mockInitializeWalletLots: vi.fn(),
   mockCreateOnchainTransferRepo: vi.fn(),
@@ -62,7 +64,7 @@ vi.mock('../../../src/shared/utils/index.js', () => ({
 vi.mock('../../../src/activities/typescript/algorithms/token-value-over-time/utils/index.js', () => ({
   createOnchainTransferRepo: mockCreateOnchainTransferRepo,
   extractInputs: mockExtractInputs,
-  resolveSelectedTokenChains: mockResolveSelectedTokenChains,
+  resolveSelectedAssetKeys: mockResolveSelectedAssetKeys,
   loadTargetWallets: mockLoadTargetWallets,
   initializeWalletLots: mockInitializeWalletLots,
   loadTransferPageForWallets: mockLoadTransferPageForWallets,
@@ -88,7 +90,7 @@ describe('computeTokenValueOverTime pagination', () => {
       maturationThresholdDays: 90,
       selectedAssets: [{ chain: 'ethereum', assetIdentifier: '0xtoken' }],
     });
-    mockResolveSelectedTokenChains.mockReturnValue([SupportedTokenChain.FET_ETHEREUM]);
+    mockResolveSelectedAssetKeys.mockReturnValue([FET_ETHEREUM]);
     mockLoadTargetWallets.mockReturnValue(['0xwallet1']);
     mockInitializeWalletLots.mockReturnValue(walletLots);
     mockCreateOnchainTransferRepo.mockResolvedValue({
@@ -98,7 +100,7 @@ describe('computeTokenValueOverTime pagination', () => {
       .mockResolvedValueOnce({
         items: [
           {
-            tokenChain: SupportedTokenChain.FET_ETHEREUM,
+            assetKey: FET_ETHEREUM,
             blockNumber: '0x1',
             transactionHash: '0xaaa',
             logIndex: 0,
@@ -113,7 +115,7 @@ describe('computeTokenValueOverTime pagination', () => {
       .mockResolvedValueOnce({
         items: [
           {
-            tokenChain: SupportedTokenChain.FET_ETHEREUM,
+            assetKey: FET_ETHEREUM,
             blockNumber: '0x2',
             transactionHash: '0xbbb',
             logIndex: 0,
@@ -162,16 +164,16 @@ describe('computeTokenValueOverTime pagination', () => {
 
     expect(mockLoadTransferPageForWallets).toHaveBeenNthCalledWith(1, {
       repo: { close: mockRepoClose },
-      tokenChain: SupportedTokenChain.FET_ETHEREUM,
+      assetKey: FET_ETHEREUM,
       walletAddresses: ['0xwallet1'],
-      limit: 10_000,
+      limit: 1000,
       cursor: undefined,
     });
     expect(mockLoadTransferPageForWallets).toHaveBeenNthCalledWith(2, {
       repo: { close: mockRepoClose },
-      tokenChain: SupportedTokenChain.FET_ETHEREUM,
+      assetKey: FET_ETHEREUM,
       walletAddresses: ['0xwallet1'],
-      limit: 10_000,
+      limit: 1000,
       cursor: { blockNumber: '0x1', logIndex: 0 },
     });
     expect(mockReplayTransfers).toHaveBeenCalledTimes(2);

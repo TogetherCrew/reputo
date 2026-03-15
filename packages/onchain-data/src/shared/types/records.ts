@@ -1,8 +1,7 @@
-import type { SupportedTokenChain } from '../enums/index.js';
-
-export type TokenTransferRecord = {
+export type AssetTransferRecord = {
   id: string;
-  tokenChain: SupportedTokenChain;
+  chain: string;
+  assetIdentifier: string;
   blockNumber: string;
   transactionHash: string;
   logIndex: number;
@@ -12,8 +11,9 @@ export type TokenTransferRecord = {
   blockTimestamp: string | null;
 };
 
-export type TokenTransferSyncState = {
-  tokenChain: SupportedTokenChain;
+export type AssetTransferSyncState = {
+  chain: string;
+  assetIdentifier: string;
   lastSyncedBlock: string;
   lastTransactionHash?: string | null;
   lastLogIndex?: number | null;

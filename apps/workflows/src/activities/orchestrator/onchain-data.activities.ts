@@ -1,4 +1,4 @@
-import { createSyncTokenTransfersService, SupportedTokenChain } from '@reputo/onchain-data';
+import { createSyncAssetTransfersService, ONCHAIN_ASSET_KEYS } from '@reputo/onchain-data';
 import { Context } from '@temporalio/activity';
 
 import type { OnchainDataSyncContext } from '../../shared/types/index.js';
@@ -8,16 +8,16 @@ export function createOnchainDataSyncActivity(ctx: OnchainDataSyncContext) {
 
   return async function onchainDataSync(): Promise<void> {
     const logger = Context.current().log;
-    const tokenChains = Object.values(SupportedTokenChain);
+    const assetKeys = ONCHAIN_ASSET_KEYS;
 
     logger.info('Starting on-chain data sync', {
       dbPath,
-      tokenChains,
+      assetKeys,
     });
 
-    for (const tokenChain of tokenChains) {
-      const service = await createSyncTokenTransfersService({
-        tokenChain,
+    for (const assetKey of assetKeys) {
+      const service = await createSyncAssetTransfersService({
+        assetKey,
         dbPath,
         alchemyApiKey,
       });
@@ -25,8 +25,8 @@ export function createOnchainDataSyncActivity(ctx: OnchainDataSyncContext) {
       try {
         const result = await service.sync();
 
-        logger.info('Token chain sync completed', {
-          tokenChain: result.tokenChain,
+        logger.info('Asset sync completed', {
+          assetKey: result.assetKey,
           fromBlock: result.fromBlock,
           toBlock: result.toBlock,
           insertedCount: result.insertedCount,
@@ -35,9 +35,9 @@ export function createOnchainDataSyncActivity(ctx: OnchainDataSyncContext) {
         await service.close();
       }
 
-      Context.current().heartbeat(tokenChain);
+      Context.current().heartbeat(assetKey);
     }
 
-    logger.info('On-chain data sync completed for all token chains');
+    logger.info('On-chain data sync completed for all assets');
   };
 }

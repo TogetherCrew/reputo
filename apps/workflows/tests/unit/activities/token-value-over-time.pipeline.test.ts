@@ -1,4 +1,4 @@
-import { SupportedTokenChain } from '@reputo/onchain-data';
+import type { AssetKey } from '@reputo/onchain-data';
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -10,13 +10,15 @@ import type {
   WalletLotsState,
 } from '../../../src/activities/typescript/algorithms/token-value-over-time/types.js';
 
+const FET_ETHEREUM: AssetKey = 'fet_ethereum';
+
 describe('token-value-over-time pipeline', () => {
   it('consumes lots in FIFO order and computes linear maturation weights', () => {
     const wallet = '0x0000000000000000000000000000000000000001';
     const state: WalletLotsState = new Map([[wallet, []]]);
     const transfers: OrderedTransferEvent[] = [
       {
-        tokenChain: SupportedTokenChain.FET_ETHEREUM,
+        assetKey: FET_ETHEREUM,
         blockNumber: '0x1',
         transactionHash: '0xaaa',
         logIndex: 0,
@@ -26,7 +28,7 @@ describe('token-value-over-time pipeline', () => {
         blockTimestamp: '2026-01-01T00:00:00.000Z',
       },
       {
-        tokenChain: SupportedTokenChain.FET_ETHEREUM,
+        assetKey: FET_ETHEREUM,
         blockNumber: '0x2',
         transactionHash: '0xbbb',
         logIndex: 0,
@@ -36,7 +38,7 @@ describe('token-value-over-time pipeline', () => {
         blockTimestamp: '2026-02-01T00:00:00.000Z',
       },
       {
-        tokenChain: SupportedTokenChain.FET_ETHEREUM,
+        assetKey: FET_ETHEREUM,
         blockNumber: '0x3',
         transactionHash: '0xccc',
         logIndex: 0,
@@ -56,7 +58,7 @@ describe('token-value-over-time pipeline', () => {
 
     const results = scoreWalletLots({
       lotsState: state,
-      selectedTokenChains: [SupportedTokenChain.FET_ETHEREUM],
+      selectedAssetKeys: [FET_ETHEREUM],
       snapshotCreatedAt: new Date('2026-04-01T00:00:00.000Z'),
       maturationThresholdDays: 90,
     });
@@ -76,7 +78,7 @@ describe('token-value-over-time pipeline', () => {
     const state: WalletLotsState = new Map([[wallet, []]]);
     const transfers: OrderedTransferEvent[] = [
       {
-        tokenChain: SupportedTokenChain.FET_ETHEREUM,
+        assetKey: FET_ETHEREUM,
         blockNumber: '0x1',
         transactionHash: '0xaaa',
         logIndex: 0,
@@ -86,7 +88,7 @@ describe('token-value-over-time pipeline', () => {
         blockTimestamp: '2026-01-01T00:00:00.000Z',
       },
       {
-        tokenChain: SupportedTokenChain.FET_ETHEREUM,
+        assetKey: FET_ETHEREUM,
         blockNumber: '0x2',
         transactionHash: '0xbbb',
         logIndex: 0,
@@ -110,7 +112,7 @@ describe('token-value-over-time pipeline', () => {
     const state: WalletLotsState = new Map([[wallet, []]]);
     const batchOne: OrderedTransferEvent[] = [
       {
-        tokenChain: SupportedTokenChain.FET_ETHEREUM,
+        assetKey: FET_ETHEREUM,
         blockNumber: '0x1',
         transactionHash: '0xaaa',
         logIndex: 0,
@@ -122,7 +124,7 @@ describe('token-value-over-time pipeline', () => {
     ];
     const batchTwo: OrderedTransferEvent[] = [
       {
-        tokenChain: SupportedTokenChain.FET_ETHEREUM,
+        assetKey: FET_ETHEREUM,
         blockNumber: '0x2',
         transactionHash: '0xbbb',
         logIndex: 0,
@@ -132,7 +134,7 @@ describe('token-value-over-time pipeline', () => {
         blockTimestamp: '2026-01-02T00:00:00.000Z',
       },
       {
-        tokenChain: SupportedTokenChain.FET_ETHEREUM,
+        assetKey: FET_ETHEREUM,
         blockNumber: '0x3',
         transactionHash: '0xccc',
         logIndex: 0,
@@ -148,7 +150,7 @@ describe('token-value-over-time pipeline', () => {
 
     const remainingLots = state.get(wallet);
     expect(remainingLots).toHaveLength(1);
-    expect(remainingLots?.[0].sourceTransferId).toBe('fet-ethereum:0xbbb:0');
+    expect(remainingLots?.[0].sourceTransferId).toBe('fet_ethereum:0xbbb:0');
     expect(remainingLots?.[0].amountRemaining).toBe(3);
   });
 
@@ -157,7 +159,7 @@ describe('token-value-over-time pipeline', () => {
     const state: WalletLotsState = new Map([[wallet, []]]);
     const transfers: OrderedTransferEvent[] = [
       {
-        tokenChain: SupportedTokenChain.FET_ETHEREUM,
+        assetKey: FET_ETHEREUM,
         blockNumber: '0x1',
         transactionHash: '0xaaa',
         logIndex: 0,
@@ -171,13 +173,13 @@ describe('token-value-over-time pipeline', () => {
 
     const resultsWithDate = scoreWalletLots({
       lotsState: state,
-      selectedTokenChains: [SupportedTokenChain.FET_ETHEREUM],
+      selectedAssetKeys: [FET_ETHEREUM],
       snapshotCreatedAt: new Date('2026-04-01T00:00:00.000Z'),
       maturationThresholdDays: 90,
     });
     const resultsWithString = scoreWalletLots({
       lotsState: state,
-      selectedTokenChains: [SupportedTokenChain.FET_ETHEREUM],
+      selectedAssetKeys: [FET_ETHEREUM],
       snapshotCreatedAt: '2026-04-01T00:00:00.000Z',
       maturationThresholdDays: 90,
     });

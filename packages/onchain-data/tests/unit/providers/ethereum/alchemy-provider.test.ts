@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createAlchemyEthereumTokenTransferProvider } from '../../../../src/providers/ethereum/alchemy-ethereum-token-transfer-provider.js';
+import { createAlchemyEthereumAssetTransferProvider } from '../../../../src/providers/ethereum/alchemy-ethereum-asset-transfer-provider.js';
 
 vi.mock('undici', () => ({
   request: vi.fn(),
@@ -27,7 +27,7 @@ function mockJsonRpcError(code: number, message: string, statusCode = 200) {
   };
 }
 
-describe('AlchemyEthereumTokenTransferProvider', () => {
+describe('AlchemyEthereumAssetTransferProvider', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -42,7 +42,7 @@ describe('AlchemyEthereumTokenTransferProvider', () => {
         mockJsonRpcResponse({ number: '0x1234', hash: '0xabc', timestamp: '0x5f5e100' }) as never,
       );
 
-      const provider = createAlchemyEthereumTokenTransferProvider('test-key');
+      const provider = createAlchemyEthereumAssetTransferProvider('test-key');
       const block = await provider.getToBlock();
 
       expect(block).toBe('0x1234');
@@ -60,7 +60,7 @@ describe('AlchemyEthereumTokenTransferProvider', () => {
         mockJsonRpcResponse({ number: '0x100', hash: '0x', timestamp: '0x0' }) as never,
       );
 
-      const provider = createAlchemyEthereumTokenTransferProvider('test-key');
+      const provider = createAlchemyEthereumAssetTransferProvider('test-key');
       await provider.getToBlock();
 
       const callBody = JSON.parse((mockRequest.mock.calls[0][1] as { body: string }).body);
@@ -68,7 +68,7 @@ describe('AlchemyEthereumTokenTransferProvider', () => {
     });
   });
 
-  describe('fetchTokenTransfers', () => {
+  describe('fetchAssetTransfers', () => {
     it('yields a batch for a single window with no pagination', async () => {
       mockRequest.mockResolvedValueOnce(
         mockJsonRpcResponse({
@@ -89,11 +89,11 @@ describe('AlchemyEthereumTokenTransferProvider', () => {
         }) as never,
       );
 
-      const provider = createAlchemyEthereumTokenTransferProvider('test-key');
+      const provider = createAlchemyEthereumAssetTransferProvider('test-key');
       const batches: Array<{ items: unknown[]; lastBlock: string }> = [];
 
-      for await (const batch of provider.fetchTokenTransfers({
-        contractAddress: '0xcontract',
+      for await (const batch of provider.fetchAssetTransfers({
+        assetIdentifier: '0xcontract',
         fromBlock: '0x100',
         toBlock: '0x200',
       })) {
@@ -107,6 +107,7 @@ describe('AlchemyEthereumTokenTransferProvider', () => {
       const callBody = JSON.parse((mockRequest.mock.calls[0][1] as { body: string }).body);
       expect(callBody.params[0].fromBlock).toBe('0x100');
       expect(callBody.params[0].toBlock).toBe('0x200');
+      expect(callBody.params[0].contractAddresses).toEqual(['0xcontract']);
       expect(callBody.params[0].withMetadata).toBe(true);
     });
 
@@ -150,11 +151,11 @@ describe('AlchemyEthereumTokenTransferProvider', () => {
           }) as never,
         );
 
-      const provider = createAlchemyEthereumTokenTransferProvider('test-key');
+      const provider = createAlchemyEthereumAssetTransferProvider('test-key');
       const batches: Array<{ items: unknown[]; lastBlock: string }> = [];
 
-      for await (const batch of provider.fetchTokenTransfers({
-        contractAddress: '0xcontract',
+      for await (const batch of provider.fetchAssetTransfers({
+        assetIdentifier: '0xcontract',
         fromBlock: '0x100',
         toBlock: '0x200',
       })) {
@@ -175,11 +176,11 @@ describe('AlchemyEthereumTokenTransferProvider', () => {
     it('yields one batch for empty range with lastBlock = toBlock', async () => {
       mockRequest.mockResolvedValueOnce(mockJsonRpcResponse({ transfers: [] }) as never);
 
-      const provider = createAlchemyEthereumTokenTransferProvider('test-key');
+      const provider = createAlchemyEthereumAssetTransferProvider('test-key');
       const batches: Array<{ items: unknown[]; lastBlock: string }> = [];
 
-      for await (const batch of provider.fetchTokenTransfers({
-        contractAddress: '0xcontract',
+      for await (const batch of provider.fetchAssetTransfers({
+        assetIdentifier: '0xcontract',
         fromBlock: '0x0',
         toBlock: '0xf9f',
       })) {
@@ -196,7 +197,7 @@ describe('AlchemyEthereumTokenTransferProvider', () => {
     it('throws on non-retryable RPC error', async () => {
       mockRequest.mockResolvedValue(mockJsonRpcError(-32600, 'Invalid Request') as never);
 
-      const provider = createAlchemyEthereumTokenTransferProvider('test-key');
+      const provider = createAlchemyEthereumAssetTransferProvider('test-key');
       await expect(provider.getToBlock()).rejects.toThrow('Invalid Request');
     });
   });

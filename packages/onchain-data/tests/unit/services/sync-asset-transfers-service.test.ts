@@ -1,14 +1,16 @@
 import type { DataSource } from 'typeorm';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { TokenTransferRepository } from '../../../src/db/repos/token-transfer-repo.js';
-import { createTokenTransferRepository } from '../../../src/db/repos/token-transfer-repo.js';
-import type { TokenTransferSyncStateRepository } from '../../../src/db/repos/token-transfer-sync-state-repo.js';
-import { createTokenTransferSyncStateRepository } from '../../../src/db/repos/token-transfer-sync-state-repo.js';
-import type { AlchemyEthereumTokenTransferProvider } from '../../../src/providers/ethereum/alchemy-ethereum-token-transfer-provider.js';
-import { DefaultSyncTokenTransfersService } from '../../../src/services/sync-token-transfers-service.js';
-import { SupportedTokenChain, TOKEN_CHAIN_METADATA, TOKEN_TRANSFER_START_BLOCKS } from '../../../src/shared/index.js';
+import type { AssetTransferRepository } from '../../../src/db/repos/asset-transfer-repo.js';
+import { createAssetTransferRepository } from '../../../src/db/repos/asset-transfer-repo.js';
+import type { AssetTransferSyncStateRepository } from '../../../src/db/repos/asset-transfer-sync-state-repo.js';
+import { createAssetTransferSyncStateRepository } from '../../../src/db/repos/asset-transfer-sync-state-repo.js';
+import type { AlchemyEthereumAssetTransferProvider } from '../../../src/providers/ethereum/alchemy-ethereum-asset-transfer-provider.js';
+import { DefaultSyncAssetTransfersService } from '../../../src/services/sync-asset-transfers-service.js';
+import { type AssetKey, OnchainAssets } from '../../../src/shared/index.js';
 
-const FET_START_BLOCK = TOKEN_TRANSFER_START_BLOCKS[SupportedTokenChain.FET_ETHEREUM];
+const FET_ETHEREUM: AssetKey = 'fet_ethereum';
+const asset = OnchainAssets.fet_ethereum;
+const FET_START_BLOCK = asset.startblock;
 const FET_START_BLOCK_NUM = parseInt(FET_START_BLOCK, 16);
 
 function blockToHex(n: number): string {
@@ -19,37 +21,36 @@ import { closeTestDataSource, createTestDataSource } from '../../utils/db-helper
 import { createMockAlchemyTransfer } from '../../utils/mock-helpers.js';
 
 function createMockProvider(
-  overrides?: Partial<AlchemyEthereumTokenTransferProvider>,
-): AlchemyEthereumTokenTransferProvider {
+  overrides?: Partial<AlchemyEthereumAssetTransferProvider>,
+): AlchemyEthereumAssetTransferProvider {
   return {
     getToBlock: vi.fn().mockResolvedValue(blockToHex(8000000)),
-    fetchTokenTransfers: overrides?.fetchTokenTransfers ?? async function* () {},
+    fetchAssetTransfers: overrides?.fetchAssetTransfers ?? async function* () {},
     ...overrides,
   };
 }
 
-describe('DefaultSyncTokenTransfersService', () => {
+describe('DefaultSyncAssetTransfersService', () => {
   let ds: DataSource;
-  let transferRepo: TokenTransferRepository;
-  let syncStateRepo: TokenTransferSyncStateRepository;
+  let transferRepo: AssetTransferRepository;
+  let syncStateRepo: AssetTransferSyncStateRepository;
   const fixedClock = () => '2024-01-15T12:00:00.000Z';
 
   beforeEach(async () => {
     ds = await createTestDataSource();
-    transferRepo = createTokenTransferRepository(ds);
-    syncStateRepo = createTokenTransferSyncStateRepository(ds);
+    transferRepo = createAssetTransferRepository(ds);
+    syncStateRepo = createAssetTransferSyncStateRepository(ds);
   });
 
   afterEach(async () => {
     await closeTestDataSource(ds);
   });
 
-  it('resolves package metadata from tokenChain', async () => {
-    const metadata = TOKEN_CHAIN_METADATA[SupportedTokenChain.FET_ETHEREUM];
+  it('resolves metadata from assetKey', async () => {
     const provider = createMockProvider();
 
-    const service = new DefaultSyncTokenTransfersService(
-      SupportedTokenChain.FET_ETHEREUM,
+    const service = new DefaultSyncAssetTransfersService(
+      FET_ETHEREUM,
       ds,
       transferRepo,
       syncStateRepo,
@@ -58,20 +59,20 @@ describe('DefaultSyncTokenTransfersService', () => {
     );
 
     const result = await service.sync();
-    expect(result.tokenChain).toBe(SupportedTokenChain.FET_ETHEREUM);
+    expect(result.assetKey).toBe(FET_ETHEREUM);
     expect(provider.getToBlock).toHaveBeenCalled();
-    expect(result.fromBlock).toBe(metadata.startBlock);
+    expect(result.fromBlock).toBe(asset.startblock);
   });
 
-  it('first sync starts from package-owned startBlock', async () => {
-    const fetchTokenTransfers = vi.fn(async function* () {});
+  it('first sync starts from asset startblock', async () => {
+    const fetchAssetTransfers = vi.fn(async function* () {});
     const provider = createMockProvider({
       getToBlock: vi.fn().mockResolvedValue(blockToHex(FET_START_BLOCK_NUM + 100)),
-      fetchTokenTransfers,
+      fetchAssetTransfers,
     });
 
-    const service = new DefaultSyncTokenTransfersService(
-      SupportedTokenChain.FET_ETHEREUM,
+    const service = new DefaultSyncAssetTransfersService(
+      FET_ETHEREUM,
       ds,
       transferRepo,
       syncStateRepo,
@@ -80,26 +81,27 @@ describe('DefaultSyncTokenTransfersService', () => {
     );
 
     const result = await service.sync();
-    expect(result.fromBlock).toBe(TOKEN_TRANSFER_START_BLOCKS[SupportedTokenChain.FET_ETHEREUM]);
-    expect(fetchTokenTransfers).toHaveBeenCalledWith({
-      contractAddress: TOKEN_CHAIN_METADATA[SupportedTokenChain.FET_ETHEREUM].contractAddress,
-      fromBlock: TOKEN_TRANSFER_START_BLOCKS[SupportedTokenChain.FET_ETHEREUM],
+    expect(result.fromBlock).toBe(FET_START_BLOCK);
+    expect(fetchAssetTransfers).toHaveBeenCalledWith({
+      assetIdentifier: asset.assetIdentifier,
+      fromBlock: FET_START_BLOCK,
       toBlock: blockToHex(FET_START_BLOCK_NUM + 100),
     });
   });
 
   it('later sync resumes from lastSyncedBlock exactly', async () => {
     await syncStateRepo.upsert({
-      tokenChain: SupportedTokenChain.FET_ETHEREUM,
+      chain: asset.chain,
+      assetIdentifier: asset.assetIdentifier,
       lastSyncedBlock: blockToHex(7500000),
       updatedAt: '2024-01-14T10:00:00.000Z',
     });
 
-    const fetchTokenTransfers = vi.fn(async function* () {});
-    const provider = createMockProvider({ fetchTokenTransfers });
+    const fetchAssetTransfers = vi.fn(async function* () {});
+    const provider = createMockProvider({ fetchAssetTransfers });
 
-    const service = new DefaultSyncTokenTransfersService(
-      SupportedTokenChain.FET_ETHEREUM,
+    const service = new DefaultSyncAssetTransfersService(
+      FET_ETHEREUM,
       ds,
       transferRepo,
       syncStateRepo,
@@ -109,8 +111,8 @@ describe('DefaultSyncTokenTransfersService', () => {
 
     const result = await service.sync();
     expect(result.fromBlock).toBe(blockToHex(7500000));
-    expect(fetchTokenTransfers).toHaveBeenCalledWith({
-      contractAddress: TOKEN_CHAIN_METADATA[SupportedTokenChain.FET_ETHEREUM].contractAddress,
+    expect(fetchAssetTransfers).toHaveBeenCalledWith({
+      assetIdentifier: asset.assetIdentifier,
       fromBlock: blockToHex(7500000),
       toBlock: blockToHex(8000000),
     });
@@ -121,8 +123,8 @@ describe('DefaultSyncTokenTransfersService', () => {
       getToBlock: vi.fn().mockResolvedValue(blockToHex(9999999)),
     });
 
-    const service = new DefaultSyncTokenTransfersService(
-      SupportedTokenChain.FET_ETHEREUM,
+    const service = new DefaultSyncAssetTransfersService(
+      FET_ETHEREUM,
       ds,
       transferRepo,
       syncStateRepo,
@@ -136,7 +138,8 @@ describe('DefaultSyncTokenTransfersService', () => {
 
   it('returns zero insertedCount when fromBlock > toBlock', async () => {
     await syncStateRepo.upsert({
-      tokenChain: SupportedTokenChain.FET_ETHEREUM,
+      chain: asset.chain,
+      assetIdentifier: asset.assetIdentifier,
       lastSyncedBlock: blockToHex(9000000),
       updatedAt: '2024-01-14T10:00:00.000Z',
     });
@@ -145,8 +148,8 @@ describe('DefaultSyncTokenTransfersService', () => {
       getToBlock: vi.fn().mockResolvedValue(blockToHex(8000000)),
     });
 
-    const service = new DefaultSyncTokenTransfersService(
-      SupportedTokenChain.FET_ETHEREUM,
+    const service = new DefaultSyncAssetTransfersService(
+      FET_ETHEREUM,
       ds,
       transferRepo,
       syncStateRepo,
@@ -189,11 +192,11 @@ describe('DefaultSyncTokenTransfersService', () => {
 
     const provider = createMockProvider({
       getToBlock: vi.fn().mockResolvedValue(blockToHex(toBlock)),
-      fetchTokenTransfers: mockFetch,
+      fetchAssetTransfers: mockFetch,
     });
 
-    const service = new DefaultSyncTokenTransfersService(
-      SupportedTokenChain.FET_ETHEREUM,
+    const service = new DefaultSyncAssetTransfersService(
+      FET_ETHEREUM,
       ds,
       transferRepo,
       syncStateRepo,
@@ -204,7 +207,7 @@ describe('DefaultSyncTokenTransfersService', () => {
     const result = await service.sync();
     expect(result.insertedCount).toBe(2);
 
-    const syncState = await syncStateRepo.findByTokenChain(SupportedTokenChain.FET_ETHEREUM);
+    const syncState = await syncStateRepo.findByAssetKey(FET_ETHEREUM);
     expect(syncState?.lastSyncedBlock).toBe(blockToHex(block2));
   });
 
@@ -222,11 +225,11 @@ describe('DefaultSyncTokenTransfersService', () => {
 
     const provider = createMockProvider({
       getToBlock: vi.fn().mockResolvedValue(blockToHex(toBlock)),
-      fetchTokenTransfers: mockFetch,
+      fetchAssetTransfers: mockFetch,
     });
 
-    const service = new DefaultSyncTokenTransfersService(
-      SupportedTokenChain.FET_ETHEREUM,
+    const service = new DefaultSyncAssetTransfersService(
+      FET_ETHEREUM,
       ds,
       transferRepo,
       syncStateRepo,
@@ -267,11 +270,11 @@ describe('DefaultSyncTokenTransfersService', () => {
 
     const provider = createMockProvider({
       getToBlock: vi.fn().mockResolvedValue(blockToHex(toBlock)),
-      fetchTokenTransfers: mockFetch,
+      fetchAssetTransfers: mockFetch,
     });
 
-    const service = new DefaultSyncTokenTransfersService(
-      SupportedTokenChain.FET_ETHEREUM,
+    const service = new DefaultSyncAssetTransfersService(
+      FET_ETHEREUM,
       ds,
       transferRepo,
       syncStateRepo,
@@ -282,7 +285,7 @@ describe('DefaultSyncTokenTransfersService', () => {
     const result = await service.sync();
     expect(result.insertedCount).toBe(2);
 
-    const syncState = await syncStateRepo.findByTokenChain(SupportedTokenChain.FET_ETHEREUM);
+    const syncState = await syncStateRepo.findByAssetKey(FET_ETHEREUM);
     expect(syncState?.lastSyncedBlock).toBe(blockToHex(block2));
   });
 });
