@@ -1,3 +1,4 @@
+import { SnapshotStatus } from '@reputo/database';
 import { describe, expect, it, vi } from 'vitest';
 
 vi.mock('@temporalio/workflow', () => ({
@@ -71,7 +72,7 @@ describe('OrchestratorWorkflow branches', () => {
     const activities = createProxyActivitiesMock({
       getSnapshot: vi.fn().mockResolvedValue({
         snapshot: {
-          status: 'completed',
+          status: SnapshotStatus.completed,
           algorithmPresetFrozen: {
             key: 'algo-key',
             version: '1.0.0',
@@ -100,7 +101,7 @@ describe('OrchestratorWorkflow branches', () => {
     const activities = createProxyActivitiesMock({
       getSnapshot: vi.fn().mockResolvedValue({
         snapshot: {
-          status: 'queued',
+          status: SnapshotStatus.queued,
           algorithmPresetFrozen: {
             key: '',
             version: '',
@@ -122,7 +123,7 @@ describe('OrchestratorWorkflow branches', () => {
 
     expect(activities.updateSnapshot).toHaveBeenCalledWith({
       snapshotId: 'snapshot-1',
-      status: 'failed',
+      status: SnapshotStatus.failed,
       temporal: {
         workflowId: 'wf-1',
         runId: 'run-1',
@@ -140,7 +141,7 @@ describe('OrchestratorWorkflow branches', () => {
     const activities = createProxyActivitiesMock({
       getSnapshot: vi.fn().mockResolvedValue({
         snapshot: {
-          status: 'queued',
+          status: SnapshotStatus.queued,
           algorithmPresetFrozen: {
             key: 'algo-key',
             version: '1.0.0',
@@ -174,14 +175,14 @@ describe('OrchestratorWorkflow branches', () => {
       1,
       expect.objectContaining({
         snapshotId: 'snapshot-1',
-        status: 'running',
+        status: SnapshotStatus.running,
       }),
     );
     expect(activities.updateSnapshot).toHaveBeenNthCalledWith(
       2,
       expect.objectContaining({
         snapshotId: 'snapshot-1',
-        status: 'cancelled',
+        status: SnapshotStatus.cancelled,
         error: {
           message: 'Workflow was cancelled',
         },
@@ -195,7 +196,7 @@ describe('OrchestratorWorkflow branches', () => {
     const activities = createProxyActivitiesMock({
       getSnapshot: vi.fn().mockResolvedValue({
         snapshot: {
-          status: 'queued',
+          status: SnapshotStatus.queued,
           algorithmPresetFrozen: {
             key: 'algo-key',
             version: '1.0.0',
@@ -229,7 +230,7 @@ describe('OrchestratorWorkflow branches', () => {
       2,
       expect.objectContaining({
         snapshotId: 'snapshot-1',
-        status: 'failed',
+        status: SnapshotStatus.failed,
         error: {
           message: 'algorithm failed',
         },

@@ -1,3 +1,11 @@
-export const SNAPSHOT_STATUS = ['queued', 'running', 'completed', 'failed', 'cancelled'] as const;
+export const SnapshotStatus = {
+  queued: 'queued',
+  running: 'running',
+  completed: 'completed',
+  failed: 'failed',
+  cancelled: 'cancelled',
+} as const;
 
-export type SnapshotStatus = (typeof SNAPSHOT_STATUS)[number];
+export type SnapshotStatus = (typeof SnapshotStatus)[keyof typeof SnapshotStatus];
+
+export const SNAPSHOT_STATUS = Object.values(SnapshotStatus);

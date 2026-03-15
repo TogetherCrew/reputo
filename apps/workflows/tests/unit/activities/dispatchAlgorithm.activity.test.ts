@@ -1,3 +1,4 @@
+import { SnapshotStatus } from '@reputo/database';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { UnsupportedAlgorithmError } from '../../../src/shared/errors/index.js';
 import type { Snapshot } from '../../../src/shared/types/index.js';
@@ -31,7 +32,7 @@ describe('dispatchAlgorithm activity', () => {
 
     const snapshot: Snapshot = {
       _id: '507f1f77bcf86cd799439012',
-      status: 'queued',
+      status: SnapshotStatus.queued,
       algorithmPreset: '507f1f77bcf86cd799439011',
       algorithmPresetFrozen: {
         key: 'does_not_exist',

@@ -1,3 +1,4 @@
+import { SnapshotStatus } from '@reputo/database';
 import { describe, expect, it, vi } from 'vitest';
 
 vi.mock('@temporalio/workflow', () => ({
@@ -28,7 +29,7 @@ describe('OrchestratorWorkflow task queue routing', () => {
 
     const getSnapshot = vi.fn().mockResolvedValue({
       snapshot: {
-        status: 'queued',
+        status: SnapshotStatus.queued,
         algorithmPresetFrozen: {
           key: 'algo-key',
           version: '1.0.0',

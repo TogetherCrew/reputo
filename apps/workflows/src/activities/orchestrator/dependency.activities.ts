@@ -9,7 +9,10 @@ import { createDeepfundingSyncActivity } from './deepfunding-portal-api.activiti
 import { createOnchainDataSyncActivity } from './onchain-data.activities.js';
 
 export function createDependencyResolverActivities(ctx: DependencyResolverContext): DependencyResolverActivities {
-  const deepfundingSync = createDeepfundingSyncActivity(ctx);
+  const deepfundingSync = createDeepfundingSyncActivity({
+    storage: ctx.storage,
+    storageConfig: ctx.storageConfig,
+  });
   const onchainDataSync = createOnchainDataSyncActivity(ctx.onchainData);
 
   return {
@@ -17,7 +20,10 @@ export function createDependencyResolverActivities(ctx: DependencyResolverContex
       const logger = Context.current().log;
       const { dependencyKey, snapshotId } = input;
 
-      logger.info('Resolving dependency', { dependencyKey, snapshotId });
+      logger.info('Resolving dependency', {
+        dependencyKey,
+        snapshotId,
+      });
 
       switch (dependencyKey) {
         case 'deepfunding-portal-api':
@@ -26,11 +32,12 @@ export function createDependencyResolverActivities(ctx: DependencyResolverContex
         case 'onchain-data':
           await onchainDataSync();
           break;
-        default:
-          throw new Error(`Unknown dependency key: ${dependencyKey satisfies never}`);
       }
 
-      logger.info('Dependency resolved successfully', { dependencyKey, snapshotId });
+      logger.info('Dependency resolved successfully', {
+        dependencyKey,
+        snapshotId: snapshotId,
+      });
     },
   };
 }
