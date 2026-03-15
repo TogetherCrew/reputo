@@ -16,7 +16,7 @@ export function createOnchainDataSyncActivity(ctx: OnchainDataSyncContext) {
     });
 
     for (const tokenChain of tokenChains) {
-      const service = createSyncTokenTransfersService({
+      const service = await createSyncTokenTransfersService({
         tokenChain,
         dbPath,
         alchemyApiKey,
@@ -32,7 +32,7 @@ export function createOnchainDataSyncActivity(ctx: OnchainDataSyncContext) {
           insertedCount: result.insertedCount,
         });
       } finally {
-        service.close();
+        await service.close();
       }
 
       Context.current().heartbeat(tokenChain);

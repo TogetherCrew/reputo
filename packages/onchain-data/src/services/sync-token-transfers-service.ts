@@ -1,9 +1,9 @@
+import type { DataSource } from 'typeorm';
 import type { TokenTransferRepository } from '../db/repos/token-transfer-repo.js';
 import { createTokenTransferRepository } from '../db/repos/token-transfer-repo.js';
 import type { TokenTransferSyncStateRepository } from '../db/repos/token-transfer-sync-state-repo.js';
 import { createTokenTransferSyncStateRepository } from '../db/repos/token-transfer-sync-state-repo.js';
-import type { Database } from '../db/sqlite.js';
-import { createDatabase } from '../db/sqlite.js';
+import { createDataSource } from '../db/sqlite.js';
 import type { AlchemyEthereumTokenTransferProvider } from '../providers/ethereum/alchemy-ethereum-token-transfer-provider.js';
 import { createAlchemyEthereumTokenTransferProvider } from '../providers/ethereum/alchemy-ethereum-token-transfer-provider.js';
 import type { AlchemyAssetTransfer } from '../providers/ethereum/alchemy-types.js';
@@ -25,7 +25,7 @@ export type SyncTokenTransfersResult = {
 
 export interface SyncTokenTransfersService {
   sync(): Promise<SyncTokenTransfersResult>;
-  close(): void;
+  close(): Promise<void>;
 }
 
 export type CreateSyncTokenTransfersServiceInput = {
@@ -34,21 +34,21 @@ export type CreateSyncTokenTransfersServiceInput = {
   alchemyApiKey: string;
 };
 
-export function createSyncTokenTransfersService(
+export async function createSyncTokenTransfersService(
   input: CreateSyncTokenTransfersServiceInput,
-): SyncTokenTransfersService {
-  const db = createDatabase(input.dbPath);
-  const tokenTransferRepo = createTokenTransferRepository(db.sqlite);
-  const syncStateRepo = createTokenTransferSyncStateRepository(db.sqlite);
+): Promise<SyncTokenTransfersService> {
+  const dataSource = await createDataSource(input.dbPath);
+  const tokenTransferRepo = createTokenTransferRepository(dataSource);
+  const syncStateRepo = createTokenTransferSyncStateRepository(dataSource);
   const provider = createAlchemyEthereumTokenTransferProvider(input.alchemyApiKey);
 
-  return new DefaultSyncTokenTransfersService(input.tokenChain, db, tokenTransferRepo, syncStateRepo, provider);
+  return new DefaultSyncTokenTransfersService(input.tokenChain, dataSource, tokenTransferRepo, syncStateRepo, provider);
 }
 
 export class DefaultSyncTokenTransfersService implements SyncTokenTransfersService {
   constructor(
     private readonly tokenChain: SupportedTokenChain,
-    private readonly db: Database,
+    private readonly dataSource: DataSource,
     private readonly tokenTransferRepo: TokenTransferRepository,
     private readonly syncStateRepo: TokenTransferSyncStateRepository,
     private readonly provider: AlchemyEthereumTokenTransferProvider,
@@ -60,12 +60,7 @@ export class DefaultSyncTokenTransfersService implements SyncTokenTransfersServi
     const { fromBlock, toBlock } = await this.resolveSyncRange(metadata.startBlock);
 
     if (compareHexBlocks(fromBlock, toBlock) > 0) {
-      return {
-        tokenChain: this.tokenChain,
-        fromBlock,
-        toBlock,
-        insertedCount: 0,
-      };
+      return { tokenChain: this.tokenChain, fromBlock, toBlock, insertedCount: 0 };
     }
 
     let insertedCount = 0;
@@ -75,34 +70,27 @@ export class DefaultSyncTokenTransfersService implements SyncTokenTransfersServi
       fromBlock,
       toBlock,
     })) {
-      insertedCount += this.persistBatch(batch);
+      insertedCount += await this.persistBatch(batch);
     }
 
-    return {
-      tokenChain: this.tokenChain,
-      fromBlock,
-      toBlock,
-      insertedCount,
-    };
+    return { tokenChain: this.tokenChain, fromBlock, toBlock, insertedCount };
   }
 
-  close(): void {
-    this.db.close();
+  async close(): Promise<void> {
+    await this.dataSource.destroy();
   }
 
   private async resolveSyncRange(startBlock: string): Promise<{
     fromBlock: string;
     toBlock: string;
   }> {
-    console.log(startBlock);
-    const syncState = this.syncStateRepo.findByTokenChain(this.tokenChain);
+    const syncState = await this.syncStateRepo.findByTokenChain(this.tokenChain);
     const fromBlock = syncState ? normalizeHexBlock(syncState.lastSyncedBlock) : normalizeHexBlock(startBlock);
-    console.log(syncState, fromBlock);
     const toBlock = normalizeHexBlock(await this.provider.getToBlock());
     return { fromBlock, toBlock };
   }
 
-  private persistBatch(batch: { items: AlchemyAssetTransfer[]; lastBlock: string }): number {
+  private async persistBatch(batch: { items: AlchemyAssetTransfer[]; lastBlock: string }): Promise<number> {
     const normalizedItems = batch.items.map((transfer) =>
       normalizeAlchemyEthereumTransfer({
         tokenChain: this.tokenChain,
@@ -112,10 +100,10 @@ export class DefaultSyncTokenTransfersService implements SyncTokenTransfersServi
 
     const lastItem = normalizedItems.length > 0 ? normalizedItems[normalizedItems.length - 1] : null;
 
-    return this.db.transaction(() => {
-      const insertedCount = this.tokenTransferRepo.insertMany(normalizedItems);
+    return this.dataSource.transaction(async () => {
+      const insertedCount = await this.tokenTransferRepo.insertMany(normalizedItems);
 
-      this.syncStateRepo.upsert({
+      await this.syncStateRepo.upsert({
         tokenChain: this.tokenChain,
         lastSyncedBlock: normalizeHexBlock(batch.lastBlock),
         lastTransactionHash: lastItem?.transactionHash ?? null,

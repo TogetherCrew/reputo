@@ -4,7 +4,7 @@ const mockSync = vi.fn();
 const mockClose = vi.fn();
 
 vi.mock('@reputo/onchain-data', () => ({
-  createSyncTokenTransfersService: vi.fn(() => ({
+  createSyncTokenTransfersService: vi.fn(async () => ({
     sync: mockSync,
     close: mockClose,
   })),

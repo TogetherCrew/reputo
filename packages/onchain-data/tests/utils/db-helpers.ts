@@ -1,12 +1,19 @@
-import BetterSqlite3 from 'better-sqlite3';
-import { INITIAL_MIGRATION } from '../../src/db/schema.js';
+import { DataSource } from 'typeorm';
+import { TokenTransferSchema, TokenTransferSyncStateSchema } from '../../src/db/schema.js';
 
-export function createTestDatabase(): BetterSqlite3.Database {
-  const db = new BetterSqlite3(':memory:');
-  db.exec(INITIAL_MIGRATION);
-  return db;
+export async function createTestDataSource(): Promise<DataSource> {
+  const ds = new DataSource({
+    type: 'better-sqlite3',
+    database: ':memory:',
+    entities: [TokenTransferSchema, TokenTransferSyncStateSchema],
+    synchronize: true,
+  });
+  await ds.initialize();
+  return ds;
 }
 
-export function closeTestDatabase(db: BetterSqlite3.Database): void {
-  db.close();
+export async function closeTestDataSource(ds: DataSource): Promise<void> {
+  if (ds.isInitialized) {
+    await ds.destroy();
+  }
 }

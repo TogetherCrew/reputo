@@ -28,6 +28,7 @@
     },
     "dependencies": {
         "better-sqlite3": "catalog:",
+        "typeorm": "catalog:",
         "undici": "catalog:"
     },
     "devDependencies": {

@@ -1,4 +1,8 @@
-export type { TokenTransferRepository } from './db/repos/token-transfer-repo.js';
+export type {
+  FindTransfersInput,
+  PaginatedTransfers,
+  TokenTransferRepository,
+} from './db/repos/token-transfer-repo.js';
 
 export {
   type CreateSyncTokenTransfersServiceInput,
@@ -20,18 +24,19 @@ export {
 
 import type { TokenTransferRepository } from './db/repos/token-transfer-repo.js';
 import { createTokenTransferRepository as _createInternalRepo } from './db/repos/token-transfer-repo.js';
-import { createDatabase } from './db/sqlite.js';
+import { createDataSource } from './db/sqlite.js';
 
 export type TokenTransferReadRepository = TokenTransferRepository & {
-  close(): void;
+  close(): Promise<void>;
 };
 
-export function createTokenTransferRepository(input: { dbPath: string }): TokenTransferReadRepository {
-  const db = createDatabase(input.dbPath);
-  const repo = _createInternalRepo(db.sqlite);
+export async function createTokenTransferRepository(input: { dbPath: string }): Promise<TokenTransferReadRepository> {
+  const dataSource = await createDataSource(input.dbPath);
+  const repo = _createInternalRepo(dataSource);
   return {
     insertMany: repo.insertMany,
     findByAddress: repo.findByAddress,
-    close: () => db.close(),
+    findTransfersByAddresses: repo.findTransfersByAddresses,
+    close: () => dataSource.destroy(),
   };
 }

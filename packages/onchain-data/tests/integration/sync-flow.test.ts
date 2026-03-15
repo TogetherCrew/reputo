@@ -1,16 +1,14 @@
-import type BetterSqlite3 from 'better-sqlite3';
+import type { DataSource } from 'typeorm';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { TokenTransferRepository } from '../../src/db/repos/token-transfer-repo.js';
 import { createTokenTransferRepository } from '../../src/db/repos/token-transfer-repo.js';
 import type { TokenTransferSyncStateRepository } from '../../src/db/repos/token-transfer-sync-state-repo.js';
 import { createTokenTransferSyncStateRepository } from '../../src/db/repos/token-transfer-sync-state-repo.js';
-import type { Database } from '../../src/db/sqlite.js';
 import type { AlchemyEthereumTokenTransferProvider } from '../../src/providers/ethereum/alchemy-ethereum-token-transfer-provider.js';
 import type { AlchemyAssetTransfer } from '../../src/providers/ethereum/alchemy-types.js';
 import { DefaultSyncTokenTransfersService } from '../../src/services/sync-token-transfers-service.js';
 import { SupportedTokenChain, TOKEN_TRANSFER_START_BLOCKS, TransferDirection } from '../../src/shared/index.js';
 
-/** FET_ETHEREUM start block (hex); tests need toBlock >= this for sync to run. */
 const FET_START_BLOCK = TOKEN_TRANSFER_START_BLOCKS[SupportedTokenChain.FET_ETHEREUM];
 const FET_START_BLOCK_NUM = parseInt(FET_START_BLOCK, 16);
 
@@ -18,37 +16,23 @@ function blockToHex(n: number): string {
   return `0x${n.toString(16)}`;
 }
 
-import { closeTestDatabase, createTestDatabase } from '../utils/db-helpers.js';
+import { closeTestDataSource, createTestDataSource } from '../utils/db-helpers.js';
 import { createMockAlchemyTransfer } from '../utils/mock-helpers.js';
 
-function createInMemoryDatabase(sqlite: BetterSqlite3.Database): Database {
-  return {
-    sqlite,
-    transaction<T>(fn: () => T): T {
-      return sqlite.transaction(fn)();
-    },
-    close() {
-      sqlite.close();
-    },
-  };
-}
-
 describe('Sync Flow Integration', () => {
-  let sqliteDb: BetterSqlite3.Database;
-  let db: Database;
+  let ds: DataSource;
   let transferRepo: TokenTransferRepository;
   let syncStateRepo: TokenTransferSyncStateRepository;
   const fixedClock = () => '2024-01-15T12:00:00.000Z';
 
-  beforeEach(() => {
-    sqliteDb = createTestDatabase();
-    db = createInMemoryDatabase(sqliteDb);
-    transferRepo = createTokenTransferRepository(sqliteDb);
-    syncStateRepo = createTokenTransferSyncStateRepository(sqliteDb);
+  beforeEach(async () => {
+    ds = await createTestDataSource();
+    transferRepo = createTokenTransferRepository(ds);
+    syncStateRepo = createTokenTransferSyncStateRepository(ds);
   });
 
-  afterEach(() => {
-    closeTestDatabase(sqliteDb);
+  afterEach(async () => {
+    await closeTestDataSource(ds);
   });
 
   function makeProvider(
@@ -91,7 +75,7 @@ describe('Sync Flow Integration', () => {
     const provider = makeProvider(toBlock, batches);
     const service = new DefaultSyncTokenTransfersService(
       SupportedTokenChain.FET_ETHEREUM,
-      db,
+      ds,
       transferRepo,
       syncStateRepo,
       provider,
@@ -102,14 +86,14 @@ describe('Sync Flow Integration', () => {
     expect(result.insertedCount).toBe(2);
     expect(result.fromBlock).toBe(FET_START_BLOCK);
 
-    const syncState = syncStateRepo.findByTokenChain(SupportedTokenChain.FET_ETHEREUM);
+    const syncState = await syncStateRepo.findByTokenChain(SupportedTokenChain.FET_ETHEREUM);
     expect(syncState).not.toBeNull();
     expect(syncState?.lastSyncedBlock).toBe(blockToHex(block2));
   });
 
   it('second sync only fetches new blocks', async () => {
     const lastSynced = FET_START_BLOCK_NUM + 50;
-    syncStateRepo.upsert({
+    await syncStateRepo.upsert({
       tokenChain: SupportedTokenChain.FET_ETHEREUM,
       lastSyncedBlock: blockToHex(lastSynced),
       updatedAt: '2024-01-14T00:00:00.000Z',
@@ -135,7 +119,7 @@ describe('Sync Flow Integration', () => {
     const provider = makeProvider(toBlock, batches);
     const service = new DefaultSyncTokenTransfersService(
       SupportedTokenChain.FET_ETHEREUM,
-      db,
+      ds,
       transferRepo,
       syncStateRepo,
       provider,
@@ -167,7 +151,7 @@ describe('Sync Flow Integration', () => {
     const provider = makeProvider(toBlock, batches);
     const service = new DefaultSyncTokenTransfersService(
       SupportedTokenChain.FET_ETHEREUM,
-      db,
+      ds,
       transferRepo,
       syncStateRepo,
       provider,
@@ -176,12 +160,12 @@ describe('Sync Flow Integration', () => {
 
     await expect(service.sync()).rejects.toThrow('Provider failure');
 
-    const syncState = syncStateRepo.findByTokenChain(SupportedTokenChain.FET_ETHEREUM);
+    const syncState = await syncStateRepo.findByTokenChain(SupportedTokenChain.FET_ETHEREUM);
     expect(syncState?.lastSyncedBlock).toBe(blockToHex(block1));
     expect(batchIndex).toBe(1);
   });
 
-  it('copied database can be queried by address with block range and direction', async () => {
+  it('synced data can be queried by address with block range and direction', async () => {
     const addr = '0xaaaa000000000000000000000000000000000001';
     const other = '0xbbbb000000000000000000000000000000000002';
 
@@ -223,7 +207,7 @@ describe('Sync Flow Integration', () => {
     const provider = makeProvider(toBlock, batches);
     const service = new DefaultSyncTokenTransfersService(
       SupportedTokenChain.FET_ETHEREUM,
-      db,
+      ds,
       transferRepo,
       syncStateRepo,
       provider,
@@ -231,13 +215,13 @@ describe('Sync Flow Integration', () => {
     );
     await service.sync();
 
-    const all = transferRepo.findByAddress({
+    const all = await transferRepo.findByAddress({
       tokenChain: SupportedTokenChain.FET_ETHEREUM,
       address: addr,
     });
     expect(all).toHaveLength(3);
 
-    const inbound = transferRepo.findByAddress({
+    const inbound = await transferRepo.findByAddress({
       tokenChain: SupportedTokenChain.FET_ETHEREUM,
       address: addr,
       direction: TransferDirection.INBOUND,
@@ -245,14 +229,14 @@ describe('Sync Flow Integration', () => {
     expect(inbound).toHaveLength(1);
     expect(inbound[0].transactionHash).toBe('0xin1');
 
-    const outbound = transferRepo.findByAddress({
+    const outbound = await transferRepo.findByAddress({
       tokenChain: SupportedTokenChain.FET_ETHEREUM,
       address: addr,
       direction: TransferDirection.OUTBOUND,
     });
     expect(outbound).toHaveLength(2);
 
-    const rangeFiltered = transferRepo.findByAddress({
+    const rangeFiltered = await transferRepo.findByAddress({
       tokenChain: SupportedTokenChain.FET_ETHEREUM,
       address: addr,
       fromBlock: blockToHex(block1),
@@ -260,7 +244,7 @@ describe('Sync Flow Integration', () => {
     });
     expect(rangeFiltered).toHaveLength(2);
 
-    const noResults = transferRepo.findByAddress({
+    const noResults = await transferRepo.findByAddress({
       tokenChain: SupportedTokenChain.FET_ETHEREUM,
       address: addr,
       fromBlock: blockToHex(FET_START_BLOCK_NUM + 1_000_000),

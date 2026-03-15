@@ -1,30 +1,18 @@
-import type BetterSqlite3 from 'better-sqlite3';
+import type { DataSource, Repository } from 'typeorm';
 import { normalizeHexBlock, type SupportedTokenChain, type TokenTransferSyncState } from '../../shared/index.js';
-import type { TokenTransferSyncStateRow } from '../schema.js';
+import { type TokenTransferSyncStateEntity, TokenTransferSyncStateSchema } from '../schema.js';
 
 export interface TokenTransferSyncStateRepository {
-  findByTokenChain(tokenChain: SupportedTokenChain): TokenTransferSyncState | null;
-  upsert(input: TokenTransferSyncState): void;
+  findByTokenChain(tokenChain: SupportedTokenChain): Promise<TokenTransferSyncState | null>;
+  upsert(input: TokenTransferSyncState): Promise<void>;
 }
 
-export function createTokenTransferSyncStateRepository(
-  sqlite: BetterSqlite3.Database,
-): TokenTransferSyncStateRepository {
-  const findStmt = sqlite.prepare('SELECT * FROM token_transfer_sync_state WHERE token_chain = ?');
-
-  const upsertStmt = sqlite.prepare(`
-    INSERT INTO token_transfer_sync_state (token_chain, last_synced_block, last_transaction_hash, last_log_index, updated_at)
-    VALUES (@tokenChain, @lastSyncedBlock, @lastTransactionHash, @lastLogIndex, @updatedAt)
-    ON CONFLICT (token_chain) DO UPDATE SET
-      last_synced_block = @lastSyncedBlock,
-      last_transaction_hash = @lastTransactionHash,
-      last_log_index = @lastLogIndex,
-      updated_at = @updatedAt
-  `);
+export function createTokenTransferSyncStateRepository(dataSource: DataSource): TokenTransferSyncStateRepository {
+  const repo: Repository<TokenTransferSyncStateEntity> = dataSource.getRepository(TokenTransferSyncStateSchema);
 
   return {
-    findByTokenChain(tokenChain: SupportedTokenChain): TokenTransferSyncState | null {
-      const row = findStmt.get(tokenChain) as TokenTransferSyncStateRow | undefined;
+    async findByTokenChain(tokenChain: SupportedTokenChain): Promise<TokenTransferSyncState | null> {
+      const row = await repo.findOneBy({ token_chain: tokenChain });
       if (!row) return null;
       return {
         tokenChain: row.token_chain as SupportedTokenChain,
@@ -35,14 +23,20 @@ export function createTokenTransferSyncStateRepository(
       };
     },
 
-    upsert(input: TokenTransferSyncState): void {
-      upsertStmt.run({
-        tokenChain: input.tokenChain,
-        lastSyncedBlock: normalizeHexBlock(input.lastSyncedBlock),
-        lastTransactionHash: input.lastTransactionHash ?? null,
-        lastLogIndex: input.lastLogIndex ?? null,
-        updatedAt: input.updatedAt,
-      });
+    async upsert(input: TokenTransferSyncState): Promise<void> {
+      await repo
+        .createQueryBuilder()
+        .insert()
+        .into(TokenTransferSyncStateSchema)
+        .values({
+          token_chain: input.tokenChain,
+          last_synced_block: normalizeHexBlock(input.lastSyncedBlock),
+          last_transaction_hash: input.lastTransactionHash ?? null,
+          last_log_index: input.lastLogIndex ?? null,
+          updated_at: input.updatedAt,
+        })
+        .orUpdate(['last_synced_block', 'last_transaction_hash', 'last_log_index', 'updated_at'], ['token_chain'])
+        .execute();
     },
   };
 }

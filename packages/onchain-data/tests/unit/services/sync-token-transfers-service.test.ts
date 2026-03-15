@@ -1,15 +1,13 @@
-import type BetterSqlite3 from 'better-sqlite3';
+import type { DataSource } from 'typeorm';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { TokenTransferRepository } from '../../../src/db/repos/token-transfer-repo.js';
 import { createTokenTransferRepository } from '../../../src/db/repos/token-transfer-repo.js';
 import type { TokenTransferSyncStateRepository } from '../../../src/db/repos/token-transfer-sync-state-repo.js';
 import { createTokenTransferSyncStateRepository } from '../../../src/db/repos/token-transfer-sync-state-repo.js';
-import type { Database } from '../../../src/db/sqlite.js';
 import type { AlchemyEthereumTokenTransferProvider } from '../../../src/providers/ethereum/alchemy-ethereum-token-transfer-provider.js';
 import { DefaultSyncTokenTransfersService } from '../../../src/services/sync-token-transfers-service.js';
 import { SupportedTokenChain, TOKEN_CHAIN_METADATA, TOKEN_TRANSFER_START_BLOCKS } from '../../../src/shared/index.js';
 
-/** FET_ETHEREUM start block (0xa7d13c); tests need toBlock >= this for sync to run. */
 const FET_START_BLOCK = TOKEN_TRANSFER_START_BLOCKS[SupportedTokenChain.FET_ETHEREUM];
 const FET_START_BLOCK_NUM = parseInt(FET_START_BLOCK, 16);
 
@@ -17,20 +15,8 @@ function blockToHex(n: number): string {
   return `0x${n.toString(16)}`;
 }
 
-import { closeTestDatabase, createTestDatabase } from '../../utils/db-helpers.js';
+import { closeTestDataSource, createTestDataSource } from '../../utils/db-helpers.js';
 import { createMockAlchemyTransfer } from '../../utils/mock-helpers.js';
-
-function createMockDatabase(sqlite: BetterSqlite3.Database): Database {
-  return {
-    sqlite,
-    transaction<T>(fn: () => T): T {
-      return sqlite.transaction(fn)();
-    },
-    close() {
-      sqlite.close();
-    },
-  };
-}
 
 function createMockProvider(
   overrides?: Partial<AlchemyEthereumTokenTransferProvider>,
@@ -43,21 +29,19 @@ function createMockProvider(
 }
 
 describe('DefaultSyncTokenTransfersService', () => {
-  let sqliteDb: BetterSqlite3.Database;
-  let db: Database;
+  let ds: DataSource;
   let transferRepo: TokenTransferRepository;
   let syncStateRepo: TokenTransferSyncStateRepository;
   const fixedClock = () => '2024-01-15T12:00:00.000Z';
 
-  beforeEach(() => {
-    sqliteDb = createTestDatabase();
-    db = createMockDatabase(sqliteDb);
-    transferRepo = createTokenTransferRepository(sqliteDb);
-    syncStateRepo = createTokenTransferSyncStateRepository(sqliteDb);
+  beforeEach(async () => {
+    ds = await createTestDataSource();
+    transferRepo = createTokenTransferRepository(ds);
+    syncStateRepo = createTokenTransferSyncStateRepository(ds);
   });
 
-  afterEach(() => {
-    closeTestDatabase(sqliteDb);
+  afterEach(async () => {
+    await closeTestDataSource(ds);
   });
 
   it('resolves package metadata from tokenChain', async () => {
@@ -66,7 +50,7 @@ describe('DefaultSyncTokenTransfersService', () => {
 
     const service = new DefaultSyncTokenTransfersService(
       SupportedTokenChain.FET_ETHEREUM,
-      db,
+      ds,
       transferRepo,
       syncStateRepo,
       provider,
@@ -75,7 +59,6 @@ describe('DefaultSyncTokenTransfersService', () => {
 
     const result = await service.sync();
     expect(result.tokenChain).toBe(SupportedTokenChain.FET_ETHEREUM);
-
     expect(provider.getToBlock).toHaveBeenCalled();
     expect(result.fromBlock).toBe(metadata.startBlock);
   });
@@ -89,7 +72,7 @@ describe('DefaultSyncTokenTransfersService', () => {
 
     const service = new DefaultSyncTokenTransfersService(
       SupportedTokenChain.FET_ETHEREUM,
-      db,
+      ds,
       transferRepo,
       syncStateRepo,
       provider,
@@ -106,7 +89,7 @@ describe('DefaultSyncTokenTransfersService', () => {
   });
 
   it('later sync resumes from lastSyncedBlock exactly', async () => {
-    syncStateRepo.upsert({
+    await syncStateRepo.upsert({
       tokenChain: SupportedTokenChain.FET_ETHEREUM,
       lastSyncedBlock: blockToHex(7500000),
       updatedAt: '2024-01-14T10:00:00.000Z',
@@ -117,7 +100,7 @@ describe('DefaultSyncTokenTransfersService', () => {
 
     const service = new DefaultSyncTokenTransfersService(
       SupportedTokenChain.FET_ETHEREUM,
-      db,
+      ds,
       transferRepo,
       syncStateRepo,
       provider,
@@ -140,7 +123,7 @@ describe('DefaultSyncTokenTransfersService', () => {
 
     const service = new DefaultSyncTokenTransfersService(
       SupportedTokenChain.FET_ETHEREUM,
-      db,
+      ds,
       transferRepo,
       syncStateRepo,
       provider,
@@ -152,7 +135,7 @@ describe('DefaultSyncTokenTransfersService', () => {
   });
 
   it('returns zero insertedCount when fromBlock > toBlock', async () => {
-    syncStateRepo.upsert({
+    await syncStateRepo.upsert({
       tokenChain: SupportedTokenChain.FET_ETHEREUM,
       lastSyncedBlock: blockToHex(9000000),
       updatedAt: '2024-01-14T10:00:00.000Z',
@@ -164,7 +147,7 @@ describe('DefaultSyncTokenTransfersService', () => {
 
     const service = new DefaultSyncTokenTransfersService(
       SupportedTokenChain.FET_ETHEREUM,
-      db,
+      ds,
       transferRepo,
       syncStateRepo,
       provider,
@@ -211,7 +194,7 @@ describe('DefaultSyncTokenTransfersService', () => {
 
     const service = new DefaultSyncTokenTransfersService(
       SupportedTokenChain.FET_ETHEREUM,
-      db,
+      ds,
       transferRepo,
       syncStateRepo,
       provider,
@@ -221,7 +204,7 @@ describe('DefaultSyncTokenTransfersService', () => {
     const result = await service.sync();
     expect(result.insertedCount).toBe(2);
 
-    const syncState = syncStateRepo.findByTokenChain(SupportedTokenChain.FET_ETHEREUM);
+    const syncState = await syncStateRepo.findByTokenChain(SupportedTokenChain.FET_ETHEREUM);
     expect(syncState?.lastSyncedBlock).toBe(blockToHex(block2));
   });
 
@@ -244,7 +227,7 @@ describe('DefaultSyncTokenTransfersService', () => {
 
     const service = new DefaultSyncTokenTransfersService(
       SupportedTokenChain.FET_ETHEREUM,
-      db,
+      ds,
       transferRepo,
       syncStateRepo,
       provider,
@@ -289,7 +272,7 @@ describe('DefaultSyncTokenTransfersService', () => {
 
     const service = new DefaultSyncTokenTransfersService(
       SupportedTokenChain.FET_ETHEREUM,
-      db,
+      ds,
       transferRepo,
       syncStateRepo,
       provider,
@@ -299,7 +282,7 @@ describe('DefaultSyncTokenTransfersService', () => {
     const result = await service.sync();
     expect(result.insertedCount).toBe(2);
 
-    const syncState = syncStateRepo.findByTokenChain(SupportedTokenChain.FET_ETHEREUM);
+    const syncState = await syncStateRepo.findByTokenChain(SupportedTokenChain.FET_ETHEREUM);
     expect(syncState?.lastSyncedBlock).toBe(blockToHex(block2));
   });
 });

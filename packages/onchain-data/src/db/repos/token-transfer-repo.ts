@@ -1,4 +1,4 @@
-import type BetterSqlite3 from 'better-sqlite3';
+import { Brackets, type DataSource, type Repository } from 'typeorm';
 import {
   createHexBlockSortKey,
   normalizeEvmAddress,
@@ -7,92 +7,173 @@ import {
   type TokenTransferRecord,
   TransferDirection,
 } from '../../shared/index.js';
-import type { TokenTransferRow } from '../schema.js';
+import { type TokenTransferEntity, TokenTransferSchema } from '../schema.js';
 
-const BLOCK_SORT_SQL = `substr('${'0'.repeat(64)}' || substr(lower(block_number), 3), -64, 64)`;
+const BLOCK_SORT_SQL = `substr('${'0'.repeat(64)}' || substr(lower(t.block_number), 3), -64, 64)`;
+
+export type FindTransfersInput = {
+  tokenChain: SupportedTokenChain;
+  addresses: string[];
+  limit: number;
+  cursor?: { blockNumber: string; logIndex: number };
+};
+
+export type PaginatedTransfers = {
+  items: TokenTransferRecord[];
+  nextCursor: { blockNumber: string; logIndex: number } | null;
+};
 
 export interface TokenTransferRepository {
-  insertMany(items: TokenTransferRecord[]): number;
+  insertMany(items: TokenTransferRecord[]): Promise<number>;
+
   findByAddress(input: {
     tokenChain: SupportedTokenChain;
     address: string;
     fromBlock?: string;
     toBlock?: string;
     direction?: TransferDirection;
-  }): TokenTransferRecord[];
+  }): Promise<TokenTransferRecord[]>;
+
+  findTransfersByAddresses(input: FindTransfersInput): Promise<PaginatedTransfers>;
 }
 
-export function createTokenTransferRepository(sqlite: BetterSqlite3.Database): TokenTransferRepository {
-  const insertStmt = sqlite.prepare(`
-    INSERT OR IGNORE INTO token_transfers
-      (token_chain, block_number, transaction_hash, log_index,
-       from_address, to_address, amount, block_timestamp)
-    VALUES
-      (@tokenChain, @blockNumber, @transactionHash, @logIndex,
-       @fromAddress, @toAddress, @amount, @blockTimestamp)
-  `);
+export function createTokenTransferRepository(dataSource: DataSource): TokenTransferRepository {
+  const repo: Repository<TokenTransferEntity> = dataSource.getRepository(TokenTransferSchema);
+
+  const insertSql =
+    'INSERT INTO token_transfers (token_chain, block_number, transaction_hash, log_index, from_address, to_address, amount, block_timestamp) VALUES (?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (token_chain, transaction_hash, log_index) DO NOTHING';
 
   return {
-    insertMany(items: TokenTransferRecord[]): number {
-      let inserted = 0;
-      for (const item of items) {
-        const result = insertStmt.run({
-          tokenChain: item.tokenChain,
-          blockNumber: normalizeHexBlock(item.blockNumber),
-          transactionHash: item.transactionHash,
-          logIndex: item.logIndex,
-          fromAddress: item.fromAddress,
-          toAddress: item.toAddress,
-          amount: item.amount,
-          blockTimestamp: item.blockTimestamp,
-        });
-        inserted += result.changes;
+    async insertMany(items: TokenTransferRecord[]): Promise<number> {
+      if (items.length === 0) return 0;
+
+      const qr = dataSource.createQueryRunner();
+      let totalInserted = 0;
+
+      try {
+        for (const item of items) {
+          await qr.query(insertSql, [
+            item.tokenChain,
+            normalizeHexBlock(item.blockNumber),
+            item.transactionHash,
+            item.logIndex,
+            item.fromAddress,
+            item.toAddress,
+            item.amount,
+            item.blockTimestamp,
+          ]);
+          const [{ cnt }] = (await qr.query('SELECT changes() as cnt')) as [{ cnt: number }];
+          totalInserted += cnt;
+        }
+      } finally {
+        await qr.release();
       }
-      return inserted;
+
+      return totalInserted;
     },
 
-    findByAddress(input): TokenTransferRecord[] {
-      const conditions: string[] = ['token_chain = @tokenChain'];
-      const params: Record<string, unknown> = { tokenChain: input.tokenChain };
-
+    async findByAddress(input): Promise<TokenTransferRecord[]> {
       const normalizedAddress = normalizeEvmAddress(input.address);
-      params.address = normalizedAddress;
-
       const direction = input.direction ?? TransferDirection.BOTH;
+
+      const qb = repo.createQueryBuilder('t').where('t.token_chain = :tokenChain', { tokenChain: input.tokenChain });
+
       if (direction === TransferDirection.INBOUND) {
-        conditions.push('to_address = @address');
+        qb.andWhere('t.to_address = :address', { address: normalizedAddress });
       } else if (direction === TransferDirection.OUTBOUND) {
-        conditions.push('from_address = @address');
+        qb.andWhere('t.from_address = :address', { address: normalizedAddress });
       } else {
-        conditions.push('(from_address = @address OR to_address = @address)');
+        qb.andWhere(
+          new Brackets((sub) => {
+            sub
+              .where('t.from_address = :address', { address: normalizedAddress })
+              .orWhere('t.to_address = :address', { address: normalizedAddress });
+          }),
+        );
       }
 
       if (input.fromBlock !== undefined) {
-        conditions.push(`${BLOCK_SORT_SQL} >= @fromBlockSortKey`);
-        params.fromBlockSortKey = createHexBlockSortKey(input.fromBlock);
+        qb.andWhere(`${BLOCK_SORT_SQL} >= :fromBlockKey`, {
+          fromBlockKey: createHexBlockSortKey(input.fromBlock),
+        });
       }
       if (input.toBlock !== undefined) {
-        conditions.push(`${BLOCK_SORT_SQL} <= @toBlockSortKey`);
-        params.toBlockSortKey = createHexBlockSortKey(input.toBlock);
+        qb.andWhere(`${BLOCK_SORT_SQL} <= :toBlockKey`, {
+          toBlockKey: createHexBlockSortKey(input.toBlock),
+        });
       }
 
-      const sql = `SELECT * FROM token_transfers WHERE ${conditions.join(' AND ')} ORDER BY ${BLOCK_SORT_SQL} ASC, log_index ASC`;
-      const rows = sqlite.prepare(sql).all(params) as TokenTransferRow[];
-      return rows.map(rowToRecord);
+      qb.orderBy(BLOCK_SORT_SQL, 'ASC').addOrderBy('t.log_index', 'ASC');
+
+      const rows = await qb.getMany();
+      return rows.map(entityToRecord);
+    },
+
+    async findTransfersByAddresses(input): Promise<PaginatedTransfers> {
+      if (input.addresses.length === 0) {
+        return { items: [], nextCursor: null };
+      }
+
+      const normalized = input.addresses.map(normalizeEvmAddress);
+
+      const qb = repo
+        .createQueryBuilder('t')
+        .where('t.token_chain = :tokenChain', { tokenChain: input.tokenChain })
+        .andWhere(
+          new Brackets((sub) => {
+            sub
+              .where('t.from_address IN (:...addresses)', { addresses: normalized })
+              .orWhere('t.to_address IN (:...addresses)', { addresses: normalized });
+          }),
+        );
+
+      if (input.cursor) {
+        const cursorSortKey = createHexBlockSortKey(input.cursor.blockNumber);
+        qb.andWhere(
+          new Brackets((sub) => {
+            sub.where(`${BLOCK_SORT_SQL} > :cursorSortKey`, { cursorSortKey }).orWhere(
+              new Brackets((inner) => {
+                inner
+                  .where(`${BLOCK_SORT_SQL} = :cursorSortKey`, { cursorSortKey })
+                  .andWhere('t.log_index > :cursorLogIndex', { cursorLogIndex: input.cursor!.logIndex });
+              }),
+            );
+          }),
+        );
+      }
+
+      qb.orderBy(BLOCK_SORT_SQL, 'ASC')
+        .addOrderBy('t.log_index', 'ASC')
+        .limit(input.limit + 1);
+
+      const rows = await qb.getMany();
+      const hasMore = rows.length > input.limit;
+      const items = hasMore ? rows.slice(0, input.limit) : rows;
+
+      const lastItem = items.length > 0 ? items[items.length - 1] : null;
+      const nextCursor =
+        hasMore && lastItem
+          ? { blockNumber: normalizeHexBlock(lastItem.block_number), logIndex: lastItem.log_index }
+          : null;
+
+      return {
+        items: items.map(entityToRecord),
+        nextCursor,
+      };
     },
   };
 }
 
-function rowToRecord(row: TokenTransferRow): TokenTransferRecord {
+function entityToRecord(entity: TokenTransferEntity): TokenTransferRecord {
   return {
-    id: `${row.token_chain}:${row.transaction_hash}:${row.log_index}`,
-    tokenChain: row.token_chain as SupportedTokenChain,
-    blockNumber: normalizeHexBlock(row.block_number),
-    transactionHash: row.transaction_hash,
-    logIndex: row.log_index,
-    fromAddress: row.from_address,
-    toAddress: row.to_address,
-    amount: row.amount,
-    blockTimestamp: row.block_timestamp,
+    id: `${entity.token_chain}:${entity.transaction_hash}:${entity.log_index}`,
+    tokenChain: entity.token_chain as SupportedTokenChain,
+    blockNumber: normalizeHexBlock(entity.block_number),
+    transactionHash: entity.transaction_hash,
+    logIndex: entity.log_index,
+    fromAddress: entity.from_address,
+    toAddress: entity.to_address,
+    amount: entity.amount,
+    blockTimestamp: entity.block_timestamp,
   };
 }
