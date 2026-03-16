@@ -110,7 +110,7 @@ describe('computeTokenValueOverTime pagination', () => {
             blockTimestamp: '2026-01-01T00:00:00.000Z',
           },
         ],
-        nextCursor: { blockNumber: '0x1', logIndex: 0 },
+        hasMore: true,
       })
       .mockResolvedValueOnce({
         items: [
@@ -125,7 +125,7 @@ describe('computeTokenValueOverTime pagination', () => {
             blockTimestamp: '2026-01-02T00:00:00.000Z',
           },
         ],
-        nextCursor: null,
+        hasMore: false,
       });
     mockReplayTransfers
       .mockReturnValueOnce({
@@ -166,15 +166,15 @@ describe('computeTokenValueOverTime pagination', () => {
       repo: { close: mockRepoClose },
       assetKey: FET_ETHEREUM,
       walletAddresses: ['0xwallet1'],
-      limit: 1000,
-      cursor: undefined,
+      page: 1,
+      limit: 500,
     });
     expect(mockLoadTransferPageForWallets).toHaveBeenNthCalledWith(2, {
       repo: { close: mockRepoClose },
       assetKey: FET_ETHEREUM,
       walletAddresses: ['0xwallet1'],
-      limit: 1000,
-      cursor: { blockNumber: '0x1', logIndex: 0 },
+      page: 2,
+      limit: 500,
     });
     expect(mockReplayTransfers).toHaveBeenCalledTimes(2);
 

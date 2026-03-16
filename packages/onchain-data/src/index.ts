@@ -1,8 +1,6 @@
 export type {
   AssetTransferRepository,
-  ChainPositionCursor,
-  FindTransfersInput,
-  PaginatedTransfers,
+  GetTransfersInput,
 } from './db/repos/asset-transfer-repo.js';
 export type { AssetTransferEntity } from './db/schema.js';
 export {
