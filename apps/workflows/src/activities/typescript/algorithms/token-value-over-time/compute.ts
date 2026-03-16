@@ -36,7 +36,6 @@ export async function computeTokenValueOverTime(snapshot: Snapshot, storage: Sto
   });
 
   const repo = await createOnchainTransferRepo();
-  logger.info('Transfer repository ready');
 
   try {
     const createdAt = snapshot.createdAt;

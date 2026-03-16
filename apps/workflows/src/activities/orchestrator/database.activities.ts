@@ -13,7 +13,7 @@ export function createDbActivities(): DbActivities {
   return {
     async getSnapshot(input: GetSnapshotInput): Promise<GetSnapshotOutput> {
       const logger = Context.current().log;
-      logger.info('Fetching snapshot', { snapshotId: input.snapshotId });
+      logger.info('Accessing snapshot database (fetching snapshot)', { snapshotId: input.snapshotId });
 
       const snapshot = await SnapshotModel.findById(input.snapshotId).lean().exec();
 
@@ -47,7 +47,7 @@ export function createDbActivities(): DbActivities {
 
     async updateSnapshot(input: UpdateSnapshotInput): Promise<void> {
       const logger = Context.current().log;
-      logger.info('Updating snapshot', {
+      logger.info('Accessing snapshot database (updating snapshot)', {
         snapshotId: input.snapshotId,
         status: input.status,
       });
