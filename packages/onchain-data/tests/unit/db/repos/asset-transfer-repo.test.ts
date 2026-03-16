@@ -3,11 +3,12 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { AssetTransferRepository } from '../../../../src/db/repos/asset-transfer-repo.js';
 import { createAssetTransferRepository } from '../../../../src/db/repos/asset-transfer-repo.js';
 import { AssetTransferSchema } from '../../../../src/db/schema.js';
-import type { AssetKey } from '../../../../src/shared/index.js';
+import { type AssetKey, ONCHAIN_ASSET_KEYS } from '../../../../src/shared/index.js';
 import { closeTestDataSource, createTestDataSource } from '../../../utils/db-helpers.js';
 import { createMockAssetTransferEntity } from '../../../utils/mock-helpers.js';
 
 const FET_ETHEREUM: AssetKey = 'fet_ethereum';
+const FET_ETHEREUM_ID = ONCHAIN_ASSET_KEYS.indexOf(FET_ETHEREUM);
 
 describe('AssetTransferRepository', () => {
   let ds: DataSource;
@@ -101,54 +102,58 @@ describe('AssetTransferRepository', () => {
 
     it('returns transfers where from or to is in the address list', async () => {
       const result = await repo.findTransfersByAddresses({
-        assetKey: FET_ETHEREUM,
+        assetId: FET_ETHEREUM_ID,
         addresses: [addr1, addr2],
+        page: 1,
         limit: 10,
+        orderBy: 'time_asc',
       });
-      expect(result.items).toHaveLength(3);
-      expect(result.nextCursor).toBeNull();
+      expect(result).toHaveLength(3);
     });
 
-    it('paginates with cursor', async () => {
+    it('paginates with page and limit', async () => {
       const page1 = await repo.findTransfersByAddresses({
-        assetKey: FET_ETHEREUM,
+        assetId: FET_ETHEREUM_ID,
         addresses: [addr1, addr2],
+        page: 1,
         limit: 2,
+        orderBy: 'time_asc',
       });
-      expect(page1.items).toHaveLength(2);
-      expect(page1.nextCursor).not.toBeNull();
-      const cursor = page1.nextCursor;
-      if (!cursor) throw new Error('Expected cursor to be present');
+      expect(page1).toHaveLength(2);
 
       const page2 = await repo.findTransfersByAddresses({
-        assetKey: FET_ETHEREUM,
+        assetId: FET_ETHEREUM_ID,
         addresses: [addr1, addr2],
+        page: 2,
         limit: 2,
-        cursor,
+        orderBy: 'time_asc',
       });
-      expect(page2.items).toHaveLength(2);
-      expect(page1.items.length + page2.items.length).toBe(4);
+      expect(page2).toHaveLength(1);
+      expect(page1.length + page2.length).toBe(3);
     });
 
     it('returns empty result for empty addresses array', async () => {
       const result = await repo.findTransfersByAddresses({
-        assetKey: FET_ETHEREUM,
+        assetId: FET_ETHEREUM_ID,
         addresses: [],
+        page: 1,
         limit: 10,
+        orderBy: 'time_asc',
       });
-      expect(result.items).toHaveLength(0);
-      expect(result.nextCursor).toBeNull();
+      expect(result).toHaveLength(0);
     });
 
     it('orders by number then log_index', async () => {
       const result = await repo.findTransfersByAddresses({
-        assetKey: FET_ETHEREUM,
+        assetId: FET_ETHEREUM_ID,
         addresses: [addr1, addr2],
+        page: 1,
         limit: 10,
+        orderBy: 'time_asc',
       });
-      for (let i = 1; i < result.items.length; i++) {
-        const prev = result.items[i - 1];
-        const curr = result.items[i];
+      for (let i = 1; i < result.length; i++) {
+        const prev = result[i - 1];
+        const curr = result[i];
         expect(
           curr.block_number > prev.block_number ||
             (curr.block_number === prev.block_number && curr.log_index > prev.log_index),
@@ -158,16 +163,18 @@ describe('AssetTransferRepository', () => {
 
     it('filters by block range', async () => {
       const result = await repo.findTransfersByAddresses({
-        assetKey: FET_ETHEREUM,
+        assetId: FET_ETHEREUM_ID,
         addresses: [addr1, addr2],
+        page: 1,
         limit: 10,
-        fromBlock: '0xc8',
-        toBlock: '0x12c',
+        orderBy: 'time_asc',
+        fromBlock: 0xc8,
+        toBlock: 0x12c,
       });
 
-      expect(result.items).toHaveLength(2);
-      expect(result.items.every((item) => item.block_number >= 0xc8)).toBe(true);
-      expect(result.items.every((item) => item.block_number <= 0x12c)).toBe(true);
+      expect(result).toHaveLength(2);
+      expect(result.every((item) => item.block_number >= 0xc8)).toBe(true);
+      expect(result.every((item) => item.block_number <= 0x12c)).toBe(true);
     });
   });
 });

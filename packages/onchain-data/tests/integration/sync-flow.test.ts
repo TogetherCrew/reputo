@@ -8,9 +8,10 @@ import type { AssetTransferEntity } from '../../src/db/schema.js';
 import type { AlchemyEthereumAssetTransferProvider } from '../../src/providers/ethereum/alchemy-ethereum-asset-transfer-provider.js';
 import { normalizeAlchemyEthereumTransfer } from '../../src/providers/ethereum/normalize-alchemy-transfer.js';
 import { DefaultSyncAssetTransfersService } from '../../src/services/sync-asset-transfers-service.js';
-import { type AssetKey, OnchainAssets } from '../../src/shared/index.js';
+import { type AssetKey, ONCHAIN_ASSET_KEYS, OnchainAssets } from '../../src/shared/index.js';
 
 const FET_ETHEREUM: AssetKey = 'fet_ethereum';
+const FET_ETHEREUM_ID = ONCHAIN_ASSET_KEYS.indexOf(FET_ETHEREUM);
 const asset = OnchainAssets.fet_ethereum;
 const FET_START_BLOCK = asset.startblock;
 const FET_START_BLOCK_NUM = parseInt(FET_START_BLOCK, 16);
@@ -227,11 +228,13 @@ describe('Sync Flow Integration', () => {
     expect(syncState).toBeNull();
 
     const persistedTransfers = await transferRepo.findTransfersByAddresses({
-      assetKey: FET_ETHEREUM,
+      assetId: FET_ETHEREUM_ID,
       addresses: [trackedAddress],
+      page: 1,
       limit: 20_000,
+      orderBy: 'time_asc',
     });
-    expect(persistedTransfers.items).toHaveLength(0);
+    expect(persistedTransfers).toHaveLength(0);
   });
 
   it('synced data can be queried by findTransfersByAddresses', async () => {
@@ -291,28 +294,34 @@ describe('Sync Flow Integration', () => {
     await service.sync();
 
     const all = await transferRepo.findTransfersByAddresses({
-      assetKey: FET_ETHEREUM,
+      assetId: FET_ETHEREUM_ID,
       addresses: [addr],
+      page: 1,
       limit: 100,
+      orderBy: 'time_asc',
     });
-    expect(all.items).toHaveLength(3);
+    expect(all).toHaveLength(3);
 
     const rangeFiltered = await transferRepo.findTransfersByAddresses({
-      assetKey: FET_ETHEREUM,
+      assetId: FET_ETHEREUM_ID,
       addresses: [addr],
+      page: 1,
       limit: 100,
-      fromBlock: blockToHex(block1),
-      toBlock: blockToHex(block2),
+      orderBy: 'time_asc',
+      fromBlock: block1,
+      toBlock: block2,
     });
-    expect(rangeFiltered.items).toHaveLength(2);
+    expect(rangeFiltered).toHaveLength(2);
 
     const noResults = await transferRepo.findTransfersByAddresses({
-      assetKey: FET_ETHEREUM,
+      assetId: FET_ETHEREUM_ID,
       addresses: [addr],
+      page: 1,
       limit: 100,
-      fromBlock: blockToHex(FET_START_BLOCK_NUM + 1_000_000),
-      toBlock: blockToHex(FET_START_BLOCK_NUM + 2_000_000),
+      orderBy: 'time_asc',
+      fromBlock: FET_START_BLOCK_NUM + 1_000_000,
+      toBlock: FET_START_BLOCK_NUM + 2_000_000,
     });
-    expect(noResults.items).toHaveLength(0);
+    expect(noResults).toHaveLength(0);
   });
 });

@@ -20,9 +20,9 @@ describe('normalizeAlchemyEthereumTransfer', () => {
     expect(result.from_address).toBe(alchemyTransfer.from.toLowerCase());
     expect(result.to_address).toBe(alchemyTransfer.to?.toLowerCase() ?? null);
     expect(result.amount).toBe('100');
-    expect(result.block_timestamp_unix).toBe(
-      Math.floor(new Date(alchemyTransfer.metadata!.blockTimestamp!).getTime() / 1000),
-    );
+    const blockTimestamp = alchemyTransfer.metadata?.blockTimestamp;
+    if (!blockTimestamp) throw new Error('Expected blockTimestamp in mock transfer');
+    expect(result.block_timestamp_unix).toBe(Math.floor(new Date(blockTimestamp).getTime() / 1000));
   });
 
   it('parses log index from uniqueId', () => {
