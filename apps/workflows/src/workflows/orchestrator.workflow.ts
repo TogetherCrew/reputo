@@ -31,8 +31,6 @@ const { getAlgorithmDefinition } = workflow.proxyActivities<AlgorithmLibraryActi
 });
 
 export async function OrchestratorWorkflow(input: OrchestratorWorkflowInput): Promise<void> {
-  console.log('10001000000100000010000001000000000');
-
   const { snapshotId, taskQueues } = input;
   const workflowInfo = workflow.workflowInfo();
   const orchestratorTaskQueue = workflowInfo.taskQueue;
@@ -103,7 +101,7 @@ export async function OrchestratorWorkflow(input: OrchestratorWorkflowInput): Pr
   });
 
   if (algorithmDefinition.dependencies && algorithmDefinition.dependencies.length > 0) {
-    workflow.log.info('Resolving algorithm dependencies', {
+    workflow.log.info('Resolving algorithm dependencies (on-chain SQLite may be used)', {
       snapshotId,
       dependencies: algorithmDefinition.dependencies.map((d) => d.key),
     });
@@ -124,7 +122,7 @@ export async function OrchestratorWorkflow(input: OrchestratorWorkflowInput): Pr
   }
 
   try {
-    workflow.log.info('Executing algorithm activity', {
+    workflow.log.info('Executing algorithm activity (on-chain SQLite may be used for transfer data)', {
       algorithmKey,
       algorithmTaskQueue,
       snapshotId,
@@ -157,7 +155,6 @@ export async function OrchestratorWorkflow(input: OrchestratorWorkflowInput): Pr
 
     workflow.log.info('Snapshot marked as completed', { snapshotId });
   } catch (error) {
-    console.log('10001000000100000010000001000000000');
     const isCancelled = workflow.isCancellation(error);
     const status = isCancelled ? SnapshotStatus.cancelled : SnapshotStatus.failed;
     const message = isCancelled ? 'Workflow was cancelled' : (error as Error).message || 'Unknown error';

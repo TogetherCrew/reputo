@@ -35,8 +35,11 @@ export async function computeTokenValueOverTime(snapshot: Snapshot, storage: Sto
     assetKeyCount: selectedAssetKeys.length,
   });
 
+  logger.info('Opening SQLite database for algorithm transfer data', {
+    dbPath: config.onchainData.dbPath,
+  });
   const repo = await createOnchainTransferRepo();
-  logger.info('Transfer repository ready');
+  logger.info('SQLite database opened successfully, transfer repository ready');
 
   try {
     const createdAt = snapshot.createdAt;

@@ -14,6 +14,14 @@ export function createOnchainDataSyncActivity(ctx: OnchainDataSyncContext) {
       assetKey: 'fet_ethereum',
     });
 
+    logger.info('Opening SQLite database for on-chain data sync', { dbPath });
+    const service = await createSyncAssetTransfersService({
+      assetKey: 'fet_ethereum',
+      dbPath,
+      alchemyApiKey,
+    });
+    logger.info('SQLite database opened successfully, starting asset sync');
+
     // for (const assetKey of assetKeys) {
     //   const service = await createSyncAssetTransfersService({
     //     assetKey,
@@ -36,11 +44,6 @@ export function createOnchainDataSyncActivity(ctx: OnchainDataSyncContext) {
 
     //   Context.current().heartbeat(assetKey);
     // }
-    const service = await createSyncAssetTransfersService({
-      assetKey: 'fet_ethereum',
-      dbPath,
-      alchemyApiKey,
-    });
 
     try {
       const result = await service.sync();
