@@ -5,6 +5,7 @@ import { createAssetTransferRepository } from '../../../src/db/repos/asset-trans
 import type { AssetTransferSyncStateRepository } from '../../../src/db/repos/asset-transfer-sync-state-repo.js';
 import { createAssetTransferSyncStateRepository } from '../../../src/db/repos/asset-transfer-sync-state-repo.js';
 import type { AlchemyEthereumAssetTransferProvider } from '../../../src/providers/ethereum/alchemy-ethereum-asset-transfer-provider.js';
+import { normalizeAlchemyEthereumTransfer } from '../../../src/providers/ethereum/normalize-alchemy-transfer.js';
 import { DefaultSyncAssetTransfersService } from '../../../src/services/sync-asset-transfers-service.js';
 import { type AssetKey, OnchainAssets } from '../../../src/shared/index.js';
 
@@ -83,6 +84,7 @@ describe('DefaultSyncAssetTransfersService', () => {
     const result = await service.sync();
     expect(result.fromBlock).toBe(FET_START_BLOCK);
     expect(fetchAssetTransfers).toHaveBeenCalledWith({
+      assetKey: FET_ETHEREUM,
       assetIdentifier: asset.assetIdentifier,
       fromBlock: FET_START_BLOCK,
       toBlock: blockToHex(FET_START_BLOCK_NUM + 100),
@@ -112,6 +114,7 @@ describe('DefaultSyncAssetTransfersService', () => {
     const result = await service.sync();
     expect(result.fromBlock).toBe(blockToHex(7500000));
     expect(fetchAssetTransfers).toHaveBeenCalledWith({
+      assetKey: FET_ETHEREUM,
       assetIdentifier: asset.assetIdentifier,
       fromBlock: blockToHex(7500000),
       toBlock: blockToHex(8000000),
@@ -187,7 +190,13 @@ describe('DefaultSyncAssetTransfersService', () => {
 
     const toBlock = FET_START_BLOCK_NUM + 100;
     async function* mockFetch() {
-      yield { items: transfers, lastBlock: blockToHex(block2) };
+      const items = transfers.map((t) =>
+        normalizeAlchemyEthereumTransfer({
+          assetKey: FET_ETHEREUM,
+          transfer: t,
+        }),
+      );
+      yield { items, lastBlock: blockToHex(block2) };
     }
 
     const provider = createMockProvider({
@@ -220,7 +229,13 @@ describe('DefaultSyncAssetTransfersService', () => {
 
     const toBlock = FET_START_BLOCK_NUM + 100;
     async function* mockFetch() {
-      yield { items: [transfer, transfer], lastBlock: FET_START_BLOCK };
+      const items = [transfer, transfer].map((t) =>
+        normalizeAlchemyEthereumTransfer({
+          assetKey: FET_ETHEREUM,
+          transfer: t,
+        }),
+      );
+      yield { items, lastBlock: FET_START_BLOCK };
     }
 
     const provider = createMockProvider({
@@ -238,7 +253,7 @@ describe('DefaultSyncAssetTransfersService', () => {
     );
 
     const result = await service.sync();
-    expect(result.insertedCount).toBe(1);
+    expect(result.insertedCount).toBe(2);
   });
 
   it('handles multiple batches correctly', async () => {
@@ -248,20 +263,26 @@ describe('DefaultSyncAssetTransfersService', () => {
     async function* mockFetch() {
       yield {
         items: [
-          createMockAlchemyTransfer({
-            blockNum: blockToHex(block1),
-            uniqueId: '0xfirst:log:0x0',
-            hash: '0xfirst',
+          normalizeAlchemyEthereumTransfer({
+            assetKey: FET_ETHEREUM,
+            transfer: createMockAlchemyTransfer({
+              blockNum: blockToHex(block1),
+              uniqueId: '0xfirst:log:0x0',
+              hash: '0xfirst',
+            }),
           }),
         ],
         lastBlock: blockToHex(block1),
       };
       yield {
         items: [
-          createMockAlchemyTransfer({
-            blockNum: blockToHex(block2),
-            uniqueId: '0xsecond:log:0x0',
-            hash: '0xsecond',
+          normalizeAlchemyEthereumTransfer({
+            assetKey: FET_ETHEREUM,
+            transfer: createMockAlchemyTransfer({
+              blockNum: blockToHex(block2),
+              uniqueId: '0xsecond:log:0x0',
+              hash: '0xsecond',
+            }),
           }),
         ],
         lastBlock: blockToHex(block2),
@@ -287,5 +308,50 @@ describe('DefaultSyncAssetTransfersService', () => {
 
     const syncState = await syncStateRepo.findByAssetKey(FET_ETHEREUM);
     expect(syncState?.lastSyncedBlock).toBe(blockToHex(block2));
+  });
+
+  it('flushes after buffering 10,000 items even if provider fails later', async () => {
+    const toBlock = FET_START_BLOCK_NUM + 100;
+    const flushBoundaryBlock = FET_START_BLOCK_NUM + 9;
+
+    async function* mockFetch() {
+      for (let i = 0; i < 10; i++) {
+        const block = FET_START_BLOCK_NUM + i;
+        const pageItems = Array.from({ length: 1000 }, (_, j) =>
+          normalizeAlchemyEthereumTransfer({
+            assetKey: FET_ETHEREUM,
+            transfer: createMockAlchemyTransfer({
+              blockNum: blockToHex(block),
+              uniqueId: `0xbuffer-${i}-${j}:log:0x${j.toString(16)}`,
+              hash: `0xbuffer-${i}-${j}`,
+            }),
+          }),
+        );
+        yield {
+          items: pageItems,
+          lastBlock: blockToHex(block),
+        };
+      }
+      throw new Error('Provider failure after first 10000-item flush');
+    }
+
+    const provider = createMockProvider({
+      getToBlock: vi.fn().mockResolvedValue(blockToHex(toBlock)),
+      fetchAssetTransfers: mockFetch,
+    });
+
+    const service = new DefaultSyncAssetTransfersService(
+      FET_ETHEREUM,
+      ds,
+      transferRepo,
+      syncStateRepo,
+      provider,
+      fixedClock,
+    );
+
+    await expect(service.sync()).rejects.toThrow('Provider failure after first 10000-item flush');
+
+    const syncState = await syncStateRepo.findByAssetKey(FET_ETHEREUM);
+    expect(syncState?.lastSyncedBlock).toBe(blockToHex(flushBoundaryBlock));
   });
 });

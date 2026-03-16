@@ -1,4 +1,5 @@
-import type { AssetKey, AssetTransferRecord } from '@reputo/onchain-data';
+import type { AssetKey, AssetTransferEntity } from '@reputo/onchain-data';
+import { normalizeHexBlock } from '@reputo/onchain-data';
 
 export interface SelectedAssetInput {
   chain: string;
@@ -71,15 +72,16 @@ export function roundScore(score: number): number {
   return Math.round(score * 10 ** SCORE_PRECISION) / 10 ** SCORE_PRECISION;
 }
 
-export function toTransferEvent(record: AssetTransferRecord, assetKey: AssetKey): OrderedTransferEvent {
+export function toTransferEvent(entity: AssetTransferEntity, assetKey: AssetKey): OrderedTransferEvent {
   return {
     assetKey,
-    blockNumber: record.blockNumber,
-    transactionHash: record.transactionHash,
-    logIndex: record.logIndex,
-    fromAddress: record.fromAddress,
-    toAddress: record.toAddress,
-    amount: Number(record.amount),
-    blockTimestamp: record.blockTimestamp,
+    blockNumber: normalizeHexBlock(entity.block_number),
+    transactionHash: entity.transaction_hash,
+    logIndex: entity.log_index,
+    fromAddress: entity.from_address,
+    toAddress: entity.to_address,
+    amount: Number(entity.amount),
+    blockTimestamp:
+      entity.block_timestamp_unix != null ? new Date(entity.block_timestamp_unix * 1000).toISOString() : null,
   };
 }

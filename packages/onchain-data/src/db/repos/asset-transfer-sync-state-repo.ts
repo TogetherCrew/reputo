@@ -1,10 +1,10 @@
-import type { DataSource, Repository } from 'typeorm';
+import type { DataSource, EntityManager, Repository } from 'typeorm';
 import { type AssetKey, type AssetTransferSyncState, normalizeHexBlock, OnchainAssets } from '../../shared/index.js';
 import { type AssetTransferSyncStateEntity, AssetTransferSyncStateSchema } from '../schema.js';
 
 export interface AssetTransferSyncStateRepository {
   findByAssetKey(assetKey: AssetKey): Promise<AssetTransferSyncState | null>;
-  upsert(input: AssetTransferSyncState): Promise<void>;
+  upsert(input: AssetTransferSyncState, manager?: EntityManager): Promise<void>;
 }
 
 export function createAssetTransferSyncStateRepository(dataSource: DataSource): AssetTransferSyncStateRepository {
@@ -28,25 +28,26 @@ export function createAssetTransferSyncStateRepository(dataSource: DataSource): 
         ...(row.last_log_index != null && {
           lastLogIndex: row.last_log_index,
         }),
-        updatedAt: row.updated_at,
+        updatedAt: new Date(row.updated_at_unix * 1000).toISOString(),
       };
     },
 
-    async upsert(input: AssetTransferSyncState): Promise<void> {
-      await repo
+    async upsert(input: AssetTransferSyncState, manager?: EntityManager): Promise<void> {
+      const targetRepo = manager ? manager.getRepository(AssetTransferSyncStateSchema) : repo;
+      await targetRepo
         .createQueryBuilder()
         .insert()
         .into(AssetTransferSyncStateSchema)
         .values({
           chain: input.chain,
           asset_identifier: input.assetIdentifier,
-          last_synced_block: normalizeHexBlock(input.lastSyncedBlock),
+          last_synced_block: Number(BigInt(normalizeHexBlock(input.lastSyncedBlock))),
           last_transaction_hash: input.lastTransactionHash ?? null,
           last_log_index: input.lastLogIndex ?? null,
-          updated_at: input.updatedAt,
+          updated_at_unix: Math.floor(new Date(input.updatedAt).getTime() / 1000),
         })
         .orUpdate(
-          ['last_synced_block', 'last_transaction_hash', 'last_log_index', 'updated_at'],
+          ['last_synced_block', 'last_transaction_hash', 'last_log_index', 'updated_at_unix'],
           ['chain', 'asset_identifier'],
         )
         .execute();

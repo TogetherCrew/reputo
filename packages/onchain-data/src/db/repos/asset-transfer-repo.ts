@@ -1,15 +1,9 @@
-import { Brackets, type DataSource, type Repository } from 'typeorm';
-import {
-  type AssetKey,
-  type AssetTransferRecord,
-  createHexBlockSortKey,
-  normalizeEvmAddress,
-  normalizeHexBlock,
-  OnchainAssets,
-} from '../../shared/index.js';
+import { Brackets, type DataSource, type EntityManager, type Repository } from 'typeorm';
+import { type AssetKey, createHexBlockSortKey, normalizeEvmAddress, normalizeHexBlock } from '../../shared/index.js';
 import { type AssetTransferEntity, AssetTransferSchema } from '../schema.js';
 
-const BLOCK_SORT_SQL = `substr('${'0'.repeat(64)}' || substr(lower(t.block_number), 3), -64, 64)`;
+const BLOCK_SORT_SQL = `substr('${'0'.repeat(64)}' || lower(hex(t.block_number)), -64, 64)`;
+const INSERT_CHUNK_SIZE = 2000;
 
 /** Cursor for paginating transfers by block number and log index. */
 export type ChainPositionCursor = { blockNumber: string; logIndex: number };
@@ -24,77 +18,64 @@ export type FindTransfersInput = {
 };
 
 export type PaginatedTransfers = {
-  items: AssetTransferRecord[];
+  items: AssetTransferEntity[];
   nextCursor: ChainPositionCursor | null;
 };
 
-export type OrderedAssetTransferRecord = AssetTransferRecord;
-
 export interface AssetTransferRepository {
-  insertMany(items: AssetTransferRecord[]): Promise<number>;
+  insertMany(items: AssetTransferEntity[], manager?: EntityManager): Promise<void>;
   findTransfersByAddresses(input: FindTransfersInput): Promise<PaginatedTransfers>;
 }
 
 export function createAssetTransferRepository(dataSource: DataSource): AssetTransferRepository {
   const repo: Repository<AssetTransferEntity> = dataSource.getRepository(AssetTransferSchema);
 
-  const insertSql =
-    'INSERT INTO asset_transfers (chain, asset_identifier, block_number, transaction_hash, log_index, from_address, to_address, amount, block_timestamp) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (chain, asset_identifier, transaction_hash, log_index) DO NOTHING';
-
   return {
-    async insertMany(items: AssetTransferRecord[]): Promise<number> {
-      if (items.length === 0) return 0;
+    async insertMany(items: AssetTransferEntity[], manager?: EntityManager) {
+      if (items.length === 0) return;
 
-      const qr = dataSource.createQueryRunner();
-      let totalInserted = 0;
-
-      try {
-        for (const item of items) {
-          await qr.query(insertSql, [
-            item.chain,
-            item.assetIdentifier,
-            normalizeHexBlock(item.blockNumber),
-            item.transactionHash,
-            item.logIndex,
-            item.fromAddress,
-            item.toAddress,
-            item.amount,
-            item.blockTimestamp,
-          ]);
-          const [{ cnt }] = (await qr.query('SELECT changes() as cnt')) as [{ cnt: number }];
-          totalInserted += cnt;
+      async function executeInsert(txManager: EntityManager): Promise<void> {
+        const txRepo = txManager.getRepository(AssetTransferSchema);
+        for (let index = 0; index < items.length; index += INSERT_CHUNK_SIZE) {
+          await txRepo
+            .createQueryBuilder()
+            .insert()
+            .into(AssetTransferSchema)
+            .values(items.slice(index, index + INSERT_CHUNK_SIZE))
+            .orIgnore()
+            .execute();
         }
-      } finally {
-        await qr.release();
       }
 
-      return totalInserted;
+      if (manager) {
+        await executeInsert(manager);
+        return;
+      }
+
+      await dataSource.transaction(async (txManager) => {
+        await executeInsert(txManager);
+      });
     },
 
     async findTransfersByAddresses(input: FindTransfersInput): Promise<PaginatedTransfers> {
-      if (input.addresses.length === 0) {
+      const normalized = Array.from(new Set(input.addresses.map(normalizeEvmAddress)));
+      if (normalized.length === 0) {
         return { items: [], nextCursor: null };
       }
 
-      const asset = OnchainAssets[input.assetKey];
-      const normalized = input.addresses.map(normalizeEvmAddress);
-
       const qb = repo
         .createQueryBuilder('t')
-        .where('t.chain = :chain', { chain: asset.chain })
-        .andWhere('t.asset_identifier = :assetIdentifier', {
-          assetIdentifier: asset.assetIdentifier,
-        })
+        .where('t.asset_key = :assetKey', { assetKey: input.assetKey })
         .andWhere('(t.from_address IN (:...addresses) OR t.to_address IN (:...addresses))', { addresses: normalized });
 
       if (input.fromBlock !== undefined) {
-        qb.andWhere(`${BLOCK_SORT_SQL} >= :fromBlockKey`, {
-          fromBlockKey: createHexBlockSortKey(input.fromBlock),
+        qb.andWhere('t.block_number >= :fromBlockNum', {
+          fromBlockNum: Number(BigInt(normalizeHexBlock(input.fromBlock))),
         });
       }
       if (input.toBlock !== undefined) {
-        qb.andWhere(`${BLOCK_SORT_SQL} <= :toBlockKey`, {
-          toBlockKey: createHexBlockSortKey(input.toBlock),
+        qb.andWhere('t.block_number <= :toBlockNum', {
+          toBlockNum: Number(BigInt(normalizeHexBlock(input.toBlock))),
         });
       }
 
@@ -104,13 +85,15 @@ export function createAssetTransferRepository(dataSource: DataSource): AssetTran
         qb.andWhere(
           new Brackets((sub) => {
             sub
-              .where(`${BLOCK_SORT_SQL} > :cursorSortKey`, {
-                cursorSortKey,
+              .where(`${BLOCK_SORT_SQL} > :cursorSortKeyGt`, {
+                cursorSortKeyGt: cursorSortKey,
               })
               .orWhere(
                 new Brackets((inner) => {
                   inner
-                    .where(`${BLOCK_SORT_SQL} = :cursorSortKey`, { cursorSortKey })
+                    .where(`${BLOCK_SORT_SQL} = :cursorSortKeyEq`, {
+                      cursorSortKeyEq: cursorSortKey,
+                    })
                     .andWhere('t.log_index > :cursorLogIndex', {
                       cursorLogIndex: logIndex,
                     });
@@ -138,23 +121,9 @@ export function createAssetTransferRepository(dataSource: DataSource): AssetTran
           : null;
 
       return {
-        items: items.map((entity) => entityToRecord(entity)),
+        items,
         nextCursor,
       };
     },
-  };
-}
-
-function entityToRecord(entity: AssetTransferEntity): AssetTransferRecord {
-  return {
-    chain: entity.chain,
-    assetIdentifier: entity.asset_identifier,
-    blockNumber: normalizeHexBlock(entity.block_number),
-    transactionHash: entity.transaction_hash,
-    logIndex: entity.log_index,
-    fromAddress: entity.from_address,
-    toAddress: entity.to_address,
-    amount: entity.amount,
-    blockTimestamp: entity.block_timestamp,
   };
 }

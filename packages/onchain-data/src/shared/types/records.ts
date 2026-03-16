@@ -1,6 +1,7 @@
+import type { AssetKey } from '../constants/assets.js';
+
 export type AssetTransferRecord = {
-  chain: string;
-  assetIdentifier: string;
+  assetKey: AssetKey;
   blockNumber: string;
   transactionHash: string;
   logIndex: number;

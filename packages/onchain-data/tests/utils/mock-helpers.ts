@@ -1,5 +1,6 @@
+import type { AssetTransferEntity } from '../../src/db/schema.js';
 import type { AlchemyAssetTransfer } from '../../src/providers/ethereum/alchemy-types.js';
-import { type AssetTransferRecord, type AssetTransferSyncState, OnchainAssets } from '../../src/shared/index.js';
+import { type AssetTransferSyncState, OnchainAssets } from '../../src/shared/index.js';
 
 const FET_ETHEREUM = OnchainAssets.fet_ethereum;
 
@@ -25,17 +26,19 @@ export function createMockAlchemyTransfer(overrides?: Partial<AlchemyAssetTransf
   };
 }
 
-export function createMockAssetTransferRecord(overrides?: Partial<AssetTransferRecord>): AssetTransferRecord {
+const FET_ETHEREUM_KEY = 'fet_ethereum' as const;
+
+/** Entity shape matching AssetTransferSchema (block_number, block_timestamp_unix as numbers). */
+export function createMockAssetTransferEntity(overrides?: Partial<AssetTransferEntity>): AssetTransferEntity {
   return {
-    chain: FET_ETHEREUM.chain,
-    assetIdentifier: FET_ETHEREUM.assetIdentifier,
-    blockNumber: '0x6ecf26',
-    transactionHash: '0xabc123',
-    logIndex: 0,
-    fromAddress: '0x1234567890abcdef1234567890abcdef12345678',
-    toAddress: '0xabcdef1234567890abcdef1234567890abcdef12',
+    asset_key: FET_ETHEREUM_KEY,
+    block_number: 0x6ecf26,
+    transaction_hash: '0xabc123',
+    log_index: 0,
+    from_address: '0x1234567890abcdef1234567890abcdef12345678',
+    to_address: '0xabcdef1234567890abcdef1234567890abcdef12',
     amount: '100',
-    blockTimestamp: '2024-01-15T10:30:00.000Z',
+    block_timestamp_unix: Math.floor(new Date('2024-01-15T10:30:00.000Z').getTime() / 1000),
     ...overrides,
   };
 }
