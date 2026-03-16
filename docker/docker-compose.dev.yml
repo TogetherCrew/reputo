@@ -15,6 +15,8 @@ volumes:
         driver: local
     prometheus_data:
         driver: local
+    onchain_data:
+        driver: local
 
 services:
     mongodb:
@@ -183,6 +185,7 @@ services:
         networks: [dev]
         volumes:
             - ../apps/workflows/src:/prod/workflows/src:ro
+            - onchain_data:/data
         depends_on:
             mongodb:
                 condition: service_healthy
@@ -202,6 +205,7 @@ services:
         networks: [dev]
         volumes:
             - ../apps/workflows/src:/prod/workflows/src:ro
+            - onchain_data:/data
         depends_on:
             temporal:
                 condition: service_healthy

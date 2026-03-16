@@ -15,6 +15,8 @@ volumes:
         driver: local
     prometheus_data:
         driver: local
+    onchain_data:
+        driver: local
 
 services:
     mongodb:
@@ -223,6 +225,8 @@ services:
                 condition: service_healthy
         env_file:
             - ./env/workflows.env
+        volumes:
+            - onchain_data:/data
         labels:
             - com.centurylinklabs.watchtower.enable=true
 
@@ -237,6 +241,8 @@ services:
                 condition: service_healthy
         env_file:
             - ./env/workflows.env
+        volumes:
+            - onchain_data:/data
         labels:
             - com.centurylinklabs.watchtower.enable=true
 
