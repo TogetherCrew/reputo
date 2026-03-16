@@ -3,13 +3,13 @@ import { EntitySchema } from 'typeorm';
 export interface AssetTransferEntity {
   chain: string;
   asset_identifier: string;
-  block_number: string;
+  number: number;
   transaction_hash: string;
   log_index: number;
   from_address: string | null;
   to_address: string | null;
   amount: string;
-  block_timestamp: string | null;
+  block_timestamp_unix: number | null;
 }
 
 export const AssetTransferSchema = new EntitySchema<AssetTransferEntity>({
@@ -20,20 +20,20 @@ export const AssetTransferSchema = new EntitySchema<AssetTransferEntity>({
     asset_identifier: { type: 'text', primary: true },
     transaction_hash: { type: 'text', primary: true },
     log_index: { type: 'integer', primary: true },
-    block_number: { type: 'text' },
+    number: { type: 'integer' },
     from_address: { type: 'text', nullable: true },
     to_address: { type: 'text', nullable: true },
     amount: { type: 'text' },
-    block_timestamp: { type: 'text', nullable: true },
+    block_timestamp_unix: { type: 'integer', nullable: true },
   },
   indices: [
     {
       name: 'idx_asset_transfers_from_order',
-      columns: ['chain', 'asset_identifier', 'from_address', 'block_number', 'log_index'],
+      columns: ['chain', 'asset_identifier', 'from_address', 'number', 'log_index'],
     },
     {
       name: 'idx_asset_transfers_to_order',
-      columns: ['chain', 'asset_identifier', 'to_address', 'block_number', 'log_index'],
+      columns: ['chain', 'asset_identifier', 'to_address', 'number', 'log_index'],
     },
   ],
 });

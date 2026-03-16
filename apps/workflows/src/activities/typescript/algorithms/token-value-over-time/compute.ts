@@ -76,6 +76,7 @@ export async function computeTokenValueOverTime(snapshot: Snapshot, storage: Sto
           pageNumber: nextPage,
         });
 
+        const fetchStartedAt = Date.now();
         const transferPage = await loadTransferPageForWallets({
           repo,
           assetKey,
@@ -83,6 +84,7 @@ export async function computeTokenValueOverTime(snapshot: Snapshot, storage: Sto
           limit: TRANSFERS_PAGE_LIMIT,
           cursor: pageCursor,
         });
+        const fetchDurationMs = Date.now() - fetchStartedAt;
 
         pageNumber = nextPage;
         logger.info('Transfer page received', {
@@ -90,6 +92,7 @@ export async function computeTokenValueOverTime(snapshot: Snapshot, storage: Sto
           pageNumber,
           itemCount: transferPage.items.length,
           hasMore: transferPage.nextCursor != null,
+          fetchDurationMs,
         });
         chainTransferCount += transferPage.items.length;
         transferCount += transferPage.items.length;

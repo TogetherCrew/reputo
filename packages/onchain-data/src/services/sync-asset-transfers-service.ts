@@ -147,11 +147,3 @@ export function normalizeAlchemyEthereumTransfer(input: {
     blockTimestamp: input.transfer.metadata?.blockTimestamp ?? null,
   };
 }
-
-function parseLogIndex(uniqueId: string): number {
-  const match = uniqueId.match(/:log:(0x[0-9a-fA-F]+|\d+)$/);
-  if (!match) {
-    throw new Error(`Cannot parse logIndex from uniqueId: ${uniqueId}`);
-  }
-  return Number(match[1]);
-}
