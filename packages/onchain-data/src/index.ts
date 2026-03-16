@@ -1,15 +1,15 @@
 export type {
   AssetTransferRepository,
-  ChainPositionCursor,
-  FindTransfersInput,
-  OrderedAssetTransferRecord,
-  PaginatedTransfers,
+  GetTransfersInput,
 } from './db/repos/asset-transfer-repo.js';
-
+export type { AssetTransferEntity } from './db/schema.js';
+export {
+  normalizeAlchemyEthereumTransfer,
+  parseLogIndex,
+} from './providers/ethereum/normalize-alchemy-transfer.js';
 export {
   type CreateSyncAssetTransfersServiceInput,
   createSyncAssetTransfersService,
-  normalizeAlchemyEthereumTransfer,
   type SyncAssetTransfersResult,
   type SyncAssetTransfersService,
 } from './services/sync-asset-transfers-service.js';
@@ -18,6 +18,7 @@ export {
   type AssetKey,
   type AssetTransferRecord,
   type AssetTransferSyncState,
+  normalizeHexBlock,
   ONCHAIN_ASSET_KEYS,
   ONCHAIN_ASSETS,
   type OnchainAsset,

@@ -2,11 +2,13 @@ import type { DataSource } from 'typeorm';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { AssetTransferRepository } from '../../../../src/db/repos/asset-transfer-repo.js';
 import { createAssetTransferRepository } from '../../../../src/db/repos/asset-transfer-repo.js';
-import type { AssetKey } from '../../../../src/shared/index.js';
+import { AssetTransferSchema } from '../../../../src/db/schema.js';
+import { type AssetKey, ONCHAIN_ASSET_KEYS } from '../../../../src/shared/index.js';
 import { closeTestDataSource, createTestDataSource } from '../../../utils/db-helpers.js';
-import { createMockAssetTransferRecord } from '../../../utils/mock-helpers.js';
+import { createMockAssetTransferEntity } from '../../../utils/mock-helpers.js';
 
 const FET_ETHEREUM: AssetKey = 'fet_ethereum';
+const FET_ETHEREUM_ID = ONCHAIN_ASSET_KEYS.indexOf(FET_ETHEREUM);
 
 describe('AssetTransferRepository', () => {
   let ds: DataSource;
@@ -22,30 +24,41 @@ describe('AssetTransferRepository', () => {
   });
 
   describe('insertMany', () => {
-    it('inserts records and returns the count', async () => {
-      const records = [
-        createMockAssetTransferRecord({ transactionHash: '0x001', logIndex: 0 }),
-        createMockAssetTransferRecord({ transactionHash: '0x002', logIndex: 0 }),
+    it('inserts entities without mutation', async () => {
+      const entities = [
+        createMockAssetTransferEntity({ transaction_hash: '0x001', log_index: 0 }),
+        createMockAssetTransferEntity({ transaction_hash: '0x002', log_index: 0 }),
       ];
 
-      const count = await repo.insertMany(records);
-      expect(count).toBe(2);
+      await repo.insertMany(entities);
     });
 
-    it('ignores duplicate records based on primary key', async () => {
-      const record = createMockAssetTransferRecord({
-        transactionHash: '0xdup',
-        logIndex: 0,
+    it('ignores duplicate entities based on primary key', async () => {
+      const entity = createMockAssetTransferEntity({
+        transaction_hash: '0xdup',
+        log_index: 0,
       });
 
-      await repo.insertMany([record]);
-      const count = await repo.insertMany([record]);
-      expect(count).toBe(0);
+      await repo.insertMany([entity]);
+      await repo.insertMany([entity]);
     });
 
-    it('inserts zero records for empty input', async () => {
-      const count = await repo.insertMany([]);
-      expect(count).toBe(0);
+    it('inserts inputs larger than 1000 records in chunked writes', async () => {
+      const entities = Array.from({ length: 2501 }, (_, i) =>
+        createMockAssetTransferEntity({
+          transaction_hash: `0x${i.toString(16).padStart(64, '0')}`,
+          log_index: i,
+        }),
+      );
+
+      await repo.insertMany(entities);
+
+      const count = await ds.getRepository(AssetTransferSchema).count();
+      expect(count).toBe(2501);
+    });
+
+    it('does nothing for empty input', async () => {
+      await repo.insertMany([]);
     });
   });
 
@@ -56,106 +69,112 @@ describe('AssetTransferRepository', () => {
 
     beforeEach(async () => {
       await repo.insertMany([
-        createMockAssetTransferRecord({
-          transactionHash: '0x001',
-          logIndex: 0,
-          fromAddress: addr1,
-          toAddress: other,
-          blockNumber: '0x64',
+        createMockAssetTransferEntity({
+          transaction_hash: '0x001',
+          log_index: 0,
+          from_address: addr1,
+          to_address: other,
+          block_number: 0x64,
         }),
-        createMockAssetTransferRecord({
-          transactionHash: '0x002',
-          logIndex: 0,
-          fromAddress: other,
-          toAddress: addr2,
-          blockNumber: '0xc8',
+        createMockAssetTransferEntity({
+          transaction_hash: '0x002',
+          log_index: 0,
+          from_address: other,
+          to_address: addr2,
+          block_number: 0xc8,
         }),
-        createMockAssetTransferRecord({
-          transactionHash: '0x003',
-          logIndex: 0,
-          fromAddress: addr1,
-          toAddress: addr2,
-          blockNumber: '0x12c',
+        createMockAssetTransferEntity({
+          transaction_hash: '0x003',
+          log_index: 0,
+          from_address: addr1,
+          to_address: addr2,
+          block_number: 0x12c,
         }),
-        createMockAssetTransferRecord({
-          transactionHash: '0x004',
-          logIndex: 0,
-          fromAddress: other,
-          toAddress: other,
-          blockNumber: '0x190',
+        createMockAssetTransferEntity({
+          transaction_hash: '0x004',
+          log_index: 0,
+          from_address: other,
+          to_address: other,
+          block_number: 0x190,
         }),
       ]);
     });
 
     it('returns transfers where from or to is in the address list', async () => {
       const result = await repo.findTransfersByAddresses({
-        assetKey: FET_ETHEREUM,
+        assetId: FET_ETHEREUM_ID,
         addresses: [addr1, addr2],
+        page: 1,
         limit: 10,
+        orderBy: 'time_asc',
       });
-      expect(result.items).toHaveLength(3);
-      expect(result.nextCursor).toBeNull();
+      expect(result).toHaveLength(3);
     });
 
-    it('paginates with cursor', async () => {
+    it('paginates with page and limit', async () => {
       const page1 = await repo.findTransfersByAddresses({
-        assetKey: FET_ETHEREUM,
+        assetId: FET_ETHEREUM_ID,
         addresses: [addr1, addr2],
+        page: 1,
         limit: 2,
+        orderBy: 'time_asc',
       });
-      expect(page1.items).toHaveLength(2);
-      expect(page1.nextCursor).not.toBeNull();
-      const cursor = page1.nextCursor;
-      if (!cursor) throw new Error('Expected cursor to be present');
+      expect(page1).toHaveLength(2);
 
       const page2 = await repo.findTransfersByAddresses({
-        assetKey: FET_ETHEREUM,
+        assetId: FET_ETHEREUM_ID,
         addresses: [addr1, addr2],
+        page: 2,
         limit: 2,
-        cursor,
+        orderBy: 'time_asc',
       });
-      expect(page2.items).toHaveLength(1);
-      expect(page2.nextCursor).toBeNull();
+      expect(page2).toHaveLength(1);
+      expect(page1.length + page2.length).toBe(3);
     });
 
     it('returns empty result for empty addresses array', async () => {
       const result = await repo.findTransfersByAddresses({
-        assetKey: FET_ETHEREUM,
+        assetId: FET_ETHEREUM_ID,
         addresses: [],
+        page: 1,
         limit: 10,
+        orderBy: 'time_asc',
       });
-      expect(result.items).toHaveLength(0);
-      expect(result.nextCursor).toBeNull();
+      expect(result).toHaveLength(0);
     });
 
-    it('orders by block_number then log_index', async () => {
+    it('orders by number then log_index', async () => {
       const result = await repo.findTransfersByAddresses({
-        assetKey: FET_ETHEREUM,
+        assetId: FET_ETHEREUM_ID,
         addresses: [addr1, addr2],
+        page: 1,
         limit: 10,
+        orderBy: 'time_asc',
       });
-      for (let i = 1; i < result.items.length; i++) {
-        const prev = result.items[i - 1];
-        const curr = result.items[i];
+      for (let i = 1; i < result.length; i++) {
+        const prev = result[i - 1];
+        const curr = result[i];
         expect(
-          BigInt(curr.blockNumber) > BigInt(prev.blockNumber) ||
-            (BigInt(curr.blockNumber) === BigInt(prev.blockNumber) && curr.logIndex > prev.logIndex),
+          curr.block_number > prev.block_number ||
+            (curr.block_number === prev.block_number && curr.log_index > prev.log_index),
         ).toBe(true);
       }
     });
 
     it('filters by block range', async () => {
       const result = await repo.findTransfersByAddresses({
-        assetKey: FET_ETHEREUM,
+        assetId: FET_ETHEREUM_ID,
         addresses: [addr1, addr2],
+        page: 1,
         limit: 10,
-        fromBlock: '0xc8',
-        toBlock: '0x12c',
+        orderBy: 'time_asc',
+        fromBlock: 0xc8,
+        toBlock: 0x12c,
       });
 
-      expect(result.items).toHaveLength(2);
-      expect(result.items.every((item) => BigInt(item.blockNumber) >= BigInt('0xc8'))).toBe(true);
-      expect(result.items.every((item) => BigInt(item.blockNumber) <= BigInt('0x12c'))).toBe(true);
+      expect(result).toHaveLength(2);
+      expect(result.every((item) => item.block_number >= 0xc8)).toBe(true);
+      expect(result.every((item) => item.block_number <= 0x12c)).toBe(true);
     });
   });
 });

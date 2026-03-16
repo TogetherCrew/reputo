@@ -1,4 +1,3 @@
-import type { ChainPositionCursor } from '@reputo/onchain-data';
 import { generateKey, type Storage } from '@reputo/storage';
 import { Context } from '@temporalio/activity';
 
@@ -17,7 +16,16 @@ import {
   resolveSelectedAssetKeys,
 } from './utils/index.js';
 
-const TRANSFERS_PAGE_LIMIT = 1000;
+const TRANSFERS_PAGE_LIMIT = 500;
+const WALLET_CHUNK_SIZE = 100;
+
+function chunkArray<T>(items: T[], chunkSize: number): T[][] {
+  const chunks: T[][] = [];
+  for (let index = 0; index < items.length; index += chunkSize) {
+    chunks.push(items.slice(index, index + chunkSize));
+  }
+  return chunks;
+}
 
 export async function computeTokenValueOverTime(snapshot: Snapshot, storage: Storage): Promise<AlgorithmResult> {
   const ctx = Context.current();
@@ -27,6 +35,7 @@ export async function computeTokenValueOverTime(snapshot: Snapshot, storage: Sto
   const params = extractInputs(snapshot.algorithmPresetFrozen.inputs);
   const selectedAssetKeys = resolveSelectedAssetKeys(params.selectedAssets);
   const targetWallets = loadTargetWallets();
+  const walletChunks = chunkArray(targetWallets, WALLET_CHUNK_SIZE);
 
   logger.info('Starting token_value_over_time algorithm', { snapshotId });
   logger.info('Algorithm parameters', params);
@@ -52,81 +61,97 @@ export async function computeTokenValueOverTime(snapshot: Snapshot, storage: Sto
 
     for (let i = 0; i < selectedAssetKeys.length; i++) {
       const assetKey = selectedAssetKeys[i];
-      let pageCursor: ChainPositionCursor | undefined;
-      let pageNumber = 0;
+      let pagesProcessed = 0;
       let chainTransferCount = 0;
       logger.info('Processing asset', {
         assetKey,
         assetIndex: i + 1,
         totalAssets: selectedAssetKeys.length,
+        walletChunkCount: walletChunks.length,
       });
 
-      while (true) {
-        const nextPage = pageNumber + 1;
-        ctx.heartbeat({
-          phase: 'load-transfers',
-          assetKey,
-          processedAssets: i + 1,
-          totalAssets: selectedAssetKeys.length,
-          pageNumber: nextPage,
-          transferCount,
-        });
-        logger.info('Fetching transfer page', {
-          assetKey,
-          pageNumber: nextPage,
-        });
+      for (let chunkIndex = 0; chunkIndex < walletChunks.length; chunkIndex++) {
+        const walletChunk = walletChunks[chunkIndex];
+        let pageNumber = 1;
 
-        const transferPage = await loadTransferPageForWallets({
-          repo,
-          assetKey,
-          walletAddresses: targetWallets,
-          limit: TRANSFERS_PAGE_LIMIT,
-          cursor: pageCursor,
-        });
-
-        pageNumber = nextPage;
-        logger.info('Transfer page received', {
-          assetKey,
-          pageNumber,
-          itemCount: transferPage.items.length,
-          hasMore: transferPage.nextCursor != null,
-        });
-        chainTransferCount += transferPage.items.length;
-        transferCount += transferPage.items.length;
-
-        const pageReplayStats = replayTransfers(walletLots, transferPage.items, targetWalletSet);
-        replayStats.processed += pageReplayStats.processed;
-        replayStats.skippedZeroAmount += pageReplayStats.skippedZeroAmount;
-        replayStats.skippedSelfTransfers += pageReplayStats.skippedSelfTransfers;
-
-        if (pageNumber % HEARTBEAT_INTERVAL === 0 || transferPage.nextCursor === null) {
+        while (true) {
           ctx.heartbeat({
             phase: 'load-transfers',
             assetKey,
             processedAssets: i + 1,
             totalAssets: selectedAssetKeys.length,
             pageNumber,
+            chunkIndex: chunkIndex + 1,
+            totalChunks: walletChunks.length,
             transferCount,
           });
-        }
-
-        if (transferPage.items.length === 0 && transferPage.nextCursor) {
-          logger.warn('Stopping pagination due to empty transfer page with a non-null cursor', {
+          logger.info('Fetching transfer page', {
             assetKey,
-            pageCursor: transferPage.nextCursor,
+            pageNumber,
+            chunkIndex: chunkIndex + 1,
+            totalChunks: walletChunks.length,
           });
-          break;
-        }
-        if (transferPage.nextCursor === null) {
-          break;
-        }
 
-        pageCursor = transferPage.nextCursor;
+          const fetchStartedAt = Date.now();
+          const transferPage = await loadTransferPageForWallets({
+            repo,
+            assetKey,
+            walletAddresses: walletChunk,
+            page: pageNumber,
+            limit: TRANSFERS_PAGE_LIMIT,
+          });
+          const fetchDurationMs = Date.now() - fetchStartedAt;
+
+          pagesProcessed += 1;
+          logger.info('Transfer page received', {
+            assetKey,
+            pageNumber,
+            chunkIndex: chunkIndex + 1,
+            totalChunks: walletChunks.length,
+            itemCount: transferPage.items.length,
+            hasMore: transferPage.hasMore,
+            fetchDurationMs,
+          });
+          chainTransferCount += transferPage.items.length;
+          transferCount += transferPage.items.length;
+
+          const pageReplayStats = replayTransfers(walletLots, transferPage.items, targetWalletSet);
+          replayStats.processed += pageReplayStats.processed;
+          replayStats.skippedZeroAmount += pageReplayStats.skippedZeroAmount;
+          replayStats.skippedSelfTransfers += pageReplayStats.skippedSelfTransfers;
+
+          if (pagesProcessed % HEARTBEAT_INTERVAL === 0 || !transferPage.hasMore) {
+            ctx.heartbeat({
+              phase: 'load-transfers',
+              assetKey,
+              processedAssets: i + 1,
+              totalAssets: selectedAssetKeys.length,
+              pageNumber,
+              chunkIndex: chunkIndex + 1,
+              totalChunks: walletChunks.length,
+              transferCount,
+            });
+          }
+
+          if (transferPage.items.length === 0 && transferPage.hasMore) {
+            logger.warn('Stopping pagination due to empty transfer page with hasMore=true', {
+              assetKey,
+              chunkIndex: chunkIndex + 1,
+              pageNumber,
+            });
+            break;
+          }
+          if (!transferPage.hasMore) {
+            break;
+          }
+
+          pageNumber += 1;
+        }
       }
 
       logger.info('Asset completed', {
         assetKey,
-        pagesProcessed: pageNumber,
+        pagesProcessed,
         transfersInAsset: chainTransferCount,
       });
     }

@@ -3,18 +3,13 @@ import type { AssetTransferRepository } from '../db/repos/asset-transfer-repo.js
 import { createAssetTransferRepository } from '../db/repos/asset-transfer-repo.js';
 import type { AssetTransferSyncStateRepository } from '../db/repos/asset-transfer-sync-state-repo.js';
 import { createAssetTransferSyncStateRepository } from '../db/repos/asset-transfer-sync-state-repo.js';
+import type { AssetTransferEntity } from '../db/schema.js';
 import { createDataSource } from '../db/sqlite.js';
 import type { AlchemyEthereumAssetTransferProvider } from '../providers/ethereum/alchemy-ethereum-asset-transfer-provider.js';
 import { createAlchemyEthereumAssetTransferProvider } from '../providers/ethereum/alchemy-ethereum-asset-transfer-provider.js';
-import type { AlchemyAssetTransfer } from '../providers/ethereum/alchemy-types.js';
-import {
-  type AssetKey,
-  type AssetTransferRecord,
-  compareHexBlocks,
-  normalizeEvmAddress,
-  normalizeHexBlock,
-  OnchainAssets,
-} from '../shared/index.js';
+import { type AssetKey, compareHexBlocks, normalizeHexBlock, OnchainAssets } from '../shared/index.js';
+
+const BUFFER_ITEM_COUNT = 10_000;
 
 export type SyncAssetTransfersResult = {
   assetKey: AssetKey;
@@ -77,13 +72,31 @@ export class DefaultSyncAssetTransfersService implements SyncAssetTransfersServi
     }
 
     let insertedCount = 0;
+    let bufferedItems: AssetTransferEntity[] = [];
+    let bufferedPageCount = 0;
+    let bufferedLastBlock: string | null = null;
 
-    for await (const batch of this.provider.fetchAssetTransfers({
+    for await (const page of this.provider.fetchAssetTransfers({
+      assetKey: this.assetKey,
       assetIdentifier: asset.assetIdentifier,
       fromBlock,
       toBlock,
     })) {
-      insertedCount += await this.persistBatch(batch);
+      insertedCount += page.items.length;
+      bufferedItems.push(...page.items);
+      bufferedPageCount += 1;
+      bufferedLastBlock = page.lastBlock;
+
+      if (bufferedItems.length >= BUFFER_ITEM_COUNT) {
+        await this.persistBufferedItems(bufferedItems, bufferedLastBlock);
+        bufferedItems = [];
+        bufferedPageCount = 0;
+        bufferedLastBlock = null;
+      }
+    }
+
+    if (bufferedPageCount > 0) {
+      await this.persistBufferedItems(bufferedItems, bufferedLastBlock);
     }
 
     return { assetKey: this.assetKey, fromBlock, toBlock, insertedCount };
@@ -100,58 +113,25 @@ export class DefaultSyncAssetTransfersService implements SyncAssetTransfersServi
     return { fromBlock, toBlock };
   }
 
-  private async persistBatch(batch: { items: AlchemyAssetTransfer[]; lastBlock: string }): Promise<number> {
+  private async persistBufferedItems(items: AssetTransferEntity[], lastBlock: string | null): Promise<void> {
+    if (lastBlock == null) return;
+
     const asset = OnchainAssets[this.assetKey];
-    const normalizedItems = batch.items.map((transfer) =>
-      normalizeAlchemyEthereumTransfer({
-        chain: asset.chain,
-        assetIdentifier: asset.assetIdentifier,
-        transfer,
-      }),
-    );
+    const lastItem = items.length > 0 ? items[items.length - 1] : null;
 
-    const lastItem = normalizedItems.length > 0 ? normalizedItems[normalizedItems.length - 1] : null;
-
-    return this.dataSource.transaction(async () => {
-      const insertedCount = await this.assetTransferRepo.insertMany(normalizedItems);
-
-      await this.syncStateRepo.upsert({
-        chain: asset.chain,
-        assetIdentifier: asset.assetIdentifier,
-        lastSyncedBlock: normalizeHexBlock(batch.lastBlock),
-        lastTransactionHash: lastItem?.transactionHash ?? null,
-        lastLogIndex: lastItem?.logIndex ?? null,
-        updatedAt: this.clock(),
-      });
-
-      return insertedCount;
+    await this.dataSource.transaction(async (manager) => {
+      await this.assetTransferRepo.insertMany(items, manager);
+      await this.syncStateRepo.upsert(
+        {
+          chain: asset.chain,
+          assetIdentifier: asset.assetIdentifier,
+          lastSyncedBlock: normalizeHexBlock(lastBlock),
+          lastTransactionHash: lastItem?.transaction_hash ?? null,
+          lastLogIndex: lastItem?.log_index ?? null,
+          updatedAt: this.clock(),
+        },
+        manager,
+      );
     });
   }
-}
-
-export function normalizeAlchemyEthereumTransfer(input: {
-  chain: string;
-  assetIdentifier: string;
-  transfer: AlchemyAssetTransfer;
-}): AssetTransferRecord {
-  const logIndex = parseLogIndex(input.transfer.uniqueId);
-  return {
-    chain: input.chain,
-    assetIdentifier: input.assetIdentifier,
-    blockNumber: normalizeHexBlock(input.transfer.blockNum),
-    transactionHash: input.transfer.hash,
-    logIndex,
-    fromAddress: input.transfer.from ? normalizeEvmAddress(input.transfer.from) : null,
-    toAddress: input.transfer.to ? normalizeEvmAddress(input.transfer.to) : null,
-    amount: String(input.transfer.value ?? '0'),
-    blockTimestamp: input.transfer.metadata?.blockTimestamp ?? null,
-  };
-}
-
-function parseLogIndex(uniqueId: string): number {
-  const match = uniqueId.match(/:log:(0x[0-9a-fA-F]+|\d+)$/);
-  if (!match) {
-    throw new Error(`Cannot parse logIndex from uniqueId: ${uniqueId}`);
-  }
-  return Number(match[1]);
 }

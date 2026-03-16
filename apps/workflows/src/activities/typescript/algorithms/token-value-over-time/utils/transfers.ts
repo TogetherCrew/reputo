@@ -1,32 +1,38 @@
-import type { AssetKey, AssetTransferReadRepository, ChainPositionCursor } from '@reputo/onchain-data';
+import { type AssetKey, type AssetTransferReadRepository, ONCHAIN_ASSET_KEYS } from '@reputo/onchain-data';
 
 import { type OrderedTransferEvent, toTransferEvent } from '../types.js';
 
 export type TransferPage = {
   items: OrderedTransferEvent[];
-  nextCursor: ChainPositionCursor | null;
+  hasMore: boolean;
 };
 
 export async function loadTransferPageForWallets(input: {
   repo: AssetTransferReadRepository;
   assetKey: AssetKey;
   walletAddresses: string[];
+  page: number;
   limit: number;
-  cursor?: ChainPositionCursor;
 }): Promise<TransferPage> {
   if (input.walletAddresses.length === 0) {
-    return { items: [], nextCursor: null };
+    return { items: [], hasMore: false };
   }
 
-  const page = await input.repo.findTransfersByAddresses({
-    assetKey: input.assetKey,
+  const assetId = ONCHAIN_ASSET_KEYS.indexOf(input.assetKey);
+  if (assetId === -1) {
+    throw new Error(`Unsupported asset key: ${input.assetKey}`);
+  }
+
+  const rows = await input.repo.findTransfersByAddresses({
+    assetId,
     addresses: input.walletAddresses,
+    page: input.page,
     limit: input.limit,
-    cursor: input.cursor,
+    orderBy: 'time_asc',
   });
 
   const byId = new Map<string, OrderedTransferEvent>();
-  for (const record of page.items) {
+  for (const record of rows) {
     const event = toTransferEvent(record, input.assetKey);
     const id = `${event.assetKey}:${event.transactionHash}:${event.logIndex}`;
     if (!byId.has(id)) byId.set(id, event);
@@ -34,6 +40,6 @@ export async function loadTransferPageForWallets(input: {
 
   return {
     items: [...byId.values()],
-    nextCursor: page.nextCursor,
+    hasMore: rows.length === input.limit,
   };
 }

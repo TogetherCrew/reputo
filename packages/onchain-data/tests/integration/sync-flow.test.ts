@@ -4,12 +4,14 @@ import type { AssetTransferRepository } from '../../src/db/repos/asset-transfer-
 import { createAssetTransferRepository } from '../../src/db/repos/asset-transfer-repo.js';
 import type { AssetTransferSyncStateRepository } from '../../src/db/repos/asset-transfer-sync-state-repo.js';
 import { createAssetTransferSyncStateRepository } from '../../src/db/repos/asset-transfer-sync-state-repo.js';
+import type { AssetTransferEntity } from '../../src/db/schema.js';
 import type { AlchemyEthereumAssetTransferProvider } from '../../src/providers/ethereum/alchemy-ethereum-asset-transfer-provider.js';
-import type { AlchemyAssetTransfer } from '../../src/providers/ethereum/alchemy-types.js';
+import { normalizeAlchemyEthereumTransfer } from '../../src/providers/ethereum/normalize-alchemy-transfer.js';
 import { DefaultSyncAssetTransfersService } from '../../src/services/sync-asset-transfers-service.js';
-import { type AssetKey, OnchainAssets } from '../../src/shared/index.js';
+import { type AssetKey, ONCHAIN_ASSET_KEYS, OnchainAssets } from '../../src/shared/index.js';
 
 const FET_ETHEREUM: AssetKey = 'fet_ethereum';
+const FET_ETHEREUM_ID = ONCHAIN_ASSET_KEYS.indexOf(FET_ETHEREUM);
 const asset = OnchainAssets.fet_ethereum;
 const FET_START_BLOCK = asset.startblock;
 const FET_START_BLOCK_NUM = parseInt(FET_START_BLOCK, 16);
@@ -39,7 +41,10 @@ describe('Sync Flow Integration', () => {
 
   function makeProvider(
     toBlock: number,
-    batchesFn: () => AsyncGenerator<{ items: AlchemyAssetTransfer[]; lastBlock: string }>,
+    batchesFn: () => AsyncGenerator<{
+      items: AssetTransferEntity[];
+      lastBlock: string;
+    }>,
   ): AlchemyEthereumAssetTransferProvider {
     return {
       getToBlock: vi.fn().mockResolvedValue(blockToHex(toBlock)),
@@ -71,7 +76,13 @@ describe('Sync Flow Integration', () => {
     ];
 
     async function* batches() {
-      yield { items: transfers, lastBlock: blockToHex(block2) };
+      const items = transfers.map((t) =>
+        normalizeAlchemyEthereumTransfer({
+          assetKey: FET_ETHEREUM,
+          transfer: t,
+        }),
+      );
+      yield { items, lastBlock: blockToHex(block2) };
     }
 
     const provider = makeProvider(toBlock, batches);
@@ -107,16 +118,18 @@ describe('Sync Flow Integration', () => {
     const toBlock = FET_START_BLOCK_NUM + 200;
     async function* batches() {
       fetchFn();
-      yield {
-        items: [
-          createMockAlchemyTransfer({
-            blockNum: blockToHex(newBlock),
-            uniqueId: '0xccc:log:0x0',
-            hash: '0xccc',
-          }),
-        ],
-        lastBlock: blockToHex(newBlock),
-      };
+      const raw = createMockAlchemyTransfer({
+        blockNum: blockToHex(newBlock),
+        uniqueId: '0xccc:log:0x0',
+        hash: '0xccc',
+      });
+      const items = [
+        normalizeAlchemyEthereumTransfer({
+          assetKey: FET_ETHEREUM,
+          transfer: raw,
+        }),
+      ];
+      yield { items, lastBlock: blockToHex(newBlock) };
     }
 
     const provider = makeProvider(toBlock, batches);
@@ -135,7 +148,7 @@ describe('Sync Flow Integration', () => {
     expect(result.insertedCount).toBe(1);
   });
 
-  it('failure inside a batch does not update sync state beyond committed data', async () => {
+  it('provider failure before flush does not persist buffered page or sync state', async () => {
     const block1 = FET_START_BLOCK_NUM;
     const toBlock = FET_START_BLOCK_NUM + 100;
     const transfer1 = createMockAlchemyTransfer({
@@ -146,7 +159,13 @@ describe('Sync Flow Integration', () => {
 
     let batchIndex = 0;
     async function* batches() {
-      yield { items: [transfer1], lastBlock: blockToHex(block1) };
+      const items = [
+        normalizeAlchemyEthereumTransfer({
+          assetKey: FET_ETHEREUM,
+          transfer: transfer1,
+        }),
+      ];
+      yield { items, lastBlock: blockToHex(block1) };
       batchIndex++;
       throw new Error('Provider failure');
     }
@@ -164,8 +183,58 @@ describe('Sync Flow Integration', () => {
     await expect(service.sync()).rejects.toThrow('Provider failure');
 
     const syncState = await syncStateRepo.findByAssetKey(FET_ETHEREUM);
-    expect(syncState?.lastSyncedBlock).toBe(blockToHex(block1));
+    expect(syncState).toBeNull();
     expect(batchIndex).toBe(1);
+  });
+
+  it('rolls back transfer inserts when sync-state upsert fails during flush', async () => {
+    const block = FET_START_BLOCK_NUM;
+    const toBlock = FET_START_BLOCK_NUM + 100;
+    const trackedAddress = '0xaaaa000000000000000000000000000000000001';
+
+    async function* batches() {
+      const items = Array.from({ length: 10_000 }, (_, i) =>
+        normalizeAlchemyEthereumTransfer({
+          assetKey: FET_ETHEREUM,
+          transfer: createMockAlchemyTransfer({
+            blockNum: blockToHex(block),
+            uniqueId: `0xrollback-${i}:log:0x${i.toString(16)}`,
+            hash: `0xrollback-${i}`,
+            from: trackedAddress,
+          }),
+        }),
+      );
+      yield { items, lastBlock: blockToHex(block) };
+    }
+
+    const provider = makeProvider(toBlock, batches);
+    const failingSyncStateRepo: AssetTransferSyncStateRepository = {
+      findByAssetKey: syncStateRepo.findByAssetKey,
+      upsert: vi.fn().mockRejectedValue(new Error('sync state write failed')),
+    };
+
+    const service = new DefaultSyncAssetTransfersService(
+      FET_ETHEREUM,
+      ds,
+      transferRepo,
+      failingSyncStateRepo,
+      provider,
+      fixedClock,
+    );
+
+    await expect(service.sync()).rejects.toThrow('sync state write failed');
+
+    const syncState = await syncStateRepo.findByAssetKey(FET_ETHEREUM);
+    expect(syncState).toBeNull();
+
+    const persistedTransfers = await transferRepo.findTransfersByAddresses({
+      assetId: FET_ETHEREUM_ID,
+      addresses: [trackedAddress],
+      page: 1,
+      limit: 20_000,
+      orderBy: 'time_asc',
+    });
+    expect(persistedTransfers).toHaveLength(0);
   });
 
   it('synced data can be queried by findTransfersByAddresses', async () => {
@@ -204,7 +273,13 @@ describe('Sync Flow Integration', () => {
     ];
 
     async function* batches() {
-      yield { items: transfers, lastBlock: blockToHex(block3) };
+      const items = transfers.map((t) =>
+        normalizeAlchemyEthereumTransfer({
+          assetKey: FET_ETHEREUM,
+          transfer: t,
+        }),
+      );
+      yield { items, lastBlock: blockToHex(block3) };
     }
 
     const provider = makeProvider(toBlock, batches);
@@ -219,28 +294,34 @@ describe('Sync Flow Integration', () => {
     await service.sync();
 
     const all = await transferRepo.findTransfersByAddresses({
-      assetKey: FET_ETHEREUM,
+      assetId: FET_ETHEREUM_ID,
       addresses: [addr],
+      page: 1,
       limit: 100,
+      orderBy: 'time_asc',
     });
-    expect(all.items).toHaveLength(3);
+    expect(all).toHaveLength(3);
 
     const rangeFiltered = await transferRepo.findTransfersByAddresses({
-      assetKey: FET_ETHEREUM,
+      assetId: FET_ETHEREUM_ID,
       addresses: [addr],
+      page: 1,
       limit: 100,
-      fromBlock: blockToHex(block1),
-      toBlock: blockToHex(block2),
+      orderBy: 'time_asc',
+      fromBlock: block1,
+      toBlock: block2,
     });
-    expect(rangeFiltered.items).toHaveLength(2);
+    expect(rangeFiltered).toHaveLength(2);
 
     const noResults = await transferRepo.findTransfersByAddresses({
-      assetKey: FET_ETHEREUM,
+      assetId: FET_ETHEREUM_ID,
       addresses: [addr],
+      page: 1,
       limit: 100,
-      fromBlock: blockToHex(FET_START_BLOCK_NUM + 1_000_000),
-      toBlock: blockToHex(FET_START_BLOCK_NUM + 2_000_000),
+      orderBy: 'time_asc',
+      fromBlock: FET_START_BLOCK_NUM + 1_000_000,
+      toBlock: FET_START_BLOCK_NUM + 2_000_000,
     });
-    expect(noResults.items).toHaveLength(0);
+    expect(noResults).toHaveLength(0);
   });
 });
