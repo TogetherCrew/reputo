@@ -198,6 +198,8 @@ services:
             - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
             - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
             - AWS_REGION=eu-central-1
+            - ALCHEMY_API_KEY=${ALCHEMY_API_KEY}
+            - ONCHAIN_DATA_DB_PATH=/data/onchain-data.db
     typescript-worker:
         container_name: typescript-worker
         image: ghcr.io/reputo-org/reputo/workflows:${PREVIEW_IMAGE_TAG}
@@ -230,4 +232,5 @@ services:
             - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
             - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
             - AWS_REGION=eu-central-1
-
+            - ALCHEMY_API_KEY=${ALCHEMY_API_KEY}
+            - ONCHAIN_DATA_DB_PATH=/data/onchain-data.db
