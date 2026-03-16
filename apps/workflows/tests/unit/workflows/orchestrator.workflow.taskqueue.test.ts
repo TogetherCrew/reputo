@@ -39,7 +39,7 @@ describe('OrchestratorWorkflow task queue routing', () => {
     });
     const updateSnapshot = vi.fn().mockResolvedValue(undefined);
     const getAlgorithmDefinition = vi.fn().mockResolvedValue({
-      definition: {
+      algorithmDefinition: {
         key: 'algo-key',
         version: '1.0.0',
         runtime: 'typescript',

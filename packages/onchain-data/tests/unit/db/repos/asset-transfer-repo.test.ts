@@ -2,7 +2,7 @@ import type { DataSource } from 'typeorm';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { AssetTransferRepository } from '../../../../src/db/repos/asset-transfer-repo.js';
 import { createAssetTransferRepository } from '../../../../src/db/repos/asset-transfer-repo.js';
-import { type AssetKey, OnchainAssets } from '../../../../src/shared/index.js';
+import type { AssetKey } from '../../../../src/shared/index.js';
 import { closeTestDataSource, createTestDataSource } from '../../../utils/db-helpers.js';
 import { createMockAssetTransferRecord } from '../../../utils/mock-helpers.js';
 
@@ -24,8 +24,8 @@ describe('AssetTransferRepository', () => {
   describe('insertMany', () => {
     it('inserts records and returns the count', async () => {
       const records = [
-        createMockAssetTransferRecord({ id: 'r1', transactionHash: '0x001', logIndex: 0 }),
-        createMockAssetTransferRecord({ id: 'r2', transactionHash: '0x002', logIndex: 0 }),
+        createMockAssetTransferRecord({ transactionHash: '0x001', logIndex: 0 }),
+        createMockAssetTransferRecord({ transactionHash: '0x002', logIndex: 0 }),
       ];
 
       const count = await repo.insertMany(records);
@@ -34,7 +34,6 @@ describe('AssetTransferRepository', () => {
 
     it('ignores duplicate records based on primary key', async () => {
       const record = createMockAssetTransferRecord({
-        id: 'r1',
         transactionHash: '0xdup',
         logIndex: 0,
       });

@@ -27,7 +27,6 @@ export function createMockAlchemyTransfer(overrides?: Partial<AlchemyAssetTransf
 
 export function createMockAssetTransferRecord(overrides?: Partial<AssetTransferRecord>): AssetTransferRecord {
   return {
-    id: `ethereum:${FET_ETHEREUM.assetIdentifier}:0xabc123:0`,
     chain: FET_ETHEREUM.chain,
     assetIdentifier: FET_ETHEREUM.assetIdentifier,
     blockNumber: '0x6ecf26',

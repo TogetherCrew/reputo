@@ -1,4 +1,4 @@
-import { AssetKey, createSyncAssetTransfersService } from '@reputo/onchain-data';
+import { createSyncAssetTransfersService } from '@reputo/onchain-data';
 import { Context } from '@temporalio/activity';
 
 import type { OnchainDataSyncContext } from '../../shared/types/index.js';

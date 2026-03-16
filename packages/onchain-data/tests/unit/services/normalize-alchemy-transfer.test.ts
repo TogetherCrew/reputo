@@ -60,16 +60,4 @@ describe('normalizeAlchemyEthereumTransfer', () => {
     });
     expect(result.amount).toBe('0');
   });
-
-  it('builds id from chain, assetIdentifier, hash and logIndex', () => {
-    const result = normalizeAlchemyEthereumTransfer({
-      chain: asset.chain,
-      assetIdentifier: asset.assetIdentifier,
-      transfer: createMockAlchemyTransfer({
-        hash: '0xabc',
-        uniqueId: '0xabc:log:0x2',
-      }),
-    });
-    expect(result.id).toBe(`${asset.chain}:${asset.assetIdentifier}:0xabc:2`);
-  });
 });

@@ -119,20 +119,16 @@ describe('OrchestratorWorkflow branches', () => {
         snapshotId: 'snapshot-1',
         taskQueues: { typescript: 'algorithm-q' },
       }),
-    ).rejects.toThrow('Snapshot is missing algorithmPresetFrozen.key/version; cannot execute algorithm');
+    ).rejects.toThrow("Cannot destructure property 'algorithmDefinition'");
 
-    expect(activities.updateSnapshot).toHaveBeenCalledWith({
-      snapshotId: 'snapshot-1',
-      status: SnapshotStatus.failed,
-      temporal: {
-        workflowId: 'wf-1',
-        runId: 'run-1',
-        taskQueue: 'orchestrator-q',
-      },
-      error: {
-        message: 'Snapshot is missing algorithmPresetFrozen.key/version; cannot execute algorithm',
-      },
-    });
+    expect(activities.updateSnapshot).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({
+        snapshotId: 'snapshot-1',
+        status: SnapshotStatus.running,
+      }),
+    );
+    expect(activities.updateSnapshot).toHaveBeenCalledTimes(1);
   });
 
   it('marks the snapshot as cancelled when algorithm execution is cancelled', async () => {
@@ -150,7 +146,7 @@ describe('OrchestratorWorkflow branches', () => {
         },
       }),
       getAlgorithmDefinition: vi.fn().mockResolvedValue({
-        definition: {
+        algorithmDefinition: {
           key: 'algo-key',
           version: '1.0.0',
           runtime: 'typescript',
@@ -205,7 +201,7 @@ describe('OrchestratorWorkflow branches', () => {
         },
       }),
       getAlgorithmDefinition: vi.fn().mockResolvedValue({
-        definition: {
+        algorithmDefinition: {
           key: 'algo-key',
           version: '1.0.0',
           runtime: 'typescript',

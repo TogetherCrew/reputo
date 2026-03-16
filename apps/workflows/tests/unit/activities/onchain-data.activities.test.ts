@@ -8,7 +8,6 @@ vi.mock('@reputo/onchain-data', () => ({
     sync: mockSync,
     close: mockClose,
   })),
-  ONCHAIN_ASSET_KEYS: ['fet_ethereum', 'fet_cardano', 'fet_cosmos'],
 }));
 
 const mockHeartbeat = vi.fn();
@@ -39,7 +38,7 @@ describe('Onchain Data Sync Activity', () => {
     vi.clearAllMocks();
   });
 
-  it('should sync all asset keys', async () => {
+  it('should sync on-chain data for ethereum asset', async () => {
     mockSync.mockResolvedValue({
       assetKey: 'fet_ethereum',
       fromBlock: '0xa7d13c',
@@ -55,11 +54,11 @@ describe('Onchain Data Sync Activity', () => {
       dbPath: '/tmp/test-onchain-data.db',
       alchemyApiKey: 'test-alchemy-key',
     });
-    expect(mockSync).toHaveBeenCalledTimes(3);
-    expect(mockClose).toHaveBeenCalledTimes(3);
+    expect(mockSync).toHaveBeenCalledTimes(1);
+    expect(mockClose).toHaveBeenCalledTimes(1);
   });
 
-  it('should heartbeat after each asset sync', async () => {
+  it('should heartbeat after sync', async () => {
     mockSync.mockResolvedValue({
       assetKey: 'fet_ethereum',
       fromBlock: '0xa7d13c',
@@ -71,8 +70,7 @@ describe('Onchain Data Sync Activity', () => {
     await activity();
 
     expect(mockHeartbeat).toHaveBeenCalledWith('fet_ethereum');
-    expect(mockHeartbeat).toHaveBeenCalledWith('fet_cardano');
-    expect(mockHeartbeat).toHaveBeenCalledWith('fet_cosmos');
+    expect(mockHeartbeat).toHaveBeenCalledTimes(1);
   });
 
   it('should close the service even when sync throws', async () => {
@@ -98,6 +96,6 @@ describe('Onchain Data Sync Activity', () => {
     expect(createSyncAssetTransfersService).toHaveBeenCalledWith(
       expect.objectContaining({ dbPath: '/tmp/test-onchain-data.db' }),
     );
-    expect(mockSync).toHaveBeenCalledTimes(3);
+    expect(mockSync).toHaveBeenCalledTimes(1);
   });
 });
