@@ -37,7 +37,7 @@ export interface GetAlgorithmDefinitionInput {
 }
 
 export interface GetAlgorithmDefinitionOutput {
-  definition: {
+  algorithmDefinition: {
     key: string;
     name: string;
     category: string;

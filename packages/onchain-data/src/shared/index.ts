@@ -1,20 +1,14 @@
-export { TOKEN_CONTRACT_ADDRESSES, TOKEN_TRANSFER_START_BLOCKS } from './constants/index.js';
 export {
-  SupportedChain,
-  SupportedProvider,
-  SupportedToken,
-  SupportedTokenChain,
-  TransferDirection,
-} from './enums/index.js';
-
-export {
-  TOKEN_CHAIN_METADATA,
-  type TokenChainMetadata,
-} from './metadata/index.js';
+  type AssetKey,
+  ONCHAIN_ASSET_KEYS,
+  ONCHAIN_ASSETS,
+  type OnchainAsset,
+  OnchainAssets,
+} from './constants/index.js';
 
 export type {
-  TokenTransferRecord,
-  TokenTransferSyncState,
+  AssetTransferRecord,
+  AssetTransferSyncState,
 } from './types/index.js';
 
 export {

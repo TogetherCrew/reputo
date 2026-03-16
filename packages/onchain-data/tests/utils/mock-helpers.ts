@@ -1,5 +1,7 @@
 import type { AlchemyAssetTransfer } from '../../src/providers/ethereum/alchemy-types.js';
-import { SupportedTokenChain, type TokenTransferRecord, type TokenTransferSyncState } from '../../src/shared/index.js';
+import { type AssetTransferRecord, type AssetTransferSyncState, OnchainAssets } from '../../src/shared/index.js';
+
+const FET_ETHEREUM = OnchainAssets.fet_ethereum;
 
 export function createMockAlchemyTransfer(overrides?: Partial<AlchemyAssetTransfer>): AlchemyAssetTransfer {
   return {
@@ -23,10 +25,10 @@ export function createMockAlchemyTransfer(overrides?: Partial<AlchemyAssetTransf
   };
 }
 
-export function createMockTokenTransferRecord(overrides?: Partial<TokenTransferRecord>): TokenTransferRecord {
+export function createMockAssetTransferRecord(overrides?: Partial<AssetTransferRecord>): AssetTransferRecord {
   return {
-    id: 'fet-ethereum:0xabc123:0',
-    tokenChain: SupportedTokenChain.FET_ETHEREUM,
+    chain: FET_ETHEREUM.chain,
+    assetIdentifier: FET_ETHEREUM.assetIdentifier,
     blockNumber: '0x6ecf26',
     transactionHash: '0xabc123',
     logIndex: 0,
@@ -38,9 +40,10 @@ export function createMockTokenTransferRecord(overrides?: Partial<TokenTransferR
   };
 }
 
-export function createMockSyncState(overrides?: Partial<TokenTransferSyncState>): TokenTransferSyncState {
+export function createMockSyncState(overrides?: Partial<AssetTransferSyncState>): AssetTransferSyncState {
   return {
-    tokenChain: SupportedTokenChain.FET_ETHEREUM,
+    chain: FET_ETHEREUM.chain,
+    assetIdentifier: FET_ETHEREUM.assetIdentifier,
     lastSyncedBlock: '0x6ecf25',
     updatedAt: '2024-01-15T10:30:00.000Z',
     ...overrides,

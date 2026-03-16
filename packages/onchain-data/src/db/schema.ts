@@ -1,5 +1,8 @@
-export type TokenTransferRow = {
-  token_chain: string;
+import { EntitySchema } from 'typeorm';
+
+export interface AssetTransferEntity {
+  chain: string;
+  asset_identifier: string;
   block_number: string;
   transaction_hash: string;
   log_index: number;
@@ -7,34 +10,52 @@ export type TokenTransferRow = {
   to_address: string | null;
   amount: string;
   block_timestamp: string | null;
-};
+}
 
-export type TokenTransferSyncStateRow = {
-  token_chain: string;
+export const AssetTransferSchema = new EntitySchema<AssetTransferEntity>({
+  name: 'asset_transfer',
+  tableName: 'asset_transfers',
+  columns: {
+    chain: { type: 'text', primary: true },
+    asset_identifier: { type: 'text', primary: true },
+    transaction_hash: { type: 'text', primary: true },
+    log_index: { type: 'integer', primary: true },
+    block_number: { type: 'text' },
+    from_address: { type: 'text', nullable: true },
+    to_address: { type: 'text', nullable: true },
+    amount: { type: 'text' },
+    block_timestamp: { type: 'text', nullable: true },
+  },
+  indices: [
+    {
+      name: 'idx_asset_transfers_from_order',
+      columns: ['chain', 'asset_identifier', 'from_address', 'block_number', 'log_index'],
+    },
+    {
+      name: 'idx_asset_transfers_to_order',
+      columns: ['chain', 'asset_identifier', 'to_address', 'block_number', 'log_index'],
+    },
+  ],
+});
+
+export interface AssetTransferSyncStateEntity {
+  chain: string;
+  asset_identifier: string;
   last_synced_block: string;
   last_transaction_hash: string | null;
   last_log_index: number | null;
   updated_at: string;
-};
+}
 
-export const INITIAL_MIGRATION = `
-CREATE TABLE IF NOT EXISTS token_transfers (
-  token_chain TEXT NOT NULL,
-  block_number TEXT NOT NULL,
-  transaction_hash TEXT NOT NULL,
-  log_index INTEGER NOT NULL,
-  from_address TEXT,
-  to_address TEXT,
-  amount TEXT NOT NULL,
-  block_timestamp TEXT,
-  PRIMARY KEY (token_chain, transaction_hash, log_index)
-);
-
-CREATE TABLE IF NOT EXISTS token_transfer_sync_state (
-  token_chain TEXT PRIMARY KEY,
-  last_synced_block TEXT NOT NULL,
-  last_transaction_hash TEXT,
-  last_log_index INTEGER,
-  updated_at TEXT NOT NULL
-);
-`;
+export const AssetTransferSyncStateSchema = new EntitySchema<AssetTransferSyncStateEntity>({
+  name: 'asset_transfer_sync_state',
+  tableName: 'asset_transfer_sync_state',
+  columns: {
+    chain: { type: 'text', primary: true },
+    asset_identifier: { type: 'text', primary: true },
+    last_synced_block: { type: 'text' },
+    last_transaction_hash: { type: 'text', nullable: true },
+    last_log_index: { type: 'integer', nullable: true },
+    updated_at: { type: 'text' },
+  },
+});

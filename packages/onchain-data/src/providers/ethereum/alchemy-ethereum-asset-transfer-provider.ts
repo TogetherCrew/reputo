@@ -1,30 +1,29 @@
 import { request } from 'undici';
 import type { AlchemyAssetTransfer, AlchemyAssetTransfersResponse, AlchemyBlockResponse } from './alchemy-types.js';
 
-/** Alchemy maxCount per page; we yield once per page so sync persists every 1000 records. */
 const ALCHEMY_PAGE_SIZE = 1000;
 const MAX_RETRY_ATTEMPTS = 5;
+const BASE_RETRY_DELAY_MS = 1000;
+const MAX_RETRY_DELAY_MS = 30_000;
+const REQUEST_TIMEOUT_MS = 30_000;
 
 type TransferPage = {
   items: AlchemyAssetTransfer[];
   lastBlock: string;
   pageKey?: string;
 };
-const BASE_RETRY_DELAY_MS = 1000;
-const MAX_RETRY_DELAY_MS = 30_000;
-const REQUEST_TIMEOUT_MS = 30_000;
 
-export interface AlchemyEthereumTokenTransferProvider {
+export interface AlchemyEthereumAssetTransferProvider {
   getToBlock(): Promise<string>;
-  fetchTokenTransfers(input: { contractAddress: string; fromBlock: string; toBlock: string }): AsyncGenerator<{
+  fetchAssetTransfers(input: { assetIdentifier: string; fromBlock: string; toBlock: string }): AsyncGenerator<{
     items: AlchemyAssetTransfer[];
     lastBlock: string;
   }>;
 }
 
-export function createAlchemyEthereumTokenTransferProvider(
+export function createAlchemyEthereumAssetTransferProvider(
   alchemyApiKey: string,
-): AlchemyEthereumTokenTransferProvider {
+): AlchemyEthereumAssetTransferProvider {
   const rpcUrl = `https://eth-mainnet.g.alchemy.com/v2/${alchemyApiKey}`;
 
   async function jsonRpc<T>(method: string, params: unknown[]): Promise<T> {
@@ -67,7 +66,7 @@ export function createAlchemyEthereumTokenTransferProvider(
   }
 
   async function fetchPage(input: {
-    contractAddress: string;
+    assetIdentifier: string;
     fromBlock: string;
     toBlock: string;
     pageKey?: string;
@@ -76,7 +75,7 @@ export function createAlchemyEthereumTokenTransferProvider(
       {
         fromBlock: input.fromBlock,
         toBlock: input.toBlock,
-        contractAddresses: [input.contractAddress],
+        contractAddresses: [input.assetIdentifier],
         category: ['erc20'],
         excludeZeroValue: false,
         order: 'asc',
@@ -89,7 +88,6 @@ export function createAlchemyEthereumTokenTransferProvider(
     const lastBlock =
       result.transfers.length > 0 ? result.transfers[result.transfers.length - 1].blockNum : input.toBlock;
 
-    console.log(result.transfers.length);
     return {
       items: result.transfers,
       lastBlock,
@@ -103,7 +101,7 @@ export function createAlchemyEthereumTokenTransferProvider(
       return block.number;
     },
 
-    async *fetchTokenTransfers(input) {
+    async *fetchAssetTransfers(input) {
       let current = await fetchPage(input);
 
       for (;;) {

@@ -3,12 +3,14 @@ import { UnsupportedAlgorithmError } from '../../shared/errors/index.js';
 import type { AlgorithmComputeFunction, AlgorithmResult, Snapshot } from '../../shared/types/index.js';
 import { computeContributionScore } from './algorithms/contribution-score/compute.js';
 import { computeProposalEngagement } from './algorithms/proposal-engagement/compute.js';
+import { computeTokenValueOverTime } from './algorithms/token-value-over-time/compute.js';
 import { computeVotingEngagement } from './algorithms/voting-engagement/compute.js';
 
 const registry: Record<string, AlgorithmComputeFunction> = {
   voting_engagement: computeVotingEngagement,
   contribution_score: computeContributionScore,
   proposal_engagement: computeProposalEngagement,
+  token_value_over_time: computeTokenValueOverTime,
 };
 
 export function dispatchAlgorithm(storage: Storage) {

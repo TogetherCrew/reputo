@@ -7,6 +7,7 @@ export {
 export {
   computeContributionScore,
   computeProposalEngagement,
+  computeTokenValueOverTime,
   computeVotingEngagement,
 } from './algorithms/index.js';
 

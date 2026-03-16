@@ -5,6 +5,18 @@
 import { describe, expect, it, vi } from 'vitest';
 import { createAlgorithmLibraryActivities } from '../../../src/activities/orchestrator/reputation-algorithm.activities.js';
 
+vi.mock('@temporalio/activity', () => ({
+  Context: {
+    current: () => ({
+      log: {
+        info: vi.fn(),
+        error: vi.fn(),
+        warn: vi.fn(),
+      },
+    }),
+  },
+}));
+
 // Mock the reputation-algorithms package
 vi.mock('@reputo/reputation-algorithms', () => ({
   getAlgorithmDefinition: vi.fn((filters: { key: string; version?: string }) => {
@@ -56,25 +68,12 @@ describe('Algorithm Library Activities', () => {
     it('should load algorithm definition successfully', async () => {
       const activities = createAlgorithmLibraryActivities();
 
-      // Mock Context.current()
-      vi.mock('@temporalio/activity', () => ({
-        Context: {
-          current: () => ({
-            log: {
-              info: vi.fn(),
-              error: vi.fn(),
-              warn: vi.fn(),
-            },
-          }),
-        },
-      }));
-
       const result = await activities.getAlgorithmDefinition({
         key: 'voting_engagement',
         version: '1.0.0',
       });
 
-      expect(result.definition).toMatchObject({
+      expect(result.algorithmDefinition).toMatchObject({
         key: 'voting_engagement',
         version: '1.0.0',
         runtime: 'typescript',
@@ -83,19 +82,6 @@ describe('Algorithm Library Activities', () => {
 
     it('should throw error if algorithm not found', async () => {
       const activities = createAlgorithmLibraryActivities();
-
-      // Mock Context.current()
-      vi.mock('@temporalio/activity', () => ({
-        Context: {
-          current: () => ({
-            log: {
-              info: vi.fn(),
-              error: vi.fn(),
-              warn: vi.fn(),
-            },
-          }),
-        },
-      }));
 
       await expect(
         activities.getAlgorithmDefinition({

@@ -1,5 +1,4 @@
 import * as workflow from '@temporalio/workflow';
-
 import {
   ACTIVITY_MAX_ATTEMPTS,
   ALGORITHM_EXECUTION_TIMEOUT,
@@ -7,6 +6,7 @@ import {
   DB_ACTIVITY_TIMEOUT,
   DEPENDENCY_RESOLUTION_TIMEOUT,
   HEARTBEAT_TIMEOUT,
+  SnapshotStatus,
 } from '../shared/constants/index.js';
 import { UnsupportedAlgorithmError } from '../shared/errors/index.js';
 import type {
@@ -31,6 +31,8 @@ const { getAlgorithmDefinition } = workflow.proxyActivities<AlgorithmLibraryActi
 });
 
 export async function OrchestratorWorkflow(input: OrchestratorWorkflowInput): Promise<void> {
+  console.log('10001000000100000010000001000000000');
+
   const { snapshotId, taskQueues } = input;
   const workflowInfo = workflow.workflowInfo();
   const orchestratorTaskQueue = workflowInfo.taskQueue;
@@ -50,7 +52,7 @@ export async function OrchestratorWorkflow(input: OrchestratorWorkflowInput): Pr
     algorithmVersion: snapshot.algorithmPresetFrozen?.version,
   });
 
-  if (snapshot.status === 'completed') {
+  if (snapshot.status === SnapshotStatus.completed) {
     workflow.log.warn('Snapshot already completed, skipping execution', {
       snapshotId,
       status: snapshot.status,
@@ -58,52 +60,32 @@ export async function OrchestratorWorkflow(input: OrchestratorWorkflowInput): Pr
     return;
   }
 
-  if (!snapshot.algorithmPresetFrozen?.key || !snapshot.algorithmPresetFrozen?.version) {
-    const message = 'Snapshot is missing algorithmPresetFrozen.key/version; cannot execute algorithm';
-    workflow.log.error(message, { snapshotId });
-
-    await updateSnapshot({
-      snapshotId,
-      status: 'failed',
-      temporal: {
-        workflowId: workflowInfo.workflowId,
-        runId: workflowInfo.runId,
-        taskQueue: orchestratorTaskQueue,
-      },
-      error: { message },
-    });
-
-    throw new Error(message);
-  }
-
   await updateSnapshot({
     snapshotId,
-    status: 'running',
+    status: SnapshotStatus.running,
     temporal: {
       workflowId: workflowInfo.workflowId,
       runId: workflowInfo.runId,
       taskQueue: orchestratorTaskQueue,
     },
   });
-
   workflow.log.info('Snapshot marked as running', { snapshotId });
 
   const algorithmKey = snapshot.algorithmPresetFrozen.key;
   const algorithmVersion = snapshot.algorithmPresetFrozen.version;
 
-  const { definition } = await getAlgorithmDefinition({
+  const { algorithmDefinition } = await getAlgorithmDefinition({
     key: algorithmKey,
     version: algorithmVersion,
   });
 
   workflow.log.info('Algorithm definition loaded', {
-    algorithmKey: definition.key,
-    algorithmVersion: definition.version,
-    runtime: definition.runtime,
-    dependencyCount: definition.dependencies?.length ?? 0,
+    snapshotId,
+    algorithmKey: algorithmDefinition.key,
+    algorithmVersion: algorithmDefinition.version,
   });
 
-  const runtime = definition.runtime;
+  const runtime = algorithmDefinition.runtime;
   const algorithmTaskQueue = getAlgorithmTaskQueueFromRuntime(runtime, taskQueues);
 
   const { resolveDependency } = workflow.proxyActivities<DependencyResolverActivities>({
@@ -120,28 +102,16 @@ export async function OrchestratorWorkflow(input: OrchestratorWorkflowInput): Pr
     retry: { maximumAttempts: ACTIVITY_MAX_ATTEMPTS },
   });
 
-  // Resolve all dependencies in parallel (they are independent)
-  if (definition.dependencies && definition.dependencies.length > 0) {
-    workflow.log.info('Resolving algorithm dependencies in parallel', {
+  if (algorithmDefinition.dependencies && algorithmDefinition.dependencies.length > 0) {
+    workflow.log.info('Resolving algorithm dependencies', {
       snapshotId,
-      algorithmKey,
-      dependencies: definition.dependencies.map((d) => d.key),
+      dependencies: algorithmDefinition.dependencies.map((d) => d.key),
     });
 
     await Promise.all(
-      definition.dependencies.map(async (dependency) => {
-        workflow.log.info('Resolving dependency', {
-          dependencyKey: dependency.key,
-          snapshotId,
-        });
-
+      algorithmDefinition.dependencies.map(async (dependency) => {
         await resolveDependency({
           dependencyKey: dependency.key as DependencyKey,
-          snapshotId,
-        });
-
-        workflow.log.info('Dependency resolved', {
-          dependencyKey: dependency.key,
           snapshotId,
         });
       }),
@@ -175,7 +145,7 @@ export async function OrchestratorWorkflow(input: OrchestratorWorkflowInput): Pr
 
     await updateSnapshot({
       snapshotId,
-      status: 'completed',
+      status: SnapshotStatus.completed,
       outputs: result.outputs as Record<string, string>,
       temporal: {
         workflowId: workflowInfo.workflowId,
@@ -187,8 +157,9 @@ export async function OrchestratorWorkflow(input: OrchestratorWorkflowInput): Pr
 
     workflow.log.info('Snapshot marked as completed', { snapshotId });
   } catch (error) {
+    console.log('10001000000100000010000001000000000');
     const isCancelled = workflow.isCancellation(error);
-    const status = isCancelled ? 'cancelled' : 'failed';
+    const status = isCancelled ? SnapshotStatus.cancelled : SnapshotStatus.failed;
     const message = isCancelled ? 'Workflow was cancelled' : (error as Error).message || 'Unknown error';
 
     workflow.log.error('Algorithm execution failed', {

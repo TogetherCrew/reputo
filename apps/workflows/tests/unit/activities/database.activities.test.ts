@@ -2,7 +2,7 @@
  * Unit tests for database activities.
  */
 
-import type { Snapshot } from '@reputo/database';
+import { type Snapshot, SnapshotStatus } from '@reputo/database';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createDbActivities } from '../../../src/activities/orchestrator/database.activities.js';
 
@@ -46,7 +46,7 @@ describe('Database Activities', () => {
       // Mock lean() result with ObjectId-like _id that has toString()
       const mockLeanSnapshot = {
         _id: { toString: () => snapshotId },
-        status: 'queued' as const,
+        status: SnapshotStatus.queued,
         algorithmPreset: snapshotId,
         algorithmPresetFrozen: {
           key: 'voting_engagement',
@@ -68,7 +68,7 @@ describe('Database Activities', () => {
 
       // _id should be serialized as a plain string
       expect(result.snapshot._id).toBe(snapshotId);
-      expect(result.snapshot.status).toBe('queued');
+      expect(result.snapshot.status).toBe(SnapshotStatus.queued);
       expect(result.snapshot.algorithmPresetFrozen.key).toBe('voting_engagement');
       expect(mockFindById).toHaveBeenCalledWith(snapshotId);
     });
@@ -91,7 +91,7 @@ describe('Database Activities', () => {
   describe('updateSnapshot', () => {
     it('should update snapshot status successfully', async () => {
       const updatedSnapshot: Snapshot = {
-        status: 'running',
+        status: SnapshotStatus.running,
         algorithmPreset: '507f1f77bcf86cd799439011',
         algorithmPresetFrozen: {
           key: 'voting_engagement',
@@ -115,7 +115,7 @@ describe('Database Activities', () => {
 
       await activities.updateSnapshot({
         snapshotId: '507f1f77bcf86cd799439011',
-        status: 'running',
+        status: SnapshotStatus.running,
         temporal: {
           workflowId: 'workflow-123',
           runId: 'run-456',
@@ -127,7 +127,7 @@ describe('Database Activities', () => {
         '507f1f77bcf86cd799439011',
         expect.objectContaining({
           $set: expect.objectContaining({
-            status: 'running',
+            status: SnapshotStatus.running,
           }),
         }),
         { new: true },
@@ -136,7 +136,7 @@ describe('Database Activities', () => {
 
     it('should set error.timestamp when updating with error', async () => {
       const updatedSnapshot: Snapshot = {
-        status: 'failed',
+        status: SnapshotStatus.failed,
         algorithmPreset: '507f1f77bcf86cd799439011',
         algorithmPresetFrozen: {
           key: 'voting_engagement',
@@ -155,7 +155,7 @@ describe('Database Activities', () => {
 
       await activities.updateSnapshot({
         snapshotId: '507f1f77bcf86cd799439011',
-        status: 'failed',
+        status: SnapshotStatus.failed,
         error: { message: 'Algorithm failed' },
       });
 
@@ -163,7 +163,7 @@ describe('Database Activities', () => {
         '507f1f77bcf86cd799439011',
         expect.objectContaining({
           $set: expect.objectContaining({
-            status: 'failed',
+            status: SnapshotStatus.failed,
             error: {
               message: 'Algorithm failed',
               timestamp: expect.any(String),

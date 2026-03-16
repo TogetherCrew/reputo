@@ -1,4 +1,1 @@
-export type {
-  TokenTransferRecord,
-  TokenTransferSyncState,
-} from './records.js';
+export type { AssetTransferRecord, AssetTransferSyncState } from './records.js';

@@ -12,7 +12,6 @@ export type AlchemyAssetTransfer = {
     address: string | null;
     decimal: string | null;
   };
-  /** Present when request uses withMetadata: true. */
   metadata?: {
     blockTimestamp?: string;
   };

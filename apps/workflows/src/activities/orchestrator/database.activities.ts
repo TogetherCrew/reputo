@@ -1,4 +1,4 @@
-import { type Snapshot, SnapshotModelValue as SnapshotModel } from '@reputo/database';
+import { type Snapshot, SnapshotModelValue as SnapshotModel, SnapshotStatus } from '@reputo/database';
 import { Context } from '@temporalio/activity';
 
 import { SnapshotNotFoundError } from '../../shared/errors/index.js';
@@ -24,7 +24,7 @@ export function createDbActivities(): DbActivities {
         throw new SnapshotNotFoundError(input.snapshotId);
       }
 
-      if (snapshot.status === 'completed') {
+      if (snapshot.status === SnapshotStatus.completed) {
         logger.warn('Snapshot already completed', {
           snapshotId: input.snapshotId,
           status: snapshot.status,
@@ -57,9 +57,9 @@ export function createDbActivities(): DbActivities {
       if (input.status) {
         updateData.status = input.status;
 
-        if (input.status === 'running') {
+        if (input.status === SnapshotStatus.running) {
           updateData.startedAt = new Date();
-        } else if (input.status === 'completed' || input.status === 'failed') {
+        } else if (input.status === SnapshotStatus.completed || input.status === SnapshotStatus.failed) {
           updateData.completedAt = new Date();
         }
       }
