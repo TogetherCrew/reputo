@@ -1,4 +1,3 @@
-import { SnapshotStatus } from '@reputo/database';
 import * as workflow from '@temporalio/workflow';
 import {
   ACTIVITY_MAX_ATTEMPTS,
@@ -7,6 +6,7 @@ import {
   DB_ACTIVITY_TIMEOUT,
   DEPENDENCY_RESOLUTION_TIMEOUT,
   HEARTBEAT_TIMEOUT,
+  SnapshotStatus,
 } from '../shared/constants/index.js';
 import { UnsupportedAlgorithmError } from '../shared/errors/index.js';
 import type {
@@ -31,6 +31,8 @@ const { getAlgorithmDefinition } = workflow.proxyActivities<AlgorithmLibraryActi
 });
 
 export async function OrchestratorWorkflow(input: OrchestratorWorkflowInput): Promise<void> {
+  console.log('10001000000100000010000001000000000');
+
   const { snapshotId, taskQueues } = input;
   const workflowInfo = workflow.workflowInfo();
   const orchestratorTaskQueue = workflowInfo.taskQueue;
@@ -67,7 +69,6 @@ export async function OrchestratorWorkflow(input: OrchestratorWorkflowInput): Pr
       taskQueue: orchestratorTaskQueue,
     },
   });
-
   workflow.log.info('Snapshot marked as running', { snapshotId });
 
   const algorithmKey = snapshot.algorithmPresetFrozen.key;
@@ -156,6 +157,7 @@ export async function OrchestratorWorkflow(input: OrchestratorWorkflowInput): Pr
 
     workflow.log.info('Snapshot marked as completed', { snapshotId });
   } catch (error) {
+    console.log('10001000000100000010000001000000000');
     const isCancelled = workflow.isCancellation(error);
     const status = isCancelled ? SnapshotStatus.cancelled : SnapshotStatus.failed;
     const message = isCancelled ? 'Workflow was cancelled' : (error as Error).message || 'Unknown error';

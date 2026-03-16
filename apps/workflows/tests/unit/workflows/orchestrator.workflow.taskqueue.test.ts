@@ -1,5 +1,5 @@
-import { SnapshotStatus } from '@reputo/database';
 import { describe, expect, it, vi } from 'vitest';
+import { SnapshotStatus } from '../../../src/shared/constants/index.js';
 
 vi.mock('@temporalio/workflow', () => ({
   proxyActivities: vi.fn(),
@@ -51,8 +51,8 @@ describe('OrchestratorWorkflow task queue routing', () => {
       outputs: { some_key: 'some_value' },
     });
 
-    proxyActivities.mockImplementation((opts: Record<string, unknown>) => {
-      recordedOptions.push(opts);
+    proxyActivities.mockImplementation((opts) => {
+      recordedOptions.push(opts as Record<string, unknown>);
       // Return a superset of activity functions; callers destructure the ones they need.
       return {
         getSnapshot,

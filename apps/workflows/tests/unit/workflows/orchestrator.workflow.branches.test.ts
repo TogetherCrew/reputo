@@ -1,5 +1,5 @@
-import { SnapshotStatus } from '@reputo/database';
 import { describe, expect, it, vi } from 'vitest';
+import { SnapshotStatus } from '../../../src/shared/constants/index.js';
 
 vi.mock('@temporalio/workflow', () => ({
   proxyActivities: vi.fn(),
