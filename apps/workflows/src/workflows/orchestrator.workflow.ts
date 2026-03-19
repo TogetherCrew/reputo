@@ -6,6 +6,8 @@ import {
   DB_ACTIVITY_TIMEOUT,
   DEPENDENCY_RESOLUTION_TIMEOUT,
   HEARTBEAT_TIMEOUT,
+  ONCHAIN_DATA_DEPENDENCY_RESOLUTION_TIMEOUT,
+  onchainDataTaskQueue,
   SnapshotStatus,
 } from '../shared/constants/index.js';
 import { UnsupportedAlgorithmError } from '../shared/errors/index.js';
@@ -31,7 +33,7 @@ const { getAlgorithmDefinition } = workflow.proxyActivities<AlgorithmLibraryActi
 });
 
 export async function OrchestratorWorkflow(input: OrchestratorWorkflowInput): Promise<void> {
-  const { snapshotId, taskQueues } = input;
+  const { snapshotId } = input;
   const workflowInfo = workflow.workflowInfo();
   const orchestratorTaskQueue = workflowInfo.taskQueue;
 
@@ -84,12 +86,18 @@ export async function OrchestratorWorkflow(input: OrchestratorWorkflowInput): Pr
   });
 
   const runtime = algorithmDefinition.runtime;
-  const algorithmTaskQueue = getAlgorithmTaskQueueFromRuntime(runtime, taskQueues);
+  const algorithmTaskQueue = getAlgorithmTaskQueueFromRuntime(runtime);
 
-  const { resolveDependency } = workflow.proxyActivities<DependencyResolverActivities>({
+  const { resolveDependency: resolveOrchestratorDependency } = workflow.proxyActivities<DependencyResolverActivities>({
     taskQueue: orchestratorTaskQueue,
     startToCloseTimeout: DEPENDENCY_RESOLUTION_TIMEOUT,
     heartbeatTimeout: HEARTBEAT_TIMEOUT,
+    retry: { maximumAttempts: ACTIVITY_MAX_ATTEMPTS },
+  });
+
+  const { resolveDependency: resolveOnchainDataDependency } = workflow.proxyActivities<DependencyResolverActivities>({
+    taskQueue: onchainDataTaskQueue,
+    startToCloseTimeout: ONCHAIN_DATA_DEPENDENCY_RESOLUTION_TIMEOUT,
     retry: { maximumAttempts: ACTIVITY_MAX_ATTEMPTS },
   });
 
@@ -101,17 +109,25 @@ export async function OrchestratorWorkflow(input: OrchestratorWorkflowInput): Pr
   });
 
   if (algorithmDefinition.dependencies && algorithmDefinition.dependencies.length > 0) {
-    workflow.log.info('Resolving algorithm dependencies (on-chain SQLite may be used)', {
+    workflow.log.info('Resolving algorithm dependencies', {
       snapshotId,
       dependencies: algorithmDefinition.dependencies.map((d) => d.key),
     });
 
     await Promise.all(
       algorithmDefinition.dependencies.map(async (dependency) => {
-        await resolveDependency({
-          dependencyKey: dependency.key as DependencyKey,
-          snapshotId,
-        });
+        const dependencyKey = dependency.key as DependencyKey;
+        if (dependencyKey === 'onchain-data') {
+          await resolveOnchainDataDependency({
+            dependencyKey,
+            snapshotId,
+          });
+        } else {
+          await resolveOrchestratorDependency({
+            dependencyKey,
+            snapshotId,
+          });
+        }
       }),
     );
 
@@ -165,7 +181,6 @@ export async function OrchestratorWorkflow(input: OrchestratorWorkflowInput): Pr
       error: message,
     });
 
-    // Use a non-cancellable scope so the status update completes even during cancellation
     await workflow.CancellationScope.nonCancellable(async () => {
       await updateSnapshot({
         snapshotId,

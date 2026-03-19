@@ -60,10 +60,10 @@ export interface OnchainDataSyncContext {
   alchemyApiKey: string;
 }
 
-export interface DependencyResolverContext {
+/** Context for dependency resolution activities on the orchestrator worker (non-onchain). */
+export interface OrchestratorDependencyResolverContext {
   storage: Storage;
   storageConfig: StorageConfig;
-  onchainData: OnchainDataSyncContext;
 }
 
 export interface DependencyResolverActivities {

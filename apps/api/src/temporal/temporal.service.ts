@@ -76,16 +76,12 @@ export class TemporalService implements OnModuleInit, OnModuleDestroy {
     }
 
     const orchestratorTaskQueue = this.configService.get<string>('temporal.orchestratorTaskQueue') as string;
-    const algorithmTypescriptTaskQueue = this.configService.get<string>('temporal.algorithmTypescriptTaskQueue');
-    const algorithmPythonTaskQueue = this.configService.get<string>('temporal.algorithmPythonTaskQueue');
     const workflowId = `snapshot-${snapshotId}`;
 
     try {
       this.logger.info(`Starting OrchestratorWorkflow for snapshot ${snapshotId}`, {
         workflowId,
         taskQueue: orchestratorTaskQueue,
-        algorithmTypescriptTaskQueue,
-        algorithmPythonTaskQueue,
         snapshotId,
       });
 
@@ -96,10 +92,6 @@ export class TemporalService implements OnModuleInit, OnModuleDestroy {
         args: [
           {
             snapshotId,
-            taskQueues: {
-              typescript: algorithmTypescriptTaskQueue,
-              python: algorithmPythonTaskQueue,
-            },
           },
         ],
       });

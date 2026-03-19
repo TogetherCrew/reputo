@@ -88,7 +88,6 @@ describe('OrchestratorWorkflow branches', () => {
     await expect(
       OrchestratorWorkflow({
         snapshotId: 'snapshot-1',
-        taskQueues: { typescript: 'algorithm-q' },
       }),
     ).resolves.toBeUndefined();
 
@@ -117,7 +116,6 @@ describe('OrchestratorWorkflow branches', () => {
     await expect(
       OrchestratorWorkflow({
         snapshotId: 'snapshot-1',
-        taskQueues: { typescript: 'algorithm-q' },
       }),
     ).rejects.toThrow("Cannot destructure property 'algorithmDefinition'");
 
@@ -163,7 +161,6 @@ describe('OrchestratorWorkflow branches', () => {
     await expect(
       OrchestratorWorkflow({
         snapshotId: 'snapshot-1',
-        taskQueues: { typescript: 'algorithm-q' },
       }),
     ).rejects.toThrow(cancelError);
 
@@ -218,7 +215,6 @@ describe('OrchestratorWorkflow branches', () => {
     await expect(
       OrchestratorWorkflow({
         snapshotId: 'snapshot-1',
-        taskQueues: { typescript: 'algorithm-q' },
       }),
     ).rejects.toThrow(executionError);
 

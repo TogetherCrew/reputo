@@ -15,6 +15,9 @@ const envVarsSchema = Joi.object()
     TEMPORAL_ALGORITHM_PYTHON_TASK_QUEUE: Joi.string()
       .required()
       .description('Temporal task queue for Python algorithm workers'),
+    TEMPORAL_ONCHAIN_DATA_TASK_QUEUE: Joi.string()
+      .required()
+      .description('Temporal task queue for onchain-data dependency resolution'),
     MONGODB_HOST: Joi.string().required().description('MongoDB host'),
     MONGODB_PORT: Joi.string().required().description('MongoDB port'),
     MONGODB_USER: Joi.string().allow('').description('MongoDB username'),
@@ -97,6 +100,7 @@ export default {
     orchestratorTaskQueue: envVars.TEMPORAL_ORCHESTRATOR_TASK_QUEUE,
     algorithmTypescriptTaskQueue: envVars.TEMPORAL_ALGORITHM_TYPESCRIPT_TASK_QUEUE,
     algorithmPythonTaskQueue: envVars.TEMPORAL_ALGORITHM_PYTHON_TASK_QUEUE,
+    onchainDataTaskQueue: envVars.TEMPORAL_ONCHAIN_DATA_TASK_QUEUE,
   },
   mongoDB: {
     host: envVars.MONGODB_HOST,

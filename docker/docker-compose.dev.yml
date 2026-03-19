@@ -185,10 +185,27 @@ services:
         networks: [dev]
         volumes:
             - ../apps/workflows/src:/prod/workflows/src:ro
-            - onchain_data:/data
         depends_on:
             mongodb:
                 condition: service_healthy
+            temporal:
+                condition: service_healthy
+        env_file:
+            - ./env/workflows.env
+
+    onchain-data-worker:
+        container_name: onchain-data-worker
+        build:
+            context: ..
+            dockerfile: docker/Dockerfile
+            target: workflows
+        command: ['pnpm', 'start:onchain-data']
+        restart: unless-stopped
+        networks: [dev]
+        volumes:
+            - ../apps/workflows/src:/prod/workflows/src:ro
+            - onchain_data:/data
+        depends_on:
             temporal:
                 condition: service_healthy
         env_file:

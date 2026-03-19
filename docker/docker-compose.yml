@@ -225,6 +225,20 @@ services:
                 condition: service_healthy
         env_file:
             - ./env/workflows.env
+        labels:
+            - com.centurylinklabs.watchtower.enable=true
+
+    onchain-data-worker:
+        container_name: onchain-data-worker
+        image: ghcr.io/reputo-org/reputo/workflows:${IMAGE_TAG}
+        command: ['pnpm', 'start:onchain-data']
+        restart: unless-stopped
+        networks: [production]
+        depends_on:
+            temporal:
+                condition: service_healthy
+        env_file:
+            - ./env/workflows.env
         volumes:
             - onchain_data:/data
         labels:

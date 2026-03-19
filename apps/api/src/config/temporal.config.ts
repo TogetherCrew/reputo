@@ -5,8 +5,6 @@ export default registerAs('temporal', () => ({
   address: process.env.TEMPORAL_ADDRESS,
   namespace: process.env.TEMPORAL_NAMESPACE || 'default',
   orchestratorTaskQueue: process.env.TEMPORAL_ORCHESTRATOR_TASK_QUEUE,
-  algorithmTypescriptTaskQueue: process.env.TEMPORAL_ALGORITHM_TYPESCRIPT_TASK_QUEUE,
-  algorithmPythonTaskQueue: process.env.TEMPORAL_ALGORITHM_PYTHON_TASK_QUEUE,
 }));
 
 export const temporalConfigSchema = {
@@ -16,12 +14,4 @@ export const temporalConfigSchema = {
     .optional()
     .default('workflows')
     .description('Temporal task queue for orchestrator workflows'),
-  TEMPORAL_ALGORITHM_TYPESCRIPT_TASK_QUEUE: Joi.string()
-    .optional()
-    .default('algorithm-typescript-worker')
-    .description('Temporal task queue for TypeScript algorithm workers'),
-  TEMPORAL_ALGORITHM_PYTHON_TASK_QUEUE: Joi.string()
-    .optional()
-    .default('algorithm-python-worker')
-    .description('Temporal task queue for Python algorithm workers'),
 };

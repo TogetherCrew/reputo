@@ -1,13 +1,12 @@
-import { createS3Client, Storage } from '@reputo/storage';
 import { NativeConnection, Worker } from '@temporalio/worker';
 
-import { dispatchAlgorithm } from '../../activities/typescript/dispatchAlgorithm.activity.js';
+import { createOnchainDataDependencyResolverActivities } from '../../activities/orchestrator/index.js';
 import config from '../../config/index.js';
-import { TYPESCRIPT_ALGORITHM_WORKER_MAX_CONCURRENT_ACTIVITIES } from '../../shared/constants/index.js';
+import { ONCHAIN_DATA_WORKER_MAX_CONCURRENT_ACTIVITIES } from '../../shared/constants/index.js';
 import { logger } from '../../shared/utils/index.js';
 
 async function run(): Promise<void> {
-  logger.info('Starting TypeScript Algorithm Worker');
+  logger.info('Starting Onchain Data Worker');
 
   const connection = await NativeConnection.connect({
     address: config.temporal.address,
@@ -15,37 +14,25 @@ async function run(): Promise<void> {
 
   logger.info('Connected to Temporal server');
 
-  const s3Client = createS3Client(
-    {
-      region: config.aws.region,
-      accessKeyId: config.aws.accessKeyId,
-      secretAccessKey: config.aws.secretAccessKey,
-    },
-    config.app.nodeEnv,
-  );
-
-  const storage = new Storage(s3Client);
-
-  logger.info('Storage initialized');
-
-  const activities = {
-    runTypescriptAlgorithm: dispatchAlgorithm(storage),
-  };
+  const activities = createOnchainDataDependencyResolverActivities({
+    dbPath: config.onchainData.dbPath,
+    alchemyApiKey: config.onchainData.alchemyApiKey,
+  });
 
   logger.info(`Activities initialized: [${Object.keys(activities).join(', ')}]`);
 
   const worker = await Worker.create({
     connection,
     namespace: config.temporal.namespace,
-    taskQueue: config.temporal.algorithmTypescriptTaskQueue,
-    maxConcurrentActivityTaskExecutions: TYPESCRIPT_ALGORITHM_WORKER_MAX_CONCURRENT_ACTIVITIES,
+    taskQueue: config.temporal.onchainDataTaskQueue,
+    maxConcurrentActivityTaskExecutions: ONCHAIN_DATA_WORKER_MAX_CONCURRENT_ACTIVITIES,
     activities,
   });
 
   logger.info('Worker created successfully');
 
   const shutdown = async () => {
-    logger.info('Shutting down algorithm worker...');
+    logger.info('Shutting down onchain data worker...');
 
     try {
       try {
@@ -72,12 +59,12 @@ async function run(): Promise<void> {
   process.on('SIGINT', shutdown);
   process.on('SIGTERM', shutdown);
 
-  logger.info('Worker is running and polling for tasks');
+  logger.info({ taskQueue: config.temporal.onchainDataTaskQueue }, 'Worker is running and polling for tasks');
 
   await worker.run();
 }
 
 run().catch((error) => {
-  logger.error({ err: error }, 'Fatal error starting algorithm worker');
+  logger.error({ err: error }, 'Fatal error starting onchain data worker');
   process.exit(1);
 });

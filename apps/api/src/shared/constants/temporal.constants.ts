@@ -1,2 +1,1 @@
-/** Workflow run timeout for snapshot orchestrator workflows. */
-export const WORKFLOW_RUN_TIMEOUT = '2 hours';
+export const WORKFLOW_RUN_TIMEOUT = '4 hours';
