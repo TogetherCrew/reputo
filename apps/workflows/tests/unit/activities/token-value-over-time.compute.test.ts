@@ -89,6 +89,10 @@ describe('computeTokenValueOverTime pagination', () => {
     mockExtractInputs.mockReturnValue({
       maturationThresholdDays: 90,
       selectedAssets: [{ chain: 'ethereum', assetIdentifier: '0xtoken' }],
+      effectiveDateRange: {
+        fromTimestampUnix: undefined,
+        toTimestampUnix: Math.floor(new Date('2026-04-01T00:00:00.000Z').getTime() / 1000),
+      },
     });
     mockResolveSelectedAssetKeys.mockReturnValue([FET_ETHEREUM]);
     mockLoadTargetWallets.mockReturnValue(['0xwallet1']);
@@ -162,12 +166,15 @@ describe('computeTokenValueOverTime pagination', () => {
       storage as never,
     );
 
+    const snapshotUnix = Math.floor(new Date('2026-04-01T00:00:00.000Z').getTime() / 1000);
     expect(mockLoadTransferPageForWallets).toHaveBeenNthCalledWith(1, {
       repo: { close: mockRepoClose },
       assetKey: FET_ETHEREUM,
       walletAddresses: ['0xwallet1'],
       page: 1,
       limit: 500,
+      fromTimestampUnix: undefined,
+      toTimestampUnix: snapshotUnix,
     });
     expect(mockLoadTransferPageForWallets).toHaveBeenNthCalledWith(2, {
       repo: { close: mockRepoClose },
@@ -175,6 +182,8 @@ describe('computeTokenValueOverTime pagination', () => {
       walletAddresses: ['0xwallet1'],
       page: 2,
       limit: 500,
+      fromTimestampUnix: undefined,
+      toTimestampUnix: snapshotUnix,
     });
     expect(mockReplayTransfers).toHaveBeenCalledTimes(2);
 
