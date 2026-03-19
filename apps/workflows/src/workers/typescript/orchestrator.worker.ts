@@ -5,7 +5,7 @@ import { NativeConnection, Worker } from '@temporalio/worker';
 import {
   createAlgorithmLibraryActivities,
   createDbActivities,
-  createDependencyResolverActivities,
+  createOrchestratorDependencyResolverActivities,
 } from '../../activities/orchestrator/index.js';
 import config from '../../config/index.js';
 import {
@@ -51,13 +51,9 @@ async function run(): Promise<void> {
     activities: {
       ...createDbActivities(),
       ...createAlgorithmLibraryActivities(),
-      ...createDependencyResolverActivities({
+      ...createOrchestratorDependencyResolverActivities({
         storage,
         storageConfig,
-        onchainData: {
-          dbPath: config.onchainData.dbPath,
-          alchemyApiKey: config.onchainData.alchemyApiKey,
-        },
       }),
     },
     bundlerOptions: {
@@ -86,7 +82,6 @@ async function run(): Promise<void> {
       await disconnect();
       logger.info('MongoDB connection closed');
 
-      // Connection is still held by the worker; process exit will close it.
       logger.info('Worker shut down successfully');
       process.exit(0);
     } catch (error) {

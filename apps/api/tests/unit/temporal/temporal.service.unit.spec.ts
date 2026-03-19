@@ -60,8 +60,6 @@ describe('TemporalService', () => {
           'temporal.address': 'localhost:7233',
           'temporal.namespace': 'reputo',
           'temporal.orchestratorTaskQueue': 'orchestrator-q',
-          'temporal.algorithmTypescriptTaskQueue': 'algorithm-ts-q',
-          'temporal.algorithmPythonTaskQueue': 'algorithm-py-q',
         };
 
         return values[key];
@@ -88,7 +86,7 @@ describe('TemporalService', () => {
     expect(mockLogger.error).toHaveBeenCalledWith('Failed to connect to Temporal: cannot connect', expect.any(String));
   });
 
-  it('starts the orchestrator workflow with configured task queues', async () => {
+  it('starts the orchestrator workflow with the configured task queue', async () => {
     (service as { client: typeof mockClientInstance }).client = mockClientInstance;
 
     await service.startRunSnapshotWorkflow('snapshot-123');
@@ -100,10 +98,6 @@ describe('TemporalService', () => {
       args: [
         {
           snapshotId: 'snapshot-123',
-          taskQueues: {
-            typescript: 'algorithm-ts-q',
-            python: 'algorithm-py-q',
-          },
         },
       ],
     });

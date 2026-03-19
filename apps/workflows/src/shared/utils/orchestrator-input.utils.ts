@@ -1,17 +1,11 @@
-import type { OrchestratorWorkflowInput } from '../types/index.js';
+import { algorithmPythonTaskQueue, algorithmTypescriptTaskQueue } from '../constants/index.js';
 
-export function getAlgorithmTaskQueueFromRuntime(
-  runtime: unknown,
-  taskQueues: OrchestratorWorkflowInput['taskQueues'],
-): string {
+export function getAlgorithmTaskQueueFromRuntime(runtime: unknown): string {
   if (runtime === 'typescript') {
-    return taskQueues.typescript;
+    return algorithmTypescriptTaskQueue;
   }
   if (runtime === 'python') {
-    if (!taskQueues.python) {
-      throw new Error('Python task queue is required for python runtime');
-    }
-    return taskQueues.python;
+    return algorithmPythonTaskQueue;
   }
   throw new Error(`Unsupported algorithm runtime: ${String(runtime)}`);
 }

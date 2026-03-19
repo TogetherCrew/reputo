@@ -24,17 +24,21 @@ vi.mock('@temporalio/activity', () => ({
 }));
 
 import type { Storage } from '@reputo/storage';
-import { createDependencyResolverActivities } from '../../../src/activities/orchestrator/dependency.activities.js';
-import type { DependencyResolverContext } from '../../../src/shared/types/index.js';
+import {
+  createOnchainDataDependencyResolverActivities,
+  createOrchestratorDependencyResolverActivities,
+} from '../../../src/activities/orchestrator/dependency.activities.js';
+import type { OrchestratorDependencyResolverContext } from '../../../src/shared/types/index.js';
 
 describe('Dependency Resolver Activities', () => {
-  const ctx: DependencyResolverContext = {
+  const orchestratorCtx: OrchestratorDependencyResolverContext = {
     storage: {} as Storage,
     storageConfig: { bucket: 'test-bucket', maxSizeBytes: 1024 },
-    onchainData: {
-      dbPath: '/tmp/test-onchain-data.db',
-      alchemyApiKey: 'test-alchemy-key',
-    },
+  };
+
+  const onchainCtx = {
+    dbPath: '/tmp/test-onchain-data.db',
+    alchemyApiKey: 'test-alchemy-key',
   };
 
   beforeEach(() => {
@@ -42,7 +46,7 @@ describe('Dependency Resolver Activities', () => {
   });
 
   it('should dispatch deepfunding-portal-api to deepfunding sync', async () => {
-    const activities = createDependencyResolverActivities(ctx);
+    const activities = createOrchestratorDependencyResolverActivities(orchestratorCtx);
 
     await activities.resolveDependency({
       dependencyKey: 'deepfunding-portal-api',
@@ -54,7 +58,7 @@ describe('Dependency Resolver Activities', () => {
   });
 
   it('should dispatch onchain-data to onchain data sync', async () => {
-    const activities = createDependencyResolverActivities(ctx);
+    const activities = createOnchainDataDependencyResolverActivities(onchainCtx);
 
     await activities.resolveDependency({
       dependencyKey: 'onchain-data',
@@ -63,5 +67,16 @@ describe('Dependency Resolver Activities', () => {
 
     expect(mockOnchainDataSync).toHaveBeenCalledOnce();
     expect(mockDeepfundingSync).not.toHaveBeenCalled();
+  });
+
+  it('should reject unexpected keys on the onchain-data worker', async () => {
+    const activities = createOnchainDataDependencyResolverActivities(onchainCtx);
+
+    await expect(
+      activities.resolveDependency({
+        dependencyKey: 'deepfunding-portal-api',
+        snapshotId: 'snapshot-1',
+      }),
+    ).rejects.toThrow(/unexpected dependency/);
   });
 });

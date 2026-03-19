@@ -13,6 +13,7 @@ describe('dispatchAlgorithm activity', () => {
     process.env.TEMPORAL_ORCHESTRATOR_TASK_QUEUE = 'orchestrator-worker';
     process.env.TEMPORAL_ALGORITHM_TYPESCRIPT_TASK_QUEUE = 'algorithm-typescript-worker';
     process.env.TEMPORAL_ALGORITHM_PYTHON_TASK_QUEUE = 'algorithm-python-worker';
+    process.env.TEMPORAL_ONCHAIN_DATA_TASK_QUEUE = 'onchain-data-worker';
     process.env.MONGODB_HOST = 'localhost';
     process.env.MONGODB_PORT = '27017';
     process.env.MONGODB_DB_NAME = 'reputo_test';

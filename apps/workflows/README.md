@@ -4,31 +4,30 @@ Temporal-based workflow orchestration and algorithm execution for Reputo reputat
 
 ## Overview
 
-This application contains two Temporal Workers:
+This application contains three Temporal Workers:
 
 1. **Orchestrator Worker** - Orchestrates the execution of reputation algorithms, coordinating between MongoDB (for snapshot management) and algorithm activities (for computation).
 
-2. **Algorithm Worker** - Executes TypeScript algorithm implementations, handling data I/O with S3 storage.
+2. **Onchain Data Worker** - Resolves the `onchain-data` algorithm dependency (SQLite sync) on a dedicated task queue with concurrency limited to one activity at a time.
+
+3. **Algorithm Worker** - Executes TypeScript algorithm implementations, handling data I/O with S3 storage.
 
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                       apps/workflows                             │
-│                                                                  │
-│  ┌────────────────────────┐    ┌────────────────────────────┐   │
-│  │   Orchestrator Worker  │    │     Algorithm Worker       │   │
-│  │                        │    │                            │   │
-│  │  • Fetch Snapshots     │    │  • Dispatch to algorithms  │   │
-│  │  • Load definitions    │───▶│  • Execute compute logic   │   │
-│  │  • Update status       │    │  • Handle S3 I/O           │   │
-│  │  • Coordinate flow     │    │  • Return outputs          │   │
-│  └────────────────────────┘    └────────────────────────────┘   │
-│              │                              │                    │
-│              ▼                              ▼                    │
-│         MongoDB                    S3 Storage                    │
-│    (Snapshot documents)        (Input/Output files)              │
-└─────────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────────┐
+│                         apps/workflows                                    │
+│                                                                           │
+│  ┌─────────────────────┐  ┌─────────────────────┐  ┌────────────────┐  │
+│  │ Orchestrator Worker │  │ Onchain Data Worker │  │ Algorithm Worker│  │
+│  │                     │  │ (concurrency: 1)     │  │                 │  │
+│  │ • Snapshots / defs  │  │ • onchain-data dep   │  │ • Run algorithms│  │
+│  │ • Other deps        │  │ • SQLite sync        │  │ • S3 I/O        │  │
+│  └──────────┬──────────┘  └──────────┬──────────┘  └────────┬────────┘  │
+│             │                        │                      │           │
+│             ▼                        ▼                      ▼           │
+│        MongoDB                  (on-chain DB)           S3 Storage      │
+└──────────────────────────────────────────────────────────────────────────┘
 ```
 
 ### Key Responsibilities
@@ -37,10 +36,16 @@ This application contains two Temporal Workers:
 - ✅ Fetch `Snapshot` documents from MongoDB
 - ✅ Load algorithm definitions from `@reputo/reputation-algorithms`
 - ✅ Dispatch execution to algorithm worker via Temporal
+- ✅ Resolve non-onchain dependencies (e.g. DeepFunding) on the orchestrator task queue
 - ✅ Update snapshot status and outputs
+- ❌ Does NOT run onchain-data sync (handled by onchain data worker)
 - ❌ Does NOT perform S3 I/O (handled by algorithm worker)
 - ❌ Does NOT implement algorithm logic (handled by algorithm worker)
 - ❌ Does NOT validate HTTP input (handled by API)
+
+**Onchain Data Worker:**
+- ✅ Resolve `onchain-data` dependency only (dedicated Temporal task queue)
+- ✅ At most one concurrent activity
 
 **Algorithm Worker:**
 - ✅ Execute algorithm compute functions
@@ -78,8 +83,9 @@ apps/workflows/
 │   │       └── index.ts
 │   ├── workers/
 │   │   └── typescript/
-│   │       ├── orchestrator.worker.ts  # Orchestrator worker bootstrap
-│   │       └── algorithm.worker.ts     # Algorithm worker bootstrap
+│   │       ├── orchestrator.worker.ts   # Orchestrator worker bootstrap
+│   │       ├── onchain-data.worker.ts   # Onchain-data dependency worker
+│   │       └── algorithm.worker.ts      # Algorithm worker bootstrap
 │   ├── shared/
 │   │   ├── types/                      # Shared TypeScript types
 │   │   └── utils/                      # Utility functions
@@ -126,7 +132,6 @@ await client.workflow.start('OrchestratorWorkflow', {
     workflowId: 'snapshot-507f1f77bcf86cd799439011',
     args: [{
       snapshotId: '507f1f77bcf86cd799439011',
-      taskQueues: { typescript: 'algorithm-typescript-worker' },
     }],
 })
 ```
@@ -180,6 +185,7 @@ TEMPORAL_NAMESPACE=default
 TEMPORAL_ORCHESTRATOR_TASK_QUEUE=orchestrator-worker
 TEMPORAL_ALGORITHM_TYPESCRIPT_TASK_QUEUE=algorithm-typescript-worker
 TEMPORAL_ALGORITHM_PYTHON_TASK_QUEUE=algorithm-python-worker
+TEMPORAL_ONCHAIN_DATA_TASK_QUEUE=onchain-data-worker
 
 # MongoDB Configuration (Orchestrator only)
 MONGODB_HOST=localhost

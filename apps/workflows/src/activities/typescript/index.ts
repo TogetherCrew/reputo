@@ -1,7 +1,8 @@
 export {
   createAlgorithmLibraryActivities,
   createDeepfundingSyncActivity,
-  createDependencyResolverActivities,
+  createOnchainDataDependencyResolverActivities,
+  createOrchestratorDependencyResolverActivities,
 } from '../orchestrator/index.js';
 
 export {
