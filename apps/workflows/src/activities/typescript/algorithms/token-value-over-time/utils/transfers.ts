@@ -13,15 +13,14 @@ export async function loadTransferPageForWallets(input: {
   walletAddresses: string[];
   page: number;
   limit: number;
+  fromTimestampUnix?: number;
+  toTimestampUnix?: number;
 }): Promise<TransferPage> {
   if (input.walletAddresses.length === 0) {
     return { items: [], hasMore: false };
   }
 
   const assetId = ONCHAIN_ASSET_KEYS.indexOf(input.assetKey);
-  if (assetId === -1) {
-    throw new Error(`Unsupported asset key: ${input.assetKey}`);
-  }
 
   const rows = await input.repo.findTransfersByAddresses({
     assetId,
@@ -29,6 +28,8 @@ export async function loadTransferPageForWallets(input: {
     page: input.page,
     limit: input.limit,
     orderBy: 'time_asc',
+    fromTimestampUnix: input.fromTimestampUnix,
+    toTimestampUnix: input.toTimestampUnix,
   });
 
   const byId = new Map<string, OrderedTransferEvent>();

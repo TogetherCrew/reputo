@@ -32,13 +32,21 @@ export async function computeTokenValueOverTime(snapshot: Snapshot, storage: Sto
   const logger = ctx.log;
   const snapshotId = snapshot._id;
 
-  const params = extractInputs(snapshot.algorithmPresetFrozen.inputs);
+  const createdAt = snapshot.createdAt;
+  const snapshotCreatedAt =
+    createdAt instanceof Date ? createdAt : createdAt != null ? new Date(createdAt) : new Date();
+
+  const params = extractInputs(snapshot.algorithmPresetFrozen.inputs, snapshotCreatedAt);
   const selectedAssetKeys = resolveSelectedAssetKeys(params.selectedAssets);
   const targetWallets = loadTargetWallets();
   const walletChunks = chunkArray(targetWallets, WALLET_CHUNK_SIZE);
 
   logger.info('Starting token_value_over_time algorithm', { snapshotId });
-  logger.info('Algorithm parameters', params);
+  logger.info('Algorithm parameters', {
+    maturationThresholdDays: params.maturationThresholdDays,
+    selectedAssets: params.selectedAssets,
+    effectiveDateRange: params.effectiveDateRange,
+  });
   logger.info('Target wallets loaded', {
     walletCount: targetWallets.length,
     assetKeyCount: selectedAssetKeys.length,
@@ -47,9 +55,6 @@ export async function computeTokenValueOverTime(snapshot: Snapshot, storage: Sto
   const repo = await createOnchainTransferRepo();
 
   try {
-    const createdAt = snapshot.createdAt;
-    const snapshotCreatedAt =
-      createdAt instanceof Date ? createdAt : createdAt != null ? new Date(createdAt) : new Date();
     const targetWalletSet = new Set(targetWallets);
     const walletLots = initializeWalletLots(targetWallets);
     const replayStats = {
@@ -99,6 +104,8 @@ export async function computeTokenValueOverTime(snapshot: Snapshot, storage: Sto
             walletAddresses: walletChunk,
             page: pageNumber,
             limit: TRANSFERS_PAGE_LIMIT,
+            fromTimestampUnix: params.effectiveDateRange.fromTimestampUnix,
+            toTimestampUnix: params.effectiveDateRange.toTimestampUnix,
           });
           const fetchDurationMs = Date.now() - fetchStartedAt;
 

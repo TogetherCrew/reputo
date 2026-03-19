@@ -6,9 +6,19 @@ export interface SelectedAssetInput {
   assetIdentifier: string;
 }
 
+/** Effective transfer window: token genesis (no lower bound) through snapshot run time. */
+export interface EffectiveDateRange {
+  /** Unix timestamp (seconds) for the lower transfer bound. Undefined = no lower bound (full history from genesis). */
+  fromTimestampUnix: number | undefined;
+  /** Unix timestamp (seconds) for the upper transfer bound (snapshot run time). */
+  toTimestampUnix: number;
+}
+
 export interface TokenValueOverTimeParams {
   maturationThresholdDays: number;
   selectedAssets: SelectedAssetInput[];
+  /** Always full history: genesis through snapshot run time. */
+  effectiveDateRange: EffectiveDateRange;
 }
 
 export interface OrderedTransferEvent {

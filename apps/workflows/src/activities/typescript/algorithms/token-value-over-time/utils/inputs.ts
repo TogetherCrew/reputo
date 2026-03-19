@@ -1,9 +1,12 @@
 import type { AlgorithmPresetFrozen } from '@reputo/database';
 import { type AssetKey, OnchainAssets } from '@reputo/onchain-data';
 
-import type { SelectedAssetInput, TokenValueOverTimeParams } from '../types.js';
+import type { EffectiveDateRange, SelectedAssetInput, TokenValueOverTimeParams } from '../types.js';
 
-export function extractInputs(inputs: AlgorithmPresetFrozen['inputs']): TokenValueOverTimeParams {
+export function extractInputs(
+  inputs: AlgorithmPresetFrozen['inputs'],
+  snapshotCreatedAt: Date,
+): TokenValueOverTimeParams {
   const maturationThresholdRaw = inputs.find((input) => input.key === 'maturation_threshold_days')?.value;
   const selectedAssetsRaw = inputs.find((input) => input.key === 'selected_assets')?.value;
   const selectedAssets = (selectedAssetsRaw as Array<{ chain: string; asset_identifier: string }>).map((item) => ({
@@ -11,9 +14,17 @@ export function extractInputs(inputs: AlgorithmPresetFrozen['inputs']): TokenVal
     assetIdentifier: item.asset_identifier,
   }));
 
+  // Full history: effective range is token genesis (no lower bound) through snapshot run time
+  const snapshotUnix = Math.floor(snapshotCreatedAt.getTime() / 1000);
+  const effectiveDateRange: EffectiveDateRange = {
+    fromTimestampUnix: undefined,
+    toTimestampUnix: snapshotUnix,
+  };
+
   return {
     maturationThresholdDays: maturationThresholdRaw as number,
     selectedAssets,
+    effectiveDateRange,
   };
 }
 
