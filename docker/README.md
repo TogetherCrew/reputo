@@ -162,6 +162,8 @@ The `mongo/` folder contains initialization scripts:
 
 The on-chain dependency stack uses a dedicated PostgreSQL 16 service instead of a shared SQLite file. Compose starts `onchain-data-postgresql`, and the `@reputo/onchain-data` package auto-syncs the schema when the worker or repository connects.
 
+Use `onchain-data-postgresql:5432` from other Compose services on the same Docker network. The `5433:5432` mapping is only for connections coming from the host machine.
+
 ## Traefik Configuration
 
 The `traefik/` folder contains:
