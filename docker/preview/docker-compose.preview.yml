@@ -8,7 +8,7 @@ volumes:
         driver: local
     temporal_postgresql_data:
         driver: local
-    onchain_data:
+    onchain_data_postgresql_data:
         driver: local
 
 services:
@@ -166,6 +166,26 @@ services:
             - POSTGRES_PASSWORD=temporal
             - POSTGRES_DB=temporal
 
+    onchain-data-postgresql:
+        container_name: onchain-data-postgresql
+        image: postgres:16
+        restart: unless-stopped
+        networks: [preview]
+        volumes:
+            - onchain_data_postgresql_data:/var/lib/postgresql/data
+        ports:
+            - 5433:5432
+        environment:
+            - POSTGRES_USER=reputo_onchain
+            - POSTGRES_PASSWORD=reputo_onchain
+            - POSTGRES_DB=reputo_onchain
+        healthcheck:
+            test: ['CMD-SHELL', 'pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB']
+            interval: 10s
+            timeout: 5s
+            retries: 12
+            start_period: 20s
+
     orchestrator-worker:
         container_name: orchestrator-worker
         image: ghcr.io/reputo-org/reputo/workflows:${PREVIEW_IMAGE_TAG}
@@ -201,19 +221,17 @@ services:
             - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
             - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
             - AWS_REGION=eu-central-1
-            - ALCHEMY_API_KEY=${ALCHEMY_API_KEY}
-            - ONCHAIN_DATA_DB_PATH=/data/onchain-data.db
     onchain-data-worker:
         container_name: onchain-data-worker
         image: ghcr.io/reputo-org/reputo/workflows:${PREVIEW_IMAGE_TAG}
         depends_on:
             temporal:
                 condition: service_healthy
+            onchain-data-postgresql:
+                condition: service_healthy
         command: ['pnpm', 'start:onchain-data']
         restart: unless-stopped
         networks: [preview]
-        volumes:
-            - onchain_data:/data
         environment:
             - NODE_ENV=development
             - LOG_LEVEL=info
@@ -239,18 +257,22 @@ services:
             - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
             - AWS_REGION=eu-central-1
             - ALCHEMY_API_KEY=${ALCHEMY_API_KEY}
-            - ONCHAIN_DATA_DB_PATH=/data/onchain-data.db
+            - ONCHAIN_DATA_POSTGRES_HOST=onchain-data-postgresql
+            - ONCHAIN_DATA_POSTGRES_PORT=5432
+            - ONCHAIN_DATA_POSTGRES_USER=reputo_onchain
+            - ONCHAIN_DATA_POSTGRES_PASSWORD=reputo_onchain
+            - ONCHAIN_DATA_POSTGRES_DB_NAME=reputo_onchain
     typescript-worker:
         container_name: typescript-worker
         image: ghcr.io/reputo-org/reputo/workflows:${PREVIEW_IMAGE_TAG}
         depends_on:
             temporal:
                 condition: service_healthy
+            onchain-data-postgresql:
+                condition: service_healthy
         command: ['pnpm', 'start:algorithm-typescript']
         restart: unless-stopped
         networks: [preview]
-        volumes:
-            - onchain_data:/data
         environment:
             - NODE_ENV=development
             - LOG_LEVEL=info
@@ -275,5 +297,8 @@ services:
             - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
             - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
             - AWS_REGION=eu-central-1
-            - ALCHEMY_API_KEY=${ALCHEMY_API_KEY}
-            - ONCHAIN_DATA_DB_PATH=/data/onchain-data.db
+            - ONCHAIN_DATA_POSTGRES_HOST=onchain-data-postgresql
+            - ONCHAIN_DATA_POSTGRES_PORT=5432
+            - ONCHAIN_DATA_POSTGRES_USER=reputo_onchain
+            - ONCHAIN_DATA_POSTGRES_PASSWORD=reputo_onchain
+            - ONCHAIN_DATA_POSTGRES_DB_NAME=reputo_onchain

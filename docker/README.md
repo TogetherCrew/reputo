@@ -17,6 +17,7 @@ docker/
 │   │   ├── api.env.example
 │   │   ├── grafana.env.example
 │   │   ├── mongodb.env.example
+│   │   ├── onchain-data-postgresql.env.example
 │   │   ├── shared.env.example
 │   │   ├── temporal.env.example
 │   │   ├── temporal-postgresql.env.example
@@ -71,6 +72,7 @@ Used for local development. Features:
 - Builds images from source code
 - Hot-reload via mounted source volumes
 - MongoDB with replica set and authentication
+- Dedicated PostgreSQL for on-chain data
 - Exposed ports for direct access (API: 3000, UI: 8080, Temporal UI: 8088)
 - Observability included (Grafana at http://localhost:3001)
 
@@ -102,6 +104,7 @@ Copy these templates and update with your values:
 | `env/examples/api.env.example`                 | `env/api.env`                 | API service configuration (MongoDB, AWS, Temporal) |
 | `env/examples/grafana.env.example`             | `env/grafana.env`             | Grafana admin credentials and settings             |
 | `env/examples/mongodb.env.example`             | `env/mongodb.env`             | MongoDB root credentials                           |
+| `env/examples/onchain-data-postgresql.env.example`  | `env/onchain-data-postgresql.env`  | PostgreSQL credentials for on-chain data       |
 | `env/examples/shared.env.example`              | `env/shared.env`              | Production domains and Traefik config              |
 | `env/examples/temporal.env.example`            | `env/temporal.env`            | Temporal server database settings                  |
 | `env/examples/temporal-postgresql.env.example` | `env/temporal-postgresql.env` | PostgreSQL credentials for Temporal                |
@@ -128,6 +131,7 @@ for f in *.env.example; do cp "$f" "../${f%.example}"; done
 | `orchestrator-worker`    | Temporal workflow orchestrator     | -       |
 | `typescript-worker`      | Temporal algorithm activity worker | -       |
 | `mongodb`                | MongoDB database (replica set)     | 27017   |
+| `onchain-data-postgresql` | PostgreSQL for on-chain data      | -       |
 | `temporal`               | Temporal server                    | 7233    |
 | `temporal-ui`            | Temporal web dashboard             | 8088    |
 | `temporal-postgresql`    | PostgreSQL for Temporal            | -       |
@@ -153,6 +157,10 @@ The `mongo/` folder contains initialization scripts:
 - `init.js` - Creates database user on first startup
 - `healthcheck.js` - Verifies replica set status
 - `keyfile.txt` - Authentication key for replica set members
+
+## On-chain PostgreSQL
+
+The on-chain dependency stack uses a dedicated PostgreSQL 16 service instead of a shared SQLite file. Compose starts `onchain-data-postgresql`, and the `@reputo/onchain-data` package auto-syncs the schema when the worker or repository connects.
 
 ## Traefik Configuration
 
