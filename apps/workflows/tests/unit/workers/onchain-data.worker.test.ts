@@ -1,5 +1,25 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+vi.mock('@temporalio/worker', () => ({
+  NativeConnection: {
+    connect: vi.fn(),
+  },
+  Worker: {
+    create: vi.fn(),
+  },
+}));
+
+vi.mock('../../../src/activities/orchestrator/index.js', () => ({
+  createOnchainDataDependencyResolverActivities: vi.fn(() => ({})),
+}));
+
+vi.mock('../../../src/shared/utils/index.js', () => ({
+  logger: {
+    info: vi.fn(),
+    error: vi.fn(),
+  },
+}));
+
 const ORIGINAL_ENV = process.env;
 const BASE_ENV = {
   NODE_ENV: 'test',
@@ -26,7 +46,7 @@ const BASE_ENV = {
   ONCHAIN_DATA_POSTGRES_DB_NAME: 'reputo_onchain_test',
 };
 
-describe('onchain-data worker runtime config', () => {
+describe('onchain-data worker config', () => {
   beforeEach(() => {
     vi.resetModules();
     process.env = { ...ORIGINAL_ENV, ...BASE_ENV };
@@ -39,16 +59,16 @@ describe('onchain-data worker runtime config', () => {
   });
 
   it('requires ALCHEMY_API_KEY for the onchain-data worker', async () => {
-    const runtimeModule = await import('../../../src/workers/typescript/onchain-data.worker-runtime.js');
+    const workerModule = await import('../../../src/workers/typescript/onchain-data.worker.js');
 
-    expect(() => runtimeModule.getOnchainDataWorkerRuntimeConfig()).toThrow(/ALCHEMY_API_KEY/);
+    expect(() => workerModule.getOnchainDataWorkerConfig()).toThrow(/ALCHEMY_API_KEY/);
   });
 
   it('returns the worker runtime config when ALCHEMY_API_KEY is present', async () => {
     process.env.ALCHEMY_API_KEY = 'test-alchemy-key';
-    const runtimeModule = await import('../../../src/workers/typescript/onchain-data.worker-runtime.js');
+    const workerModule = await import('../../../src/workers/typescript/onchain-data.worker.js');
 
-    expect(runtimeModule.getOnchainDataWorkerRuntimeConfig()).toEqual({
+    expect(workerModule.getOnchainDataWorkerConfig()).toEqual({
       alchemyApiKey: 'test-alchemy-key',
       databaseUrl: 'postgresql://postgres:postgres@localhost:5432/reputo_onchain_test',
     });

@@ -22,29 +22,6 @@ export function createOnchainDataSyncActivity(ctx: OnchainDataSyncContext) {
     });
     logger.info('PostgreSQL database opened successfully, starting asset sync');
 
-    // for (const assetKey of assetKeys) {
-    //   const service = await createSyncAssetTransfersService({
-    //     assetKey,
-    //     databaseUrl,
-    //     alchemyApiKey,
-    //   });
-
-    //   try {
-    //     const result = await service.sync();
-
-    //     logger.info('Asset sync completed', {
-    //       assetKey: result.assetKey,
-    //       fromBlock: result.fromBlock,
-    //       toBlock: result.toBlock,
-    //       insertedCount: result.insertedCount,
-    //     });
-    //   } finally {
-    //     await service.close();
-    //   }
-
-    //   Context.current().heartbeat(assetKey);
-    // }
-
     try {
       const result = await service.sync();
 
