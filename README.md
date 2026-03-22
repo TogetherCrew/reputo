@@ -100,7 +100,7 @@ reputo/
 │   ├── algorithm-validator/        # Shared Zod validation library
 │   ├── database/                   # Mongoose database layer
 │   ├── deepfunding-portal-api/     # DeepFunding Portal API client & SQLite ingest
-│   ├── onchain-data/               # Token transfer sync to SQLite (provider abstraction)
+│   ├── onchain-data/               # Token transfer sync to PostgreSQL (provider abstraction)
 │   ├── reputation-algorithms/      # Algorithm definitions registry
 │   └── storage/                    # Framework-agnostic S3 utilities
 ├── scripts/

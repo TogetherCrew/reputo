@@ -6,17 +6,20 @@
 
 # Function: normalizeAlchemyEthereumTransfer()
 
-> **normalizeAlchemyEthereumTransfer**(`input`): [`TokenTransferRecord`](../type-aliases/TokenTransferRecord.md)
+> **normalizeAlchemyEthereumTransfer**(`input`): [`AssetTransferEntity`](../interfaces/AssetTransferEntity.md)
 
-Defined in: [services/sync-token-transfers-service.ts:131](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/onchain-data/src/services/sync-token-transfers-service.ts#L131)
+Defined in: [providers/ethereum/normalize-alchemy-transfer.ts:16](https://github.com/reputo-org/reputo/blob/962d0d201e0df08eadcc1d7d37a05f21cfe65d22/packages/onchain-data/src/providers/ethereum/normalize-alchemy-transfer.ts#L16)
+
+Normalizes a single Alchemy transfer to the shape of AssetTransferSchema (AssetTransferEntity).
+Block and timestamp are numbers (block number as integer, block_timestamp_unix as Unix seconds).
 
 ## Parameters
 
 ### input
 
-#### tokenChain
+#### assetKey
 
-[`FET_ETHEREUM`](../enumerations/SupportedTokenChain.md#fet_ethereum)
+`"fet_ethereum"` \| `"fet_cardano"` \| `"fet_cosmos"`
 
 #### transfer
 
@@ -24,4 +27,4 @@ Defined in: [services/sync-token-transfers-service.ts:131](https://github.com/re
 
 ## Returns
 
-[`TokenTransferRecord`](../type-aliases/TokenTransferRecord.md)
+[`AssetTransferEntity`](../interfaces/AssetTransferEntity.md)

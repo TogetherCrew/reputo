@@ -9,13 +9,13 @@ volumes:
         driver: local
     temporal_postgresql_data:
         driver: local
+    onchain_data_postgresql_data:
+        driver: local
     loki_data:
         driver: local
     grafana_data:
         driver: local
     prometheus_data:
-        driver: local
-    onchain_data:
         driver: local
 
 services:
@@ -212,6 +212,24 @@ services:
         volumes:
             - temporal_postgresql_data:/var/lib/postgresql/data
 
+    onchain-data-postgresql:
+        container_name: onchain-data-postgresql
+        image: postgres:16
+        restart: unless-stopped
+        env_file: ./env/onchain-data-postgresql.env
+        networks: [production]
+        ports:
+            - 5433:5432
+        volumes:
+            - onchain_data_postgresql_data:/var/lib/postgresql/data
+        healthcheck:
+            test:
+                ['CMD-SHELL', 'pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB']
+            interval: 10s
+            timeout: 5s
+            retries: 12
+            start_period: 20s
+
     orchestrator-worker:
         container_name: orchestrator-worker
         image: ghcr.io/reputo-org/reputo/workflows:${IMAGE_TAG}
@@ -237,10 +255,10 @@ services:
         depends_on:
             temporal:
                 condition: service_healthy
+            onchain-data-postgresql:
+                condition: service_healthy
         env_file:
             - ./env/workflows.env
-        volumes:
-            - onchain_data:/data
         labels:
             - com.centurylinklabs.watchtower.enable=true
 
@@ -253,10 +271,10 @@ services:
         depends_on:
             temporal:
                 condition: service_healthy
+            onchain-data-postgresql:
+                condition: service_healthy
         env_file:
             - ./env/workflows.env
-        volumes:
-            - onchain_data:/data
         labels:
             - com.centurylinklabs.watchtower.enable=true
 
@@ -374,7 +392,11 @@ services:
             prometheus:
                 condition: service_started
         healthcheck:
-            test: ['CMD-SHELL', 'wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1']
+            test:
+                [
+                    'CMD-SHELL',
+                    'wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1',
+                ]
             interval: 15s
             timeout: 5s
             retries: 5

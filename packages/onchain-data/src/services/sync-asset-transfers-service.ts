@@ -1,15 +1,33 @@
 import type { DataSource } from 'typeorm';
-import type { AssetTransferRepository } from '../db/repos/asset-transfer-repo.js';
-import { createAssetTransferRepository } from '../db/repos/asset-transfer-repo.js';
-import type { AssetTransferSyncStateRepository } from '../db/repos/asset-transfer-sync-state-repo.js';
-import { createAssetTransferSyncStateRepository } from '../db/repos/asset-transfer-sync-state-repo.js';
+import { createDataSource } from '../db/postgres.js';
+import {
+  type AssetTransferSyncStore,
+  createPostgresAssetTransferSyncStore,
+  type InsertTransferBatchResult,
+} from '../db/postgres-asset-transfer-sync-store.js';
 import type { AssetTransferEntity } from '../db/schema.js';
-import { createDataSource } from '../db/sqlite.js';
 import type { AlchemyEthereumAssetTransferProvider } from '../providers/ethereum/alchemy-ethereum-asset-transfer-provider.js';
 import { createAlchemyEthereumAssetTransferProvider } from '../providers/ethereum/alchemy-ethereum-asset-transfer-provider.js';
 import { type AssetKey, compareHexBlocks, normalizeHexBlock, OnchainAssets } from '../shared/index.js';
 
 const BUFFER_ITEM_COUNT = 10_000;
+
+type BufferedTransferBatch = {
+  items: AssetTransferEntity[];
+  lastBlock: string | null;
+  pageCount: number;
+  fetchDurationMs: number;
+  normalizeDurationMs: number;
+};
+
+type FlushMetrics = InsertTransferBatchResult & {
+  bufferedCount: number;
+  pageCount: number;
+  fetchDurationMs: number;
+  normalizeDurationMs: number;
+  durationMs: number;
+  lastBlock: string;
+};
 
 export type SyncAssetTransfersResult = {
   assetKey: AssetKey;
@@ -25,27 +43,33 @@ export interface SyncAssetTransfersService {
 
 export type CreateSyncAssetTransfersServiceInput = {
   assetKey: AssetKey;
-  dbPath: string;
+  databaseUrl: string;
   alchemyApiKey: string;
 };
 
 export async function createSyncAssetTransfersService(
   input: CreateSyncAssetTransfersServiceInput,
 ): Promise<SyncAssetTransfersService> {
-  const dataSource = await createDataSource(input.dbPath);
-  const assetTransferRepo = createAssetTransferRepository(dataSource);
-  const syncStateRepo = createAssetTransferSyncStateRepository(dataSource);
-  const provider = createAlchemyEthereumAssetTransferProvider(input.alchemyApiKey);
+  const dataSource = await createDataSource(input.databaseUrl);
 
-  return new DefaultSyncAssetTransfersService(input.assetKey, dataSource, assetTransferRepo, syncStateRepo, provider);
+  try {
+    const syncStore = await createPostgresAssetTransferSyncStore({
+      databaseUrl: input.databaseUrl,
+    });
+    const provider = createAlchemyEthereumAssetTransferProvider(input.alchemyApiKey);
+
+    return new DefaultSyncAssetTransfersService(input.assetKey, dataSource, syncStore, provider);
+  } catch (error) {
+    await dataSource.destroy();
+    throw error;
+  }
 }
 
 export class DefaultSyncAssetTransfersService implements SyncAssetTransfersService {
   constructor(
     private readonly assetKey: AssetKey,
     private readonly dataSource: DataSource,
-    private readonly assetTransferRepo: AssetTransferRepository,
-    private readonly syncStateRepo: AssetTransferSyncStateRepository,
+    private readonly syncStore: AssetTransferSyncStore,
     private readonly provider: AlchemyEthereumAssetTransferProvider,
     private readonly clock: () => string = () => new Date().toISOString(),
   ) {}
@@ -71,10 +95,8 @@ export class DefaultSyncAssetTransfersService implements SyncAssetTransfersServi
       };
     }
 
-    let insertedCount = 0;
-    let bufferedItems: AssetTransferEntity[] = [];
-    let bufferedPageCount = 0;
-    let bufferedLastBlock: string | null = null;
+    let seenTransferCount = 0;
+    let nextBuffer = createEmptyBufferedBatch();
 
     for await (const page of this.provider.fetchAssetTransfers({
       assetKey: this.assetKey,
@@ -82,56 +104,114 @@ export class DefaultSyncAssetTransfersService implements SyncAssetTransfersServi
       fromBlock,
       toBlock,
     })) {
-      insertedCount += page.items.length;
-      bufferedItems.push(...page.items);
-      bufferedPageCount += 1;
-      bufferedLastBlock = page.lastBlock;
+      seenTransferCount += page.items.length;
+      nextBuffer.items.push(...page.items);
+      nextBuffer.lastBlock = page.lastBlock;
+      nextBuffer.pageCount += 1;
+      nextBuffer.fetchDurationMs += page.fetchDurationMs ?? 0;
+      nextBuffer.normalizeDurationMs += page.normalizeDurationMs ?? 0;
 
-      if (bufferedItems.length >= BUFFER_ITEM_COUNT) {
-        await this.persistBufferedItems(bufferedItems, bufferedLastBlock);
-        bufferedItems = [];
-        bufferedPageCount = 0;
-        bufferedLastBlock = null;
+      if (nextBuffer.items.length >= BUFFER_ITEM_COUNT) {
+        await this.persistBufferedItems(nextBuffer);
+        nextBuffer = createEmptyBufferedBatch();
       }
     }
 
-    if (bufferedPageCount > 0) {
-      await this.persistBufferedItems(bufferedItems, bufferedLastBlock);
+    if (nextBuffer.lastBlock != null) {
+      await this.persistBufferedItems(nextBuffer);
     }
 
-    return { assetKey: this.assetKey, fromBlock, toBlock, insertedCount };
+    return { assetKey: this.assetKey, fromBlock, toBlock, insertedCount: seenTransferCount };
   }
 
   async close(): Promise<void> {
-    await this.dataSource.destroy();
+    let storeError: unknown;
+
+    try {
+      await this.syncStore.close();
+    } catch (error) {
+      storeError = error;
+    } finally {
+      await this.dataSource.destroy();
+    }
+
+    if (storeError != null) {
+      throw storeError;
+    }
   }
 
   private async resolveSyncRange(startBlock: string): Promise<{ fromBlock: string; toBlock: string }> {
-    const syncState = await this.syncStateRepo.findByAssetKey(this.assetKey);
+    const syncState = await this.syncStore.findByAssetKey(this.assetKey);
     const fromBlock = syncState ? normalizeHexBlock(syncState.lastSyncedBlock) : normalizeHexBlock(startBlock);
     const toBlock = normalizeHexBlock(await this.provider.getToBlock());
     return { fromBlock, toBlock };
   }
 
-  private async persistBufferedItems(items: AssetTransferEntity[], lastBlock: string | null): Promise<void> {
-    if (lastBlock == null) return;
+  private async persistBufferedItems(batch: BufferedTransferBatch): Promise<FlushMetrics> {
+    const { lastBlock } = batch;
 
+    if (lastBlock == null) {
+      return {
+        attemptedCount: 0,
+        insertedCount: 0,
+        ignoredCount: 0,
+        bufferedCount: 0,
+        pageCount: 0,
+        fetchDurationMs: 0,
+        normalizeDurationMs: 0,
+        durationMs: 0,
+        lastBlock: normalizeHexBlock(0),
+      };
+    }
+
+    const flushStartedAtMs = Date.now();
     const asset = OnchainAssets[this.assetKey];
-    const lastItem = items.length > 0 ? items[items.length - 1] : null;
-
-    await this.dataSource.transaction(async (manager) => {
-      await this.assetTransferRepo.insertMany(items, manager);
-      await this.syncStateRepo.upsert(
-        {
-          chain: asset.chain,
-          assetIdentifier: asset.assetIdentifier,
-          lastSyncedBlock: normalizeHexBlock(lastBlock),
-          lastTransactionHash: lastItem?.transaction_hash ?? null,
-          lastLogIndex: lastItem?.log_index ?? null,
-          updatedAt: this.clock(),
-        },
-        manager,
-      );
+    const lastItem = batch.items.length > 0 ? batch.items[batch.items.length - 1] : null;
+    const insertMetrics = await this.syncStore.withTransaction(async (tx) => {
+      const metrics = await tx.insertTransferBatch(batch.items);
+      await tx.upsertSyncState({
+        chain: asset.chain,
+        assetIdentifier: asset.assetIdentifier,
+        lastSyncedBlock: normalizeHexBlock(lastBlock),
+        lastTransactionHash: lastItem?.transaction_hash ?? null,
+        lastLogIndex: lastItem?.log_index ?? null,
+        updatedAt: this.clock(),
+      });
+      return metrics;
     });
+
+    const flushMetrics: FlushMetrics = {
+      ...insertMetrics,
+      bufferedCount: batch.items.length,
+      pageCount: batch.pageCount,
+      fetchDurationMs: batch.fetchDurationMs,
+      normalizeDurationMs: batch.normalizeDurationMs,
+      durationMs: Date.now() - flushStartedAtMs,
+      lastBlock: normalizeHexBlock(lastBlock),
+    };
+
+    console.info('[onchain-data] onchain_data_batch_flush', {
+      assetKey: this.assetKey,
+      pageCount: flushMetrics.pageCount,
+      bufferedCount: flushMetrics.bufferedCount,
+      fetchDurationMs: flushMetrics.fetchDurationMs,
+      normalizeDurationMs: flushMetrics.normalizeDurationMs,
+      insertedCount: flushMetrics.insertedCount,
+      ignoredCount: flushMetrics.ignoredCount,
+      durationMs: flushMetrics.durationMs,
+      lastBlock: flushMetrics.lastBlock,
+    });
+
+    return flushMetrics;
   }
+}
+
+function createEmptyBufferedBatch(): BufferedTransferBatch {
+  return {
+    items: [],
+    lastBlock: null,
+    pageCount: 0,
+    fetchDurationMs: 0,
+    normalizeDurationMs: 0,
+  };
 }

@@ -16,6 +16,13 @@ type RawTransferPage = {
   pageKey?: string;
 };
 
+export type AssetTransferPage = {
+  items: AssetTransferEntity[];
+  lastBlock: string;
+  fetchDurationMs?: number;
+  normalizeDurationMs?: number;
+};
+
 export interface AlchemyEthereumAssetTransferProvider {
   getToBlock(): Promise<string>;
   fetchAssetTransfers(input: {
@@ -23,7 +30,7 @@ export interface AlchemyEthereumAssetTransferProvider {
     assetIdentifier: string;
     fromBlock: string;
     toBlock: string;
-  }): AsyncGenerator<{ items: AssetTransferEntity[]; lastBlock: string }>;
+  }): AsyncGenerator<AssetTransferPage>;
 }
 
 export function createAlchemyEthereumAssetTransferProvider(
@@ -75,7 +82,8 @@ export function createAlchemyEthereumAssetTransferProvider(
     fromBlock: string;
     toBlock: string;
     pageKey?: string;
-  }): Promise<RawTransferPage> {
+  }): Promise<{ page: RawTransferPage; fetchDurationMs: number }> {
+    const fetchStartedAtMs = Date.now();
     const result = await jsonRpc<AlchemyAssetTransfersResponse>('alchemy_getAssetTransfers', [
       {
         fromBlock: input.fromBlock,
@@ -94,9 +102,12 @@ export function createAlchemyEthereumAssetTransferProvider(
       result.transfers.length > 0 ? result.transfers[result.transfers.length - 1].blockNum : input.toBlock;
 
     return {
-      items: result.transfers,
-      lastBlock,
-      pageKey: result.pageKey,
+      page: {
+        items: result.transfers,
+        lastBlock,
+        pageKey: result.pageKey,
+      },
+      fetchDurationMs: Date.now() - fetchStartedAtMs,
     };
   }
 
@@ -108,32 +119,37 @@ export function createAlchemyEthereumAssetTransferProvider(
 
     async *fetchAssetTransfers(input) {
       const { assetKey, assetIdentifier, fromBlock, toBlock } = input;
-      let current = await fetchPage({
-        assetIdentifier,
-        fromBlock,
-        toBlock,
-      });
+      let currentPageKey: string | undefined;
 
       for (;;) {
-        const nextPromise = current.pageKey
-          ? fetchPage({
-              assetIdentifier,
-              fromBlock,
-              toBlock,
-              pageKey: current.pageKey,
-            })
-          : null;
+        const { page, fetchDurationMs } = await fetchPage({
+          assetIdentifier,
+          fromBlock,
+          toBlock,
+          pageKey: currentPageKey,
+        });
 
-        const items: AssetTransferEntity[] = current.items.map((raw) =>
+        const normalizeStartedAtMs = Date.now();
+        const items: AssetTransferEntity[] = page.items.map((raw) =>
           normalizeAlchemyEthereumTransfer({
             assetKey,
             transfer: raw,
           }),
         );
-        yield { items, lastBlock: current.lastBlock };
+        const normalizeDurationMs = Date.now() - normalizeStartedAtMs;
 
-        if (!nextPromise) break;
-        current = await nextPromise;
+        yield {
+          items,
+          lastBlock: page.lastBlock,
+          fetchDurationMs,
+          normalizeDurationMs,
+        };
+
+        if (!page.pageKey) {
+          break;
+        }
+
+        currentPageKey = page.pageKey;
       }
     },
   };

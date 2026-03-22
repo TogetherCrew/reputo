@@ -1,6 +1,16 @@
 import Joi from 'joi';
 
-const envVarsSchema = Joi.object()
+function validateEnvVars<T>(schema: Joi.ObjectSchema<T>): T {
+  const { value, error } = schema.prefs({ errors: { label: 'key' } }).validate(process.env);
+
+  if (error) {
+    throw new Error(`Config validation error: ${error.message}`);
+  }
+
+  return value;
+}
+
+const commonEnvVarsSchema = Joi.object()
   .keys({
     NODE_ENV: Joi.string().valid('production', 'development', 'test').required(),
     LOG_LEVEL: Joi.string().required().description('Min allowed log level'),
@@ -79,18 +89,43 @@ const envVarsSchema = Joi.object()
       .min(0)
       .default(20000)
       .description('DeepFunding API retry max delay in milliseconds'),
-    ONCHAIN_DATA_DB_PATH: Joi.string().required().description('Local filesystem path on-chain data SQLite database'),
-    ALCHEMY_API_KEY: Joi.string().required().description('Alchemy API key'),
+    ONCHAIN_DATA_POSTGRES_HOST: Joi.string().required().description('On-chain PostgreSQL host'),
+    ONCHAIN_DATA_POSTGRES_PORT: Joi.string().pattern(/^\d+$/).required().description('On-chain PostgreSQL port'),
+    ONCHAIN_DATA_POSTGRES_USER: Joi.string().required().description('On-chain PostgreSQL username'),
+    ONCHAIN_DATA_POSTGRES_PASSWORD: Joi.string().allow('').required().description('On-chain PostgreSQL password'),
+    ONCHAIN_DATA_POSTGRES_DB_NAME: Joi.string().required().description('On-chain PostgreSQL database name'),
+    ALCHEMY_API_KEY: Joi.string().allow('').description('Alchemy API key'),
   })
   .unknown();
 
-const { value: envVars, error } = envVarsSchema.prefs({ errors: { label: 'key' } }).validate(process.env);
+const envVars = validateEnvVars(commonEnvVarsSchema);
+const mongoDbUri = new URL('mongodb://localhost');
+mongoDbUri.hostname = envVars.MONGODB_HOST;
+mongoDbUri.port = envVars.MONGODB_PORT;
+mongoDbUri.pathname = `/${envVars.MONGODB_DB_NAME}`;
+mongoDbUri.searchParams.set('authSource', 'admin');
+mongoDbUri.searchParams.set('replicaSet', 'rs0');
+mongoDbUri.searchParams.set('directConnection', 'true');
 
-if (error) {
-  throw new Error(`Config validation error: ${error.message}`);
+if (envVars.MONGODB_USER !== '') {
+  mongoDbUri.username = envVars.MONGODB_USER;
 }
 
-export default {
+if (envVars.MONGODB_PASSWORD !== '') {
+  mongoDbUri.password = envVars.MONGODB_PASSWORD;
+}
+
+const onchainDataUri = new URL('postgresql://localhost');
+onchainDataUri.hostname = envVars.ONCHAIN_DATA_POSTGRES_HOST;
+onchainDataUri.port = envVars.ONCHAIN_DATA_POSTGRES_PORT;
+onchainDataUri.pathname = `/${envVars.ONCHAIN_DATA_POSTGRES_DB_NAME}`;
+onchainDataUri.username = envVars.ONCHAIN_DATA_POSTGRES_USER;
+
+if (envVars.ONCHAIN_DATA_POSTGRES_PASSWORD !== '') {
+  onchainDataUri.password = envVars.ONCHAIN_DATA_POSTGRES_PASSWORD;
+}
+
+const config = {
   app: {
     nodeEnv: envVars.NODE_ENV,
   },
@@ -108,7 +143,7 @@ export default {
     user: envVars.MONGODB_USER,
     password: envVars.MONGODB_PASSWORD,
     dbName: envVars.MONGODB_DB_NAME,
-    uri: `mongodb://${envVars.MONGODB_USER}:${envVars.MONGODB_PASSWORD}@${envVars.MONGODB_HOST}:${envVars.MONGODB_PORT}/${envVars.MONGODB_DB_NAME}?authSource=admin&replicaSet=rs0&directConnection=true`,
+    uri: mongoDbUri.toString(),
   },
   aws: {
     region: envVars.AWS_REGION,
@@ -136,7 +171,14 @@ export default {
     retryMaxDelayMs: envVars.DEEPFUNDING_API_RETRY_MAX_DELAY_MS,
   },
   onchainData: {
-    dbPath: envVars.ONCHAIN_DATA_DB_PATH,
-    alchemyApiKey: envVars.ALCHEMY_API_KEY,
+    host: envVars.ONCHAIN_DATA_POSTGRES_HOST,
+    port: envVars.ONCHAIN_DATA_POSTGRES_PORT,
+    user: envVars.ONCHAIN_DATA_POSTGRES_USER,
+    password: envVars.ONCHAIN_DATA_POSTGRES_PASSWORD,
+    dbName: envVars.ONCHAIN_DATA_POSTGRES_DB_NAME,
+    uri: onchainDataUri.toString(),
+    alchemyApiKey: envVars.ALCHEMY_API_KEY == null || envVars.ALCHEMY_API_KEY === '' ? null : envVars.ALCHEMY_API_KEY,
   },
 };
+
+export default config;

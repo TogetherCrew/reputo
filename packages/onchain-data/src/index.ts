@@ -25,16 +25,18 @@ export {
   OnchainAssets,
 } from './shared/index.js';
 
+import { createDataSource } from './db/postgres.js';
 import type { AssetTransferRepository } from './db/repos/asset-transfer-repo.js';
 import { createAssetTransferRepository as _createInternalRepo } from './db/repos/asset-transfer-repo.js';
-import { createDataSource } from './db/sqlite.js';
 
 export type AssetTransferReadRepository = AssetTransferRepository & {
   close(): Promise<void>;
 };
 
-export async function createAssetTransferRepository(input: { dbPath: string }): Promise<AssetTransferReadRepository> {
-  const dataSource = await createDataSource(input.dbPath);
+export async function createAssetTransferRepository(input: {
+  databaseUrl: string;
+}): Promise<AssetTransferReadRepository> {
+  const dataSource = await createDataSource(input.databaseUrl);
   const repo = _createInternalRepo(dataSource);
   return {
     insertMany: repo.insertMany,

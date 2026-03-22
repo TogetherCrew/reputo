@@ -30,7 +30,7 @@ import { createOnchainDataSyncActivity } from '../../../src/activities/orchestra
 
 describe('Onchain Data Sync Activity', () => {
   const ctx = {
-    dbPath: '/tmp/test-onchain-data.db',
+    databaseUrl: 'postgresql://postgres:postgres@localhost:5432/reputo_onchain_test',
     alchemyApiKey: 'test-alchemy-key',
   };
 
@@ -51,7 +51,7 @@ describe('Onchain Data Sync Activity', () => {
 
     expect(createSyncAssetTransfersService).toHaveBeenCalledWith({
       assetKey: 'fet_ethereum',
-      dbPath: '/tmp/test-onchain-data.db',
+      databaseUrl: 'postgresql://postgres:postgres@localhost:5432/reputo_onchain_test',
       alchemyApiKey: 'test-alchemy-key',
     });
     expect(mockSync).toHaveBeenCalledTimes(1);
@@ -94,7 +94,7 @@ describe('Onchain Data Sync Activity', () => {
     await activity();
 
     expect(createSyncAssetTransfersService).toHaveBeenCalledWith(
-      expect.objectContaining({ dbPath: '/tmp/test-onchain-data.db' }),
+      expect.objectContaining({ databaseUrl: 'postgresql://postgres:postgres@localhost:5432/reputo_onchain_test' }),
     );
     expect(mockSync).toHaveBeenCalledTimes(1);
   });

@@ -4,13 +4,15 @@ import type { AssetTransferRepository } from '../../../../src/db/repos/asset-tra
 import { createAssetTransferRepository } from '../../../../src/db/repos/asset-transfer-repo.js';
 import { AssetTransferSchema } from '../../../../src/db/schema.js';
 import { type AssetKey, ONCHAIN_ASSET_KEYS } from '../../../../src/shared/index.js';
-import { closeTestDataSource, createTestDataSource } from '../../../utils/db-helpers.js';
+import { closeTestDataSource, createTestDataSource, hasContainerRuntime } from '../../../utils/db-helpers.js';
 import { createMockAssetTransferEntity } from '../../../utils/mock-helpers.js';
 
 const FET_ETHEREUM: AssetKey = 'fet_ethereum';
 const FET_ETHEREUM_ID = ONCHAIN_ASSET_KEYS.indexOf(FET_ETHEREUM);
 
-describe('AssetTransferRepository', () => {
+const describePostgres = hasContainerRuntime ? describe : describe.skip;
+
+describePostgres('AssetTransferRepository', () => {
   let ds: DataSource;
   let repo: AssetTransferRepository;
 

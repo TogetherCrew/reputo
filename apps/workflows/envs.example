@@ -33,3 +33,12 @@ AWS_SECRET_ACCESS_KEY=
 DEEPFUNDING_API_BASE_URL=https://api.deepfunding.xyz
 DEEPFUNDING_API_KEY=
 
+# On-chain Data PostgreSQL (TypeScript worker and onchain-data worker only)
+ONCHAIN_DATA_POSTGRES_HOST=localhost
+ONCHAIN_DATA_POSTGRES_PORT=5432
+ONCHAIN_DATA_POSTGRES_USER=reputo_onchain
+ONCHAIN_DATA_POSTGRES_PASSWORD=reputo_onchain
+ONCHAIN_DATA_POSTGRES_DB_NAME=reputo_onchain
+
+# Alchemy (onchain-data worker only)
+ALCHEMY_API_KEY=

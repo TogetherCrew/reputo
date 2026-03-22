@@ -1,3 +1,4 @@
+import { pathToFileURL } from 'node:url';
 import { NativeConnection, Worker } from '@temporalio/worker';
 
 import { createOnchainDataDependencyResolverActivities } from '../../activities/orchestrator/index.js';
@@ -5,8 +6,25 @@ import config from '../../config/index.js';
 import { ONCHAIN_DATA_WORKER_MAX_CONCURRENT_ACTIVITIES } from '../../shared/constants/index.js';
 import { logger } from '../../shared/utils/index.js';
 
-async function run(): Promise<void> {
+export type OnchainDataWorkerConfig = {
+  alchemyApiKey: string;
+  databaseUrl: string;
+};
+
+export function getOnchainDataWorkerConfig(): OnchainDataWorkerConfig {
+  if (config.onchainData.alchemyApiKey == null) {
+    throw new Error('Config validation error: ALCHEMY_API_KEY is required for onchain-data worker');
+  }
+
+  return {
+    alchemyApiKey: config.onchainData.alchemyApiKey,
+    databaseUrl: config.onchainData.uri,
+  };
+}
+
+export async function runOnchainDataWorker(): Promise<void> {
   logger.info('Starting Onchain Data Worker');
+  const onchainDataConfig = getOnchainDataWorkerConfig();
 
   const connection = await NativeConnection.connect({
     address: config.temporal.address,
@@ -15,8 +33,8 @@ async function run(): Promise<void> {
   logger.info('Connected to Temporal server');
 
   const activities = createOnchainDataDependencyResolverActivities({
-    dbPath: config.onchainData.dbPath,
-    alchemyApiKey: config.onchainData.alchemyApiKey,
+    databaseUrl: onchainDataConfig.databaseUrl,
+    alchemyApiKey: onchainDataConfig.alchemyApiKey,
   });
 
   logger.info(`Activities initialized: [${Object.keys(activities).join(', ')}]`);
@@ -64,7 +82,9 @@ async function run(): Promise<void> {
   await worker.run();
 }
 
-run().catch((error) => {
-  logger.error({ err: error }, 'Fatal error starting onchain data worker');
-  process.exit(1);
-});
+if (process.argv[1] != null && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  runOnchainDataWorker().catch((error) => {
+    logger.error({ err: error }, 'Fatal error starting onchain data worker');
+    process.exit(1);
+  });
+}
