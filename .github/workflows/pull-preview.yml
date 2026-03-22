@@ -34,7 +34,7 @@ jobs:
             statuses: write
         environment:
             name: preview
-            url: ${{ steps.pullpreview.outputs.url }}
+            url: ${{ steps.preview_result.outputs.url }}
         steps:
             - uses: actions/checkout@v4
 
@@ -58,7 +58,9 @@ jobs:
                   openssl rand -base64 768 > docker/mongo/keyfile.txt
                   chmod 400 docker/mongo/keyfile.txt
 
-            - id: pullpreview
+            - id: pullpreview_primary
+              name: Deploy preview
+              continue-on-error: true
               uses: pullpreview/action@v6
               with:
                   label: pullpreview
@@ -71,3 +73,36 @@ jobs:
                   AWS_ACCESS_KEY_ID: '${{ secrets.AWS_ACCESS_KEY_ID }}'
                   AWS_SECRET_ACCESS_KEY: '${{ secrets.AWS_SECRET_ACCESS_KEY }}'
                   AWS_REGION: 'eu-central-1'
+
+            - id: pullpreview_retry
+              name: Retry preview deploy after transient failure
+              if: steps.pullpreview_primary.outcome == 'failure'
+              uses: pullpreview/action@v6
+              with:
+                  label: pullpreview
+                  provider: lightsail
+                  instance_type: large
+                  compose_files: docker/preview/docker-compose.preview.yml
+                  compose_options: ''
+                  ttl: 24h
+              env:
+                  AWS_ACCESS_KEY_ID: '${{ secrets.AWS_ACCESS_KEY_ID }}'
+                  AWS_SECRET_ACCESS_KEY: '${{ secrets.AWS_SECRET_ACCESS_KEY }}'
+                  AWS_REGION: 'eu-central-1'
+
+            - id: preview_result
+              if: always()
+              name: Resolve preview URL
+              run: |
+                  if [ "${{ steps.pullpreview_primary.outcome }}" = 'success' ]; then
+                      echo "url=${{ steps.pullpreview_primary.outputs.url }}" >> "$GITHUB_OUTPUT"
+                      exit 0
+                  fi
+
+                  if [ "${{ steps.pullpreview_retry.outcome }}" = 'success' ]; then
+                      echo "url=${{ steps.pullpreview_retry.outputs.url }}" >> "$GITHUB_OUTPUT"
+                  fi
+
+            - name: Fail if preview deployment did not succeed
+              if: steps.pullpreview_primary.outcome != 'success' && steps.pullpreview_retry.outcome != 'success'
+              run: exit 1
