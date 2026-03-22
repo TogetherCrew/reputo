@@ -4,9 +4,11 @@ import { createOnchainDataDependencyResolverActivities } from '../../activities/
 import config from '../../config/index.js';
 import { ONCHAIN_DATA_WORKER_MAX_CONCURRENT_ACTIVITIES } from '../../shared/constants/index.js';
 import { logger } from '../../shared/utils/index.js';
+import { getOnchainDataWorkerRuntimeConfig } from './onchain-data.worker-runtime.js';
 
 async function run(): Promise<void> {
   logger.info('Starting Onchain Data Worker');
+  const onchainDataConfig = getOnchainDataWorkerRuntimeConfig();
 
   const connection = await NativeConnection.connect({
     address: config.temporal.address,
@@ -15,8 +17,8 @@ async function run(): Promise<void> {
   logger.info('Connected to Temporal server');
 
   const activities = createOnchainDataDependencyResolverActivities({
-    dbPath: config.onchainData.dbPath,
-    alchemyApiKey: config.onchainData.alchemyApiKey,
+    databaseUrl: onchainDataConfig.databaseUrl,
+    alchemyApiKey: onchainDataConfig.alchemyApiKey,
   });
 
   logger.info(`Activities initialized: [${Object.keys(activities).join(', ')}]`);

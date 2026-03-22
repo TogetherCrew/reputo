@@ -8,7 +8,7 @@ This application contains three Temporal Workers:
 
 1. **Orchestrator Worker** - Orchestrates the execution of reputation algorithms, coordinating between MongoDB (for snapshot management) and algorithm activities (for computation).
 
-2. **Onchain Data Worker** - Resolves the `onchain-data` algorithm dependency (SQLite sync) on a dedicated task queue with concurrency limited to one activity at a time.
+2. **Onchain Data Worker** - Resolves the `onchain-data` algorithm dependency (PostgreSQL-backed sync) on a dedicated task queue with concurrency limited to one activity at a time.
 
 3. **Algorithm Worker** - Executes TypeScript algorithm implementations, handling data I/O with S3 storage.
 
@@ -22,7 +22,7 @@ This application contains three Temporal Workers:
 │  │ Orchestrator Worker │  │ Onchain Data Worker │  │ Algorithm Worker│  │
 │  │                     │  │ (concurrency: 1)     │  │                 │  │
 │  │ • Snapshots / defs  │  │ • onchain-data dep   │  │ • Run algorithms│  │
-│  │ • Other deps        │  │ • SQLite sync        │  │ • S3 I/O        │  │
+│  │ • Other deps        │  │ • PostgreSQL sync    │  │ • S3 I/O        │  │
 │  └──────────┬──────────┘  └──────────┬──────────┘  └────────┬────────┘  │
 │             │                        │                      │           │
 │             ▼                        ▼                      ▼           │
@@ -45,6 +45,7 @@ This application contains three Temporal Workers:
 
 **Onchain Data Worker:**
 - ✅ Resolve `onchain-data` dependency only (dedicated Temporal task queue)
+- ✅ Run against the shared on-chain PostgreSQL store
 - ✅ At most one concurrent activity
 
 **Algorithm Worker:**
@@ -203,6 +204,16 @@ STORAGE_BUCKET=reputo-data
 # DeepFunding Portal API (required by config validation)
 DEEPFUNDING_API_BASE_URL=https://api.deepfunding.xyz
 DEEPFUNDING_API_KEY=
+
+# On-chain data PostgreSQL (TypeScript worker + onchain-data worker)
+ONCHAIN_DATA_POSTGRES_HOST=localhost
+ONCHAIN_DATA_POSTGRES_PORT=5432
+ONCHAIN_DATA_POSTGRES_USER=reputo_onchain
+ONCHAIN_DATA_POSTGRES_PASSWORD=reputo_onchain
+ONCHAIN_DATA_POSTGRES_DB_NAME=reputo_onchain
+
+# Alchemy (onchain-data worker only)
+ALCHEMY_API_KEY=your-alchemy-key
 ```
 
 ## Development
@@ -220,7 +231,7 @@ pnpm install
 pnpm dev:orchestrator
 
 # Run algorithm worker
-pnpm dev:algorithm
+pnpm dev:algorithm-typescript
 ```
 
 ### Build
@@ -236,7 +247,7 @@ pnpm build
 pnpm start:orchestrator
 
 # Run algorithm worker
-pnpm start:algorithm
+pnpm start:algorithm-typescript
 ```
 
 ### Code Quality

@@ -4,28 +4,28 @@ import { Context } from '@temporalio/activity';
 import type { OnchainDataSyncContext } from '../../shared/types/index.js';
 
 export function createOnchainDataSyncActivity(ctx: OnchainDataSyncContext) {
-  const { dbPath, alchemyApiKey } = ctx;
+  const { databaseUrl, alchemyApiKey } = ctx;
 
   return async function onchainDataSync(): Promise<void> {
     const logger = Context.current().log;
 
     logger.info('Starting on-chain data sync', {
-      dbPath,
+      databaseBackend: 'postgresql',
       assetKey: 'fet_ethereum',
     });
 
-    logger.info('Opening SQLite database for on-chain data sync', { dbPath });
+    logger.info('Opening PostgreSQL database for on-chain data sync');
     const service = await createSyncAssetTransfersService({
       assetKey: 'fet_ethereum',
-      dbPath,
+      databaseUrl,
       alchemyApiKey,
     });
-    logger.info('SQLite database opened successfully, starting asset sync');
+    logger.info('PostgreSQL database opened successfully, starting asset sync');
 
     // for (const assetKey of assetKeys) {
     //   const service = await createSyncAssetTransfersService({
     //     assetKey,
-    //     dbPath,
+    //     databaseUrl,
     //     alchemyApiKey,
     //   });
 

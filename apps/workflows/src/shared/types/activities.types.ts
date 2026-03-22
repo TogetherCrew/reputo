@@ -56,7 +56,7 @@ export interface AlgorithmLibraryActivities {
 }
 
 export interface OnchainDataSyncContext {
-  dbPath: string;
+  databaseUrl: string;
   alchemyApiKey: string;
 }
 

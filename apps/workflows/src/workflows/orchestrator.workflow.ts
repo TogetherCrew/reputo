@@ -138,7 +138,7 @@ export async function OrchestratorWorkflow(input: OrchestratorWorkflowInput): Pr
   }
 
   try {
-    workflow.log.info('Executing algorithm activity (on-chain SQLite may be used for transfer data)', {
+    workflow.log.info('Executing algorithm activity (on-chain PostgreSQL may be used for transfer data)', {
       algorithmKey,
       algorithmTaskQueue,
       snapshotId,

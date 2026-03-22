@@ -37,7 +37,7 @@ describe('Dependency Resolver Activities', () => {
   };
 
   const onchainCtx = {
-    dbPath: '/tmp/test-onchain-data.db',
+    databaseUrl: 'postgresql://postgres:postgres@localhost:5432/reputo_onchain_test',
     alchemyApiKey: 'test-alchemy-key',
   };
 
