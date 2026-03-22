@@ -237,7 +237,7 @@ services:
             dockerfile: docker/Dockerfile
             target: workflows
         command: ['pnpm', 'start:algorithm-typescript']
-        restart: unless-stopped
+        restart: unless-stopped 
         networks: [dev]
         volumes:
             - ../apps/workflows/src:/prod/workflows/src:ro
