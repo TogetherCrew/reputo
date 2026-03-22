@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { createPostgresSyncStore } from '../../../src/db/postgres-sync-store.js';
+import { createPostgresAssetTransferSyncStore } from '../../../src/db/postgres-asset-transfer-sync-store.js';
 import type { AssetTransferEntity } from '../../../src/db/schema.js';
 
 describe('Postgres sync store', () => {
@@ -20,7 +20,7 @@ describe('Postgres sync store', () => {
       return { rows: [] };
     });
 
-    const store = await createPostgresSyncStore({
+    const store = await createPostgresAssetTransferSyncStore({
       client: {
         connect: vi.fn().mockResolvedValue(undefined),
         end: vi.fn().mockResolvedValue(undefined),
@@ -55,7 +55,7 @@ describe('Postgres sync store', () => {
   });
 
   it('parses sync state rows returned by pg', async () => {
-    const store = await createPostgresSyncStore({
+    const store = await createPostgresAssetTransferSyncStore({
       client: {
         connect: vi.fn().mockResolvedValue(undefined),
         end: vi.fn().mockResolvedValue(undefined),
@@ -90,7 +90,7 @@ describe('Postgres sync store', () => {
 
   it('rolls back the transaction when the callback fails', async () => {
     const query = vi.fn(async () => ({ rows: [] }));
-    const store = await createPostgresSyncStore({
+    const store = await createPostgresAssetTransferSyncStore({
       client: {
         connect: vi.fn().mockResolvedValue(undefined),
         end: vi.fn().mockResolvedValue(undefined),

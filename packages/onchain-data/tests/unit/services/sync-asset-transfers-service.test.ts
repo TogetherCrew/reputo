@@ -1,7 +1,7 @@
 import type { DataSource } from 'typeorm';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { AssetTransferSyncStore } from '../../../src/db/postgres-sync-store.js';
-import { createPostgresSyncStore } from '../../../src/db/postgres-sync-store.js';
+import type { AssetTransferSyncStore } from '../../../src/db/postgres-asset-transfer-sync-store.js';
+import { createPostgresAssetTransferSyncStore } from '../../../src/db/postgres-asset-transfer-sync-store.js';
 import type { AssetTransferSyncStateRepository } from '../../../src/db/repos/asset-transfer-sync-state-repo.js';
 import { createAssetTransferSyncStateRepository } from '../../../src/db/repos/asset-transfer-sync-state-repo.js';
 import type { AssetTransferEntity } from '../../../src/db/schema.js';
@@ -41,7 +41,8 @@ function createMockProvider(
 const describePostgres = hasContainerRuntime ? describe : describe.skip;
 
 describe('DefaultSyncAssetTransfersService pipeline', () => {
-  it('continues fetching pages while a full buffer flush is in flight', async () => {
+  it('does not fetch the next page while a full buffer flush is in flight', async () => {
+    const consoleInfo = vi.spyOn(console, 'info').mockImplementation(() => undefined);
     const flushGate = createDeferred<void>();
     let pageIndex = 0;
     let pagesFetched = 0;
@@ -111,14 +112,96 @@ describe('DefaultSyncAssetTransfersService pipeline', () => {
 
     await vi.waitFor(() => {
       expect(store.withTransaction).toHaveBeenCalledTimes(1);
-      expect(pagesFetched).toBeGreaterThan(10);
+      expect(pagesFetched).toBe(10);
     });
+
+    await Promise.resolve();
+    expect(pagesFetched).toBe(10);
 
     flushGate.resolve();
 
     const result = await syncPromise;
     expect(result.insertedCount).toBe(11_000);
     expect(store.withTransaction).toHaveBeenCalledTimes(2);
+    consoleInfo.mockRestore();
+  });
+
+  it('logs one flush event per persisted batch', async () => {
+    const consoleInfo = vi.spyOn(console, 'info').mockImplementation(() => undefined);
+    const provider: AlchemyEthereumAssetTransferProvider = {
+      getToBlock: vi.fn().mockResolvedValue(blockToHex(FET_START_BLOCK_NUM + 20)),
+      fetchAssetTransfers: async function* () {
+        for (let index = 0; index < 11; index += 1) {
+          const block = FET_START_BLOCK_NUM + index;
+          yield {
+            items: Array.from({ length: 1000 }, (_, rowIndex) =>
+              normalizeAlchemyEthereumTransfer({
+                assetKey: FET_ETHEREUM,
+                transfer: createMockAlchemyTransfer({
+                  blockNum: blockToHex(block),
+                  uniqueId: `0xmetrics-${block}-${rowIndex}:log:0x${rowIndex.toString(16)}`,
+                  hash: `0xmetrics-${block}-${rowIndex}`,
+                }),
+              }),
+            ),
+            lastBlock: blockToHex(block),
+            fetchDurationMs: 10 + index,
+            normalizeDurationMs: 20 + index,
+          };
+        }
+      },
+    };
+
+    const store: AssetTransferSyncStore = {
+      findByAssetKey: vi.fn().mockResolvedValue(null),
+      withTransaction: vi.fn().mockImplementation(async (callback) =>
+        callback({
+          insertTransferBatch: vi.fn(async (items: AssetTransferEntity[]) => ({
+            attemptedCount: items.length,
+            insertedCount: items.length,
+            ignoredCount: 0,
+          })),
+          upsertSyncState: vi.fn().mockResolvedValue(undefined),
+        }),
+      ),
+      close: vi.fn().mockResolvedValue(undefined),
+    };
+
+    await new DefaultSyncAssetTransfersService(
+      FET_ETHEREUM,
+      { destroy: vi.fn().mockResolvedValue(undefined) } as unknown as DataSource,
+      store,
+      provider,
+      fixedClock,
+    ).sync();
+
+    expect(consoleInfo).toHaveBeenCalledTimes(2);
+    expect(consoleInfo).toHaveBeenNthCalledWith(
+      1,
+      '[onchain-data] onchain_data_batch_flush',
+      expect.objectContaining({
+        assetKey: FET_ETHEREUM,
+        pageCount: 10,
+        bufferedCount: 10_000,
+        fetchDurationMs: 145,
+        normalizeDurationMs: 245,
+        lastBlock: blockToHex(FET_START_BLOCK_NUM + 9),
+      }),
+    );
+    expect(consoleInfo).toHaveBeenNthCalledWith(
+      2,
+      '[onchain-data] onchain_data_batch_flush',
+      expect.objectContaining({
+        assetKey: FET_ETHEREUM,
+        pageCount: 1,
+        bufferedCount: 1_000,
+        fetchDurationMs: 20,
+        normalizeDurationMs: 30,
+        lastBlock: blockToHex(FET_START_BLOCK_NUM + 10),
+      }),
+    );
+
+    consoleInfo.mockRestore();
   });
 });
 
@@ -129,7 +212,7 @@ describePostgres('DefaultSyncAssetTransfersService', () => {
 
   beforeEach(async () => {
     ds = await createTestDataSource();
-    syncStore = await createPostgresSyncStore({
+    syncStore = await createPostgresAssetTransferSyncStore({
       databaseUrl: getTestDataSourceDatabaseUrl(ds),
     });
     syncStateRepo = createAssetTransferSyncStateRepository(ds);

@@ -12,7 +12,7 @@ type PgClientLike = {
   query<T>(queryText: string, values?: unknown[]): Promise<PgQueryResult<T>>;
 };
 
-type CreatePostgresSyncStoreInput = {
+type CreatePostgresAssetTransferSyncStoreInput = {
   databaseUrl?: string;
   client?: PgClientLike;
   onQuery?: (queryText: string, values?: unknown[]) => void;
@@ -49,9 +49,11 @@ type InsertTransferBatchRow = {
   inserted_count: string;
 };
 
-export async function createPostgresSyncStore(input: CreatePostgresSyncStoreInput): Promise<AssetTransferSyncStore> {
+export async function createPostgresAssetTransferSyncStore(
+  input: CreatePostgresAssetTransferSyncStoreInput,
+): Promise<AssetTransferSyncStore> {
   if (!input.client && !input.databaseUrl) {
-    throw new Error('Either databaseUrl or client must be provided to createPostgresSyncStore');
+    throw new Error('Either databaseUrl or client must be provided to createPostgresAssetTransferSyncStore');
   }
 
   const client = input.client ?? new Client({ connectionString: input.databaseUrl });
@@ -60,10 +62,10 @@ export async function createPostgresSyncStore(input: CreatePostgresSyncStoreInpu
     await client.connect();
   }
 
-  return new DefaultAssetTransferSyncStore(client, input.onQuery);
+  return new DefaultPostgresAssetTransferSyncStore(client, input.onQuery);
 }
 
-class DefaultAssetTransferSyncStore implements AssetTransferSyncStore {
+class DefaultPostgresAssetTransferSyncStore implements AssetTransferSyncStore {
   constructor(
     private readonly client: PgClientLike,
     private readonly onQuery?: (queryText: string, values?: unknown[]) => void,

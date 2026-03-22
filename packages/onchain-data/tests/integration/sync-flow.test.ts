@@ -1,7 +1,7 @@
 import type { DataSource } from 'typeorm';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { AssetTransferSyncStore } from '../../src/db/postgres-sync-store.js';
-import { createPostgresSyncStore } from '../../src/db/postgres-sync-store.js';
+import type { AssetTransferSyncStore } from '../../src/db/postgres-asset-transfer-sync-store.js';
+import { createPostgresAssetTransferSyncStore } from '../../src/db/postgres-asset-transfer-sync-store.js';
 import type { AssetTransferRepository } from '../../src/db/repos/asset-transfer-repo.js';
 import { createAssetTransferRepository } from '../../src/db/repos/asset-transfer-repo.js';
 import type { AssetTransferSyncStateRepository } from '../../src/db/repos/asset-transfer-sync-state-repo.js';
@@ -41,7 +41,7 @@ describePostgres('Sync Flow Integration', () => {
 
   beforeEach(async () => {
     ds = await createTestDataSource();
-    syncStore = await createPostgresSyncStore({
+    syncStore = await createPostgresAssetTransferSyncStore({
       databaseUrl: getTestDataSourceDatabaseUrl(ds),
     });
     transferRepo = createAssetTransferRepository(ds);
