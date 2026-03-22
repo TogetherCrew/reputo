@@ -3,12 +3,14 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { AssetTransferSyncStateRepository } from '../../../../src/db/repos/asset-transfer-sync-state-repo.js';
 import { createAssetTransferSyncStateRepository } from '../../../../src/db/repos/asset-transfer-sync-state-repo.js';
 import { type AssetKey, OnchainAssets } from '../../../../src/shared/index.js';
-import { closeTestDataSource, createTestDataSource } from '../../../utils/db-helpers.js';
+import { closeTestDataSource, createTestDataSource, hasContainerRuntime } from '../../../utils/db-helpers.js';
 
 const FET_ETHEREUM: AssetKey = 'fet_ethereum';
 const asset = OnchainAssets.fet_ethereum;
 
-describe('AssetTransferSyncStateRepository', () => {
+const describePostgres = hasContainerRuntime ? describe : describe.skip;
+
+describePostgres('AssetTransferSyncStateRepository', () => {
   let ds: DataSource;
   let repo: AssetTransferSyncStateRepository;
 

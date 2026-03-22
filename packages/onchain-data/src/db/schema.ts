@@ -15,15 +15,27 @@ export interface AssetTransferEntity {
 export const AssetTransferSchema = new EntitySchema<AssetTransferEntity>({
   name: 'asset_transfer',
   tableName: 'asset_transfers',
+  indices: [
+    {
+      name: 'idx_asset_transfers_asset_from_timestamp_order',
+      columns: ['asset_key', 'from_address', 'block_timestamp_unix', 'block_number', 'log_index', 'transaction_hash'],
+      where: 'from_address IS NOT NULL',
+    },
+    {
+      name: 'idx_asset_transfers_asset_to_timestamp_order',
+      columns: ['asset_key', 'to_address', 'block_timestamp_unix', 'block_number', 'log_index', 'transaction_hash'],
+      where: 'to_address IS NOT NULL',
+    },
+  ],
   columns: {
     asset_key: { type: 'text', primary: true },
     transaction_hash: { type: 'text', primary: true },
     log_index: { type: 'integer', primary: true },
-    block_number: { type: 'integer' },
+    block_number: { type: 'bigint' },
     from_address: { type: 'text', nullable: true },
     to_address: { type: 'text', nullable: true },
     amount: { type: 'text' },
-    block_timestamp_unix: { type: 'integer', nullable: true },
+    block_timestamp_unix: { type: 'bigint', nullable: true },
   },
 });
 
@@ -42,9 +54,9 @@ export const AssetTransferSyncStateSchema = new EntitySchema<AssetTransferSyncSt
   columns: {
     chain: { type: 'text', primary: true },
     asset_identifier: { type: 'text', primary: true },
-    last_synced_block: { type: 'integer' },
+    last_synced_block: { type: 'bigint' },
     last_transaction_hash: { type: 'text', nullable: true },
     last_log_index: { type: 'integer', nullable: true },
-    updated_at_unix: { type: 'integer' },
+    updated_at_unix: { type: 'bigint' },
   },
 });

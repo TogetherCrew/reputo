@@ -1,10 +1,10 @@
 import type { DataSource } from 'typeorm';
+import { createDataSource } from '../db/postgres.js';
 import type { AssetTransferRepository } from '../db/repos/asset-transfer-repo.js';
 import { createAssetTransferRepository } from '../db/repos/asset-transfer-repo.js';
 import type { AssetTransferSyncStateRepository } from '../db/repos/asset-transfer-sync-state-repo.js';
 import { createAssetTransferSyncStateRepository } from '../db/repos/asset-transfer-sync-state-repo.js';
 import type { AssetTransferEntity } from '../db/schema.js';
-import { createDataSource } from '../db/sqlite.js';
 import type { AlchemyEthereumAssetTransferProvider } from '../providers/ethereum/alchemy-ethereum-asset-transfer-provider.js';
 import { createAlchemyEthereumAssetTransferProvider } from '../providers/ethereum/alchemy-ethereum-asset-transfer-provider.js';
 import { type AssetKey, compareHexBlocks, normalizeHexBlock, OnchainAssets } from '../shared/index.js';
@@ -25,14 +25,14 @@ export interface SyncAssetTransfersService {
 
 export type CreateSyncAssetTransfersServiceInput = {
   assetKey: AssetKey;
-  dbPath: string;
+  databaseUrl: string;
   alchemyApiKey: string;
 };
 
 export async function createSyncAssetTransfersService(
   input: CreateSyncAssetTransfersServiceInput,
 ): Promise<SyncAssetTransfersService> {
-  const dataSource = await createDataSource(input.dbPath);
+  const dataSource = await createDataSource(input.databaseUrl);
   const assetTransferRepo = createAssetTransferRepository(dataSource);
   const syncStateRepo = createAssetTransferSyncStateRepository(dataSource);
   const provider = createAlchemyEthereumAssetTransferProvider(input.alchemyApiKey);

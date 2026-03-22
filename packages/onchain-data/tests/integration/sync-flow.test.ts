@@ -20,10 +20,12 @@ function blockToHex(n: number): string {
   return `0x${n.toString(16)}`;
 }
 
-import { closeTestDataSource, createTestDataSource } from '../utils/db-helpers.js';
+import { closeTestDataSource, createTestDataSource, hasContainerRuntime } from '../utils/db-helpers.js';
 import { createMockAlchemyTransfer } from '../utils/mock-helpers.js';
 
-describe('Sync Flow Integration', () => {
+const describePostgres = hasContainerRuntime ? describe : describe.skip;
+
+describePostgres('Sync Flow Integration', () => {
   let ds: DataSource;
   let transferRepo: AssetTransferRepository;
   let syncStateRepo: AssetTransferSyncStateRepository;

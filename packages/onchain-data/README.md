@@ -1,14 +1,13 @@
 # @reputo/onchain-data
 
-TypeScript package for syncing token transfer data into SQLite with a provider abstraction. Fetches onchain transfers (e.g. via Alchemy), normalizes them, and persists to a local SQLite database with chain metadata and sync state.
+TypeScript package for syncing token transfer data into PostgreSQL with a provider abstraction. Fetches onchain transfers (for example via Alchemy), normalizes them, and persists them with chain metadata plus sync state.
 
 ## Features
 
-- **Provider abstraction**: Pluggable token-transfer providers (e.g. Alchemy for Ethereum); normalize once, persist to SQLite
-- **SQLite persistence**: SQLite via `better-sqlite3` with sync-state tracking (from/to block) per chain
-- **Sync service**: `createSyncTokenTransfersService` runs incremental sync for a given token chain (contract, start block, API key)
-- **Read repository**: `createTokenTransferRepository` exposes `findByAddress` and `insertMany` over the same DB
-- **Shared types and metadata**: Exported enums (`SupportedChain`, `SupportedToken`, `SupportedTokenChain`, `TransferDirection`), `TokenChainMetadata`, `TokenTransferRecord`, and chain metadata (`TOKEN_CHAIN_METADATA`)
+- **Provider abstraction**: Normalize provider payloads once and persist them consistently
+- **PostgreSQL persistence**: TypeORM-backed PostgreSQL storage with schema auto-sync and sync-state tracking
+- **Sync service**: `createSyncAssetTransfersService` runs incremental sync for a supported asset key
+- **Read repository**: `createAssetTransferRepository` exposes paginated transfer reads for downstream workflows
 
 ## Installation
 
@@ -20,25 +19,24 @@ pnpm add @reputo/onchain-data
 
 ### Syncing token transfers
 
-Create a sync service for a supported token chain (e.g. Ethereum). It uses the configured provider (e.g. Alchemy) to fetch transfers and persists them to SQLite, updating sync state for the next run.
+Create a sync service for a supported asset key. It fetches transfers from the configured provider and persists them to PostgreSQL, updating sync state for the next run.
 
 ```typescript
-import {
-  createSyncTokenTransfersService,
-  SupportedTokenChain,
-} from '@reputo/onchain-data';
+import { createSyncAssetTransfersService } from '@reputo/onchain-data';
 
-const service = createSyncTokenTransfersService({
-  tokenChain: SupportedTokenChain.FET_ETHEREUM,
-  dbPath: './data.db',
+const databaseUrl = process.env.DATABASE_URL!;
+
+const service = await createSyncAssetTransfersService({
+  assetKey: 'fet_ethereum',
+  databaseUrl,
   alchemyApiKey: process.env.ALCHEMY_API_KEY!,
 });
 
 const result = await service.sync();
 console.log(result);
-// { tokenChain, fromBlock, toBlock, insertedCount }
+// { assetKey, fromBlock, toBlock, insertedCount }
 
-service.close();
+await service.close();
 ```
 
 ### Reading transfers by address
@@ -47,47 +45,48 @@ Use the read-only repository to query transfers for an address (optional block r
 
 ```typescript
 import {
-  createTokenTransferRepository,
-  SupportedTokenChain,
-  TransferDirection,
+  createAssetTransferRepository,
+  ONCHAIN_ASSET_KEYS,
 } from '@reputo/onchain-data';
 
-const repo = createTokenTransferRepository({ dbPath: './data.db' });
-
-const received = repo.findByAddress({
-  tokenChain: SupportedTokenChain.FET_ETHEREUM,
-  address: '0x1234...',
-  direction: TransferDirection.TO,
-  fromBlock: '0x1000',
-  toBlock: '0x2000',
+const repo = await createAssetTransferRepository({
+  databaseUrl: process.env.DATABASE_URL!,
 });
 
-// ... use received (TokenTransferRecord[])
+const transfers = await repo.findTransfersByAddresses({
+  assetId: ONCHAIN_ASSET_KEYS.indexOf('fet_ethereum'),
+  addresses: ['0x1234...'],
+  page: 1,
+  limit: 100,
+  orderBy: 'time_asc',
+});
 
-repo.close();
+// ... use transfers
+
+await repo.close();
 ```
 
 ### Types and metadata
 
 ```typescript
 import {
-  SupportedTokenChain,
-  TOKEN_CHAIN_METADATA,
-  type TokenTransferRecord,
-  type TokenChainMetadata,
+  OnchainAssets,
+  type AssetTransferRecord,
+  type AssetTransferSyncState,
 } from '@reputo/onchain-data';
 
-const metadata: TokenChainMetadata = TOKEN_CHAIN_METADATA[SupportedTokenChain.FET_ETHEREUM];
-// metadata.contractAddress, metadata.startBlock, etc.
+const metadata = OnchainAssets.fet_ethereum;
+const record: AssetTransferRecord | null = null;
+const syncState: AssetTransferSyncState | null = null;
 ```
 
 ## API Reference
 
 Run `pnpm docs` in this package to generate API documentation. Public exports include:
 
-- **Service**: `createSyncTokenTransfersService`, `CreateSyncTokenTransfersServiceInput`, `SyncTokenTransfersService`, `SyncTokenTransfersResult`
-- **Repository**: `createTokenTransferRepository`, `TokenTransferReadRepository`, `TokenTransferRepository`
-- **Shared**: `SupportedChain`, `SupportedProvider`, `SupportedToken`, `SupportedTokenChain`, `TransferDirection`, `TOKEN_CHAIN_METADATA`, `TokenChainMetadata`, `TokenTransferRecord`, `TokenTransferSyncState`, and normalization/block utilities
+- **Service**: `createSyncAssetTransfersService`, `CreateSyncAssetTransfersServiceInput`, `SyncAssetTransfersService`, `SyncAssetTransfersResult`
+- **Repository**: `createAssetTransferRepository`, `AssetTransferReadRepository`, `AssetTransferRepository`
+- **Shared**: `AssetTransferRecord`, `AssetTransferSyncState`, `ONCHAIN_ASSET_KEYS`, `ONCHAIN_ASSETS`, `OnchainAssets`, and normalization/block utilities
 
 ## License
 
