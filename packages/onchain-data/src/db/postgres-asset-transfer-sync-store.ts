@@ -7,7 +7,7 @@ type PgQueryResult<T> = {
 };
 
 type PgClientLike = {
-  connect?(): Promise<void>;
+  connect?(): Promise<unknown>;
   end?(): Promise<void>;
   query<T>(queryText: string, values?: unknown[]): Promise<PgQueryResult<T>>;
 };

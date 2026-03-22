@@ -58,6 +58,9 @@ catalogs:
     '@types/node':
       specifier: ^22.17.0
       version: 22.19.1
+    '@types/pg':
+      specifier: ^8.15.6
+      version: 8.20.0
     '@types/react-dom':
       specifier: ^19
       version: 19.2.3
@@ -541,10 +544,10 @@ importers:
         version: link:../../packages/database
       '@reputo/deepfunding-portal-api':
         specifier: workspace:*
-        version: link:../../packages/deepfunding-portal-api
+        version: file:packages/deepfunding-portal-api(@types/better-sqlite3@7.6.13)(@types/pg@8.20.0)(pg@8.20.0)
       '@reputo/onchain-data':
         specifier: workspace:*
-        version: link:../../packages/onchain-data
+        version: file:packages/onchain-data(better-sqlite3@11.10.0)(mongodb@6.21.0)(ts-node@10.9.2(@swc/core@1.15.2)(@types/node@22.19.1)(typescript@5.9.2))
       '@reputo/reputation-algorithms':
         specifier: workspace:*
         version: link:../../packages/reputation-algorithms
@@ -658,7 +661,7 @@ importers:
         version: 11.10.0
       drizzle-orm:
         specifier: 'catalog:'
-        version: 0.44.7(@types/better-sqlite3@7.6.13)(better-sqlite3@11.10.0)(pg@8.20.0)
+        version: 0.44.7(@types/better-sqlite3@7.6.13)(@types/pg@8.20.0)(better-sqlite3@11.10.0)(pg@8.20.0)
       p-limit:
         specifier: 'catalog:'
         version: 6.2.0
@@ -706,6 +709,9 @@ importers:
       '@types/node':
         specifier: 'catalog:'
         version: 22.19.1
+      '@types/pg':
+        specifier: 'catalog:'
+        version: 8.20.0
       typedoc:
         specifier: 'catalog:'
         version: 0.28.14(typescript@5.9.2)
@@ -3092,6 +3098,12 @@ packages:
   '@radix-ui/rect@1.1.1':
     resolution: {integrity: sha512-HPwpGIzkl28mWyZqG52jiqDJ12waP11Pa1lGoiyUkIEuMLBP0oeK/C89esbXrxsky5we7dfd8U58nm0SgAWpVw==}
 
+  '@reputo/deepfunding-portal-api@file:packages/deepfunding-portal-api':
+    resolution: {directory: packages/deepfunding-portal-api, type: directory}
+
+  '@reputo/onchain-data@file:packages/onchain-data':
+    resolution: {directory: packages/onchain-data, type: directory}
+
   '@rollup/pluginutils@5.3.0':
     resolution: {integrity: sha512-5EdhGZtnu3V88ces7s53hhfK5KSASnJZv8Lulpc04cWO3REESroJXg73DFsOmgbU2BhwV0E20bu2IDZb3VKW4Q==}
     engines: {node: '>=14.0.0'}
@@ -3946,6 +3958,9 @@ packages:
 
   '@types/normalize-package-data@2.4.4':
     resolution: {integrity: sha512-37i+OaWTh9qeK4LSHPsyRC7NahnGotNuZvjLSgcPzblpHB3rrCJxAOgI5gCdKm7coonsaX1Of0ILiTcnZjbfxA==}
+
+  '@types/pg@8.20.0':
+    resolution: {integrity: sha512-bEPFOaMAHTEP1EzpvHTbmwR8UsFyHSKsRisLIHVMXnpNefSbGA1bD6CVy+qKjGSqmZqNqBDV2azOBo8TgkcVow==}
 
   '@types/qs@6.14.0':
     resolution: {integrity: sha512-eOunJqu0K1923aExK6y8p6fsihYEn/BYuQ4g0CxAAgFc4b/ZLN4CrsRZ55srTdqoiLzU2B2evC+apEIxprEzkQ==}
@@ -12719,6 +12734,67 @@ snapshots:
 
   '@radix-ui/rect@1.1.1': {}
 
+  '@reputo/deepfunding-portal-api@file:packages/deepfunding-portal-api(@types/better-sqlite3@7.6.13)(@types/pg@8.20.0)(pg@8.20.0)':
+    dependencies:
+      better-sqlite3: 11.10.0
+      drizzle-orm: 0.44.7(@types/better-sqlite3@7.6.13)(@types/pg@8.20.0)(better-sqlite3@11.10.0)(pg@8.20.0)
+      p-limit: 6.2.0
+      pino: 9.14.0
+      undici: 7.24.5
+    transitivePeerDependencies:
+      - '@aws-sdk/client-rds-data'
+      - '@cloudflare/workers-types'
+      - '@electric-sql/pglite'
+      - '@libsql/client'
+      - '@libsql/client-wasm'
+      - '@neondatabase/serverless'
+      - '@op-engineering/op-sqlite'
+      - '@opentelemetry/api'
+      - '@planetscale/database'
+      - '@prisma/client'
+      - '@tidbcloud/serverless'
+      - '@types/better-sqlite3'
+      - '@types/pg'
+      - '@types/sql.js'
+      - '@upstash/redis'
+      - '@vercel/postgres'
+      - '@xata.io/client'
+      - bun-types
+      - expo-sqlite
+      - gel
+      - knex
+      - kysely
+      - mysql2
+      - pg
+      - postgres
+      - prisma
+      - sql.js
+      - sqlite3
+
+  '@reputo/onchain-data@file:packages/onchain-data(better-sqlite3@11.10.0)(mongodb@6.21.0)(ts-node@10.9.2(@swc/core@1.15.2)(@types/node@22.19.1)(typescript@5.9.2))':
+    dependencies:
+      pg: 8.20.0
+      typeorm: 0.3.28(better-sqlite3@11.10.0)(mongodb@6.21.0)(pg@8.20.0)(ts-node@10.9.2(@swc/core@1.15.2)(@types/node@22.19.1)(typescript@5.9.2))
+      undici: 7.24.5
+    transitivePeerDependencies:
+      - '@google-cloud/spanner'
+      - '@sap/hana-client'
+      - babel-plugin-macros
+      - better-sqlite3
+      - ioredis
+      - mongodb
+      - mssql
+      - mysql2
+      - oracledb
+      - pg-native
+      - pg-query-stream
+      - redis
+      - sql.js
+      - sqlite3
+      - supports-color
+      - ts-node
+      - typeorm-aurora-data-api-driver
+
   '@rollup/pluginutils@5.3.0(rollup@4.53.2)':
     dependencies:
       '@types/estree': 1.0.8
@@ -13715,6 +13791,12 @@ snapshots:
       undici-types: 6.21.0
 
   '@types/normalize-package-data@2.4.4': {}
+
+  '@types/pg@8.20.0':
+    dependencies:
+      '@types/node': 20.19.25
+      pg-protocol: 1.13.0
+      pg-types: 2.2.0
 
   '@types/qs@6.14.0': {}
 
@@ -15290,9 +15372,10 @@ snapshots:
 
   dotenv@16.6.1: {}
 
-  drizzle-orm@0.44.7(@types/better-sqlite3@7.6.13)(better-sqlite3@11.10.0)(pg@8.20.0):
+  drizzle-orm@0.44.7(@types/better-sqlite3@7.6.13)(@types/pg@8.20.0)(better-sqlite3@11.10.0)(pg@8.20.0):
     optionalDependencies:
       '@types/better-sqlite3': 7.6.13
+      '@types/pg': 8.20.0
       better-sqlite3: 11.10.0
       pg: 8.20.0
 
