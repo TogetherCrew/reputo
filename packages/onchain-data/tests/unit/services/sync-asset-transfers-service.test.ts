@@ -1,9 +1,10 @@
 import type { DataSource } from 'typeorm';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { AssetTransferRepository } from '../../../src/db/repos/asset-transfer-repo.js';
-import { createAssetTransferRepository } from '../../../src/db/repos/asset-transfer-repo.js';
+import type { AssetTransferSyncStore } from '../../../src/db/postgres-sync-store.js';
+import { createPostgresSyncStore } from '../../../src/db/postgres-sync-store.js';
 import type { AssetTransferSyncStateRepository } from '../../../src/db/repos/asset-transfer-sync-state-repo.js';
 import { createAssetTransferSyncStateRepository } from '../../../src/db/repos/asset-transfer-sync-state-repo.js';
+import type { AssetTransferEntity } from '../../../src/db/schema.js';
 import type { AlchemyEthereumAssetTransferProvider } from '../../../src/providers/ethereum/alchemy-ethereum-asset-transfer-provider.js';
 import { normalizeAlchemyEthereumTransfer } from '../../../src/providers/ethereum/normalize-alchemy-transfer.js';
 import { DefaultSyncAssetTransfersService } from '../../../src/services/sync-asset-transfers-service.js';
@@ -13,12 +14,18 @@ const FET_ETHEREUM: AssetKey = 'fet_ethereum';
 const asset = OnchainAssets.fet_ethereum;
 const FET_START_BLOCK = asset.startblock;
 const FET_START_BLOCK_NUM = parseInt(FET_START_BLOCK, 16);
+const fixedClock = () => '2024-01-15T12:00:00.000Z';
 
 function blockToHex(n: number): string {
   return `0x${n.toString(16)}`;
 }
 
-import { closeTestDataSource, createTestDataSource, hasContainerRuntime } from '../../utils/db-helpers.js';
+import {
+  closeTestDataSource,
+  createTestDataSource,
+  getTestDataSourceDatabaseUrl,
+  hasContainerRuntime,
+} from '../../utils/db-helpers.js';
 import { createMockAlchemyTransfer } from '../../utils/mock-helpers.js';
 
 function createMockProvider(
@@ -33,33 +40,110 @@ function createMockProvider(
 
 const describePostgres = hasContainerRuntime ? describe : describe.skip;
 
+describe('DefaultSyncAssetTransfersService pipeline', () => {
+  it('continues fetching pages while a full buffer flush is in flight', async () => {
+    const flushGate = createDeferred<void>();
+    let pageIndex = 0;
+    let pagesFetched = 0;
+
+    const provider: AlchemyEthereumAssetTransferProvider = {
+      getToBlock: vi.fn().mockResolvedValue(blockToHex(FET_START_BLOCK_NUM + 20)),
+      fetchAssetTransfers: async function* () {
+        while (pageIndex < 11) {
+          const block = FET_START_BLOCK_NUM + pageIndex;
+          pageIndex += 1;
+          pagesFetched += 1;
+          yield {
+            items: Array.from({ length: 1000 }, (_, rowIndex) =>
+              normalizeAlchemyEthereumTransfer({
+                assetKey: FET_ETHEREUM,
+                transfer: createMockAlchemyTransfer({
+                  blockNum: blockToHex(block),
+                  uniqueId: `0xpipeline-${block}-${rowIndex}:log:0x${rowIndex.toString(16)}`,
+                  hash: `0xpipeline-${block}-${rowIndex}`,
+                }),
+              }),
+            ),
+            lastBlock: blockToHex(block),
+          };
+        }
+      },
+    };
+
+    const store: AssetTransferSyncStore = {
+      findByAssetKey: vi.fn().mockResolvedValue(null),
+      withTransaction: vi
+        .fn()
+        .mockImplementationOnce(async (callback) => {
+          const result = await callback({
+            insertTransferBatch: vi.fn(async (items: AssetTransferEntity[]) => {
+              await flushGate.promise;
+              return {
+                attemptedCount: items.length,
+                insertedCount: items.length,
+                ignoredCount: 0,
+              };
+            }),
+            upsertSyncState: vi.fn().mockResolvedValue(undefined),
+          });
+          return result;
+        })
+        .mockImplementation(async (callback) => {
+          return callback({
+            insertTransferBatch: vi.fn(async (items: AssetTransferEntity[]) => ({
+              attemptedCount: items.length,
+              insertedCount: items.length,
+              ignoredCount: 0,
+            })),
+            upsertSyncState: vi.fn().mockResolvedValue(undefined),
+          });
+        }),
+      close: vi.fn().mockResolvedValue(undefined),
+    };
+
+    const syncPromise = new DefaultSyncAssetTransfersService(
+      FET_ETHEREUM,
+      { destroy: vi.fn().mockResolvedValue(undefined) } as unknown as DataSource,
+      store,
+      provider,
+      fixedClock,
+    ).sync();
+
+    await vi.waitFor(() => {
+      expect(store.withTransaction).toHaveBeenCalledTimes(1);
+      expect(pagesFetched).toBeGreaterThan(10);
+    });
+
+    flushGate.resolve();
+
+    const result = await syncPromise;
+    expect(result.insertedCount).toBe(11_000);
+    expect(store.withTransaction).toHaveBeenCalledTimes(2);
+  });
+});
+
 describePostgres('DefaultSyncAssetTransfersService', () => {
   let ds: DataSource;
-  let transferRepo: AssetTransferRepository;
+  let syncStore: AssetTransferSyncStore;
   let syncStateRepo: AssetTransferSyncStateRepository;
-  const fixedClock = () => '2024-01-15T12:00:00.000Z';
 
   beforeEach(async () => {
     ds = await createTestDataSource();
-    transferRepo = createAssetTransferRepository(ds);
+    syncStore = await createPostgresSyncStore({
+      databaseUrl: getTestDataSourceDatabaseUrl(ds),
+    });
     syncStateRepo = createAssetTransferSyncStateRepository(ds);
   });
 
   afterEach(async () => {
+    await syncStore.close();
     await closeTestDataSource(ds);
   });
 
   it('resolves metadata from assetKey', async () => {
     const provider = createMockProvider();
 
-    const service = new DefaultSyncAssetTransfersService(
-      FET_ETHEREUM,
-      ds,
-      transferRepo,
-      syncStateRepo,
-      provider,
-      fixedClock,
-    );
+    const service = new DefaultSyncAssetTransfersService(FET_ETHEREUM, ds, syncStore, provider, fixedClock);
 
     const result = await service.sync();
     expect(result.assetKey).toBe(FET_ETHEREUM);
@@ -74,14 +158,7 @@ describePostgres('DefaultSyncAssetTransfersService', () => {
       fetchAssetTransfers,
     });
 
-    const service = new DefaultSyncAssetTransfersService(
-      FET_ETHEREUM,
-      ds,
-      transferRepo,
-      syncStateRepo,
-      provider,
-      fixedClock,
-    );
+    const service = new DefaultSyncAssetTransfersService(FET_ETHEREUM, ds, syncStore, provider, fixedClock);
 
     const result = await service.sync();
     expect(result.fromBlock).toBe(FET_START_BLOCK);
@@ -104,14 +181,7 @@ describePostgres('DefaultSyncAssetTransfersService', () => {
     const fetchAssetTransfers = vi.fn(async function* () {});
     const provider = createMockProvider({ fetchAssetTransfers });
 
-    const service = new DefaultSyncAssetTransfersService(
-      FET_ETHEREUM,
-      ds,
-      transferRepo,
-      syncStateRepo,
-      provider,
-      fixedClock,
-    );
+    const service = new DefaultSyncAssetTransfersService(FET_ETHEREUM, ds, syncStore, provider, fixedClock);
 
     const result = await service.sync();
     expect(result.fromBlock).toBe(blockToHex(7500000));
@@ -128,14 +198,7 @@ describePostgres('DefaultSyncAssetTransfersService', () => {
       getToBlock: vi.fn().mockResolvedValue(blockToHex(9999999)),
     });
 
-    const service = new DefaultSyncAssetTransfersService(
-      FET_ETHEREUM,
-      ds,
-      transferRepo,
-      syncStateRepo,
-      provider,
-      fixedClock,
-    );
+    const service = new DefaultSyncAssetTransfersService(FET_ETHEREUM, ds, syncStore, provider, fixedClock);
 
     const result = await service.sync();
     expect(result.toBlock).toBe(blockToHex(9999999));
@@ -153,14 +216,7 @@ describePostgres('DefaultSyncAssetTransfersService', () => {
       getToBlock: vi.fn().mockResolvedValue(blockToHex(8000000)),
     });
 
-    const service = new DefaultSyncAssetTransfersService(
-      FET_ETHEREUM,
-      ds,
-      transferRepo,
-      syncStateRepo,
-      provider,
-      fixedClock,
-    );
+    const service = new DefaultSyncAssetTransfersService(FET_ETHEREUM, ds, syncStore, provider, fixedClock);
 
     const result = await service.sync();
     expect(result.insertedCount).toBe(0);
@@ -206,14 +262,7 @@ describePostgres('DefaultSyncAssetTransfersService', () => {
       fetchAssetTransfers: mockFetch,
     });
 
-    const service = new DefaultSyncAssetTransfersService(
-      FET_ETHEREUM,
-      ds,
-      transferRepo,
-      syncStateRepo,
-      provider,
-      fixedClock,
-    );
+    const service = new DefaultSyncAssetTransfersService(FET_ETHEREUM, ds, syncStore, provider, fixedClock);
 
     const result = await service.sync();
     expect(result.insertedCount).toBe(2);
@@ -245,14 +294,7 @@ describePostgres('DefaultSyncAssetTransfersService', () => {
       fetchAssetTransfers: mockFetch,
     });
 
-    const service = new DefaultSyncAssetTransfersService(
-      FET_ETHEREUM,
-      ds,
-      transferRepo,
-      syncStateRepo,
-      provider,
-      fixedClock,
-    );
+    const service = new DefaultSyncAssetTransfersService(FET_ETHEREUM, ds, syncStore, provider, fixedClock);
 
     const result = await service.sync();
     expect(result.insertedCount).toBe(2);
@@ -296,14 +338,7 @@ describePostgres('DefaultSyncAssetTransfersService', () => {
       fetchAssetTransfers: mockFetch,
     });
 
-    const service = new DefaultSyncAssetTransfersService(
-      FET_ETHEREUM,
-      ds,
-      transferRepo,
-      syncStateRepo,
-      provider,
-      fixedClock,
-    );
+    const service = new DefaultSyncAssetTransfersService(FET_ETHEREUM, ds, syncStore, provider, fixedClock);
 
     const result = await service.sync();
     expect(result.insertedCount).toBe(2);
@@ -342,14 +377,7 @@ describePostgres('DefaultSyncAssetTransfersService', () => {
       fetchAssetTransfers: mockFetch,
     });
 
-    const service = new DefaultSyncAssetTransfersService(
-      FET_ETHEREUM,
-      ds,
-      transferRepo,
-      syncStateRepo,
-      provider,
-      fixedClock,
-    );
+    const service = new DefaultSyncAssetTransfersService(FET_ETHEREUM, ds, syncStore, provider, fixedClock);
 
     await expect(service.sync()).rejects.toThrow('Provider failure after first 10000-item flush');
 
@@ -357,3 +385,22 @@ describePostgres('DefaultSyncAssetTransfersService', () => {
     expect(syncState?.lastSyncedBlock).toBe(blockToHex(flushBoundaryBlock));
   });
 });
+
+function createDeferred<T>(): {
+  promise: Promise<T>;
+  resolve: (value: T | PromiseLike<T>) => void;
+  reject: (reason?: unknown) => void;
+} {
+  let resolve!: (value: T | PromiseLike<T>) => void;
+  let reject!: (reason?: unknown) => void;
+  const promise = new Promise<T>((innerResolve, innerReject) => {
+    resolve = innerResolve;
+    reject = innerReject;
+  });
+
+  return {
+    promise,
+    resolve,
+    reject,
+  };
+}

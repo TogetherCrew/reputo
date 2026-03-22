@@ -6,6 +6,7 @@ import { createDataSource } from '../../src/db/postgres.js';
 
 let containerPromise: Promise<StartedPostgreSqlContainer> | null = null;
 const dataSourceCleanup = new WeakMap<DataSource, () => Promise<void>>();
+const dataSourceDatabaseUrl = new WeakMap<DataSource, string>();
 
 // PostgreSQL-backed tests are opt-in because they require a working container runtime.
 export const hasContainerRuntime = process.env.RUN_POSTGRES_TESTS === 'true';
@@ -79,7 +80,18 @@ export async function createTestDataSource(): Promise<DataSource> {
 
   const ds = await createDataSource(databaseUrl);
   dataSourceCleanup.set(ds, cleanup);
+  dataSourceDatabaseUrl.set(ds, databaseUrl);
   return ds;
+}
+
+export function getTestDataSourceDatabaseUrl(ds: DataSource): string {
+  const databaseUrl = dataSourceDatabaseUrl.get(ds);
+
+  if (!databaseUrl) {
+    throw new Error('Test data source database URL is not registered');
+  }
+
+  return databaseUrl;
 }
 
 export async function closeTestDataSource(ds: DataSource | null | undefined): Promise<void> {

@@ -1,5 +1,7 @@
 import type { DataSource } from 'typeorm';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import type { AssetTransferSyncStore } from '../../src/db/postgres-sync-store.js';
+import { createPostgresSyncStore } from '../../src/db/postgres-sync-store.js';
 import type { AssetTransferRepository } from '../../src/db/repos/asset-transfer-repo.js';
 import { createAssetTransferRepository } from '../../src/db/repos/asset-transfer-repo.js';
 import type { AssetTransferSyncStateRepository } from '../../src/db/repos/asset-transfer-sync-state-repo.js';
@@ -20,24 +22,34 @@ function blockToHex(n: number): string {
   return `0x${n.toString(16)}`;
 }
 
-import { closeTestDataSource, createTestDataSource, hasContainerRuntime } from '../utils/db-helpers.js';
+import {
+  closeTestDataSource,
+  createTestDataSource,
+  getTestDataSourceDatabaseUrl,
+  hasContainerRuntime,
+} from '../utils/db-helpers.js';
 import { createMockAlchemyTransfer } from '../utils/mock-helpers.js';
 
 const describePostgres = hasContainerRuntime ? describe : describe.skip;
 
 describePostgres('Sync Flow Integration', () => {
   let ds: DataSource;
+  let syncStore: AssetTransferSyncStore;
   let transferRepo: AssetTransferRepository;
   let syncStateRepo: AssetTransferSyncStateRepository;
   const fixedClock = () => '2024-01-15T12:00:00.000Z';
 
   beforeEach(async () => {
     ds = await createTestDataSource();
+    syncStore = await createPostgresSyncStore({
+      databaseUrl: getTestDataSourceDatabaseUrl(ds),
+    });
     transferRepo = createAssetTransferRepository(ds);
     syncStateRepo = createAssetTransferSyncStateRepository(ds);
   });
 
   afterEach(async () => {
+    await syncStore.close();
     await closeTestDataSource(ds);
   });
 
@@ -88,14 +100,7 @@ describePostgres('Sync Flow Integration', () => {
     }
 
     const provider = makeProvider(toBlock, batches);
-    const service = new DefaultSyncAssetTransfersService(
-      FET_ETHEREUM,
-      ds,
-      transferRepo,
-      syncStateRepo,
-      provider,
-      fixedClock,
-    );
+    const service = new DefaultSyncAssetTransfersService(FET_ETHEREUM, ds, syncStore, provider, fixedClock);
 
     const result = await service.sync();
     expect(result.insertedCount).toBe(2);
@@ -135,14 +140,7 @@ describePostgres('Sync Flow Integration', () => {
     }
 
     const provider = makeProvider(toBlock, batches);
-    const service = new DefaultSyncAssetTransfersService(
-      FET_ETHEREUM,
-      ds,
-      transferRepo,
-      syncStateRepo,
-      provider,
-      fixedClock,
-    );
+    const service = new DefaultSyncAssetTransfersService(FET_ETHEREUM, ds, syncStore, provider, fixedClock);
 
     const result = await service.sync();
     expect(result.fromBlock).toBe(blockToHex(lastSynced));
@@ -173,14 +171,7 @@ describePostgres('Sync Flow Integration', () => {
     }
 
     const provider = makeProvider(toBlock, batches);
-    const service = new DefaultSyncAssetTransfersService(
-      FET_ETHEREUM,
-      ds,
-      transferRepo,
-      syncStateRepo,
-      provider,
-      fixedClock,
-    );
+    const service = new DefaultSyncAssetTransfersService(FET_ETHEREUM, ds, syncStore, provider, fixedClock);
 
     await expect(service.sync()).rejects.toThrow('Provider failure');
 
@@ -210,19 +201,19 @@ describePostgres('Sync Flow Integration', () => {
     }
 
     const provider = makeProvider(toBlock, batches);
-    const failingSyncStateRepo: AssetTransferSyncStateRepository = {
-      findByAssetKey: syncStateRepo.findByAssetKey,
-      upsert: vi.fn().mockRejectedValue(new Error('sync state write failed')),
+    const failingSyncStore: AssetTransferSyncStore = {
+      findByAssetKey: syncStore.findByAssetKey.bind(syncStore),
+      close: syncStore.close.bind(syncStore),
+      withTransaction: (callback) =>
+        syncStore.withTransaction(async (tx) =>
+          callback({
+            insertTransferBatch: tx.insertTransferBatch,
+            upsertSyncState: vi.fn().mockRejectedValue(new Error('sync state write failed')),
+          }),
+        ),
     };
 
-    const service = new DefaultSyncAssetTransfersService(
-      FET_ETHEREUM,
-      ds,
-      transferRepo,
-      failingSyncStateRepo,
-      provider,
-      fixedClock,
-    );
+    const service = new DefaultSyncAssetTransfersService(FET_ETHEREUM, ds, failingSyncStore, provider, fixedClock);
 
     await expect(service.sync()).rejects.toThrow('sync state write failed');
 
@@ -285,14 +276,7 @@ describePostgres('Sync Flow Integration', () => {
     }
 
     const provider = makeProvider(toBlock, batches);
-    const service = new DefaultSyncAssetTransfersService(
-      FET_ETHEREUM,
-      ds,
-      transferRepo,
-      syncStateRepo,
-      provider,
-      fixedClock,
-    );
+    const service = new DefaultSyncAssetTransfersService(FET_ETHEREUM, ds, syncStore, provider, fixedClock);
     await service.sync();
 
     const all = await transferRepo.findTransfersByAddresses({
