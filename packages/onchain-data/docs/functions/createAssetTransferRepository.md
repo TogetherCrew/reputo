@@ -8,7 +8,7 @@
 
 > **createAssetTransferRepository**(`input`): `Promise`\<[`AssetTransferReadRepository`](../type-aliases/AssetTransferReadRepository.md)\>
 
-Defined in: [index.ts:36](https://github.com/reputo-org/reputo/blob/962d0d201e0df08eadcc1d7d37a05f21cfe65d22/packages/onchain-data/src/index.ts#L36)
+Defined in: [index.ts:36](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/onchain-data/src/index.ts#L36)
 
 ## Parameters
 

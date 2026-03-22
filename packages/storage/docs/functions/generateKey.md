@@ -8,7 +8,7 @@
 
 > **generateKey**(`type`, `id`, `filename`): `string`
 
-Defined in: [shared/utils/keys.ts:33](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/storage/src/shared/utils/keys.ts#L33)
+Defined in: [shared/utils/keys.ts:33](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/storage/src/shared/utils/keys.ts#L33)
 
 Generates an S3 storage key.
 

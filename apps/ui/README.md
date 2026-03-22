@@ -1,50 +1,27 @@
 # @reputo/ui
 
-Next.js-based frontend for Reputo. Built with Next.js 15 (App Router), React 19, Tailwind CSS v4, Radix UI, and TanStack Query. Ships as a standalone server output for Docker.
+Next.js dashboard for browsing algorithms, creating presets, launching snapshots, and following snapshot progress.
 
-## Features
+## Surface
 
-- Next.js 15 App Router with Turbopack dev/build
-- Tailwind CSS v4 + Radix UI components
-- React 19 + Server/Client Components
-- TanStack Query for data fetching
-- Standalone output for container runtime
+- redirects `/` to `/dashboard`
+- loads algorithm definitions from `@reputo/reputation-algorithms`
+- calls the backend through same-origin `/api/v1` requests
+- listens to snapshot status changes over SSE
+- builds as a standalone Next.js server for container runtime
 
-## Development
+## Commands
 
 ```bash
-# Start development server (Turbopack, port 4000)
 pnpm --filter @reputo/ui dev
-
-# Local URL (with pnpm -r dev, API runs on 3000)
-open http://localhost:4000
-```
-
-## Build & Start
-
-```bash
-# Build (Turbopack)
 pnpm --filter @reputo/ui build
-
-# Start production server
 pnpm --filter @reputo/ui start
+pnpm --filter @reputo/ui test
+pnpm --filter @reputo/ui typecheck
 ```
 
-## Environment Variables
+`pnpm --filter @reputo/ui dev` builds and watches its shared package dependencies before starting Next.js. `dev:app` is the internal app-only process used by the root monorepo `pnpm dev`.
 
-The UI always calls the API via same-origin relative paths (e.g. `/api/v1/...`). In Docker, Traefik routes `/api` to the API service. For local dev (`pnpm -r dev`), copy `.env.example` to `.env` and set `API_PROXY_TARGET=http://localhost:3000` so Next.js rewrites `/api` to the API server.
+## Config
 
-## Tech Stack
-
-- Next.js 15, React 19, TypeScript
-- Tailwind CSS v4, Radix UI
-- TanStack Query, Zod
-
-## Links
-
-- UI (staging): https://staging.logid.xyz
-- UI (production): https://logid.xyz
-
-## License
-
-Released under the **GPL-3.0** license. See [LICENSE](../../LICENSE).
+Local development runs on `http://localhost:4000`. If the API is running separately, set `API_PROXY_TARGET=http://localhost:3000` in `apps/ui/.env` so Next.js rewrites `/api/*` to the API server. Behind Traefik or another reverse proxy, the UI keeps using same-origin `/api` requests.

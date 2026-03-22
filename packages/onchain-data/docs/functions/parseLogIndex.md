@@ -8,7 +8,7 @@
 
 > **parseLogIndex**(`uniqueId`): `number`
 
-Defined in: [providers/ethereum/normalize-alchemy-transfer.ts:6](https://github.com/reputo-org/reputo/blob/962d0d201e0df08eadcc1d7d37a05f21cfe65d22/packages/onchain-data/src/providers/ethereum/normalize-alchemy-transfer.ts#L6)
+Defined in: [providers/ethereum/normalize-alchemy-transfer.ts:6](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/onchain-data/src/providers/ethereum/normalize-alchemy-transfer.ts#L6)
 
 Parses log index from Alchemy uniqueId e.g. "0xhash:log:0x0" -> 0, ":log:0xa" -> 10.
 

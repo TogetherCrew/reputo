@@ -4,61 +4,26 @@
 
 # @reputo/deepfunding-portal-api
 
-TypeScript package for fetching data from the DeepFunding Portal API and persisting to SQLite via Drizzle ORM.
+Workspace package for fetching DeepFunding Portal data and persisting it to SQLite with Drizzle.
 
-## Features
+## Public Surface
 
-- **Fetch Module**: HTTP client with retry logic, timeout handling, and paginated fetchers for all API resources
-- **DB Module**: SQLite database creation and Drizzle ORM-based persistence
+- `createDeepFundingClient`, endpoint fetchers, and pagination helpers
+- `createDb`, `closeDbInstance`, and `BOOTSTRAP_SQL`
+- `createRepos` plus repo, normalize, schema, and type exports for rounds, pools, proposals, users, milestones, reviews, comments, and comment votes
 
-## Installation
+## Commands
 
 ```bash
-pnpm add @reputo/deepfunding-portal-api
+pnpm --filter @reputo/deepfunding-portal-api build
+pnpm --filter @reputo/deepfunding-portal-api test
+pnpm --filter @reputo/deepfunding-portal-api typecheck
+pnpm --filter @reputo/deepfunding-portal-api sync
+pnpm --filter @reputo/deepfunding-portal-api validate
+pnpm --filter @reputo/deepfunding-portal-api fetch-api
+pnpm --filter @reputo/deepfunding-portal-api docs
 ```
 
-## Usage
+## Docs
 
-### Fetching Data
-
-```typescript
-import { createDeepFundingClient, fetchRounds, fetchAllPages, fetchUsers } from '@reputo/deepfunding-portal-api';
-
-const client = createDeepFundingClient({
-  baseUrl: 'https://deepfunding.ai/wp-json/deepfunding/v1',
-  apiKey: 'your-api-key',
-});
-
-// Fetch all rounds (no pagination - returns Promise directly)
-const rounds = await fetchRounds(client);
-
-// Fetch paginated resources (returns async generator)
-const users = await fetchAllPages(fetchUsers(client));
-```
-
-### Persisting to SQLite
-
-```typescript
-import { 
-  createNewDeepFundingPortalDb, 
-  closeDeepFundingPortalDb,
-  ingestRounds 
-} from '@reputo/deepfunding-portal-api';
-
-// Create a new database
-const db = createNewDeepFundingPortalDb({ path: './data.db' });
-
-// Ingest data
-ingestRounds(db, rounds);
-
-// Close when done
-closeDeepFundingPortalDb(db);
-```
-
-## API Reference
-
-See the [generated documentation](_media/README.md) for full API details.
-
-## License
-
-GPL-3.0
+- Generated API docs: [docs/README.md](docs/README.md)

@@ -6,7 +6,7 @@
 
 # Interface: AssetTransferRepository
 
-Defined in: [db/repos/asset-transfer-repo.ts:19](https://github.com/reputo-org/reputo/blob/962d0d201e0df08eadcc1d7d37a05f21cfe65d22/packages/onchain-data/src/db/repos/asset-transfer-repo.ts#L19)
+Defined in: [db/repos/asset-transfer-repo.ts:19](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/onchain-data/src/db/repos/asset-transfer-repo.ts#L19)
 
 ## Methods
 
@@ -14,7 +14,7 @@ Defined in: [db/repos/asset-transfer-repo.ts:19](https://github.com/reputo-org/r
 
 > **insertMany**(`items`, `manager?`): `Promise`\<`void`\>
 
-Defined in: [db/repos/asset-transfer-repo.ts:20](https://github.com/reputo-org/reputo/blob/962d0d201e0df08eadcc1d7d37a05f21cfe65d22/packages/onchain-data/src/db/repos/asset-transfer-repo.ts#L20)
+Defined in: [db/repos/asset-transfer-repo.ts:20](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/onchain-data/src/db/repos/asset-transfer-repo.ts#L20)
 
 #### Parameters
 
@@ -36,7 +36,7 @@ Defined in: [db/repos/asset-transfer-repo.ts:20](https://github.com/reputo-org/r
 
 > **findTransfersByAddresses**(`input`): `Promise`\<[`AssetTransferEntity`](AssetTransferEntity.md)[]\>
 
-Defined in: [db/repos/asset-transfer-repo.ts:21](https://github.com/reputo-org/reputo/blob/962d0d201e0df08eadcc1d7d37a05f21cfe65d22/packages/onchain-data/src/db/repos/asset-transfer-repo.ts#L21)
+Defined in: [db/repos/asset-transfer-repo.ts:21](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/onchain-data/src/db/repos/asset-transfer-repo.ts#L21)
 
 #### Parameters
 

@@ -6,7 +6,7 @@
 
 # Interface: NumericIoItem
 
-Defined in: [shared/types/algorithm.ts:80](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/reputation-algorithms/src/shared/types/algorithm.ts#L80)
+Defined in: [shared/types/algorithm.ts:80](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/reputation-algorithms/src/shared/types/algorithm.ts#L80)
 
 Numeric input item configuration for algorithm definitions.
 
@@ -20,7 +20,7 @@ Numeric input item configuration for algorithm definitions.
 
 > **key**: `string`
 
-Defined in: [shared/types/algorithm.ts:28](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/reputation-algorithms/src/shared/types/algorithm.ts#L28)
+Defined in: [shared/types/algorithm.ts:28](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/reputation-algorithms/src/shared/types/algorithm.ts#L28)
 
 Unique identifier for the I/O item
 
@@ -34,7 +34,7 @@ Unique identifier for the I/O item
 
 > `optional` **label**: `string`
 
-Defined in: [shared/types/algorithm.ts:30](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/reputation-algorithms/src/shared/types/algorithm.ts#L30)
+Defined in: [shared/types/algorithm.ts:30](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/reputation-algorithms/src/shared/types/algorithm.ts#L30)
 
 Human-readable label for display purposes
 
@@ -48,7 +48,7 @@ Human-readable label for display purposes
 
 > `optional` **description**: `string`
 
-Defined in: [shared/types/algorithm.ts:32](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/reputation-algorithms/src/shared/types/algorithm.ts#L32)
+Defined in: [shared/types/algorithm.ts:32](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/reputation-algorithms/src/shared/types/algorithm.ts#L32)
 
 Detailed description of the I/O item's purpose and usage
 
@@ -62,7 +62,7 @@ Detailed description of the I/O item's purpose and usage
 
 > **type**: `"number"` \| `"integer"`
 
-Defined in: [shared/types/algorithm.ts:82](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/reputation-algorithms/src/shared/types/algorithm.ts#L82)
+Defined in: [shared/types/algorithm.ts:82](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/reputation-algorithms/src/shared/types/algorithm.ts#L82)
 
 Type identifier for numeric data
 
@@ -72,7 +72,7 @@ Type identifier for numeric data
 
 > `optional` **min**: `number`
 
-Defined in: [shared/types/algorithm.ts:84](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/reputation-algorithms/src/shared/types/algorithm.ts#L84)
+Defined in: [shared/types/algorithm.ts:84](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/reputation-algorithms/src/shared/types/algorithm.ts#L84)
 
 Minimum allowed value
 
@@ -82,7 +82,7 @@ Minimum allowed value
 
 > `optional` **max**: `number`
 
-Defined in: [shared/types/algorithm.ts:86](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/reputation-algorithms/src/shared/types/algorithm.ts#L86)
+Defined in: [shared/types/algorithm.ts:86](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/reputation-algorithms/src/shared/types/algorithm.ts#L86)
 
 Maximum allowed value
 
@@ -92,7 +92,7 @@ Maximum allowed value
 
 > `optional` **default**: `number`
 
-Defined in: [shared/types/algorithm.ts:88](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/reputation-algorithms/src/shared/types/algorithm.ts#L88)
+Defined in: [shared/types/algorithm.ts:88](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/reputation-algorithms/src/shared/types/algorithm.ts#L88)
 
 Default value
 
@@ -102,7 +102,7 @@ Default value
 
 > `optional` **step**: `number`
 
-Defined in: [shared/types/algorithm.ts:90](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/reputation-algorithms/src/shared/types/algorithm.ts#L90)
+Defined in: [shared/types/algorithm.ts:90](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/reputation-algorithms/src/shared/types/algorithm.ts#L90)
 
 Step increment for the input
 
@@ -112,7 +112,7 @@ Step increment for the input
 
 > `optional` **required**: `boolean`
 
-Defined in: [shared/types/algorithm.ts:92](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/reputation-algorithms/src/shared/types/algorithm.ts#L92)
+Defined in: [shared/types/algorithm.ts:92](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/reputation-algorithms/src/shared/types/algorithm.ts#L92)
 
 Whether this input is required
 
@@ -122,7 +122,7 @@ Whether this input is required
 
 > `optional` **uiHint**: `object`
 
-Defined in: [shared/types/algorithm.ts:94](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/reputation-algorithms/src/shared/types/algorithm.ts#L94)
+Defined in: [shared/types/algorithm.ts:94](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/reputation-algorithms/src/shared/types/algorithm.ts#L94)
 
 UI rendering hints
 

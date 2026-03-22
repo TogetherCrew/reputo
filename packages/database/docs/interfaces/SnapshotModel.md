@@ -6,7 +6,7 @@
 
 # Interface: SnapshotModel
 
-Defined in: [packages/database/src/shared/types/Snapshot.interface.ts:83](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/database/src/shared/types/Snapshot.interface.ts#L83)
+Defined in: [packages/database/src/shared/types/Snapshot.interface.ts:83](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/database/src/shared/types/Snapshot.interface.ts#L83)
 
 Interface extending Mongoose Model with additional methods for Snapshot.
 
@@ -20,7 +20,7 @@ Interface extending Mongoose Model with additional methods for Snapshot.
 
 > **new SnapshotModel**\<`DocType`\>(`doc?`, `fields?`, `options?`): `Document`\<`unknown`, \{ \}, [`Snapshot`](Snapshot.md), \{ \}, \{ \}\> & [`Snapshot`](Snapshot.md) & `object` & `object`
 
-Defined in: [packages/database/src/shared/types/Snapshot.interface.ts:83](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/database/src/shared/types/Snapshot.interface.ts#L83)
+Defined in: [packages/database/src/shared/types/Snapshot.interface.ts:83](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/database/src/shared/types/Snapshot.interface.ts#L83)
 
 #### Parameters
 
@@ -50,7 +50,7 @@ Defined in: [packages/database/src/shared/types/Snapshot.interface.ts:83](https:
 
 > **paginate**: (`filter`, `options`) => `Promise`\<[`PaginateResult`](PaginateResult.md)\<[`SnapshotDoc`](../type-aliases/SnapshotDoc.md)\>\>
 
-Defined in: [packages/database/src/shared/types/Snapshot.interface.ts:85](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/database/src/shared/types/Snapshot.interface.ts#L85)
+Defined in: [packages/database/src/shared/types/Snapshot.interface.ts:85](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/database/src/shared/types/Snapshot.interface.ts#L85)
 
 Pagination method for querying snapshots
 

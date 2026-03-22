@@ -6,7 +6,7 @@
 
 # Interface: AlgorithmDefinition
 
-Defined in: [shared/types/algorithm.ts:153](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/reputation-algorithms/src/shared/types/algorithm.ts#L153)
+Defined in: [shared/types/algorithm.ts:198](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/reputation-algorithms/src/shared/types/algorithm.ts#L198)
 
 Complete algorithm definition structure.
 
@@ -16,7 +16,7 @@ Complete algorithm definition structure.
 
 > **key**: `string`
 
-Defined in: [shared/types/algorithm.ts:155](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/reputation-algorithms/src/shared/types/algorithm.ts#L155)
+Defined in: [shared/types/algorithm.ts:200](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/reputation-algorithms/src/shared/types/algorithm.ts#L200)
 
 Unique identifier for the algorithm
 
@@ -26,7 +26,7 @@ Unique identifier for the algorithm
 
 > **name**: `string`
 
-Defined in: [shared/types/algorithm.ts:157](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/reputation-algorithms/src/shared/types/algorithm.ts#L157)
+Defined in: [shared/types/algorithm.ts:202](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/reputation-algorithms/src/shared/types/algorithm.ts#L202)
 
 Human-readable name of the algorithm
 
@@ -36,7 +36,7 @@ Human-readable name of the algorithm
 
 > **category**: [`AlgorithmCategory`](../type-aliases/AlgorithmCategory.md)
 
-Defined in: [shared/types/algorithm.ts:159](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/reputation-algorithms/src/shared/types/algorithm.ts#L159)
+Defined in: [shared/types/algorithm.ts:204](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/reputation-algorithms/src/shared/types/algorithm.ts#L204)
 
 Category classification for organizing algorithms
 
@@ -46,7 +46,7 @@ Category classification for organizing algorithms
 
 > **summary**: `string`
 
-Defined in: [shared/types/algorithm.ts:161](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/reputation-algorithms/src/shared/types/algorithm.ts#L161)
+Defined in: [shared/types/algorithm.ts:206](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/reputation-algorithms/src/shared/types/algorithm.ts#L206)
 
 Short summary of the algorithm for card displays
 
@@ -56,7 +56,7 @@ Short summary of the algorithm for card displays
 
 > **description**: `string`
 
-Defined in: [shared/types/algorithm.ts:163](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/reputation-algorithms/src/shared/types/algorithm.ts#L163)
+Defined in: [shared/types/algorithm.ts:208](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/reputation-algorithms/src/shared/types/algorithm.ts#L208)
 
 Detailed description of what the algorithm does and how it works
 
@@ -66,7 +66,7 @@ Detailed description of what the algorithm does and how it works
 
 > **version**: `string`
 
-Defined in: [shared/types/algorithm.ts:165](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/reputation-algorithms/src/shared/types/algorithm.ts#L165)
+Defined in: [shared/types/algorithm.ts:210](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/reputation-algorithms/src/shared/types/algorithm.ts#L210)
 
 Semantic version of the algorithm definition
 
@@ -76,7 +76,7 @@ Semantic version of the algorithm definition
 
 > **inputs**: [`IoItem`](../type-aliases/IoItem.md)[]
 
-Defined in: [shared/types/algorithm.ts:167](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/reputation-algorithms/src/shared/types/algorithm.ts#L167)
+Defined in: [shared/types/algorithm.ts:212](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/reputation-algorithms/src/shared/types/algorithm.ts#L212)
 
 Array of input data specifications
 
@@ -86,7 +86,7 @@ Array of input data specifications
 
 > **outputs**: [`IoItem`](../type-aliases/IoItem.md)[]
 
-Defined in: [shared/types/algorithm.ts:169](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/reputation-algorithms/src/shared/types/algorithm.ts#L169)
+Defined in: [shared/types/algorithm.ts:214](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/reputation-algorithms/src/shared/types/algorithm.ts#L214)
 
 Array of output data specifications
 
@@ -96,7 +96,7 @@ Array of output data specifications
 
 > **runtime**: [`AlgorithmRuntime`](../type-aliases/AlgorithmRuntime.md)
 
-Defined in: [shared/types/algorithm.ts:171](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/reputation-algorithms/src/shared/types/algorithm.ts#L171)
+Defined in: [shared/types/algorithm.ts:216](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/reputation-algorithms/src/shared/types/algorithm.ts#L216)
 
 Runtime (language) used for execution routing
 
@@ -106,6 +106,6 @@ Runtime (language) used for execution routing
 
 > `optional` **dependencies**: [`AlgorithmDependency`](AlgorithmDependency.md)[]
 
-Defined in: [shared/types/algorithm.ts:173](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/reputation-algorithms/src/shared/types/algorithm.ts#L173)
+Defined in: [shared/types/algorithm.ts:218](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/reputation-algorithms/src/shared/types/algorithm.ts#L218)
 
 Optional array of external dependencies required by this algorithm

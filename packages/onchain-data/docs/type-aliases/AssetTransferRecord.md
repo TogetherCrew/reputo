@@ -8,7 +8,7 @@
 
 > **AssetTransferRecord** = `object`
 
-Defined in: [shared/types/records.ts:3](https://github.com/reputo-org/reputo/blob/962d0d201e0df08eadcc1d7d37a05f21cfe65d22/packages/onchain-data/src/shared/types/records.ts#L3)
+Defined in: [shared/types/records.ts:3](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/onchain-data/src/shared/types/records.ts#L3)
 
 ## Properties
 
@@ -16,7 +16,7 @@ Defined in: [shared/types/records.ts:3](https://github.com/reputo-org/reputo/blo
 
 > **assetKey**: [`AssetKey`](AssetKey.md)
 
-Defined in: [shared/types/records.ts:4](https://github.com/reputo-org/reputo/blob/962d0d201e0df08eadcc1d7d37a05f21cfe65d22/packages/onchain-data/src/shared/types/records.ts#L4)
+Defined in: [shared/types/records.ts:4](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/onchain-data/src/shared/types/records.ts#L4)
 
 ***
 
@@ -24,7 +24,7 @@ Defined in: [shared/types/records.ts:4](https://github.com/reputo-org/reputo/blo
 
 > **blockNumber**: `string`
 
-Defined in: [shared/types/records.ts:5](https://github.com/reputo-org/reputo/blob/962d0d201e0df08eadcc1d7d37a05f21cfe65d22/packages/onchain-data/src/shared/types/records.ts#L5)
+Defined in: [shared/types/records.ts:5](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/onchain-data/src/shared/types/records.ts#L5)
 
 ***
 
@@ -32,7 +32,7 @@ Defined in: [shared/types/records.ts:5](https://github.com/reputo-org/reputo/blo
 
 > **transactionHash**: `string`
 
-Defined in: [shared/types/records.ts:6](https://github.com/reputo-org/reputo/blob/962d0d201e0df08eadcc1d7d37a05f21cfe65d22/packages/onchain-data/src/shared/types/records.ts#L6)
+Defined in: [shared/types/records.ts:6](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/onchain-data/src/shared/types/records.ts#L6)
 
 ***
 
@@ -40,7 +40,7 @@ Defined in: [shared/types/records.ts:6](https://github.com/reputo-org/reputo/blo
 
 > **logIndex**: `number`
 
-Defined in: [shared/types/records.ts:7](https://github.com/reputo-org/reputo/blob/962d0d201e0df08eadcc1d7d37a05f21cfe65d22/packages/onchain-data/src/shared/types/records.ts#L7)
+Defined in: [shared/types/records.ts:7](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/onchain-data/src/shared/types/records.ts#L7)
 
 ***
 
@@ -48,7 +48,7 @@ Defined in: [shared/types/records.ts:7](https://github.com/reputo-org/reputo/blo
 
 > **fromAddress**: `string` \| `null`
 
-Defined in: [shared/types/records.ts:8](https://github.com/reputo-org/reputo/blob/962d0d201e0df08eadcc1d7d37a05f21cfe65d22/packages/onchain-data/src/shared/types/records.ts#L8)
+Defined in: [shared/types/records.ts:8](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/onchain-data/src/shared/types/records.ts#L8)
 
 ***
 
@@ -56,7 +56,7 @@ Defined in: [shared/types/records.ts:8](https://github.com/reputo-org/reputo/blo
 
 > **toAddress**: `string` \| `null`
 
-Defined in: [shared/types/records.ts:9](https://github.com/reputo-org/reputo/blob/962d0d201e0df08eadcc1d7d37a05f21cfe65d22/packages/onchain-data/src/shared/types/records.ts#L9)
+Defined in: [shared/types/records.ts:9](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/onchain-data/src/shared/types/records.ts#L9)
 
 ***
 
@@ -64,7 +64,7 @@ Defined in: [shared/types/records.ts:9](https://github.com/reputo-org/reputo/blo
 
 > **amount**: `string`
 
-Defined in: [shared/types/records.ts:10](https://github.com/reputo-org/reputo/blob/962d0d201e0df08eadcc1d7d37a05f21cfe65d22/packages/onchain-data/src/shared/types/records.ts#L10)
+Defined in: [shared/types/records.ts:10](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/onchain-data/src/shared/types/records.ts#L10)
 
 ***
 
@@ -72,4 +72,4 @@ Defined in: [shared/types/records.ts:10](https://github.com/reputo-org/reputo/bl
 
 > **blockTimestamp**: `string` \| `null`
 
-Defined in: [shared/types/records.ts:11](https://github.com/reputo-org/reputo/blob/962d0d201e0df08eadcc1d7d37a05f21cfe65d22/packages/onchain-data/src/shared/types/records.ts#L11)
+Defined in: [shared/types/records.ts:11](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/onchain-data/src/shared/types/records.ts#L11)

@@ -8,7 +8,7 @@
 
 > **Pagination** = `object`
 
-Defined in: [packages/deepfunding-portal-api/src/shared/types/api.ts:4](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/deepfunding-portal-api/src/shared/types/api.ts#L4)
+Defined in: [packages/deepfunding-portal-api/src/shared/types/api.ts:4](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/deepfunding-portal-api/src/shared/types/api.ts#L4)
 
 Pagination metadata from API responses
 
@@ -18,7 +18,7 @@ Pagination metadata from API responses
 
 > **total\_records**: `number`
 
-Defined in: [packages/deepfunding-portal-api/src/shared/types/api.ts:5](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/deepfunding-portal-api/src/shared/types/api.ts#L5)
+Defined in: [packages/deepfunding-portal-api/src/shared/types/api.ts:5](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/deepfunding-portal-api/src/shared/types/api.ts#L5)
 
 ***
 
@@ -26,7 +26,7 @@ Defined in: [packages/deepfunding-portal-api/src/shared/types/api.ts:5](https://
 
 > **current\_page**: `number`
 
-Defined in: [packages/deepfunding-portal-api/src/shared/types/api.ts:6](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/deepfunding-portal-api/src/shared/types/api.ts#L6)
+Defined in: [packages/deepfunding-portal-api/src/shared/types/api.ts:6](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/deepfunding-portal-api/src/shared/types/api.ts#L6)
 
 ***
 
@@ -34,7 +34,7 @@ Defined in: [packages/deepfunding-portal-api/src/shared/types/api.ts:6](https://
 
 > **total\_pages**: `number`
 
-Defined in: [packages/deepfunding-portal-api/src/shared/types/api.ts:7](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/deepfunding-portal-api/src/shared/types/api.ts#L7)
+Defined in: [packages/deepfunding-portal-api/src/shared/types/api.ts:7](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/deepfunding-portal-api/src/shared/types/api.ts#L7)
 
 ***
 
@@ -42,7 +42,7 @@ Defined in: [packages/deepfunding-portal-api/src/shared/types/api.ts:7](https://
 
 > **next\_page**: `number` \| `null`
 
-Defined in: [packages/deepfunding-portal-api/src/shared/types/api.ts:8](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/deepfunding-portal-api/src/shared/types/api.ts#L8)
+Defined in: [packages/deepfunding-portal-api/src/shared/types/api.ts:8](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/deepfunding-portal-api/src/shared/types/api.ts#L8)
 
 ***
 
@@ -50,4 +50,4 @@ Defined in: [packages/deepfunding-portal-api/src/shared/types/api.ts:8](https://
 
 > **prev\_page**: `number` \| `null`
 
-Defined in: [packages/deepfunding-portal-api/src/shared/types/api.ts:9](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/deepfunding-portal-api/src/shared/types/api.ts#L9)
+Defined in: [packages/deepfunding-portal-api/src/shared/types/api.ts:9](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/deepfunding-portal-api/src/shared/types/api.ts#L9)

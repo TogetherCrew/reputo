@@ -8,7 +8,7 @@
 
 > **CreateSyncAssetTransfersServiceInput** = `object`
 
-Defined in: [services/sync-asset-transfers-service.ts:26](https://github.com/reputo-org/reputo/blob/962d0d201e0df08eadcc1d7d37a05f21cfe65d22/packages/onchain-data/src/services/sync-asset-transfers-service.ts#L26)
+Defined in: [services/sync-asset-transfers-service.ts:44](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/onchain-data/src/services/sync-asset-transfers-service.ts#L44)
 
 ## Properties
 
@@ -16,7 +16,7 @@ Defined in: [services/sync-asset-transfers-service.ts:26](https://github.com/rep
 
 > **assetKey**: [`AssetKey`](AssetKey.md)
 
-Defined in: [services/sync-asset-transfers-service.ts:27](https://github.com/reputo-org/reputo/blob/962d0d201e0df08eadcc1d7d37a05f21cfe65d22/packages/onchain-data/src/services/sync-asset-transfers-service.ts#L27)
+Defined in: [services/sync-asset-transfers-service.ts:45](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/onchain-data/src/services/sync-asset-transfers-service.ts#L45)
 
 ***
 
@@ -24,7 +24,7 @@ Defined in: [services/sync-asset-transfers-service.ts:27](https://github.com/rep
 
 > **databaseUrl**: `string`
 
-Defined in: [services/sync-asset-transfers-service.ts:28](https://github.com/reputo-org/reputo/blob/962d0d201e0df08eadcc1d7d37a05f21cfe65d22/packages/onchain-data/src/services/sync-asset-transfers-service.ts#L28)
+Defined in: [services/sync-asset-transfers-service.ts:46](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/onchain-data/src/services/sync-asset-transfers-service.ts#L46)
 
 ***
 
@@ -32,4 +32,4 @@ Defined in: [services/sync-asset-transfers-service.ts:28](https://github.com/rep
 
 > **alchemyApiKey**: `string`
 
-Defined in: [services/sync-asset-transfers-service.ts:29](https://github.com/reputo-org/reputo/blob/962d0d201e0df08eadcc1d7d37a05f21cfe65d22/packages/onchain-data/src/services/sync-asset-transfers-service.ts#L29)
+Defined in: [services/sync-asset-transfers-service.ts:47](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/onchain-data/src/services/sync-asset-transfers-service.ts#L47)

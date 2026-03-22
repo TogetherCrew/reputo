@@ -8,7 +8,7 @@
 
 > **normalizeAlchemyEthereumTransfer**(`input`): [`AssetTransferEntity`](../interfaces/AssetTransferEntity.md)
 
-Defined in: [providers/ethereum/normalize-alchemy-transfer.ts:16](https://github.com/reputo-org/reputo/blob/962d0d201e0df08eadcc1d7d37a05f21cfe65d22/packages/onchain-data/src/providers/ethereum/normalize-alchemy-transfer.ts#L16)
+Defined in: [providers/ethereum/normalize-alchemy-transfer.ts:16](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/onchain-data/src/providers/ethereum/normalize-alchemy-transfer.ts#L16)
 
 Normalizes a single Alchemy transfer to the shape of AssetTransferSchema (AssetTransferEntity).
 Block and timestamp are numbers (block number as integer, block_timestamp_unix as Unix seconds).

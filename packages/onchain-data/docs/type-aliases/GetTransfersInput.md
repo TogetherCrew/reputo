@@ -8,7 +8,7 @@
 
 > **GetTransfersInput** = `object`
 
-Defined in: [db/repos/asset-transfer-repo.ts:7](https://github.com/reputo-org/reputo/blob/962d0d201e0df08eadcc1d7d37a05f21cfe65d22/packages/onchain-data/src/db/repos/asset-transfer-repo.ts#L7)
+Defined in: [db/repos/asset-transfer-repo.ts:7](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/onchain-data/src/db/repos/asset-transfer-repo.ts#L7)
 
 ## Properties
 
@@ -16,7 +16,7 @@ Defined in: [db/repos/asset-transfer-repo.ts:7](https://github.com/reputo-org/re
 
 > **assetId**: `number`
 
-Defined in: [db/repos/asset-transfer-repo.ts:8](https://github.com/reputo-org/reputo/blob/962d0d201e0df08eadcc1d7d37a05f21cfe65d22/packages/onchain-data/src/db/repos/asset-transfer-repo.ts#L8)
+Defined in: [db/repos/asset-transfer-repo.ts:8](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/onchain-data/src/db/repos/asset-transfer-repo.ts#L8)
 
 ***
 
@@ -24,7 +24,7 @@ Defined in: [db/repos/asset-transfer-repo.ts:8](https://github.com/reputo-org/re
 
 > **addresses**: `string`[]
 
-Defined in: [db/repos/asset-transfer-repo.ts:9](https://github.com/reputo-org/reputo/blob/962d0d201e0df08eadcc1d7d37a05f21cfe65d22/packages/onchain-data/src/db/repos/asset-transfer-repo.ts#L9)
+Defined in: [db/repos/asset-transfer-repo.ts:9](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/onchain-data/src/db/repos/asset-transfer-repo.ts#L9)
 
 ***
 
@@ -32,7 +32,7 @@ Defined in: [db/repos/asset-transfer-repo.ts:9](https://github.com/reputo-org/re
 
 > **page**: `number`
 
-Defined in: [db/repos/asset-transfer-repo.ts:10](https://github.com/reputo-org/reputo/blob/962d0d201e0df08eadcc1d7d37a05f21cfe65d22/packages/onchain-data/src/db/repos/asset-transfer-repo.ts#L10)
+Defined in: [db/repos/asset-transfer-repo.ts:10](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/onchain-data/src/db/repos/asset-transfer-repo.ts#L10)
 
 ***
 
@@ -40,7 +40,7 @@ Defined in: [db/repos/asset-transfer-repo.ts:10](https://github.com/reputo-org/r
 
 > **limit**: `number`
 
-Defined in: [db/repos/asset-transfer-repo.ts:11](https://github.com/reputo-org/reputo/blob/962d0d201e0df08eadcc1d7d37a05f21cfe65d22/packages/onchain-data/src/db/repos/asset-transfer-repo.ts#L11)
+Defined in: [db/repos/asset-transfer-repo.ts:11](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/onchain-data/src/db/repos/asset-transfer-repo.ts#L11)
 
 ***
 
@@ -48,7 +48,7 @@ Defined in: [db/repos/asset-transfer-repo.ts:11](https://github.com/reputo-org/r
 
 > **orderBy**: `"time_asc"` \| `"time_desc"`
 
-Defined in: [db/repos/asset-transfer-repo.ts:12](https://github.com/reputo-org/reputo/blob/962d0d201e0df08eadcc1d7d37a05f21cfe65d22/packages/onchain-data/src/db/repos/asset-transfer-repo.ts#L12)
+Defined in: [db/repos/asset-transfer-repo.ts:12](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/onchain-data/src/db/repos/asset-transfer-repo.ts#L12)
 
 ***
 
@@ -56,7 +56,7 @@ Defined in: [db/repos/asset-transfer-repo.ts:12](https://github.com/reputo-org/r
 
 > `optional` **fromTimestampUnix**: `number`
 
-Defined in: [db/repos/asset-transfer-repo.ts:13](https://github.com/reputo-org/reputo/blob/962d0d201e0df08eadcc1d7d37a05f21cfe65d22/packages/onchain-data/src/db/repos/asset-transfer-repo.ts#L13)
+Defined in: [db/repos/asset-transfer-repo.ts:13](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/onchain-data/src/db/repos/asset-transfer-repo.ts#L13)
 
 ***
 
@@ -64,7 +64,7 @@ Defined in: [db/repos/asset-transfer-repo.ts:13](https://github.com/reputo-org/r
 
 > `optional` **toTimestampUnix**: `number`
 
-Defined in: [db/repos/asset-transfer-repo.ts:14](https://github.com/reputo-org/reputo/blob/962d0d201e0df08eadcc1d7d37a05f21cfe65d22/packages/onchain-data/src/db/repos/asset-transfer-repo.ts#L14)
+Defined in: [db/repos/asset-transfer-repo.ts:14](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/onchain-data/src/db/repos/asset-transfer-repo.ts#L14)
 
 ***
 
@@ -72,7 +72,7 @@ Defined in: [db/repos/asset-transfer-repo.ts:14](https://github.com/reputo-org/r
 
 > `optional` **fromBlock**: `number`
 
-Defined in: [db/repos/asset-transfer-repo.ts:15](https://github.com/reputo-org/reputo/blob/962d0d201e0df08eadcc1d7d37a05f21cfe65d22/packages/onchain-data/src/db/repos/asset-transfer-repo.ts#L15)
+Defined in: [db/repos/asset-transfer-repo.ts:15](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/onchain-data/src/db/repos/asset-transfer-repo.ts#L15)
 
 ***
 
@@ -80,4 +80,4 @@ Defined in: [db/repos/asset-transfer-repo.ts:15](https://github.com/reputo-org/r
 
 > `optional` **toBlock**: `number`
 
-Defined in: [db/repos/asset-transfer-repo.ts:16](https://github.com/reputo-org/reputo/blob/962d0d201e0df08eadcc1d7d37a05f21cfe65d22/packages/onchain-data/src/db/repos/asset-transfer-repo.ts#L16)
+Defined in: [db/repos/asset-transfer-repo.ts:16](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/onchain-data/src/db/repos/asset-transfer-repo.ts#L16)

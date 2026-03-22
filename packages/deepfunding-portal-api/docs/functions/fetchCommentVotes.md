@@ -8,7 +8,7 @@
 
 > **fetchCommentVotes**(`client`, `options`): [`PaginatedFetcher`](../type-aliases/PaginatedFetcher.md)\<[`CommentVote`](../type-aliases/CommentVote.md)\>
 
-Defined in: [packages/deepfunding-portal-api/src/resources/commentVotes/api.ts:10](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/deepfunding-portal-api/src/resources/commentVotes/api.ts#L10)
+Defined in: [packages/deepfunding-portal-api/src/resources/commentVotes/api.ts:10](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/deepfunding-portal-api/src/resources/commentVotes/api.ts#L10)
 
 Fetch comment votes with pagination
 
