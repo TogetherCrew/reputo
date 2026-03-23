@@ -8,7 +8,7 @@
 
 > **ProposalFetchOptions** = `object`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/proposals/types.ts:54](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/deepfunding-portal-api/src/resources/proposals/types.ts#L54)
+Defined in: [packages/deepfunding-portal-api/src/resources/proposals/types.ts:54](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/deepfunding-portal-api/src/resources/proposals/types.ts#L54)
 
 Options for fetching proposals
 
@@ -18,6 +18,6 @@ Options for fetching proposals
 
 > `optional` **poolId**: `number`
 
-Defined in: [packages/deepfunding-portal-api/src/resources/proposals/types.ts:56](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/deepfunding-portal-api/src/resources/proposals/types.ts#L56)
+Defined in: [packages/deepfunding-portal-api/src/resources/proposals/types.ts:56](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/deepfunding-portal-api/src/resources/proposals/types.ts#L56)
 
 Filter by pool ID

@@ -8,7 +8,7 @@
 
 > **createSyncAssetTransfersService**(`input`): `Promise`\<[`SyncAssetTransfersService`](../interfaces/SyncAssetTransfersService.md)\>
 
-Defined in: [services/sync-asset-transfers-service.ts:32](https://github.com/reputo-org/reputo/blob/962d0d201e0df08eadcc1d7d37a05f21cfe65d22/packages/onchain-data/src/services/sync-asset-transfers-service.ts#L32)
+Defined in: [services/sync-asset-transfers-service.ts:50](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/onchain-data/src/services/sync-asset-transfers-service.ts#L50)
 
 ## Parameters
 

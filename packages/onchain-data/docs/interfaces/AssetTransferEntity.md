@@ -6,7 +6,7 @@
 
 # Interface: AssetTransferEntity
 
-Defined in: [db/schema.ts:4](https://github.com/reputo-org/reputo/blob/962d0d201e0df08eadcc1d7d37a05f21cfe65d22/packages/onchain-data/src/db/schema.ts#L4)
+Defined in: [db/schema.ts:4](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/onchain-data/src/db/schema.ts#L4)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [db/schema.ts:4](https://github.com/reputo-org/reputo/blob/962d0d201
 
 > **asset\_key**: `"fet_ethereum"` \| `"fet_cardano"` \| `"fet_cosmos"`
 
-Defined in: [db/schema.ts:5](https://github.com/reputo-org/reputo/blob/962d0d201e0df08eadcc1d7d37a05f21cfe65d22/packages/onchain-data/src/db/schema.ts#L5)
+Defined in: [db/schema.ts:5](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/onchain-data/src/db/schema.ts#L5)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [db/schema.ts:5](https://github.com/reputo-org/reputo/blob/962d0d201
 
 > **block\_number**: `number`
 
-Defined in: [db/schema.ts:6](https://github.com/reputo-org/reputo/blob/962d0d201e0df08eadcc1d7d37a05f21cfe65d22/packages/onchain-data/src/db/schema.ts#L6)
+Defined in: [db/schema.ts:6](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/onchain-data/src/db/schema.ts#L6)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [db/schema.ts:6](https://github.com/reputo-org/reputo/blob/962d0d201
 
 > **transaction\_hash**: `string`
 
-Defined in: [db/schema.ts:7](https://github.com/reputo-org/reputo/blob/962d0d201e0df08eadcc1d7d37a05f21cfe65d22/packages/onchain-data/src/db/schema.ts#L7)
+Defined in: [db/schema.ts:7](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/onchain-data/src/db/schema.ts#L7)
 
 ***
 
@@ -38,7 +38,7 @@ Defined in: [db/schema.ts:7](https://github.com/reputo-org/reputo/blob/962d0d201
 
 > **log\_index**: `number`
 
-Defined in: [db/schema.ts:8](https://github.com/reputo-org/reputo/blob/962d0d201e0df08eadcc1d7d37a05f21cfe65d22/packages/onchain-data/src/db/schema.ts#L8)
+Defined in: [db/schema.ts:8](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/onchain-data/src/db/schema.ts#L8)
 
 ***
 
@@ -46,7 +46,7 @@ Defined in: [db/schema.ts:8](https://github.com/reputo-org/reputo/blob/962d0d201
 
 > **from\_address**: `string` \| `null`
 
-Defined in: [db/schema.ts:9](https://github.com/reputo-org/reputo/blob/962d0d201e0df08eadcc1d7d37a05f21cfe65d22/packages/onchain-data/src/db/schema.ts#L9)
+Defined in: [db/schema.ts:9](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/onchain-data/src/db/schema.ts#L9)
 
 ***
 
@@ -54,7 +54,7 @@ Defined in: [db/schema.ts:9](https://github.com/reputo-org/reputo/blob/962d0d201
 
 > **to\_address**: `string` \| `null`
 
-Defined in: [db/schema.ts:10](https://github.com/reputo-org/reputo/blob/962d0d201e0df08eadcc1d7d37a05f21cfe65d22/packages/onchain-data/src/db/schema.ts#L10)
+Defined in: [db/schema.ts:10](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/onchain-data/src/db/schema.ts#L10)
 
 ***
 
@@ -62,7 +62,7 @@ Defined in: [db/schema.ts:10](https://github.com/reputo-org/reputo/blob/962d0d20
 
 > **amount**: `string`
 
-Defined in: [db/schema.ts:11](https://github.com/reputo-org/reputo/blob/962d0d201e0df08eadcc1d7d37a05f21cfe65d22/packages/onchain-data/src/db/schema.ts#L11)
+Defined in: [db/schema.ts:11](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/onchain-data/src/db/schema.ts#L11)
 
 ***
 
@@ -70,4 +70,4 @@ Defined in: [db/schema.ts:11](https://github.com/reputo-org/reputo/blob/962d0d20
 
 > **block\_timestamp\_unix**: `number` \| `null`
 
-Defined in: [db/schema.ts:12](https://github.com/reputo-org/reputo/blob/962d0d201e0df08eadcc1d7d37a05f21cfe65d22/packages/onchain-data/src/db/schema.ts#L12)
+Defined in: [db/schema.ts:12](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/onchain-data/src/db/schema.ts#L12)

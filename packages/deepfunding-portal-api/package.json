@@ -22,6 +22,7 @@
     "test:watch": "vitest --watch",
     "test:cov": "vitest --coverage",
     "typecheck": "tsc --noEmit",
+    "dev": "tsc --watch --preserveWatchOutput",
     "sync": "tsx src/temp-sync.ts",
     "validate": "tsx src/validate-api.ts",
     "fetch-api": "tsx scripts/fetch-api-responses.ts",

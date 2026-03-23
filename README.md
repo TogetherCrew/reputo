@@ -1,9 +1,9 @@
-![Reputo](.github/assets/banner.png 'Reputo')
+![Reputo](.github/assets/banner.png "Reputo")
 
 <p align="center">
+  <a href="https://logid.xyz">Reputo</a> is a privacy-preserving reputation platform with three main surfaces: a NestJS API, a Next.js UI, and Temporal-based workers that orchestrate snapshot execution and algorithm runs.
   <br/>
-  <a href="https://logid.xyz">Reputo</a> is a privacy-preserving, modular reputation platform inspired by Snapshot.
-  <br/>
+  This repository is the pnpm monorepo for those apps and the shared packages they build on.
 </p>
 
 <div align="center">
@@ -12,330 +12,79 @@
 
 </div>
 
-## Table of Contents
 
-1. [Apps & Packages](#apps--packages)
-2. [Quick Start](#quick-start)
-3. [Prerequisites](#prerequisites)
-4. [Project Structure](#project-structure)
-5. [Algorithm Development](#algorithm-development)
-6. [Contributing](#contributing)
-7. [License](#license)
-8. [Team](#team)
+## App & API References
 
----
+| Surface | URL |
+| --- | --- |
+| App | [staging.logid.xyz](https://staging.logid.xyz) 
+| API Reference | [api-staging.logid.xyz/reference](https://api-staging.logid.xyz/reference) 
 
-## Apps & Packages
+## Getting Started
 
-| Path                              | Stack                                                                                                                                                                                                           | Status   | Links                                                                                    |
-| --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ---------------------------------------------------------------------------------------- |
-| `apps/api`                        | ![nestjs](https://img.shields.io/badge/-NestJS-E0234E?logo=nestjs&logoColor=white&style=flat)                                                                                                                   | ✅ Ready | [📚 README](apps/api/README.md) · [📖 API Docs](https://api-staging.logid.xyz/reference) |
-| `apps/ui`                         | ![next](https://img.shields.io/badge/-Next.js-000000?logo=nextdotjs&logoColor=white&style=flat)                                                                                                                 | ✅ Ready | [📚 README](apps/ui/README.md) · [🌐 App](https://staging.logid.xyz)                     |
-| `apps/workflows`                  | ![temporal](https://img.shields.io/badge/-Temporal-000000?logo=temporal&logoColor=white&style=flat) + ![typescript](https://img.shields.io/badge/-TypeScript-3178C6?logo=typescript&logoColor=white&style=flat) | ✅ Ready | [📚 README](apps/workflows/README.md)                                                    |
-| `packages/reputation-algorithms`  | ![typescript](https://img.shields.io/badge/-TypeScript-3178C6?logo=typescript&logoColor=white&style=flat)                                                                                                       | ✅ Ready | [📚 README](packages/reputation-algorithms/README.md)                                    |
-| `packages/algorithm-validator`    | ![typescript](https://img.shields.io/badge/-TypeScript-3178C6?logo=typescript&logoColor=white&style=flat)                                                                                                       | ✅ Ready | [📚 README](packages/algorithm-validator/README.md)                                      |
-| `packages/database`               | ![mongoose](https://img.shields.io/badge/-Mongoose-880000?logo=mongoose&logoColor=white&style=flat) + ![typescript](https://img.shields.io/badge/-TypeScript-3178C6?logo=typescript&logoColor=white&style=flat) | ✅ Ready | [📚 README](packages/database/README.md)                                                 |
-| `packages/onchain-data`           | ![typescript](https://img.shields.io/badge/-TypeScript-3178C6?logo=typescript&logoColor=white&style=flat)                                                                                                       | ✅ Ready | [📚 README](packages/onchain-data/README.md)                                              |
-| `packages/storage`                | ![typescript](https://img.shields.io/badge/-TypeScript-3178C6?logo=typescript&logoColor=white&style=flat)                                                                                                       | ✅ Ready | [📚 README](packages/storage/README.md)                                                  |
-| `packages/deepfunding-portal-api` | ![typescript](https://img.shields.io/badge/-TypeScript-3178C6?logo=typescript&logoColor=white&style=flat)                                                                                                       | ✅ Ready | [📚 README](packages/deepfunding-portal-api/README.md)                                   |
+Use Node 20+ with `pnpm@10.30.3`.
 
----
-
-## Quick Start
-
-### Local development (pnpm)
+### Local
 
 ```bash
-# Install dependencies
 pnpm install
-
-# Build project
-pnpm build
-
-# Run all services in parallel
 pnpm dev
-
-# Run individual services
-pnpm -F @reputo/api dev   # API only
 ```
 
-### Local development (Docker Compose)
-
-#### Minimal local stack
+### Docker
 
 ```bash
-# Basic local development setup
 docker compose -f docker/docker-compose.dev.yml up --build
 ```
 
----
+ See [docker/README.md](docker/README.md).
 
-## Prerequisites
-
-### Development Environment
-
-- **Node.js**: 20.x or higher
-- **pnpm**: 10.30.3 or higher
-- **Docker**: For containerized development
-- **Git**: With Lefthook for git hooks
-
-### Production/Staging Deployment
-
-- **Docker & Docker Compose**: Container orchestration
-- **Traefik**: Reverse proxy
-- **Domain & DNS**: For SSL certificate generation
-- **Cloudflare API Token**: For DNS challenge
-
----
-
-## Project Structure
-
-```text
-reputo/
-├── apps/
-│   ├── api/                        # NestJS API server
-│   ├── ui/                         # Next.js frontend
-│   └── workflows/                  # Temporal workflows & algorithm workers
-├── packages/
-│   ├── algorithm-validator/        # Shared Zod validation library
-│   ├── database/                   # Mongoose database layer
-│   ├── deepfunding-portal-api/     # DeepFunding Portal API client & SQLite ingest
-│   ├── onchain-data/               # Token transfer sync to PostgreSQL (provider abstraction)
-│   ├── reputation-algorithms/      # Algorithm definitions registry
-│   └── storage/                    # Framework-agnostic S3 utilities
-├── scripts/
-│   ├── create-algorithm.ts         # Unified algorithm creation CLI
-│   └── validate-algorithms.ts      # Algorithm sync validation CLI
-├── docker/
-│   ├── docker-compose.yml          # Production/staging setup
-│   ├── docker-compose.dev.yml      # Local development
-│   ├── preview/                    # PR preview (Caddy + compose)
-│   ├── traefik/                    # Traefik config (staging/production)
-│   │   └── traefik.yml
-│   └── Dockerfile                  # Multi-stage build
-├── .github/
-│   ├── workflows/                  # CI/CD pipelines
-│   └── PULL_REQUEST_TEMPLATE.md
-├── coverage/                       # Test coverage reports
-├── node_modules/                   # pnpm workspace dependencies
-├── package.json                    # Root workspace config
-├── pnpm-workspace.yaml             # Workspace definition
-├── biome.json                      # Linting & formatting
-├── lefthook.yml                    # Git hooks
-├── vitest.config.ts                # Test runner config
-├── tsconfig.vitest.json            # Vitest TS config
-└── commitlint.config.mjs           # Commit message linting
-```
-
-## Environments
-
-We follow a three-tier deployment strategy with automated promotion:
-
-#### Preview Environment (Pull Requests)
-
-- **Trigger**: Adding `pullpreview` label to PRs
-- **Infrastructure**: AWS Lightsail
-- **URL**: Dynamic subdomain generated per PR
-- **Cleanup**: Auto-expires after 48h or PR closure
-
-#### Staging Environment
-
-- **Trigger**: Merge to `main` branch (automated)
-- **URL**:
-    - UI: [staging.logid.xyz](https://staging.logid.xyz)
-    - API: [api-staging.logid.xyz](https://api-staging.logid.xyz)
-    - Traefik: [traefik-staging.logid.xyz/dashboard](https://traefik-staging.logid.xyz/dashboard/)
-- **Deployment**: Watchtower auto-pulls `staging` tagged images
-
-#### Production Environment
-
-- **Trigger**: Manual workflow dispatch with commit SHA
-- **URL**:
-    - UI: [logid.xyz](https://logid.xyz)
-    - API: [api.logid.xyz](https://api.logid.xyz)
-    - Traefik: [traefik.logid.xyz/dashboard](https://traefik.logid.xyz/dashboard/)
-- **Process**: Promotes staging images with `production` tags
-
----
-
-## Algorithm Development
-
-This section guides you through creating, configuring, and implementing reputation algorithms.
-
-### Overview
-
-Algorithms in Reputo consist of two parts:
-
-1. **Algorithm Definition** - A JSON schema that describes the algorithm's metadata, inputs, outputs, and runtime configuration. Located in `packages/reputation-algorithms/src/registry/`.
-
-2. **Activity Implementation** - TypeScript code that executes the algorithm logic. Located in `apps/workflows/src/activities/typescript/algorithms/`.
-
-### Step 1: Create a New Algorithm
-
-Use the unified CLI to create both the definition and activity scaffold in one command:
+### Checks
 
 ```bash
-pnpm algorithm:create <key> <version>
-```
-
-**Example:**
-
-```bash
-pnpm algorithm:create proposal_engagement 1.0.0
-```
-
-This creates:
-
-- `packages/reputation-algorithms/src/registry/proposal_engagement/1.0.0.json` - Algorithm definition
-- `apps/workflows/src/activities/typescript/algorithms/proposal-engagement/compute.ts` - Activity implementation
-- `apps/workflows/src/activities/typescript/algorithms/proposal-engagement/index.ts` - Activity export
-
-**Requirements:**
-
-- `key` must be `snake_case` (e.g., `voting_engagement`, `proposal_score`)
-- `version` must be valid SemVer (e.g., `1.0.0`, `2.1.0-beta`)
-
-### Step 2: Configure the Algorithm Definition
-
-Edit the generated JSON file to define your algorithm's schema:
-
-```json
-{
-    "key": "proposal_engagement",
-    "name": "Proposal Engagement",
-    "category": "Engagement",
-    "description": "Calculates user engagement based on proposal interactions",
-    "version": "1.0.0",
-    "inputs": [
-        {
-            "key": "proposals",
-            "label": "Proposals CSV",
-            "type": "csv",
-            "csv": {
-                "hasHeader": true,
-                "columns": [
-                    { "key": "user_id", "type": "string" },
-                    { "key": "proposal_id", "type": "string" },
-                    {
-                        "key": "action",
-                        "type": "enum",
-                        "enum": ["view", "vote", "comment"]
-                    }
-                ]
-            }
-        }
-    ],
-    "outputs": [
-        {
-            "key": "engagement_scores",
-            "label": "Engagement Scores",
-            "type": "csv",
-            "csv": {
-                "columns": [
-                    { "key": "user_id", "type": "string" },
-                    { "key": "score", "type": "number" }
-                ]
-            }
-        }
-    ],
-    "runtime": "typescript"
-}
-```
-
-**Key fields:**
-
-| Field     | Description                                                         |
-| --------- | ------------------------------------------------------------------- |
-| `inputs`  | Define expected input data schema (CSV columns, types, constraints) |
-| `outputs` | Define output data schema                                           |
-| `runtime` | The runtime environment for the algorithm (e.g., `typescript`)      |
-
-### Step 3: Implement the Activity Logic
-
-Edit the generated activity file to implement your algorithm:
-
-```typescript
-// apps/workflows/src/activities/typescript/algorithms/proposal-engagement/compute.ts
-
-export async function computeProposalEngagement(
-    snapshot: Snapshot,
-    storage: Storage,
-): Promise<AlgorithmResult> {
-    const { inputs } = snapshot.algorithmPresetFrozen
-
-    // 1. Get input data
-    const inputKey = getInputValue(inputs, 'proposals')
-    const buffer = await storage.getObject({ bucket, key: inputKey })
-    const rows = parse(buffer.toString('utf8'), { columns: true })
-
-    // 2. Implement your algorithm logic
-    const scores = computeEngagementScores(rows)
-
-    // 3. Serialize and upload output
-    const outputCsv = stringify(scores, { header: true })
-    const outputKey = generateKey('snapshot', snapshotId, `${algorithmKey}.csv`)
-    await storage.putObject({
-        bucket,
-        key: outputKey,
-        body: outputCsv,
-        contentType: 'text/csv',
-    })
-
-    // 4. Return output locations
-    return {
-        outputs: {
-            engagement_scores: outputKey,
-        },
-    }
-}
-```
-
-### Step 4: Validate Synchronization
-
-Ensure all algorithm definitions have corresponding activity implementations:
-
-```bash
-pnpm algorithm:validate
-```
-
-This checks:
-
-- Every definition has a matching algorithm directory with `compute.ts`
-- Every algorithm is registered in the dispatcher
-- Every algorithm is exported in the algorithms index
-
-### Step 5: Build and Test
-
-```bash
-# Validate and build the algorithms package
-pnpm --filter @reputo/reputation-algorithms build
-
-# Build the workflows package
-pnpm --filter @reputo/workflows build
-
-# Run tests
+pnpm build
+pnpm check
 pnpm test
 ```
 
-### Adding a New Version
+## Monorepo Overview
 
-To add a new version of an existing algorithm:
+### Apps
+
+| Workspace | Purpose | Docs |
+| --- | --- | --- |
+| `@reputo/api` | NestJS HTTP API for algorithm presets, snapshots, storage, and health/docs endpoints. | [README](apps/api/README.md) |
+| `@reputo/ui` | Next.js dashboard for browsing algorithms, creating presets, launching snapshots, and tracking execution. | [README](apps/ui/README.md) |
+| `@reputo/workflows` | Temporal workers for orchestration, TypeScript algorithm execution, and on-chain data tasks. | [README](apps/workflows/README.md) |
+
+### Packages
+
+| Workspace | Purpose | Docs |
+| --- | --- | --- |
+| `@reputo/reputation-algorithms` | Versioned algorithm registry and discovery library. | [README](packages/reputation-algorithms/README.md) |
+| `@reputo/algorithm-validator` | Shared Zod validation for algorithm payloads and CSV content. | [README](packages/algorithm-validator/README.md) |
+| `@reputo/database` | Shared Mongoose connection utilities, schemas, and model exports. | [README](packages/database/README.md) |
+| `@reputo/storage` | Shared S3 storage abstraction and presigned URL helpers. | [README](packages/storage/README.md) |
+| `@reputo/onchain-data` | Token transfer sync pipeline backed by PostgreSQL. | [README](packages/onchain-data/README.md) |
+| `@reputo/deepfunding-portal-api` | DeepFunding Portal API client and SQLite ingest utilities. | [README](packages/deepfunding-portal-api/README.md) |
+
+## Environments
+
+- Preview deployments are created for pull requests that carry the `pullpreview` label.
+- Staging is updated from `main`.
+- Production is promoted manually from a chosen commit.
+
+For operational details, image flow, and local infrastructure setup, see [docker/README.md](docker/README.md).
+
+## Algorithm Development
+
+Algorithms combine a versioned definition in `packages/reputation-algorithms` with execution logic in `apps/workflows`.
 
 ```bash
-pnpm algorithm:create voting_engagement 2.0.0
+pnpm algorithm:create <key> <version>
+pnpm algorithm:validate
 ```
 
-This creates a new version file. The activity implementation is shared across versions unless you need version-specific logic.
-
-### CLI Reference
-
-| Command                                                                        | Description                                     |
-| ------------------------------------------------------------------------------ | ----------------------------------------------- |
-| `pnpm algorithm:create <key> <version>`                                        | Create algorithm definition + activity scaffold |
-| `pnpm algorithm:validate`                                                      | Validate definitions and activities are in sync |
-| `pnpm --filter @reputo/reputation-algorithms algorithm:create <key> <version>` | Create definition only                          |
-
----
 
 ## Contributing
 
@@ -352,18 +101,7 @@ This creates a new version file. The activity implementation is shared across ve
     - Ensure CI passes
     - Request review from maintainers
 
-3. **Merge** after approval
-
----
 
 ## License
 
-Released under the **GPL-3.0** license. See [LICENSE](LICENSE) file for details.
-
----
-
-## Team
-
-| [![Cyrille Derche](https://github.com/cyri113.png?size=100)](https://github.com/cyri113) | [![Mohammad Khaki](https://github.com/arvandmoe.png?size=100)](https://github.com/arvandmoe) | [![Behzad Rabiei](https://github.com/Behzad-rabiei.png?size=100)](https://github.com/Behzad-rabiei) |
-| ---------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| [Cyrille Derche](https://github.com/cyri113)                                             | [Mohammad Khaki](https://github.com/arvandmoe)                                               | [Behzad Rabiei](https://github.com/Behzad-rabiei)                                                   |
+Released under the **GPL-3.0** license. See [LICENSE](LICENSE).

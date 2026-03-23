@@ -8,7 +8,7 @@
 
 > **SyncAssetTransfersResult** = `object`
 
-Defined in: [services/sync-asset-transfers-service.ts:14](https://github.com/reputo-org/reputo/blob/962d0d201e0df08eadcc1d7d37a05f21cfe65d22/packages/onchain-data/src/services/sync-asset-transfers-service.ts#L14)
+Defined in: [services/sync-asset-transfers-service.ts:32](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/onchain-data/src/services/sync-asset-transfers-service.ts#L32)
 
 ## Properties
 
@@ -16,7 +16,7 @@ Defined in: [services/sync-asset-transfers-service.ts:14](https://github.com/rep
 
 > **assetKey**: [`AssetKey`](AssetKey.md)
 
-Defined in: [services/sync-asset-transfers-service.ts:15](https://github.com/reputo-org/reputo/blob/962d0d201e0df08eadcc1d7d37a05f21cfe65d22/packages/onchain-data/src/services/sync-asset-transfers-service.ts#L15)
+Defined in: [services/sync-asset-transfers-service.ts:33](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/onchain-data/src/services/sync-asset-transfers-service.ts#L33)
 
 ***
 
@@ -24,7 +24,7 @@ Defined in: [services/sync-asset-transfers-service.ts:15](https://github.com/rep
 
 > **fromBlock**: `string`
 
-Defined in: [services/sync-asset-transfers-service.ts:16](https://github.com/reputo-org/reputo/blob/962d0d201e0df08eadcc1d7d37a05f21cfe65d22/packages/onchain-data/src/services/sync-asset-transfers-service.ts#L16)
+Defined in: [services/sync-asset-transfers-service.ts:34](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/onchain-data/src/services/sync-asset-transfers-service.ts#L34)
 
 ***
 
@@ -32,7 +32,7 @@ Defined in: [services/sync-asset-transfers-service.ts:16](https://github.com/rep
 
 > **toBlock**: `string`
 
-Defined in: [services/sync-asset-transfers-service.ts:17](https://github.com/reputo-org/reputo/blob/962d0d201e0df08eadcc1d7d37a05f21cfe65d22/packages/onchain-data/src/services/sync-asset-transfers-service.ts#L17)
+Defined in: [services/sync-asset-transfers-service.ts:35](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/onchain-data/src/services/sync-asset-transfers-service.ts#L35)
 
 ***
 
@@ -40,4 +40,4 @@ Defined in: [services/sync-asset-transfers-service.ts:17](https://github.com/rep
 
 > **insertedCount**: `number`
 
-Defined in: [services/sync-asset-transfers-service.ts:18](https://github.com/reputo-org/reputo/blob/962d0d201e0df08eadcc1d7d37a05f21cfe65d22/packages/onchain-data/src/services/sync-asset-transfers-service.ts#L18)
+Defined in: [services/sync-asset-transfers-service.ts:36](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/onchain-data/src/services/sync-asset-transfers-service.ts#L36)

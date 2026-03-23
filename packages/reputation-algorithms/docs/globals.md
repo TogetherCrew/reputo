@@ -10,6 +10,8 @@
 - [NumericIoItem](interfaces/NumericIoItem.md)
 - [BooleanIoItem](interfaces/BooleanIoItem.md)
 - [StringIoItem](interfaces/StringIoItem.md)
+- [ObjectPropertyParam](interfaces/ObjectPropertyParam.md)
+- [ArrayIoItem](interfaces/ArrayIoItem.md)
 - [AlgorithmDependency](interfaces/AlgorithmDependency.md)
 - [AlgorithmDefinition](interfaces/AlgorithmDefinition.md)
 - [SearchAlgorithmFilters](interfaces/SearchAlgorithmFilters.md)

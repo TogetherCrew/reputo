@@ -8,7 +8,7 @@
 
 > **createS3Client**(`config`, `nodeEnv`): `S3Client`
 
-Defined in: [s3-client.ts:68](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/storage/src/s3-client.ts#L68)
+Defined in: [s3-client.ts:68](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/storage/src/s3-client.ts#L68)
 
 Creates a configured S3 client instance.
 

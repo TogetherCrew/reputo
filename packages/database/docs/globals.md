@@ -32,6 +32,7 @@
 - [AlgorithmPresetSchema](variables/AlgorithmPresetSchema.md)
 - [SnapshotSchema](variables/SnapshotSchema.md)
 - [MODEL\_NAMES](variables/MODEL_NAMES.md)
+- [SnapshotStatus](variables/SnapshotStatus.md)
 - [SNAPSHOT\_STATUS](variables/SNAPSHOT_STATUS.md)
 
 ## Functions

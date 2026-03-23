@@ -4,6 +4,8 @@
   "description": "API for the Reputo ecosystem",
   "private": true,
   "scripts": {
+    "build:deps": "pnpm --filter @reputo/algorithm-validator --filter @reputo/database --filter @reputo/reputation-algorithms --filter @reputo/storage run build",
+    "dev:deps": "pnpm --filter @reputo/algorithm-validator --filter @reputo/database --filter @reputo/reputation-algorithms --filter @reputo/storage --parallel run dev",
     "build": "nest build",
     "start": "node dist/main",
     "start:dev": "nest start",
@@ -18,7 +20,8 @@
     "test:e2e": "vitest --config vitest.config.e2e.ts",
     "test:e2e:watch": "vitest --config vitest.config.e2e.ts --watch",
     "typecheck": "tsc --noEmit",
-    "dev": "pnpm run start:dev",
+    "dev:app": "pnpm run start:dev",
+    "dev": "pnpm run build:deps && concurrently --names deps,app --prefix name --kill-others-on-fail \"pnpm run dev:deps\" \"pnpm run dev:app\"",
     "clean": "rm -rf coverage dist docs node_modules tsconfig.tsbuildinfo"
   },
   "dependencies": {
@@ -59,6 +62,7 @@
     "@types/supertest": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "@vitest/spy": "catalog:",
+    "concurrently": "catalog:",
     "mongodb-memory-server": "^10.2.3",
     "supertest": "catalog:",
     "ts-node": "catalog:",

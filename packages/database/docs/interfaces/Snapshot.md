@@ -6,7 +6,7 @@
 
 # Interface: Snapshot
 
-Defined in: [packages/database/src/shared/types/Snapshot.interface.ts:34](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/database/src/shared/types/Snapshot.interface.ts#L34)
+Defined in: [packages/database/src/shared/types/Snapshot.interface.ts:34](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/database/src/shared/types/Snapshot.interface.ts#L34)
 
 Interface defining the structure of a Snapshot document.
 
@@ -17,9 +17,9 @@ of an algorithm execution with optional Temporal workflow integration.
 
 ### status
 
-> **status**: `"queued"` \| `"running"` \| `"completed"` \| `"failed"` \| `"cancelled"`
+> **status**: [`SnapshotStatus`](../type-aliases/SnapshotStatus.md)
 
-Defined in: [packages/database/src/shared/types/Snapshot.interface.ts:36](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/database/src/shared/types/Snapshot.interface.ts#L36)
+Defined in: [packages/database/src/shared/types/Snapshot.interface.ts:36](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/database/src/shared/types/Snapshot.interface.ts#L36)
 
 Current execution status
 
@@ -29,7 +29,7 @@ Current execution status
 
 > `optional` **temporal**: `object`
 
-Defined in: [packages/database/src/shared/types/Snapshot.interface.ts:38](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/database/src/shared/types/Snapshot.interface.ts#L38)
+Defined in: [packages/database/src/shared/types/Snapshot.interface.ts:38](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/database/src/shared/types/Snapshot.interface.ts#L38)
 
 Optional Temporal workflow information
 
@@ -65,7 +65,7 @@ Note: This is intentionally separate from `taskQueue`, which stores the orchestr
 
 > **algorithmPreset**: `string` \| `ObjectId`
 
-Defined in: [packages/database/src/shared/types/Snapshot.interface.ts:53](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/database/src/shared/types/Snapshot.interface.ts#L53)
+Defined in: [packages/database/src/shared/types/Snapshot.interface.ts:53](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/database/src/shared/types/Snapshot.interface.ts#L53)
 
 Reference to the associated AlgorithmPreset
 
@@ -75,7 +75,7 @@ Reference to the associated AlgorithmPreset
 
 > **algorithmPresetFrozen**: [`AlgorithmPresetFrozen`](AlgorithmPresetFrozen.md)
 
-Defined in: [packages/database/src/shared/types/Snapshot.interface.ts:55](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/database/src/shared/types/Snapshot.interface.ts#L55)
+Defined in: [packages/database/src/shared/types/Snapshot.interface.ts:55](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/database/src/shared/types/Snapshot.interface.ts#L55)
 
 Frozen copy of the associated AlgorithmPreset at snapshot creation time
 
@@ -85,7 +85,7 @@ Frozen copy of the associated AlgorithmPreset at snapshot creation time
 
 > `optional` **outputs**: [`SnapshotOutputs`](SnapshotOutputs.md)
 
-Defined in: [packages/database/src/shared/types/Snapshot.interface.ts:57](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/database/src/shared/types/Snapshot.interface.ts#L57)
+Defined in: [packages/database/src/shared/types/Snapshot.interface.ts:57](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/database/src/shared/types/Snapshot.interface.ts#L57)
 
 Algorithm execution outputs/results
 
@@ -95,7 +95,7 @@ Algorithm execution outputs/results
 
 > `optional` **error**: [`SnapshotError`](SnapshotError.md)
 
-Defined in: [packages/database/src/shared/types/Snapshot.interface.ts:59](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/database/src/shared/types/Snapshot.interface.ts#L59)
+Defined in: [packages/database/src/shared/types/Snapshot.interface.ts:59](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/database/src/shared/types/Snapshot.interface.ts#L59)
 
 Error information when execution fails
 
@@ -105,7 +105,7 @@ Error information when execution fails
 
 > `optional` **startedAt**: `Date`
 
-Defined in: [packages/database/src/shared/types/Snapshot.interface.ts:61](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/database/src/shared/types/Snapshot.interface.ts#L61)
+Defined in: [packages/database/src/shared/types/Snapshot.interface.ts:61](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/database/src/shared/types/Snapshot.interface.ts#L61)
 
 Timestamp when execution started (status changed to 'running')
 
@@ -115,7 +115,7 @@ Timestamp when execution started (status changed to 'running')
 
 > `optional` **completedAt**: `Date`
 
-Defined in: [packages/database/src/shared/types/Snapshot.interface.ts:63](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/database/src/shared/types/Snapshot.interface.ts#L63)
+Defined in: [packages/database/src/shared/types/Snapshot.interface.ts:63](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/database/src/shared/types/Snapshot.interface.ts#L63)
 
 Timestamp when execution completed (status changed to 'completed' or 'failed')
 
@@ -125,7 +125,7 @@ Timestamp when execution completed (status changed to 'completed' or 'failed')
 
 > `optional` **createdAt**: `Date`
 
-Defined in: [packages/database/src/shared/types/Snapshot.interface.ts:65](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/database/src/shared/types/Snapshot.interface.ts#L65)
+Defined in: [packages/database/src/shared/types/Snapshot.interface.ts:65](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/database/src/shared/types/Snapshot.interface.ts#L65)
 
 Document creation timestamp
 
@@ -135,6 +135,6 @@ Document creation timestamp
 
 > `optional` **updatedAt**: `Date`
 
-Defined in: [packages/database/src/shared/types/Snapshot.interface.ts:67](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/database/src/shared/types/Snapshot.interface.ts#L67)
+Defined in: [packages/database/src/shared/types/Snapshot.interface.ts:67](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/database/src/shared/types/Snapshot.interface.ts#L67)
 
 Document last update timestamp

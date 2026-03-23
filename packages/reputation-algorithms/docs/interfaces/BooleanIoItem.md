@@ -6,7 +6,7 @@
 
 # Interface: BooleanIoItem
 
-Defined in: [shared/types/algorithm.ts:103](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/reputation-algorithms/src/shared/types/algorithm.ts#L103)
+Defined in: [shared/types/algorithm.ts:103](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/reputation-algorithms/src/shared/types/algorithm.ts#L103)
 
 Boolean input item configuration for algorithm definitions.
 
@@ -20,7 +20,7 @@ Boolean input item configuration for algorithm definitions.
 
 > **key**: `string`
 
-Defined in: [shared/types/algorithm.ts:28](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/reputation-algorithms/src/shared/types/algorithm.ts#L28)
+Defined in: [shared/types/algorithm.ts:28](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/reputation-algorithms/src/shared/types/algorithm.ts#L28)
 
 Unique identifier for the I/O item
 
@@ -34,7 +34,7 @@ Unique identifier for the I/O item
 
 > `optional` **label**: `string`
 
-Defined in: [shared/types/algorithm.ts:30](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/reputation-algorithms/src/shared/types/algorithm.ts#L30)
+Defined in: [shared/types/algorithm.ts:30](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/reputation-algorithms/src/shared/types/algorithm.ts#L30)
 
 Human-readable label for display purposes
 
@@ -48,7 +48,7 @@ Human-readable label for display purposes
 
 > `optional` **description**: `string`
 
-Defined in: [shared/types/algorithm.ts:32](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/reputation-algorithms/src/shared/types/algorithm.ts#L32)
+Defined in: [shared/types/algorithm.ts:32](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/reputation-algorithms/src/shared/types/algorithm.ts#L32)
 
 Detailed description of the I/O item's purpose and usage
 
@@ -62,7 +62,7 @@ Detailed description of the I/O item's purpose and usage
 
 > **type**: `"boolean"`
 
-Defined in: [shared/types/algorithm.ts:105](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/reputation-algorithms/src/shared/types/algorithm.ts#L105)
+Defined in: [shared/types/algorithm.ts:105](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/reputation-algorithms/src/shared/types/algorithm.ts#L105)
 
 Type identifier for boolean data
 
@@ -72,7 +72,7 @@ Type identifier for boolean data
 
 > `optional` **default**: `boolean`
 
-Defined in: [shared/types/algorithm.ts:107](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/reputation-algorithms/src/shared/types/algorithm.ts#L107)
+Defined in: [shared/types/algorithm.ts:107](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/reputation-algorithms/src/shared/types/algorithm.ts#L107)
 
 Default value
 
@@ -82,6 +82,6 @@ Default value
 
 > `optional` **required**: `boolean`
 
-Defined in: [shared/types/algorithm.ts:109](https://github.com/reputo-org/reputo/blob/2457822a52892a2887a09cb66d095a9970ab48c9/packages/reputation-algorithms/src/shared/types/algorithm.ts#L109)
+Defined in: [shared/types/algorithm.ts:109](https://github.com/reputo-org/reputo/blob/9a4ebf229b761f91ab7737ab01f22c15054631c0/packages/reputation-algorithms/src/shared/types/algorithm.ts#L109)
 
 Whether this input is required
