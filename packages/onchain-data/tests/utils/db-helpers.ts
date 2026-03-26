@@ -2,13 +2,12 @@ import { randomUUID } from 'node:crypto';
 import { PostgreSqlContainer, type StartedPostgreSqlContainer } from '@testcontainers/postgresql';
 import { Client } from 'pg';
 import type { DataSource } from 'typeorm';
-import { createDataSource } from '../../src/db/postgres.js';
+
+import { createDb } from '../../src/index.js';
 
 let containerPromise: Promise<StartedPostgreSqlContainer> | null = null;
-const dataSourceCleanup = new WeakMap<DataSource, () => Promise<void>>();
-const dataSourceDatabaseUrl = new WeakMap<DataSource, string>();
+const dbCleanup = new WeakMap<DataSource, () => Promise<void>>();
 
-// PostgreSQL-backed tests are opt-in because they require a working container runtime.
 export const hasContainerRuntime = process.env.RUN_POSTGRES_TESTS === 'true';
 
 async function getTestContainer(): Promise<StartedPostgreSqlContainer> {
@@ -75,37 +74,27 @@ export async function createTestDatabase(): Promise<{
   };
 }
 
-export async function createTestDataSource(): Promise<DataSource> {
+export async function createTestDb(): Promise<DataSource> {
   const { databaseUrl, cleanup } = await createTestDatabase();
+  const db = await createDb({
+    databaseUrl,
+  });
 
-  const ds = await createDataSource(databaseUrl);
-  dataSourceCleanup.set(ds, cleanup);
-  dataSourceDatabaseUrl.set(ds, databaseUrl);
-  return ds;
+  dbCleanup.set(db, cleanup);
+  return db;
 }
 
-export function getTestDataSourceDatabaseUrl(ds: DataSource): string {
-  const databaseUrl = dataSourceDatabaseUrl.get(ds);
-
-  if (!databaseUrl) {
-    throw new Error('Test data source database URL is not registered');
-  }
-
-  return databaseUrl;
-}
-
-export async function closeTestDataSource(ds: DataSource | null | undefined): Promise<void> {
-  if (!ds) {
+export async function closeTestDb(db: DataSource | null | undefined): Promise<void> {
+  if (!db) {
     return;
   }
 
-  const cleanup = dataSourceCleanup.get(ds);
+  const cleanup = dbCleanup.get(db);
 
-  if (ds.isInitialized) {
-    await ds.destroy();
-  }
+  await db.destroy();
 
   if (cleanup) {
+    dbCleanup.delete(db);
     await cleanup();
   }
 }

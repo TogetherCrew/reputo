@@ -1,7 +1,7 @@
 {
     "name": "@reputo/onchain-data",
     "version": "0.0.0",
-    "description": "Sync token transfer data into PostgreSQL with provider abstraction.",
+    "description": "Raw EVM and Cardano asset transfer sync package backed by PostgreSQL.",
     "main": "./dist/index.js",
     "types": "./dist/index.d.ts",
     "private": true,
@@ -29,6 +29,8 @@
         "clean": "rm -rf coverage dist docs node_modules tsconfig.tsbuildinfo"
     },
     "dependencies": {
+        "@blockfrost/blockfrost-js": "catalog:",
+        "@blockfrost/openapi": "catalog:",
         "pg": "catalog:",
         "typeorm": "catalog:",
         "undici": "catalog:"

@@ -3,6 +3,8 @@ packages:
   - apps/*
 
 catalog:
+  '@blockfrost/blockfrost-js': ^6.1.1
+  '@blockfrost/openapi': ^0.1.86
   '@aws-sdk/client-s3': ^3.922.0
   '@aws-sdk/s3-request-presigner': ^3.922.0
   '@biomejs/biome': ^2.3.7
