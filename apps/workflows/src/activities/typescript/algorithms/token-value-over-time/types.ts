@@ -1,9 +1,21 @@
 import type { AssetKey, AssetTransferEntity } from '@reputo/onchain-data';
 import { normalizeHexBlock } from '@reputo/onchain-data';
 
+export type SupportedWalletChain = 'ethereum' | 'cardano';
+
 export interface SelectedAssetInput {
-  chain: string;
+  chain: SupportedWalletChain;
   assetIdentifier: string;
+}
+
+export interface WalletAddressMap {
+  wallets: Partial<Record<SupportedWalletChain, string[]>>;
+}
+
+export interface ResolvedSelectedAsset {
+  chain: SupportedWalletChain;
+  assetIdentifier: string;
+  assetKey: AssetKey;
 }
 
 /** Effective transfer window: token genesis (no lower bound) through snapshot run time. */
@@ -17,6 +29,7 @@ export interface EffectiveDateRange {
 export interface TokenValueOverTimeParams {
   maturationThresholdDays: number;
   selectedAssets: SelectedAssetInput[];
+  walletsKey: string;
   /** Always full history: genesis through snapshot run time. */
   effectiveDateRange: EffectiveDateRange;
 }

@@ -8,8 +8,10 @@ const {
   mockStringifyCsvAsync,
   mockLoadTransferPageForWallets,
   mockExtractInputs,
-  mockResolveSelectedAssetKeys,
-  mockLoadTargetWallets,
+  mockResolveSelectedAssets,
+  mockLoadWalletAddressMap,
+  mockGetWalletsForSelectedAssets,
+  mockGetWalletsForChain,
   mockInitializeWalletLots,
   mockCreateOnchainTransferRepo,
   mockReplayTransfers,
@@ -22,8 +24,10 @@ const {
   mockStringifyCsvAsync: vi.fn(),
   mockLoadTransferPageForWallets: vi.fn(),
   mockExtractInputs: vi.fn(),
-  mockResolveSelectedAssetKeys: vi.fn(),
-  mockLoadTargetWallets: vi.fn(),
+  mockResolveSelectedAssets: vi.fn(),
+  mockLoadWalletAddressMap: vi.fn(),
+  mockGetWalletsForSelectedAssets: vi.fn(),
+  mockGetWalletsForChain: vi.fn(),
   mockInitializeWalletLots: vi.fn(),
   mockCreateOnchainTransferRepo: vi.fn(),
   mockReplayTransfers: vi.fn(),
@@ -64,8 +68,10 @@ vi.mock('../../../src/shared/utils/index.js', () => ({
 vi.mock('../../../src/activities/typescript/algorithms/token-value-over-time/utils/index.js', () => ({
   createOnchainTransferRepo: mockCreateOnchainTransferRepo,
   extractInputs: mockExtractInputs,
-  resolveSelectedAssetKeys: mockResolveSelectedAssetKeys,
-  loadTargetWallets: mockLoadTargetWallets,
+  resolveSelectedAssets: mockResolveSelectedAssets,
+  loadWalletAddressMap: mockLoadWalletAddressMap,
+  getWalletsForSelectedAssets: mockGetWalletsForSelectedAssets,
+  getWalletsForChain: mockGetWalletsForChain,
   initializeWalletLots: mockInitializeWalletLots,
   loadTransferPageForWallets: mockLoadTransferPageForWallets,
 }));
@@ -89,13 +95,22 @@ describe('computeTokenValueOverTime pagination', () => {
     mockExtractInputs.mockReturnValue({
       maturationThresholdDays: 90,
       selectedAssets: [{ chain: 'ethereum', assetIdentifier: '0xtoken' }],
+      walletsKey: 'uploads/wallets.json',
       effectiveDateRange: {
         fromTimestampUnix: undefined,
         toTimestampUnix: Math.floor(new Date('2026-04-01T00:00:00.000Z').getTime() / 1000),
       },
     });
-    mockResolveSelectedAssetKeys.mockReturnValue([FET_ETHEREUM]);
-    mockLoadTargetWallets.mockReturnValue(['0xwallet1']);
+    mockResolveSelectedAssets.mockReturnValue([
+      { chain: 'ethereum', assetIdentifier: '0xtoken', assetKey: FET_ETHEREUM },
+    ]);
+    mockLoadWalletAddressMap.mockResolvedValue({
+      wallets: {
+        ethereum: ['0xwallet1'],
+      },
+    });
+    mockGetWalletsForSelectedAssets.mockReturnValue(['0xwallet1']);
+    mockGetWalletsForChain.mockReturnValue(['0xwallet1']);
     mockInitializeWalletLots.mockReturnValue(walletLots);
     mockCreateOnchainTransferRepo.mockResolvedValue({
       close: mockRepoClose,
@@ -167,6 +182,19 @@ describe('computeTokenValueOverTime pagination', () => {
     );
 
     const snapshotUnix = Math.floor(new Date('2026-04-01T00:00:00.000Z').getTime() / 1000);
+    expect(mockLoadWalletAddressMap).toHaveBeenCalledWith({
+      storage,
+      bucket: 'test-bucket',
+      key: 'uploads/wallets.json',
+    });
+    expect(mockGetWalletsForChain).toHaveBeenCalledWith(
+      {
+        wallets: {
+          ethereum: ['0xwallet1'],
+        },
+      },
+      'ethereum',
+    );
     expect(mockLoadTransferPageForWallets).toHaveBeenNthCalledWith(1, {
       repo: { close: mockRepoClose },
       assetKey: FET_ETHEREUM,

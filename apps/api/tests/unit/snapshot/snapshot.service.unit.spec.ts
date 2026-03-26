@@ -1,11 +1,30 @@
 import { NotFoundException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { validatePayload } from '@reputo/algorithm-validator';
 import { MODEL_NAMES } from '@reputo/database';
+import { getAlgorithmDefinition } from '@reputo/reputation-algorithms';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AlgorithmPresetRepository } from '../../../src/algorithm-preset/algorithm-preset.repository';
 import type { CreateSnapshotDto, ListSnapshotsQueryDto } from '../../../src/snapshot/dto';
 import { SnapshotRepository } from '../../../src/snapshot/snapshot.repository';
 import { SnapshotService } from '../../../src/snapshot/snapshot.service';
 import { StorageService } from '../../../src/storage/storage.service';
+
+vi.mock('@reputo/reputation-algorithms', async () => {
+  const actual = await vi.importActual('@reputo/reputation-algorithms');
+  return {
+    ...actual,
+    getAlgorithmDefinition: vi.fn(),
+  };
+});
+
+vi.mock('@reputo/algorithm-validator', async () => {
+  const actual = await vi.importActual('@reputo/algorithm-validator');
+  return {
+    ...actual,
+    validatePayload: vi.fn(),
+  };
+});
 
 describe('SnapshotService', () => {
   let service: SnapshotService;
@@ -17,6 +36,7 @@ describe('SnapshotService', () => {
     terminateSnapshotWorkflow: ReturnType<typeof vi.fn>;
   };
   let mockStorageService: StorageService;
+  let mockConfigService: ConfigService;
   const mockLogger = {
     info: vi.fn(),
     error: vi.fn(),
@@ -48,9 +68,37 @@ describe('SnapshotService', () => {
     };
 
     mockStorageService = {
+      getObjectMetadata: vi.fn(),
+      getObject: vi.fn(),
       listObjectsByPrefix: vi.fn().mockResolvedValue([]),
       deleteObjects: vi.fn().mockResolvedValue({ deleted: [], errors: [] }),
     } as unknown as StorageService;
+
+    mockConfigService = {
+      get: vi.fn((key: string) => {
+        if (key === 'storage.maxSizeBytes') return 52428800;
+        if (key === 'storage.contentTypeAllowlist') return 'text/csv,text/plain,application/json';
+        return undefined;
+      }),
+    } as unknown as ConfigService;
+
+    vi.mocked(getAlgorithmDefinition).mockReturnValue(
+      JSON.stringify({
+        key: 'test_key',
+        name: 'Test Algorithm',
+        category: 'Activity',
+        summary: 'Test',
+        description: 'Test algorithm',
+        version: '1.0.0',
+        inputs: [],
+        outputs: [],
+        runtime: 'typescript',
+      }),
+    );
+    vi.mocked(validatePayload).mockReturnValue({
+      success: true,
+      data: {},
+    });
 
     service = new SnapshotService(
       mockLogger,
@@ -58,6 +106,7 @@ describe('SnapshotService', () => {
       mockAlgorithmPresetRepository,
       mockTemporalService as any,
       mockStorageService,
+      mockConfigService,
     );
   });
 
@@ -160,6 +209,58 @@ describe('SnapshotService', () => {
       });
       expect(createCall.outputs).toEqual({ csv: 'key' });
       expect(result).toBe(mockSnapshot);
+    });
+
+    it('should fail fast when a stored preset is stale against the current algorithm definition', async () => {
+      const createDto: CreateSnapshotDto = {
+        algorithmPresetId: '507f1f77bcf86cd799439011',
+      };
+
+      const stalePreset = {
+        _id: '507f1f77bcf86cd799439011',
+        key: 'token_value_over_time',
+        version: '1.0.0',
+        inputs: [{ key: 'selected_assets', value: [{ chain: 'ethereum', asset_identifier: 'asset1' }] }],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      vi.mocked(getAlgorithmDefinition).mockReturnValue(
+        JSON.stringify({
+          key: 'token_value_over_time',
+          name: 'Token Value Over Time',
+          category: 'Activity',
+          summary: 'Test',
+          description: 'Test algorithm',
+          version: '1.0.0',
+          inputs: [
+            {
+              key: 'wallets',
+              label: 'Wallet Addresses JSON',
+              description: 'Wallet input',
+              type: 'json',
+              required: true,
+              json: {
+                maxBytes: 5242880,
+                schema: 'wallet_address_map',
+                rootKey: 'wallets',
+                allowedChains: ['ethereum', 'cardano'],
+              },
+            },
+          ],
+          outputs: [],
+          runtime: 'typescript',
+        }),
+      );
+      vi.mocked(validatePayload).mockReturnValue({
+        success: false,
+        errors: [{ field: 'wallets', message: 'Wallet Addresses JSON is required' }],
+      });
+      mockAlgorithmPresetRepository.findById = vi.fn().mockResolvedValue(stalePreset);
+
+      await expect(service.create(createDto)).rejects.toThrow('Invalid algorithm inputs');
+      expect(mockSnapshotRepository.create).not.toHaveBeenCalled();
+      expect(mockTemporalService.startSnapshotWorkflow).not.toHaveBeenCalled();
     });
   });
 

@@ -16,57 +16,13 @@ import type { Algorithm } from "@/core/algorithms"
 import { ReputoForm } from "@/core/reputo-form"
 import { buildSchemaFromAlgorithm } from "@/core/schema-builder"
 import type { CreateAlgorithmPresetDto } from "@/lib/api/types"
+import { validateAlgorithmPresetClient } from "./algorithm-client-validation"
+import { extractApiErrorMessages } from "./error-utils"
 
 interface CreatePresetDialogProps {
   algo?: Algorithm
   onCreatePreset: (data: CreateAlgorithmPresetDto) => Promise<void>
   isLoading: boolean
-}
-
-interface BackendError {
-  statusCode?: number
-  message?:
-    | {
-        message?: string[]
-        error?: string
-        statusCode?: number
-      }
-    | string
-}
-
-/**
- * Parse backend error response to extract error messages
- */
-function parseBackendErrorMessages(error: unknown): string[] {
-  const messages: string[] = []
-
-  if (!error || typeof error !== "object") {
-    return messages
-  }
-
-  const backendError = error as BackendError
-
-  // Handle nested message structure
-  if (backendError.message) {
-    if (typeof backendError.message === "string") {
-      messages.push(backendError.message)
-    } else if (
-      typeof backendError.message === "object" &&
-      backendError.message.message
-    ) {
-      const messageArray = Array.isArray(backendError.message.message)
-        ? backendError.message.message
-        : [backendError.message.message]
-
-      messageArray.forEach((msg) => {
-        if (typeof msg === "string") {
-          messages.push(msg)
-        }
-      })
-    }
-  }
-
-  return messages
 }
 
 /** Normalize numeric value: "1,2" (locale) → number 1.2 for API validity. */
@@ -125,6 +81,18 @@ export function CreatePresetDialog({
         }),
       }
 
+      const clientErrors = await validateAlgorithmPresetClient({
+        key: createData.key,
+        inputs: createData.inputs,
+      })
+
+      if (clientErrors.length > 0) {
+        clientErrors.forEach((error) => {
+          toast.error(error.message)
+        })
+        return
+      }
+
       await onCreatePreset(createData)
 
       // Close dialog on success
@@ -132,7 +100,7 @@ export function CreatePresetDialog({
       toast.success("Preset created successfully")
     } catch (err) {
       // Show errors as toasts instead of in-modal alerts
-      const errorMessages = parseBackendErrorMessages(err)
+      const errorMessages = extractApiErrorMessages(err)
       if (errorMessages.length > 0) {
         errorMessages.forEach((msg) => {
           toast.error(msg)

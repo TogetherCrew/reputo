@@ -37,14 +37,17 @@ export interface StorageInputValidationError {
 }
 
 /**
- * Exception thrown when CSV file validation fails.
+ * Exception thrown when storage-backed algorithm input validation fails.
  * Collects all validation errors across metadata and content validation.
  */
-export class CSVValidationException extends BadRequestException {
+export class StorageInputValidationException extends BadRequestException {
   constructor(errors: StorageInputValidationError[]) {
     super({
-      message: 'CSV validation failed',
+      message: 'Storage input validation failed',
       errors,
     });
   }
 }
+
+/** @deprecated Use StorageInputValidationException instead. */
+export class CSVValidationException extends StorageInputValidationException {}

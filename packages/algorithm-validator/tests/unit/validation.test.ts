@@ -10,6 +10,17 @@ const definition: AlgorithmDefinition = {
   version: '1.0.0',
   inputs: [
     {
+      key: 'wallets',
+      label: 'Wallet Addresses JSON',
+      type: 'json',
+      json: {
+        maxBytes: 5242880,
+        schema: 'wallet_address_map',
+        rootKey: 'wallets',
+        allowedChains: ['ethereum', 'cardano'],
+      },
+    },
+    {
       key: 'votes_csv',
       label: 'Votes CSV',
       type: 'csv',
@@ -54,6 +65,7 @@ describe('validation', () => {
 
   it('coerces numeric strings, trims text, and accepts storage keys on the server', () => {
     const result = validatePayload(definition, {
+      wallets: 'uploads/wallets.json',
       votes_csv: 'uploads/votes.csv',
       threshold: '2.5',
       min_votes: '3',
@@ -63,6 +75,7 @@ describe('validation', () => {
     expect(result).toEqual({
       success: true,
       data: {
+        wallets: 'uploads/wallets.json',
         votes_csv: 'uploads/votes.csv',
         threshold: 2.5,
         min_votes: 3,
@@ -73,6 +86,7 @@ describe('validation', () => {
 
   it('returns field-level validation errors for missing and invalid values', () => {
     const result = validatePayload(definition, {
+      wallets: '',
       votes_csv: '',
       threshold: '11',
       min_votes: '2.5',
@@ -82,6 +96,7 @@ describe('validation', () => {
     expect(result.success).toBe(false);
     expect(result.errors).toEqual(
       expect.arrayContaining([
+        expect.objectContaining({ field: 'wallets', message: 'Wallet Addresses JSON is required' }),
         expect.objectContaining({ field: 'votes_csv', message: 'Votes CSV is required' }),
         expect.objectContaining({ field: 'threshold', message: 'Threshold must be at most 10' }),
         expect.objectContaining({ field: 'min_votes', message: 'Minimum Votes must be a whole number' }),
@@ -90,18 +105,31 @@ describe('validation', () => {
     );
   });
 
-  it('accepts either a File or a storage key for csv inputs in the browser', () => {
+  it('accepts either a File or a storage key for csv and json inputs in the browser', () => {
     (globalThis as { window?: unknown }).window = {};
     const schema = buildZodSchema(definition);
+    const jsonFile = new File(
+      [
+        JSON.stringify({
+          wallets: {
+            ethereum: ['0x1234567890abcdef1234567890abcdef12345678'],
+          },
+        }),
+      ],
+      'wallets.json',
+      { type: 'application/json' },
+    );
     const file = new File(['user_id\n1'], 'votes.csv', { type: 'text/csv' });
 
     const fileResult = schema.safeParse({
+      wallets: jsonFile,
       votes_csv: file,
       threshold: 1,
       min_votes: 1,
       name: 'Alice',
     });
     const keyResult = schema.safeParse({
+      wallets: 'uploads/wallets.json',
       votes_csv: 'uploads/votes.csv',
       threshold: 1,
       min_votes: 1,

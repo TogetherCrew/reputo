@@ -32,6 +32,15 @@ describe('Build: Schema Validation', () => {
       expect(result.isValid).toBe(true);
       expect(result.errors).toEqual([]);
     });
+
+    it('should validate token_value_over_time from registry', () => {
+      const algorithmPath = join(__dirname, '../../../../src/registry/token_value_over_time/1.0.0.json');
+      const algorithm = JSON.parse(readFileSync(algorithmPath, 'utf-8'));
+
+      const result = validator.validate(algorithm);
+      expect(result.isValid).toBe(true);
+      expect(result.errors).toEqual([]);
+    });
   });
 
   describe('Invalid Fixtures', () => {

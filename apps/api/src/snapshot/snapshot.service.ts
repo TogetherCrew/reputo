@@ -1,17 +1,21 @@
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import type { AlgorithmPresetFrozen, Snapshot, SnapshotWithId } from '@reputo/database';
 import { MODEL_NAMES } from '@reputo/database';
 import type { FilterQuery } from 'mongoose';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { AlgorithmPresetRepository } from '../algorithm-preset/algorithm-preset.repository';
 import { throwNotFoundError } from '../shared/exceptions';
-import { pick } from '../shared/utils';
+import { getAlgorithmDefinitionOrThrow, pick, validateAlgorithmInputs } from '../shared/utils';
 import { StorageService } from '../storage/storage.service';
 import { TemporalService } from '../temporal';
 import type { CreateSnapshotDto, ListSnapshotsQueryDto } from './dto';
 import { SnapshotRepository } from './snapshot.repository';
 @Injectable()
 export class SnapshotService {
+  private readonly storageMaxSizeBytes: number;
+  private readonly storageContentTypeAllowlist: string;
+
   constructor(
     @InjectPinoLogger(SnapshotService.name)
     private readonly logger: PinoLogger,
@@ -19,13 +23,27 @@ export class SnapshotService {
     private readonly algorithmPresetRepository: AlgorithmPresetRepository,
     private readonly temporalService: TemporalService,
     private readonly storageService: StorageService,
-  ) {}
+    configService: ConfigService,
+  ) {
+    this.storageMaxSizeBytes = configService.get<number>('storage.maxSizeBytes') as number;
+    this.storageContentTypeAllowlist = configService.get<string>('storage.contentTypeAllowlist') as string;
+  }
 
   async create(createDto: CreateSnapshotDto) {
     const algorithmPreset = await this.algorithmPresetRepository.findById(createDto.algorithmPresetId);
     if (!algorithmPreset) {
       throwNotFoundError(createDto.algorithmPresetId, MODEL_NAMES.ALGORITHM_PRESET);
     }
+
+    const algorithmDefinition = getAlgorithmDefinitionOrThrow(algorithmPreset.key, algorithmPreset.version);
+    await validateAlgorithmInputs({
+      definition: algorithmDefinition,
+      inputs: algorithmPreset.inputs,
+      storageService: this.storageService,
+      storageMaxSizeBytes: this.storageMaxSizeBytes,
+      storageContentTypeAllowlist: this.storageContentTypeAllowlist,
+    });
+
     const { algorithmPresetId: _, outputs, ...snapshotData } = createDto;
 
     const snapshot: Omit<Snapshot, 'createdAt' | 'updatedAt'> = {

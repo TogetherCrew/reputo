@@ -15,6 +15,7 @@
 
 // CSV validation exports
 export { validateCSVContent } from './csv-validation.js';
+export { validateJSONContent } from './json-validation.js';
 // Schema exports (for algorithm presets, etc.)
 export {
   type AlgorithmPresetInputType,
@@ -33,6 +34,8 @@ export type {
   CsvIoItem,
   IoItem,
   IoType,
+  JSONValidationResult,
+  JsonIoItem,
   ValidationResult,
 } from './types/index.js';
 

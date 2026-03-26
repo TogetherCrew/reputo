@@ -4,7 +4,7 @@
  */
 
 import { z } from 'zod/v4';
-import type { AlgorithmDefinition, ArrayIoItem, CsvIoItem, ValidationResult } from './types/index.js';
+import type { AlgorithmDefinition, ArrayIoItem, CsvIoItem, JsonIoItem, ValidationResult } from './types/index.js';
 
 /**
  * Validates data against an AlgorithmDefinition.
@@ -142,6 +142,19 @@ function buildFieldSchema(input: any): z.ZodType {
       } else {
         // Client-side: accept either a File (for local validation) OR a string storage key (after upload)
         schema = z.union([buildCSVSchema(input.csv, label), z.string().min(1, `${label} is required`)]);
+      }
+      break;
+    }
+
+    case 'json': {
+      const jsonInput = input as JsonIoItem;
+      const isBrowser =
+        typeof globalThis !== 'undefined' && typeof (globalThis as { window?: unknown }).window !== 'undefined';
+
+      if (!isBrowser) {
+        schema = z.string().min(1, `${label} is required`);
+      } else {
+        schema = z.union([buildJSONSchema(jsonInput.json, label), z.string().min(1, `${label} is required`)]);
       }
       break;
     }
@@ -329,15 +342,36 @@ function buildObjectPropertySchema(
  * @internal
  */
 function buildCSVSchema(csvConfig: CsvIoItem['csv'], label: string): z.ZodType {
+  return buildUploadedFileSchema({
+    label,
+    maxBytes: csvConfig.maxBytes,
+    isValidFileType: (file) => file.type === 'text/csv' || file.type === 'text/plain' || file.name.endsWith('.csv'),
+    invalidTypeMessage: `${label} must be a CSV file`,
+  });
+}
+
+function buildJSONSchema(jsonConfig: JsonIoItem['json'], label: string): z.ZodType {
+  return buildUploadedFileSchema({
+    label,
+    maxBytes: jsonConfig?.maxBytes,
+    isValidFileType: (file) => file.type === 'application/json' || file.name.endsWith('.json'),
+    invalidTypeMessage: `${label} must be a JSON file`,
+  });
+}
+
+function buildUploadedFileSchema(input: {
+  label: string;
+  maxBytes?: number;
+  isValidFileType: (file: File) => boolean;
+  invalidTypeMessage: string;
+}): z.ZodType {
   return z
-    .instanceof(File, { message: `${label} must be a file` })
-    .refine((file) => file.type === 'text/csv' || file.name.endsWith('.csv'), {
-      message: `${label} must be a CSV file`,
+    .instanceof(File, { message: `${input.label} must be a file` })
+    .refine((file) => input.isValidFileType(file), {
+      message: input.invalidTypeMessage,
     })
-    .refine((file) => csvConfig.maxBytes === undefined || file.size <= csvConfig.maxBytes, {
-      message: `${label} must be smaller than ${
-        csvConfig.maxBytes !== undefined ? csvConfig.maxBytes / 1024 / 1024 : 0
-      }MB`,
+    .refine((file) => input.maxBytes === undefined || file.size <= input.maxBytes, {
+      message: `${input.label} must be smaller than ${input.maxBytes !== undefined ? input.maxBytes / 1024 / 1024 : 0}MB`,
     });
 }
 

@@ -10,10 +10,12 @@ import { replayTransfers, scoreWalletLots } from './pipeline/index.js';
 import {
   createOnchainTransferRepo,
   extractInputs,
+  getWalletsForChain,
+  getWalletsForSelectedAssets,
   initializeWalletLots,
-  loadTargetWallets,
   loadTransferPageForWallets,
-  resolveSelectedAssetKeys,
+  loadWalletAddressMap,
+  resolveSelectedAssets,
 } from './utils/index.js';
 
 const TRANSFERS_PAGE_LIMIT = 500;
@@ -37,14 +39,20 @@ export async function computeTokenValueOverTime(snapshot: Snapshot, storage: Sto
     createdAt instanceof Date ? createdAt : createdAt != null ? new Date(createdAt) : new Date();
 
   const params = extractInputs(snapshot.algorithmPresetFrozen.inputs, snapshotCreatedAt);
-  const selectedAssetKeys = resolveSelectedAssetKeys(params.selectedAssets);
-  const targetWallets = loadTargetWallets();
-  const walletChunks = chunkArray(targetWallets, WALLET_CHUNK_SIZE);
+  const resolvedSelectedAssets = resolveSelectedAssets(params.selectedAssets);
+  const selectedAssetKeys = resolvedSelectedAssets.map((asset) => asset.assetKey);
+  const walletAddressMap = await loadWalletAddressMap({
+    storage,
+    bucket: config.storage.bucket,
+    key: params.walletsKey,
+  });
+  const targetWallets = getWalletsForSelectedAssets(walletAddressMap, params.selectedAssets);
 
   logger.info('Starting token_value_over_time algorithm', { snapshotId });
   logger.info('Algorithm parameters', {
     maturationThresholdDays: params.maturationThresholdDays,
     selectedAssets: params.selectedAssets,
+    walletsKey: params.walletsKey,
     effectiveDateRange: params.effectiveDateRange,
   });
   logger.info('Target wallets loaded', {
@@ -64,14 +72,18 @@ export async function computeTokenValueOverTime(snapshot: Snapshot, storage: Sto
     };
     let transferCount = 0;
 
-    for (let i = 0; i < selectedAssetKeys.length; i++) {
-      const assetKey = selectedAssetKeys[i];
+    for (let i = 0; i < resolvedSelectedAssets.length; i++) {
+      const asset = resolvedSelectedAssets[i];
+      const assetWallets = getWalletsForChain(walletAddressMap, asset.chain);
+      const walletChunks = chunkArray(assetWallets, WALLET_CHUNK_SIZE);
       let pagesProcessed = 0;
       let chainTransferCount = 0;
       logger.info('Processing asset', {
-        assetKey,
+        assetKey: asset.assetKey,
+        chain: asset.chain,
         assetIndex: i + 1,
-        totalAssets: selectedAssetKeys.length,
+        totalAssets: resolvedSelectedAssets.length,
+        walletCount: assetWallets.length,
         walletChunkCount: walletChunks.length,
       });
 
@@ -82,16 +94,16 @@ export async function computeTokenValueOverTime(snapshot: Snapshot, storage: Sto
         while (true) {
           ctx.heartbeat({
             phase: 'load-transfers',
-            assetKey,
+            assetKey: asset.assetKey,
             processedAssets: i + 1,
-            totalAssets: selectedAssetKeys.length,
+            totalAssets: resolvedSelectedAssets.length,
             pageNumber,
             chunkIndex: chunkIndex + 1,
             totalChunks: walletChunks.length,
             transferCount,
           });
           logger.info('Fetching transfer page', {
-            assetKey,
+            assetKey: asset.assetKey,
             pageNumber,
             chunkIndex: chunkIndex + 1,
             totalChunks: walletChunks.length,
@@ -100,7 +112,7 @@ export async function computeTokenValueOverTime(snapshot: Snapshot, storage: Sto
           const fetchStartedAt = Date.now();
           const transferPage = await loadTransferPageForWallets({
             repo,
-            assetKey,
+            assetKey: asset.assetKey,
             walletAddresses: walletChunk,
             page: pageNumber,
             limit: TRANSFERS_PAGE_LIMIT,
@@ -111,7 +123,7 @@ export async function computeTokenValueOverTime(snapshot: Snapshot, storage: Sto
 
           pagesProcessed += 1;
           logger.info('Transfer page received', {
-            assetKey,
+            assetKey: asset.assetKey,
             pageNumber,
             chunkIndex: chunkIndex + 1,
             totalChunks: walletChunks.length,
@@ -130,9 +142,9 @@ export async function computeTokenValueOverTime(snapshot: Snapshot, storage: Sto
           if (pagesProcessed % HEARTBEAT_INTERVAL === 0 || !transferPage.hasMore) {
             ctx.heartbeat({
               phase: 'load-transfers',
-              assetKey,
+              assetKey: asset.assetKey,
               processedAssets: i + 1,
-              totalAssets: selectedAssetKeys.length,
+              totalAssets: resolvedSelectedAssets.length,
               pageNumber,
               chunkIndex: chunkIndex + 1,
               totalChunks: walletChunks.length,
@@ -142,7 +154,7 @@ export async function computeTokenValueOverTime(snapshot: Snapshot, storage: Sto
 
           if (transferPage.items.length === 0 && transferPage.hasMore) {
             logger.warn('Stopping pagination due to empty transfer page with hasMore=true', {
-              assetKey,
+              assetKey: asset.assetKey,
               chunkIndex: chunkIndex + 1,
               pageNumber,
             });
@@ -157,7 +169,7 @@ export async function computeTokenValueOverTime(snapshot: Snapshot, storage: Sto
       }
 
       logger.info('Asset completed', {
-        assetKey,
+        assetKey: asset.assetKey,
         pagesProcessed,
         transfersInAsset: chainTransferCount,
       });

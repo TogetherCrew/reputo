@@ -3,9 +3,22 @@
     "name": "Token Value Over Time",
     "category": "Activity",
     "summary": "Measures wallet holdings of selected tokens, with more weight for longer-held amounts. Each lot gains value over time until it reaches full value after the configured holding period.",
-    "description": "### What this algorithm is\nThis algorithm measures a wallet's token holdings for selected chain/token pairs, giving more credit to tokens held longer.\n\nEach incoming transfer creates a separate lot. A new lot starts at zero value and gains value over time until it reaches full value after the maturation threshold.\n\n### How value is calculated\n- Each lot's age is measured in days.\n- Lot value grows linearly from 0 to 100% over the maturation threshold.\n- Once a lot reaches the threshold, it counts at full value.\n\nThe final wallet score is the sum of all remaining lot values across all selected tokens.\n\n### Multiple transfers\n- Every incoming transfer is a separate lot.\n- Outgoing transfers consume the oldest lots first (FIFO).\n- The algorithm evaluates remaining lots at the snapshot run time.\n\n### What data is used\nNo file upload is needed. The algorithm reads indexed token transfer history from the database.\n\n### Outputs\n- A per-wallet CSV with wallet_address and token_value.\n- A JSON details file with per-token and per-lot calculations.",
+    "description": "### What this algorithm is\nThis algorithm measures a wallet's token holdings for selected chain/token pairs, giving more credit to tokens held longer.\n\nEach incoming transfer creates a separate lot. A new lot starts at zero value and gains value over time until it reaches full value after the maturation threshold.\n\n### How value is calculated\n- Each lot's age is measured in days.\n- Lot value grows linearly from 0 to 100% over the maturation threshold.\n- Once a lot reaches the threshold, it counts at full value.\n\nThe final wallet score is the sum of all remaining lot values across all selected tokens.\n\n### Multiple transfers\n- Every incoming transfer is a separate lot.\n- Outgoing transfers consume the oldest lots first (FIFO).\n- The algorithm evaluates remaining lots at the snapshot run time.\n\n### What data is used\nUpload one JSON file that provides the wallet addresses to score.\n\nExample:\n```json\n{\n  \"wallets\": {\n    \"ethereum\": [\"0x1234567890abcdef1234567890abcdef12345678\"],\n    \"cardano\": [\"addr1q9exampleexampleexampleexampleexampleexample\"]\n  }\n}\n```\n\nThe algorithm reads indexed token transfer history from the database for the uploaded wallets only.\n\n### Outputs\n- A per-wallet CSV with wallet_address and token_value.\n- A JSON details file with per-token and per-lot calculations.",
     "version": "1.0.0",
     "inputs": [
+        {
+            "key": "wallets",
+            "label": "Wallet Addresses JSON",
+            "description": "Upload one JSON file with a wallets object containing ethereum and/or cardano wallet address arrays.",
+            "type": "json",
+            "required": true,
+            "json": {
+                "maxBytes": 5242880,
+                "schema": "wallet_address_map",
+                "rootKey": "wallets",
+                "allowedChains": ["ethereum", "cardano"]
+            }
+        },
         {
             "key": "maturation_threshold_days",
             "label": "Maturation Threshold (Days)",
@@ -43,8 +56,7 @@
                             {
                                 "chain": "cardano",
                                 "asset_identifier": "e824c0011176f0926ad51f492bcc63ac6a03a589653520839dc7e3d9"
-                            },
-                            { "chain": "cosmos", "asset_identifier": "afet" }
+                            }
                         ]
                     }
                 ]
@@ -57,15 +69,14 @@
                         "label": "Chain",
                         "description": "Blockchain network for the token.",
                         "type": "string",
-                        "enum": ["ethereum", "cardano", "cosmos"],
+                        "enum": ["ethereum", "cardano"],
                         "default": "ethereum",
                         "required": true,
                         "uiHint": {
                             "widget": "select",
                             "options": [
                                 { "value": "ethereum", "label": "Ethereum" },
-                                { "value": "cardano", "label": "Cardano" },
-                                { "value": "cosmos", "label": "Cosmos" }
+                                { "value": "cardano", "label": "Cardano" }
                             ]
                         }
                     },
@@ -76,8 +87,7 @@
                         "type": "string",
                         "enum": [
                             "0xaea46A60368A7bD060eec7DF8CBa43b7EF41Ad85",
-                            "e824c0011176f0926ad51f492bcc63ac6a03a589653520839dc7e3d9",
-                            "afet"
+                            "e824c0011176f0926ad51f492bcc63ac6a03a589653520839dc7e3d9"
                         ],
                         "required": true,
                         "uiHint": {
@@ -93,11 +103,6 @@
                                     "value": "e824c0011176f0926ad51f492bcc63ac6a03a589653520839dc7e3d9",
                                     "label": "FET",
                                     "filterBy": "cardano"
-                                },
-                                {
-                                    "value": "afet",
-                                    "label": "FET",
-                                    "filterBy": "cosmos"
                                 }
                             ]
                         }

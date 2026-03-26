@@ -12,6 +12,7 @@ export type AlgorithmCategory =
  */
 export type IoType =
   | 'csv' // Comma-separated values data
+  | 'json' // JSON data or files
   | 'number' // Numeric values
   | 'boolean' // True/false values
   | 'array' // Array of values
@@ -71,6 +72,29 @@ export interface CsvIoItem extends BaseIoItem {
     }>;
   };
   /** Entity type that this CSV data represents (e.g., 'user', 'post', 'comment') */
+  entity?: string;
+}
+
+/**
+ * JSON input/output item configuration for algorithm definitions.
+ */
+export interface JsonIoItem extends BaseIoItem {
+  /** Type identifier for JSON data */
+  type: 'json';
+  /** Whether this input is required */
+  required?: boolean;
+  /** Optional JSON validation metadata for file-backed JSON inputs */
+  json?: {
+    /** Maximum file size in bytes */
+    maxBytes?: number;
+    /** Named validation shape applied to the JSON content */
+    schema?: string;
+    /** Required root key for object-shaped JSON inputs */
+    rootKey?: string;
+    /** Allowed chain keys for wallet-address map inputs */
+    allowedChains?: string[];
+  };
+  /** Entity type that this JSON data represents */
   entity?: string;
 }
 
@@ -173,7 +197,7 @@ export interface ArrayIoItem extends BaseIoItem {
 /**
  * Union type for all supported input/output item types.
  */
-export type IoItem = CsvIoItem | NumericIoItem | BooleanIoItem | StringIoItem | ArrayIoItem;
+export type IoItem = CsvIoItem | JsonIoItem | NumericIoItem | BooleanIoItem | StringIoItem | ArrayIoItem;
 
 /**
  * Supported runtimes (languages) for algorithm execution.

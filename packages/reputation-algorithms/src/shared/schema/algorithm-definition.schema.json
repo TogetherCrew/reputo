@@ -50,6 +50,7 @@
         "inputItem": {
             "oneOf": [
                 { "$ref": "#/$defs/csvIOItem" },
+                { "$ref": "#/$defs/jsonInputItem" },
                 { "$ref": "#/$defs/numericParamItem" },
                 { "$ref": "#/$defs/stringParamItem" },
                 { "$ref": "#/$defs/arrayParamItem" }
@@ -92,6 +93,24 @@
                 "label": { "type": "string", "minLength": 1 },
                 "description": { "type": "string", "minLength": 1 },
                 "type": { "const": "json" }
+            }
+        },
+
+        "jsonInputItem": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "label", "description", "type", "required", "json"],
+            "properties": {
+                "key": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_]*$",
+                    "minLength": 2
+                },
+                "label": { "type": "string", "minLength": 1 },
+                "description": { "type": "string", "minLength": 1 },
+                "type": { "const": "json" },
+                "required": { "type": "boolean" },
+                "json": { "$ref": "#/$defs/jsonMeta" }
             }
         },
 
@@ -331,6 +350,28 @@
                     "type": "array",
                     "minItems": 1,
                     "items": { "$ref": "#/$defs/csvColumn" }
+                }
+            }
+        },
+
+        "jsonMeta": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "maxBytes": { "type": "integer", "minimum": 1 },
+                "schema": { "type": "string", "minLength": 1 },
+                "rootKey": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_]*$",
+                    "minLength": 1
+                },
+                "allowedChains": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "type": "string",
+                        "enum": ["ethereum", "cardano"]
+                    }
                 }
             }
         },

@@ -11,6 +11,7 @@ export type {
   CsvIoItem,
   IoItem,
   IoType,
+  JsonIoItem,
   ObjectPropertyParam,
 } from './algorithm.js';
 
@@ -36,9 +37,19 @@ export interface ValidationResult {
 /**
  * Result of CSV content validation.
  */
-export interface CSVValidationResult {
-  /** Whether the CSV is valid */
+export interface FileValidationResult {
+  /** Whether the file content is valid */
   valid: boolean;
   /** Array of error messages (empty if valid is true) */
   errors: string[];
 }
+
+/**
+ * Result of CSV content validation.
+ */
+export interface CSVValidationResult extends FileValidationResult {}
+
+/**
+ * Result of JSON content validation.
+ */
+export interface JSONValidationResult extends FileValidationResult {}

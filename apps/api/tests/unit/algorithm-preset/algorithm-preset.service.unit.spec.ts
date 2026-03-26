@@ -1,6 +1,6 @@
 import { NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { validateCSVContent, validatePayload } from '@reputo/algorithm-validator';
+import { validateCSVContent, validateJSONContent, validatePayload } from '@reputo/algorithm-validator';
 import { MODEL_NAMES } from '@reputo/database';
 import { getAlgorithmDefinition } from '@reputo/reputation-algorithms';
 import type { StorageMetadata } from '@reputo/storage';
@@ -12,7 +12,7 @@ import type {
   ListAlgorithmPresetsQueryDto,
   UpdateAlgorithmPresetDto,
 } from '../../../src/algorithm-preset/dto';
-import { CSVValidationException } from '../../../src/shared/exceptions';
+import { StorageInputValidationException } from '../../../src/shared/exceptions';
 import { SnapshotRepository } from '../../../src/snapshot/snapshot.repository';
 import { StorageService } from '../../../src/storage/storage.service';
 import { TemporalService } from '../../../src/temporal';
@@ -30,6 +30,7 @@ vi.mock('@reputo/algorithm-validator', async () => {
   return {
     ...actual,
     validateCSVContent: vi.fn(),
+    validateJSONContent: vi.fn(),
     validatePayload: vi.fn(),
   };
 });
@@ -53,7 +54,7 @@ describe('AlgorithmPresetService', () => {
 
   const defaultStorageConfig = {
     maxSizeBytes: 52428800, // 50MB
-    contentTypeAllowlist: 'text/csv,text/plain',
+    contentTypeAllowlist: 'text/csv,text/plain,application/json',
   };
 
   const mockAlgorithmDefinition = {
@@ -153,6 +154,10 @@ describe('AlgorithmPresetService', () => {
       valid: true,
       errors: [],
     });
+    vi.mocked(validateJSONContent).mockResolvedValue({
+      valid: true,
+      errors: [],
+    });
 
     service = new AlgorithmPresetService(
       mockLogger,
@@ -202,7 +207,7 @@ describe('AlgorithmPresetService', () => {
   });
 
   describe('validateStorageInputs - metadata validation', () => {
-    it('should throw CSVValidationException when content type is not allowed', async () => {
+    it('should throw StorageInputValidationException when the uploaded file does not match the csv input type', async () => {
       const createDto: CreateAlgorithmPresetDto = {
         key: 'test_key',
         version: '1.0.0',
@@ -215,20 +220,19 @@ describe('AlgorithmPresetService', () => {
       };
       mockStorageService.getObjectMetadata = vi.fn().mockResolvedValue(invalidMetadata);
 
-      await expect(service.create(createDto)).rejects.toThrow(CSVValidationException);
+      await expect(service.create(createDto)).rejects.toThrow(StorageInputValidationException);
 
       try {
         await service.create(createDto);
       } catch (error) {
-        expect(error).toBeInstanceOf(CSVValidationException);
-        const response = (error as CSVValidationException).getResponse() as any;
+        expect(error).toBeInstanceOf(StorageInputValidationException);
+        const response = (error as StorageInputValidationException).getResponse() as any;
         expect(response.errors[0].inputKey).toBe('input1');
-        expect(response.errors[0].errors[0]).toContain('Invalid content type');
-        expect(response.errors[0].errors[0]).toContain('application/json');
+        expect(response.errors[0].errors[0]).toContain('must be a CSV file');
       }
     });
 
-    it('should throw CSVValidationException when file exceeds API config maxSizeBytes', async () => {
+    it('should throw StorageInputValidationException when file exceeds API config maxSizeBytes', async () => {
       const createDto: CreateAlgorithmPresetDto = {
         key: 'test_key',
         version: '1.0.0',
@@ -241,17 +245,17 @@ describe('AlgorithmPresetService', () => {
       };
       mockStorageService.getObjectMetadata = vi.fn().mockResolvedValue(oversizedMetadata);
 
-      await expect(service.create(createDto)).rejects.toThrow(CSVValidationException);
+      await expect(service.create(createDto)).rejects.toThrow(StorageInputValidationException);
 
       try {
         await service.create(createDto);
       } catch (error) {
-        const response = (error as CSVValidationException).getResponse() as any;
+        const response = (error as StorageInputValidationException).getResponse() as any;
         expect(response.errors[0].errors).toContainEqual(expect.stringContaining('exceeds API limit'));
       }
     });
 
-    it('should throw CSVValidationException when file exceeds algorithm definition maxBytes', async () => {
+    it('should throw StorageInputValidationException when file exceeds algorithm definition maxBytes', async () => {
       const definitionWithMaxBytes = {
         ...mockAlgorithmDefinition,
         inputs: [
@@ -274,12 +278,12 @@ describe('AlgorithmPresetService', () => {
       };
 
       // Metadata size is 1024 bytes, which exceeds the 500 byte limit
-      await expect(service.create(createDto)).rejects.toThrow(CSVValidationException);
+      await expect(service.create(createDto)).rejects.toThrow(StorageInputValidationException);
 
       try {
         await service.create(createDto);
       } catch (error) {
-        const response = (error as CSVValidationException).getResponse() as any;
+        const response = (error as StorageInputValidationException).getResponse() as any;
         expect(response.errors[0].errors).toContainEqual(expect.stringContaining('exceeds algorithm limit'));
       }
     });
@@ -317,7 +321,7 @@ describe('AlgorithmPresetService', () => {
   });
 
   describe('validateStorageInputs - CSV content validation', () => {
-    it('should throw CSVValidationException when CSV content is invalid', async () => {
+    it('should throw StorageInputValidationException when CSV content is invalid', async () => {
       const createDto: CreateAlgorithmPresetDto = {
         key: 'test_key',
         version: '1.0.0',
@@ -329,12 +333,12 @@ describe('AlgorithmPresetService', () => {
         errors: ['Missing required column: column1'],
       });
 
-      await expect(service.create(createDto)).rejects.toThrow(CSVValidationException);
+      await expect(service.create(createDto)).rejects.toThrow(StorageInputValidationException);
 
       try {
         await service.create(createDto);
       } catch (error) {
-        const response = (error as CSVValidationException).getResponse() as any;
+        const response = (error as StorageInputValidationException).getResponse() as any;
         expect(response.errors[0].inputKey).toBe('input1');
         expect(response.errors[0].errors).toContain('Missing required column: column1');
       }
@@ -355,7 +359,7 @@ describe('AlgorithmPresetService', () => {
       try {
         await service.create(createDto);
       } catch (error) {
-        const response = (error as CSVValidationException).getResponse() as any;
+        const response = (error as StorageInputValidationException).getResponse() as any;
         expect(response.errors[0].errors).toHaveLength(2);
         expect(response.errors[0].errors).toContain('Missing required column: column1');
         expect(response.errors[0].errors).toContain('CSV must contain at least one data row');
@@ -387,7 +391,7 @@ describe('AlgorithmPresetService', () => {
       try {
         await service.create(createDto);
       } catch (error) {
-        const response = (error as CSVValidationException).getResponse() as any;
+        const response = (error as StorageInputValidationException).getResponse() as any;
         expect(response.errors[0].errors.length).toBeGreaterThanOrEqual(2);
         expect(response.errors[0].errors).toContainEqual(expect.stringContaining('Invalid content type'));
         expect(response.errors[0].errors).toContain('Missing required column: column1');
@@ -443,7 +447,7 @@ describe('AlgorithmPresetService', () => {
       try {
         await service.create(createDto);
       } catch (error) {
-        const response = (error as CSVValidationException).getResponse() as any;
+        const response = (error as StorageInputValidationException).getResponse() as any;
         expect(response.errors).toHaveLength(2);
         expect(response.errors[0].inputKey).toBe('input1');
         expect(response.errors[0].errors).toContain('Error in file 1');
@@ -494,6 +498,155 @@ describe('AlgorithmPresetService', () => {
       expect(mockStorageService.getObjectMetadata).toHaveBeenCalledTimes(1);
       expect(mockStorageService.getObject).toHaveBeenCalledTimes(1);
       expect(mockStorageService.getObjectMetadata).toHaveBeenCalledWith('uploads/test.csv');
+    });
+  });
+
+  describe('validateStorageInputs - JSON content validation', () => {
+    it('should validate storage metadata and JSON content for json inputs', async () => {
+      const jsonDefinition = {
+        ...mockAlgorithmDefinition,
+        inputs: [
+          {
+            key: 'wallets',
+            label: 'Wallet Addresses JSON',
+            description: 'Wallet input',
+            type: 'json',
+            required: true,
+            json: {
+              maxBytes: 5242880,
+              schema: 'wallet_address_map',
+              rootKey: 'wallets',
+              allowedChains: ['ethereum', 'cardano'],
+            },
+          },
+        ],
+      };
+      vi.mocked(getAlgorithmDefinition).mockReturnValue(JSON.stringify(jsonDefinition));
+
+      const jsonMetadata: StorageMetadata = {
+        filename: 'wallets.json',
+        ext: 'json',
+        size: 512,
+        contentType: 'application/json',
+        timestamp: Date.now(),
+      };
+      const validJsonBuffer = Buffer.from(
+        JSON.stringify({
+          wallets: {
+            ethereum: ['0x1234567890abcdef1234567890abcdef12345678'],
+          },
+        }),
+        'utf-8',
+      );
+
+      mockStorageService.getObjectMetadata = vi.fn().mockResolvedValue(jsonMetadata);
+      mockStorageService.getObject = vi.fn().mockResolvedValue(validJsonBuffer);
+
+      const createDto: CreateAlgorithmPresetDto = {
+        key: 'test_key',
+        version: '1.0.0',
+        inputs: [{ key: 'wallets', value: 'uploads/wallets.json' }],
+      };
+
+      const mockPreset = { _id: '507f1f77bcf86cd799439011', ...createDto };
+      mockRepository.create = vi.fn().mockResolvedValue(mockPreset);
+
+      await service.create(createDto);
+
+      expect(mockStorageService.getObjectMetadata).toHaveBeenCalledWith('uploads/wallets.json');
+      expect(mockStorageService.getObject).toHaveBeenCalledWith('uploads/wallets.json');
+      expect(validateJSONContent).toHaveBeenCalledWith(validJsonBuffer, jsonDefinition.inputs[0].json);
+    });
+
+    it('should reject selected asset chains that have no wallets in the uploaded json', async () => {
+      const tokenValueDefinition = {
+        key: 'token_value_over_time',
+        name: 'Token Value Over Time',
+        category: 'Activity',
+        description: 'Test algorithm definition',
+        version: '1.0.0',
+        inputs: [
+          {
+            key: 'wallets',
+            label: 'Wallet Addresses JSON',
+            description: 'Wallet input',
+            type: 'json',
+            required: true,
+            json: {
+              maxBytes: 5242880,
+              schema: 'wallet_address_map',
+              rootKey: 'wallets',
+              allowedChains: ['ethereum', 'cardano'],
+            },
+          },
+          {
+            key: 'selected_assets',
+            label: 'Assets',
+            description: 'Selected assets',
+            type: 'array',
+            required: true,
+            item: {
+              type: 'object',
+              properties: [
+                { key: 'chain', label: 'Chain', description: 'Chain', type: 'string', required: true },
+                {
+                  key: 'asset_identifier',
+                  label: 'Asset Identifier',
+                  description: 'Token identifier',
+                  type: 'string',
+                  required: true,
+                },
+              ],
+            },
+          },
+        ],
+        outputs: [],
+        runtime: 'typescript',
+      };
+      vi.mocked(getAlgorithmDefinition).mockReturnValue(JSON.stringify(tokenValueDefinition));
+
+      const jsonMetadata: StorageMetadata = {
+        filename: 'wallets.json',
+        ext: 'json',
+        size: 512,
+        contentType: 'application/json',
+        timestamp: Date.now(),
+      };
+      const ethereumOnlyWallets = Buffer.from(
+        JSON.stringify({
+          wallets: {
+            ethereum: ['0x1234567890abcdef1234567890abcdef12345678'],
+          },
+        }),
+        'utf-8',
+      );
+
+      mockStorageService.getObjectMetadata = vi.fn().mockResolvedValue(jsonMetadata);
+      mockStorageService.getObject = vi.fn().mockResolvedValue(ethereumOnlyWallets);
+
+      const createDto: CreateAlgorithmPresetDto = {
+        key: 'token_value_over_time',
+        version: '1.0.0',
+        inputs: [
+          { key: 'wallets', value: 'uploads/wallets.json' },
+          {
+            key: 'selected_assets',
+            value: [{ chain: 'cardano', asset_identifier: 'asset1' }],
+          },
+        ],
+      };
+
+      await expect(service.create(createDto)).rejects.toThrow(StorageInputValidationException);
+
+      try {
+        await service.create(createDto);
+      } catch (error) {
+        const response = (error as StorageInputValidationException).getResponse() as any;
+        expect(response.errors[0].inputKey).toBe('wallets');
+        expect(response.errors[0].errors).toContain(
+          'Wallet JSON is missing wallet addresses for selected chain(s): cardano',
+        );
+      }
     });
   });
 
@@ -620,10 +773,17 @@ describe('AlgorithmPresetService', () => {
         ...updateDto,
       };
 
+      mockRepository.findById = vi.fn().mockResolvedValue({
+        _id: id,
+        key: 'test_key',
+        version: '1.0.0',
+        inputs: [{ key: 'input1', value: 'uploads/test.csv' }],
+      });
       mockRepository.updateById = vi.fn().mockResolvedValue(mockUpdatedPreset);
 
       const result = await service.updateById(id, updateDto);
 
+      expect(mockStorageService.getObjectMetadata).toHaveBeenCalledWith('uploads/test.csv');
       expect(mockRepository.updateById).toHaveBeenCalledOnce();
       expect(mockRepository.updateById).toHaveBeenCalledWith(id, updateDto);
       expect(result).toBe(mockUpdatedPreset);
@@ -633,7 +793,7 @@ describe('AlgorithmPresetService', () => {
       const id = '507f1f77bcf86cd799439011';
       const updateDto: UpdateAlgorithmPresetDto = { name: 'Updated' };
 
-      mockRepository.updateById = vi.fn().mockResolvedValue(null);
+      mockRepository.findById = vi.fn().mockResolvedValue(null);
 
       const promise = service.updateById(id, updateDto);
 

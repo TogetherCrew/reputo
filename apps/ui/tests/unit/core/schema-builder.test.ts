@@ -21,6 +21,7 @@ const algorithm: Algorithm = {
   dependencies: "2 inputs",
   level: "Intermediate",
   inputs: [
+    { key: "wallets", type: "json", label: "Wallet Addresses JSON" },
     { key: "votes_csv", type: "csv", label: "Votes CSV" },
     { key: "threshold", type: "number", label: "Threshold" },
     { key: "include_inactive", type: "boolean", label: "Include Inactive" },
@@ -37,6 +38,19 @@ const definition: AlgorithmDefinition = {
   description: "Calculates voting engagement from a vote file.",
   version: "1.0.0",
   inputs: [
+    {
+      key: "wallets",
+      label: "Wallet Addresses JSON",
+      type: "json",
+      required: true,
+      description: "Wallet addresses grouped by chain.",
+      json: {
+        maxBytes: 5242880,
+        schema: "wallet_address_map",
+        rootKey: "wallets",
+        allowedChains: ["ethereum", "cardano"],
+      },
+    },
     {
       key: "votes_csv",
       label: "Votes CSV",
@@ -111,6 +125,18 @@ describe("buildSchemaFromAlgorithm", () => {
     expect(result.inputs).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
+          key: "wallets",
+          type: "json",
+          description: "Wallet addresses grouped by chain.",
+          required: true,
+          json: {
+            maxBytes: 5242880,
+            schema: "wallet_address_map",
+            rootKey: "wallets",
+            allowedChains: ["ethereum", "cardano"],
+          },
+        }),
+        expect.objectContaining({
           key: "votes_csv",
           type: "csv",
           csv: expect.objectContaining({
@@ -162,6 +188,12 @@ describe("buildSchemaFromAlgorithm", () => {
     expect(result.outputs).toEqual([])
     expect(result.inputs).toEqual(
       expect.arrayContaining([
+        expect.objectContaining({
+          key: "wallets",
+          type: "json",
+          required: true,
+          json: undefined,
+        }),
         expect.objectContaining({
           key: "votes_csv",
           type: "csv",

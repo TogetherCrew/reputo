@@ -11,6 +11,7 @@ import {
   CSVField,
   DateField,
   EnumField,
+  JSONField,
   NumberField,
   RepeaterField,
   SelectField,
@@ -95,6 +96,8 @@ function ReputoFormInner({
         return <SliderField key={input.key} {...commonProps} />
       case "csv":
         return <CSVField key={input.key} {...commonProps} />
+      case "json":
+        return <JSONField key={input.key} {...commonProps} />
       case "date":
         return <DateField key={input.key} {...commonProps} />
       case "array":
@@ -119,7 +122,10 @@ function ReputoFormInner({
       if (value === undefined || value === null || value === "") {
         return false
       }
-      if (input.type === "csv" && value instanceof File) {
+      if (
+        (input.type === "csv" || input.type === "json") &&
+        value instanceof File
+      ) {
         return false
       }
       if (input.type === "array" && Array.isArray(value)) {
@@ -232,6 +238,7 @@ function getDefaultValues(
         case "select":
         case "date":
         case "csv":
+        case "json":
           if (!isRequired) {
             defaults[input.key] = undefined
           } else {

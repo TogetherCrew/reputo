@@ -92,6 +92,19 @@ export interface CsvIoItem extends BaseIoItem {
 export interface JsonIoItem extends BaseIoItem {
   /** Type identifier for JSON data */
   type: 'json';
+  /** Whether this input is required */
+  required?: boolean;
+  /** JSON parsing and validation configuration for file-backed inputs */
+  json?: {
+    /** Maximum file size in bytes */
+    maxBytes?: number;
+    /** Named validation shape applied to the JSON content */
+    schema?: string;
+    /** Required root key for object-shaped JSON inputs */
+    rootKey?: string;
+    /** Allowed chain keys for wallet-address map inputs */
+    allowedChains?: string[];
+  };
   /** Optional entity type that this JSON represents */
   entity?: string;
 }

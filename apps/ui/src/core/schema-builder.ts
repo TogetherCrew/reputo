@@ -6,6 +6,7 @@ import {
   type AlgorithmDefinition,
   type ArrayIoItem,
   getAlgorithmDefinition,
+  type JsonIoItem,
 } from "@reputo/reputation-algorithms"
 import type { Algorithm } from "./algorithms"
 
@@ -59,6 +60,13 @@ export interface FormInput {
   itemProperties?: FormInputProperty[]
   /** Quick-fill presets for array fields */
   arrayPresets?: ArrayPreset[]
+  /** JSON validation config */
+  json?: {
+    maxBytes?: number
+    schema?: string
+    rootKey?: string
+    allowedChains?: string[]
+  }
   /** Options for select/enum fields */
   options?: SelectOption[]
   /** Key of sibling field this depends on */
@@ -238,6 +246,30 @@ function transformInputToFormInput(
       }
     }
 
+    case "json": {
+      const jsonConfig =
+        fullInput?.type === "json"
+          ? {
+              maxBytes: (fullInput as JsonIoItem).json?.maxBytes,
+              schema: (fullInput as JsonIoItem).json?.schema,
+              rootKey: (fullInput as JsonIoItem).json?.rootKey,
+              allowedChains: (fullInput as JsonIoItem).json?.allowedChains,
+            }
+          : undefined
+
+      return {
+        key: inputKey,
+        label: algoInput.label,
+        type: "json",
+        description: fullInput?.description,
+        json: jsonConfig,
+        required:
+          fullInput && "required" in fullInput
+            ? fullInput.required !== false
+            : true,
+      }
+    }
+
     case "number":
     case "integer": {
       const numericProps = getNumericProps()
@@ -374,4 +406,5 @@ export {
   buildZodSchema,
   type InferSchemaType,
   validateCSVContent,
+  validateJSONContent,
 } from "@reputo/algorithm-validator"
