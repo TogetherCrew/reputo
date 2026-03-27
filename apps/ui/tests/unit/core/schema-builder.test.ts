@@ -215,4 +215,186 @@ describe("buildSchemaFromAlgorithm", () => {
       expect.any(Error)
     )
   })
+
+  it("maps definition-driven resource selectors into form inputs", () => {
+    const resourceSelectorAlgorithm: Algorithm = {
+      id: "token_value_over_time",
+      title: "Token Value Over Time",
+      category: "Activity",
+      summary: "Tracks held token value.",
+      description: "Measures holdings over time.",
+      duration: "~2-5 min",
+      dependencies: "2 inputs",
+      level: "Intermediate",
+      inputs: [
+        {
+          key: "selected_resources",
+          type: "array",
+          label: "Resources to Include",
+        },
+      ],
+      dataSourceLabels: [],
+    }
+
+    mockGetAlgorithmDefinition.mockReturnValue(
+      JSON.stringify({
+        key: "token_value_over_time",
+        name: "Token Value Over Time",
+        category: "Activity",
+        summary: "Tracks held token value.",
+        description: "Measures holdings over time.",
+        version: "1.0.0",
+        inputs: [
+          {
+            key: "selected_resources",
+            label: "Resources to Include",
+            description: "Add chain groups and nested resources.",
+            type: "array",
+            minItems: 1,
+            required: true,
+            uniqueBy: ["chain", "resource_key"],
+            uiHint: {
+              widget: "resource_selector",
+              resourceCatalog: {
+                chains: [
+                  {
+                    key: "ethereum",
+                    label: "Ethereum",
+                    resources: [
+                      {
+                        key: "fet_token",
+                        label: "FET",
+                        kind: "token",
+                        identifier: "0xaaa",
+                        tokenIdentifier: "0xaaa",
+                        tokenKey: "fet",
+                      },
+                      {
+                        key: "fet_staking_1",
+                        label: "FET Staking 1",
+                        kind: "contract",
+                        identifier: "0xbbb",
+                        tokenIdentifier: "0xaaa",
+                        tokenKey: "fet",
+                        parentResourceKey: "fet_token",
+                      },
+                    ],
+                  },
+                  {
+                    key: "cardano",
+                    label: "Cardano",
+                    resources: [
+                      {
+                        key: "fet_token",
+                        label: "FET",
+                        kind: "token",
+                        identifier: "asset1",
+                        tokenIdentifier: "asset1",
+                        tokenKey: "fet",
+                      },
+                    ],
+                  },
+                ],
+              },
+            },
+            item: {
+              type: "object",
+              properties: [
+                {
+                  key: "chain",
+                  label: "Chain",
+                  description: "Blockchain network.",
+                  type: "string",
+                  required: true,
+                  enum: ["ethereum", "cardano"],
+                  uiHint: {
+                    widget: "select",
+                    options: [
+                      { value: "ethereum", label: "Ethereum" },
+                      { value: "cardano", label: "Cardano" },
+                    ],
+                  },
+                },
+                {
+                  key: "resource_key",
+                  label: "Resource",
+                  description: "Selected resource.",
+                  type: "string",
+                  required: true,
+                  uiHint: {
+                    widget: "select",
+                    dependsOn: "chain",
+                    options: [
+                      {
+                        value: "fet_token",
+                        label: "FET",
+                        filterBy: "ethereum",
+                      },
+                      {
+                        value: "fet_staking_1",
+                        label: "FET Staking 1",
+                        filterBy: "ethereum",
+                      },
+                      {
+                        value: "fet_token",
+                        label: "FET",
+                        filterBy: "cardano",
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+        outputs: [],
+        runtime: "typescript",
+      } satisfies AlgorithmDefinition)
+    )
+
+    const result = buildSchemaFromAlgorithm(resourceSelectorAlgorithm, "1.0.0")
+    const selectedResources = result.inputs.find(
+      (input) => input.key === "selected_resources"
+    )
+
+    expect(selectedResources).toMatchObject({
+      type: "array",
+      widget: "resource_selector",
+      uniqueBy: ["chain", "resource_key"],
+    })
+    expect(selectedResources?.resourceCatalog?.chains[0]).toMatchObject({
+      key: "ethereum",
+      resources: [
+        {
+          key: "fet_token",
+          kind: "token",
+        },
+        {
+          key: "fet_staking_1",
+          kind: "contract",
+        },
+      ],
+    })
+
+    const chainProperty = selectedResources?.itemProperties?.[0]
+    const resourceKeyProperty = selectedResources?.itemProperties?.[1]
+
+    expect(chainProperty).toMatchObject({
+      key: "chain",
+      type: "select",
+    })
+    expect(resourceKeyProperty).toMatchObject({
+      key: "resource_key",
+      type: "select",
+      dependsOn: "chain",
+    })
+    expect(resourceKeyProperty?.options).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          value: "fet_staking_1",
+          filterBy: "ethereum",
+        }),
+      ])
+    )
+  })
 })

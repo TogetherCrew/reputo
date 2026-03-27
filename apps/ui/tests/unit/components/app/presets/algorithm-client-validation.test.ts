@@ -36,18 +36,22 @@ describe("algorithm client validation", () => {
     await expect(
       validateAlgorithmPresetClient({
         key: "token_value_over_time",
+        version: "1.0.0",
         inputs: [
           {
             key: "wallets",
             value: "uploads/acd324f5-9ead-4b04-8ae2-7eeda5a1dea4/index.json",
           },
           {
-            key: "selected_assets",
+            key: "maturation_threshold_days",
+            value: 90,
+          },
+          {
+            key: "selected_resources",
             value: [
               {
                 chain: "cardano",
-                asset_identifier:
-                  "e824c0011176f0926ad51f492bcc63ac6a03a589653520839dc7e3d9",
+                resource_key: "fet_token",
               },
             ],
           },
@@ -77,27 +81,79 @@ describe("algorithm client validation", () => {
     await expect(
       validateAlgorithmPresetClient({
         key: "token_value_over_time",
+        version: "1.0.0",
         inputs: [
           {
             key: "wallets",
             value: "uploads/acd324f5-9ead-4b04-8ae2-7eeda5a1dea4/index.json",
           },
           {
-            key: "selected_assets",
+            key: "maturation_threshold_days",
+            value: 90,
+          },
+          {
+            key: "selected_resources",
             value: [
               {
                 chain: "ethereum",
-                asset_identifier: "0xaea46A60368A7bD060eec7DF8CBa43b7EF41Ad85",
+                resource_key: "fet_staking_1",
               },
               {
                 chain: "cardano",
-                asset_identifier:
-                  "e824c0011176f0926ad51f492bcc63ac6a03a589653520839dc7e3d9",
+                resource_key: "fet_token",
               },
             ],
           },
         ],
       })
     ).resolves.toEqual([])
+  })
+
+  it("surfaces a recreate message for stale selected_targets presets", async () => {
+    vi.mocked(fetch).mockResolvedValue({
+      ok: true,
+      text: async () =>
+        JSON.stringify({
+          wallets: {
+            ethereum: ["0x68ab14C41040BF440A93CA6fb559D6E4AD82c25D"],
+          },
+        }),
+    } as Response)
+
+    await expect(
+      validateAlgorithmPresetClient({
+        key: "token_value_over_time",
+        version: "1.0.0",
+        inputs: [
+          {
+            key: "wallets",
+            value: "uploads/acd324f5-9ead-4b04-8ae2-7eeda5a1dea4/index.json",
+          },
+          {
+            key: "maturation_threshold_days",
+            value: 90,
+          },
+          {
+            key: "selected_targets",
+            value: [
+              {
+                chain: "ethereum",
+                target_identifier: "0xaea46A60368A7bD060eec7DF8CBa43b7EF41Ad85",
+              },
+            ],
+          },
+        ],
+      })
+    ).resolves.toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          field: "selected_targets",
+          message: expect.stringContaining("Recreate the preset"),
+        }),
+        expect.objectContaining({
+          field: "selected_resources",
+        }),
+      ])
+    )
   })
 })

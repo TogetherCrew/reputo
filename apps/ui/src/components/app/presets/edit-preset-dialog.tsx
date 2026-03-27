@@ -17,6 +17,7 @@ import type {
   AlgorithmPresetResponseDto,
   UpdateAlgorithmPresetDto,
 } from "@/lib/api/types"
+import { cn } from "@/lib/utils"
 import { validateAlgorithmPresetClient } from "./algorithm-client-validation"
 import { extractApiFieldErrors } from "./error-utils"
 
@@ -66,6 +67,15 @@ export function EditPresetDialog({
     if (!algorithm) return null
     return buildSchemaFromAlgorithm(algorithm, preset?.version || "1.0.0")
   }, [algorithm, preset])
+
+  const hasResourceSelector = useMemo(
+    () =>
+      schema?.inputs.some(
+        (input) =>
+          input.type === "array" && input.widget === "resource_selector"
+      ) ?? false,
+    [schema]
+  )
 
   // Build default values from preset (preset.inputs use algorithm input keys)
   const defaultValues = useMemo(() => {
@@ -146,7 +156,13 @@ export function EditPresetDialog({
 
       const clientErrors = await validateAlgorithmPresetClient({
         key: preset.key,
+        version: preset.version,
         inputs,
+        name: updateData.name !== undefined ? updateData.name : preset.name,
+        description:
+          updateData.description !== undefined
+            ? updateData.description
+            : preset.description,
       })
 
       if (clientErrors.length > 0) {
@@ -180,7 +196,12 @@ export function EditPresetDialog({
         if (!open) handleClose()
       }}
     >
-      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent
+        className={cn(
+          "max-h-[90vh] overflow-y-auto",
+          hasResourceSelector ? "sm:max-w-5xl" : "sm:max-w-2xl"
+        )}
+      >
         <DialogHeader>
           <DialogTitle>Edit Preset</DialogTitle>
           <DialogDescription>

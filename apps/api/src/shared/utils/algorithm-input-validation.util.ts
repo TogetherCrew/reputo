@@ -1,9 +1,11 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
-import { validateCSVContent, validateJSONContent, validatePayload } from '@reputo/algorithm-validator';
+import { validateAlgorithmPreset } from '@reputo/algorithm-validator';
 import {
   type AlgorithmDefinition,
   type CsvIoItem,
   getAlgorithmDefinition,
+  getResourceCatalog,
+  getResourceCatalogResource,
   type JsonIoItem,
 } from '@reputo/reputation-algorithms';
 import type { StorageMetadata } from '@reputo/storage';
@@ -15,8 +17,78 @@ export interface AlgorithmInputValue {
   value?: unknown;
 }
 
+interface TokenValueOverTimeSelectedResourceInput {
+  chain: string;
+  resource_key: string;
+}
+
+interface TokenValueOverTimeSelectedAssetInput {
+  chain: string;
+  asset_identifier: string;
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function getTokenValueOverTimeSelectedResources(
+  payload: Record<string, unknown>,
+): TokenValueOverTimeSelectedResourceInput[] {
+  const selectedResources = payload.selected_resources;
+  if (!Array.isArray(selectedResources)) {
+    return [];
+  }
+
+  return selectedResources.flatMap((item) =>
+    isRecord(item) && typeof item.chain === 'string' && typeof item.resource_key === 'string'
+      ? [
+          {
+            chain: item.chain,
+            resource_key: item.resource_key,
+          },
+        ]
+      : [],
+  );
+}
+
+function normalizeTokenValueOverTimeSelectedAssets(
+  definition: AlgorithmDefinition,
+  selectedResources: ReadonlyArray<TokenValueOverTimeSelectedResourceInput>,
+): TokenValueOverTimeSelectedAssetInput[] {
+  const catalog = getResourceCatalog({
+    definition,
+    inputKey: 'selected_resources',
+  });
+  if (!catalog) {
+    return [];
+  }
+
+  const seen = new Set<string>();
+  const normalizedAssets: TokenValueOverTimeSelectedAssetInput[] = [];
+
+  for (const selectedResource of selectedResources) {
+    const catalogEntry = getResourceCatalogResource({
+      catalog,
+      chainKey: selectedResource.chain,
+      resourceKey: selectedResource.resource_key,
+    });
+    if (!catalogEntry) {
+      continue;
+    }
+
+    const dedupeKey = `${selectedResource.chain}:${catalogEntry.tokenIdentifier}`;
+    if (seen.has(dedupeKey)) {
+      continue;
+    }
+
+    seen.add(dedupeKey);
+    normalizedAssets.push({
+      chain: selectedResource.chain,
+      asset_identifier: catalogEntry.tokenIdentifier,
+    });
+  }
+
+  return normalizedAssets;
 }
 
 function getStorageInputFileLabel(input: CsvIoItem | JsonIoItem): string {
@@ -82,43 +154,6 @@ function validateStorageMetadata(
   return errors;
 }
 
-function validateTokenValueOverTimeWalletCoverage(
-  definition: AlgorithmDefinition,
-  payload: Record<string, unknown>,
-  parsedJsonInputs: Record<string, unknown>,
-): void {
-  if (definition.key !== 'token_value_over_time') {
-    return;
-  }
-
-  const selectedAssets = payload.selected_assets;
-  const walletsInput = parsedJsonInputs.wallets;
-  if (!Array.isArray(selectedAssets) || !isRecord(walletsInput) || !isRecord(walletsInput.wallets)) {
-    return;
-  }
-
-  const selectedChains = [
-    ...new Set(selectedAssets.map((item) => (isRecord(item) ? item.chain : undefined)).filter(Boolean)),
-  ];
-  const walletsByChain = walletsInput.wallets;
-  const missingChains = selectedChains.filter((chain): chain is string => {
-    if (typeof chain !== 'string') {
-      return false;
-    }
-    const wallets = walletsByChain[chain];
-    return !Array.isArray(wallets) || wallets.length === 0;
-  });
-
-  if (missingChains.length > 0) {
-    throw new StorageInputValidationException([
-      {
-        inputKey: 'wallets',
-        errors: [`Wallet JSON is missing wallet addresses for selected chain(s): ${missingChains.join(', ')}`],
-      },
-    ]);
-  }
-}
-
 export function getAlgorithmDefinitionOrThrow(key: string, version: string): AlgorithmDefinition {
   try {
     const algorithmDefinition = getAlgorithmDefinition({ key, version });
@@ -141,6 +176,32 @@ export function buildAlgorithmPayload(inputs: ReadonlyArray<AlgorithmInputValue>
   return payload;
 }
 
+export function buildFrozenAlgorithmPresetInputs(params: {
+  definition: AlgorithmDefinition;
+  inputs: ReadonlyArray<AlgorithmInputValue>;
+}): AlgorithmInputValue[] {
+  if (params.definition.key !== 'token_value_over_time') {
+    return params.inputs.map((input) => ({ ...input }));
+  }
+
+  const payload = buildAlgorithmPayload(params.inputs);
+  const normalizedSelectedAssets = normalizeTokenValueOverTimeSelectedAssets(
+    params.definition,
+    getTokenValueOverTimeSelectedResources(payload),
+  );
+
+  const frozenInputs = params.inputs.filter((input) => input.key !== 'selected_assets').map((input) => ({ ...input }));
+
+  if (normalizedSelectedAssets.length > 0) {
+    frozenInputs.push({
+      key: 'selected_assets',
+      value: normalizedSelectedAssets,
+    });
+  }
+
+  return frozenInputs;
+}
+
 export async function validateAlgorithmInputs(params: {
   definition: AlgorithmDefinition;
   inputs: ReadonlyArray<AlgorithmInputValue>;
@@ -148,18 +209,8 @@ export async function validateAlgorithmInputs(params: {
   storageMaxSizeBytes: number;
   storageContentTypeAllowlist: string;
 }): Promise<void> {
-  const payload = buildAlgorithmPayload(params.inputs);
-  const result = validatePayload(params.definition, payload);
-
-  if (!result.success) {
-    throw new BadRequestException({
-      message: 'Invalid algorithm inputs',
-      errors: result.errors,
-    });
-  }
-
-  const validationErrors: StorageInputValidationError[] = [];
-  const parsedJsonInputs: Record<string, unknown> = {};
+  const metadataErrors: StorageInputValidationError[] = [];
+  const fileContentCache = new Map<string, Buffer>();
 
   for (const definitionInput of params.definition.inputs) {
     if (definitionInput.type !== 'csv' && definitionInput.type !== 'json') {
@@ -179,35 +230,80 @@ export async function validateAlgorithmInputs(params: {
       params.storageContentTypeAllowlist,
     );
 
-    const fileBuffer = await params.storageService.getObject(presetInput.value);
-
-    if (definitionInput.type === 'csv') {
-      const csvResult = await validateCSVContent(fileBuffer, definitionInput.csv);
-      if (!csvResult.valid) {
-        inputErrors.push(...csvResult.errors);
-      }
-    }
-
-    if (definitionInput.type === 'json') {
-      const jsonResult = await validateJSONContent(fileBuffer, definitionInput.json);
-      if (!jsonResult.valid) {
-        inputErrors.push(...jsonResult.errors);
-      } else {
-        parsedJsonInputs[definitionInput.key] = JSON.parse(fileBuffer.toString('utf-8'));
-      }
+    if (inputErrors.length === 0) {
+      fileContentCache.set(definitionInput.key, await params.storageService.getObject(presetInput.value));
     }
 
     if (inputErrors.length > 0) {
-      validationErrors.push({
+      metadataErrors.push({
         inputKey: definitionInput.key,
         errors: inputErrors,
       });
     }
   }
 
-  if (validationErrors.length > 0) {
-    throw new StorageInputValidationException(validationErrors);
+  if (metadataErrors.length > 0) {
+    throw new StorageInputValidationException(metadataErrors);
   }
 
-  validateTokenValueOverTimeWalletCoverage(params.definition, payload, parsedJsonInputs);
+  const validationResult = await validateAlgorithmPreset({
+    definition: params.definition,
+    preset: {
+      key: params.definition.key,
+      version: params.definition.version,
+      inputs: params.inputs,
+    },
+    resolveInputContent: async ({ input, value }) => {
+      if (typeof value === 'string') {
+        const cached = fileContentCache.get(input.key);
+        if (cached) {
+          return cached;
+        }
+      }
+
+      return value;
+    },
+  });
+
+  if (validationResult.success) {
+    return;
+  }
+
+  const fileInputKeys = new Set(
+    params.definition.inputs.filter((input) => input.type === 'csv' || input.type === 'json').map((input) => input.key),
+  );
+
+  const storageValidationErrors = new Map<string, string[]>();
+  const requestValidationErrors: Array<{ field: string; message: string; code?: string }> = [];
+
+  for (const error of validationResult.errors ?? []) {
+    if ((error.source === 'file' || error.source === 'rule') && fileInputKeys.has(error.field)) {
+      const messages = storageValidationErrors.get(error.field) ?? [];
+      messages.push(error.message);
+      storageValidationErrors.set(error.field, messages);
+      continue;
+    }
+
+    requestValidationErrors.push({
+      field: error.field,
+      message: error.message,
+      code: error.code,
+    });
+  }
+
+  if (requestValidationErrors.length > 0) {
+    throw new BadRequestException({
+      message: 'Invalid algorithm inputs',
+      errors: requestValidationErrors,
+    });
+  }
+
+  if (storageValidationErrors.size > 0) {
+    throw new StorageInputValidationException(
+      [...storageValidationErrors.entries()].map(([inputKey, errors]) => ({
+        inputKey,
+        errors,
+      })),
+    );
+  }
 }

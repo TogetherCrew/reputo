@@ -7,12 +7,20 @@ export type {
   AlgorithmCategory,
   AlgorithmDefinition,
   AlgorithmRuntime,
+  AlgorithmValidationConfig,
+  AlgorithmValidationRule,
   ArrayIoItem,
+  ArrayObjectPropertyParam,
   CsvIoItem,
   IoItem,
   IoType,
+  JsonChainCoverageValidationRule,
   JsonIoItem,
   ObjectPropertyParam,
+  ResourceCatalog,
+  ResourceCatalogChain,
+  ResourceCatalogResource,
+  ScalarObjectPropertyParam,
 } from './algorithm.js';
 
 /**
@@ -53,3 +61,27 @@ export interface CSVValidationResult extends FileValidationResult {}
  * Result of JSON content validation.
  */
 export interface JSONValidationResult extends FileValidationResult {}
+
+/**
+ * Result of full algorithm preset validation against an AlgorithmDefinition.
+ */
+export interface AlgorithmPresetValidationResult {
+  /** Whether validation succeeded */
+  success: boolean;
+  /** Validated preset envelope and payload when successful */
+  data?: {
+    preset: unknown;
+    payload: Record<string, unknown>;
+  };
+  /** Validation errors grouped by source */
+  errors?: Array<{
+    /** Field path where the error occurred */
+    field: string;
+    /** Human-readable error message */
+    message: string;
+    /** Error source category */
+    source: 'preset' | 'definition' | 'payload' | 'file' | 'rule';
+    /** Optional validation code */
+    code?: string;
+  }>;
+}

@@ -16,6 +16,7 @@ import type { Algorithm } from "@/core/algorithms"
 import { ReputoForm } from "@/core/reputo-form"
 import { buildSchemaFromAlgorithm } from "@/core/schema-builder"
 import type { CreateAlgorithmPresetDto } from "@/lib/api/types"
+import { cn } from "@/lib/utils"
 import { validateAlgorithmPresetClient } from "./algorithm-client-validation"
 import { extractApiErrorMessages } from "./error-utils"
 
@@ -50,6 +51,15 @@ export function CreatePresetDialog({
     return buildSchemaFromAlgorithm(algo, "1.0.0")
   }, [algo])
 
+  const hasResourceSelector = useMemo(
+    () =>
+      schema?.inputs.some(
+        (input) =>
+          input.type === "array" && input.widget === "resource_selector"
+      ) ?? false,
+    [schema]
+  )
+
   const handleSubmit = async (data: Record<string, unknown>) => {
     if (!algo) return
 
@@ -83,7 +93,10 @@ export function CreatePresetDialog({
 
       const clientErrors = await validateAlgorithmPresetClient({
         key: createData.key,
+        version: createData.version,
         inputs: createData.inputs,
+        name: createData.name,
+        description: createData.description,
       })
 
       if (clientErrors.length > 0) {
@@ -122,7 +135,12 @@ export function CreatePresetDialog({
           <Plus className="mr-2 size-4" /> Create New Preset
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-lg max-h-[85vh] flex flex-col p-0">
+      <DialogContent
+        className={cn(
+          "max-h-[90vh] flex flex-col p-0",
+          hasResourceSelector ? "sm:max-w-5xl" : "sm:max-w-lg"
+        )}
+      >
         <DialogHeader className="flex-shrink-0 px-6 pt-6 pb-4 border-b">
           <DialogTitle>Create New Preset</DialogTitle>
           <DialogDescription>

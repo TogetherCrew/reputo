@@ -1,6 +1,6 @@
 import { NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { validatePayload } from '@reputo/algorithm-validator';
+import { validateAlgorithmPreset } from '@reputo/algorithm-validator';
 import { MODEL_NAMES } from '@reputo/database';
 import { getAlgorithmDefinition } from '@reputo/reputation-algorithms';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -22,11 +22,106 @@ vi.mock('@reputo/algorithm-validator', async () => {
   const actual = await vi.importActual('@reputo/algorithm-validator');
   return {
     ...actual,
-    validatePayload: vi.fn(),
+    validateAlgorithmPreset: vi.fn(),
   };
 });
 
 describe('SnapshotService', () => {
+  const tokenValueOverTimeDefinition = {
+    key: 'token_value_over_time',
+    name: 'Token Value Over Time',
+    category: 'Activity',
+    summary: 'Tracks token holdings over time.',
+    description: 'Measures long-held token value.',
+    version: '1.0.0',
+    inputs: [
+      {
+        key: 'wallets',
+        label: 'Wallet Addresses JSON',
+        description: 'Wallet input',
+        type: 'json',
+        required: true,
+        json: {
+          maxBytes: 5242880,
+          schema: 'wallet_address_map',
+          rootKey: 'wallets',
+          allowedChains: ['ethereum', 'cardano'],
+        },
+      },
+      {
+        key: 'selected_resources',
+        label: 'Resources to Include',
+        description: 'Selected resources',
+        type: 'array',
+        required: true,
+        minItems: 1,
+        uniqueBy: ['chain', 'resource_key'],
+        uiHint: {
+          widget: 'resource_selector',
+          resourceCatalog: {
+            chains: [
+              {
+                key: 'ethereum',
+                label: 'Ethereum',
+                resources: [
+                  {
+                    key: 'fet_token',
+                    label: 'FET',
+                    kind: 'token',
+                    identifier: '0xaea46A60368A7bD060eec7DF8CBa43b7EF41Ad85',
+                    tokenIdentifier: '0xaea46A60368A7bD060eec7DF8CBa43b7EF41Ad85',
+                    tokenKey: 'fet',
+                  },
+                  {
+                    key: 'fet_staking_1',
+                    label: 'FET Staking 1',
+                    kind: 'contract',
+                    identifier: '0xCB85b101C4822A4E3ABCa20e57f1DFf0E2673475',
+                    tokenIdentifier: '0xaea46A60368A7bD060eec7DF8CBa43b7EF41Ad85',
+                    tokenKey: 'fet',
+                    parentResourceKey: 'fet_token',
+                  },
+                  {
+                    key: 'fet_staking_2',
+                    label: 'FET Staking 2',
+                    kind: 'contract',
+                    identifier: '0x351baC612B50e87B46e4b10A282f632D41397DE2',
+                    tokenIdentifier: '0xaea46A60368A7bD060eec7DF8CBa43b7EF41Ad85',
+                    tokenKey: 'fet',
+                    parentResourceKey: 'fet_token',
+                  },
+                ],
+              },
+              {
+                key: 'cardano',
+                label: 'Cardano',
+                resources: [
+                  {
+                    key: 'fet_token',
+                    label: 'FET',
+                    kind: 'token',
+                    identifier: 'e824c0011176f0926ad51f492bcc63ac6a03a589653520839dc7e3d9',
+                    tokenIdentifier: 'e824c0011176f0926ad51f492bcc63ac6a03a589653520839dc7e3d9',
+                    tokenKey: 'fet',
+                  },
+                ],
+              },
+            ],
+          },
+        },
+        item: {
+          type: 'object',
+          properties: [
+            { key: 'chain', label: 'Chain', type: 'string', required: true },
+            { key: 'resource_key', label: 'Resource', type: 'string', required: true },
+          ],
+        },
+      },
+    ],
+    outputs: [],
+    runtime: 'typescript',
+  };
+
   let service: SnapshotService;
   let mockSnapshotRepository: SnapshotRepository;
   let mockAlgorithmPresetRepository: AlgorithmPresetRepository;
@@ -95,9 +190,12 @@ describe('SnapshotService', () => {
         runtime: 'typescript',
       }),
     );
-    vi.mocked(validatePayload).mockReturnValue({
+    vi.mocked(validateAlgorithmPreset).mockResolvedValue({
       success: true,
-      data: {},
+      data: {
+        preset: {},
+        payload: {},
+      },
     });
 
     service = new SnapshotService(
@@ -154,6 +252,107 @@ describe('SnapshotService', () => {
       expect(createCall.algorithmPreset).toBe(createDto.algorithmPresetId);
       expect(createCall.algorithmPresetFrozen).toEqual(mockAlgorithmPreset);
       expect(result).toBe(mockSnapshot);
+    });
+
+    it('should derive deduped selected_assets from grouped selected_resources', async () => {
+      vi.mocked(getAlgorithmDefinition).mockReturnValue(JSON.stringify(tokenValueOverTimeDefinition));
+      mockStorageService.getObjectMetadata = vi.fn().mockResolvedValue({
+        filename: 'wallets.json',
+        ext: 'json',
+        size: 512,
+        contentType: 'application/json',
+        timestamp: Date.now(),
+      });
+      mockStorageService.getObject = vi.fn().mockResolvedValue(
+        Buffer.from(
+          JSON.stringify({
+            wallets: {
+              ethereum: ['0x1234567890abcdef1234567890abcdef12345678'],
+              cardano: ['addr1q9exampleexampleexampleexampleexampleexample'],
+            },
+          }),
+          'utf-8',
+        ),
+      );
+
+      const createDto: CreateSnapshotDto = {
+        algorithmPresetId: '507f1f77bcf86cd799439011',
+      };
+
+      const mockAlgorithmPreset = {
+        _id: '507f1f77bcf86cd799439011',
+        key: 'token_value_over_time',
+        version: '1.0.0',
+        inputs: [
+          { key: 'wallets', value: 'uploads/wallets.json' },
+          {
+            key: 'selected_resources',
+            value: [
+              {
+                chain: 'ethereum',
+                resource_key: 'fet_token',
+              },
+              {
+                chain: 'ethereum',
+                resource_key: 'fet_staking_1',
+              },
+              {
+                chain: 'ethereum',
+                resource_key: 'fet_staking_2',
+              },
+              {
+                chain: 'cardano',
+                resource_key: 'fet_token',
+              },
+            ],
+          },
+        ],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      mockAlgorithmPresetRepository.findById = vi.fn().mockResolvedValue(mockAlgorithmPreset);
+      mockSnapshotRepository.create = vi.fn().mockResolvedValue({
+        _id: '507f1f77bcf86cd799439012',
+        algorithmPreset: '507f1f77bcf86cd799439011',
+        algorithmPresetFrozen: mockAlgorithmPreset,
+        status: 'queued',
+      });
+
+      await service.create(createDto);
+
+      const createCall = (mockSnapshotRepository.create as any).mock.calls[0][0];
+      expect(createCall.algorithmPresetFrozen.inputs).toEqual([
+        { key: 'wallets', value: 'uploads/wallets.json' },
+        {
+          key: 'selected_resources',
+          value: [
+            {
+              chain: 'ethereum',
+              resource_key: 'fet_token',
+            },
+            {
+              chain: 'ethereum',
+              resource_key: 'fet_staking_1',
+            },
+            {
+              chain: 'ethereum',
+              resource_key: 'fet_staking_2',
+            },
+            {
+              chain: 'cardano',
+              resource_key: 'fet_token',
+            },
+          ],
+        },
+        {
+          key: 'selected_assets',
+          value: [
+            { chain: 'ethereum', asset_identifier: '0xaea46A60368A7bD060eec7DF8CBa43b7EF41Ad85' },
+            { chain: 'cardano', asset_identifier: 'e824c0011176f0926ad51f492bcc63ac6a03a589653520839dc7e3d9' },
+          ],
+        },
+      ]);
     });
 
     it('should throw NotFoundException when algorithmPreset does not exist', async () => {
@@ -220,7 +419,7 @@ describe('SnapshotService', () => {
         _id: '507f1f77bcf86cd799439011',
         key: 'token_value_over_time',
         version: '1.0.0',
-        inputs: [{ key: 'selected_assets', value: [{ chain: 'ethereum', asset_identifier: 'asset1' }] }],
+        inputs: [{ key: 'selected_targets', value: [{ chain: 'ethereum', target_identifier: 'asset1' }] }],
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -252,9 +451,16 @@ describe('SnapshotService', () => {
           runtime: 'typescript',
         }),
       );
-      vi.mocked(validatePayload).mockReturnValue({
+      vi.mocked(validateAlgorithmPreset).mockResolvedValue({
         success: false,
-        errors: [{ field: 'wallets', message: 'Wallet Addresses JSON is required' }],
+        errors: [
+          {
+            field: 'selected_targets',
+            message:
+              'Input "selected_targets" is not supported by token_value_over_time@1.0.0. Recreate the preset using the current algorithm definition.',
+            source: 'definition',
+          },
+        ],
       });
       mockAlgorithmPresetRepository.findById = vi.fn().mockResolvedValue(stalePreset);
 

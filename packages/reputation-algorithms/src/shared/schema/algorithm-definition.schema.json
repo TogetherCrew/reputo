@@ -44,6 +44,9 @@
         "dependencies": {
             "type": "array",
             "items": { "$ref": "#/$defs/dependencyItem" }
+        },
+        "validation": {
+            "$ref": "#/$defs/validationConfig"
         }
     },
     "$defs": {
@@ -205,11 +208,24 @@
                                 "properties": {
                                     "value": { "type": "string" },
                                     "label": { "type": "string" },
-                                    "filterBy": { "type": "string" }
+                                    "filterBy": { "type": "string" },
+                                    "filters": {
+                                        "type": "object",
+                                        "additionalProperties": { "type": "string" }
+                                    }
                                 }
                             }
                         },
-                        "dependsOn": { "type": "string" }
+                        "dependsOn": {
+                            "oneOf": [
+                                { "type": "string" },
+                                {
+                                    "type": "array",
+                                    "minItems": 1,
+                                    "items": { "type": "string" }
+                                }
+                            ]
+                        }
                     },
                     "required": ["widget"]
                 }
@@ -238,6 +254,15 @@
                 "type": { "const": "array" },
                 "minItems": { "type": "integer", "minimum": 0 },
                 "required": { "type": "boolean" },
+                "uniqueBy": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9_]*$",
+                        "minLength": 2
+                    }
+                },
                 "item": {
                     "type": "object",
                     "additionalProperties": false,
@@ -255,8 +280,21 @@
                     "type": "object",
                     "additionalProperties": false,
                     "properties": {
-                        "widget": { "const": "repeater" },
+                        "widget": {
+                            "type": "string",
+                            "enum": ["repeater", "resource_selector"]
+                        },
                         "addButtonLabel": { "type": "string" },
+                        "dependsOn": {
+                            "oneOf": [
+                                { "type": "string" },
+                                {
+                                    "type": "array",
+                                    "minItems": 1,
+                                    "items": { "type": "string" }
+                                }
+                            ]
+                        },
                         "presets": {
                             "type": "array",
                             "items": {
@@ -270,23 +308,38 @@
                                     },
                                     "value": {
                                         "type": "array",
-                                        "items": {
-                                            "type": "object",
-                                            "additionalProperties": {
-                                                "type": "string"
-                                            }
-                                        }
+                                        "items": {}
                                     }
                                 }
                             }
-                        }
+                        },
+                        "resourceCatalog": { "$ref": "#/$defs/resourceCatalog" }
                     },
-                    "required": ["widget"]
+                    "required": ["widget"],
+                    "allOf": [
+                        {
+                            "if": {
+                                "properties": {
+                                    "widget": { "const": "resource_selector" }
+                                }
+                            },
+                            "then": {
+                                "required": ["resourceCatalog"]
+                            }
+                        }
+                    ]
                 }
             }
         },
 
         "objectPropertyParam": {
+            "oneOf": [
+                { "$ref": "#/$defs/scalarObjectPropertyParam" },
+                { "$ref": "#/$defs/arrayObjectPropertyParam" }
+            ]
+        },
+
+        "scalarObjectPropertyParam": {
             "type": "object",
             "additionalProperties": false,
             "required": ["key", "label", "description", "type", "required"],
@@ -322,13 +375,217 @@
                                 "properties": {
                                     "value": { "type": "string" },
                                     "label": { "type": "string" },
-                                    "filterBy": { "type": "string" }
+                                    "filterBy": { "type": "string" },
+                                    "filters": {
+                                        "type": "object",
+                                        "additionalProperties": { "type": "string" }
+                                    }
                                 }
                             }
                         },
-                        "dependsOn": { "type": "string" }
+                        "dependsOn": {
+                            "oneOf": [
+                                { "type": "string" },
+                                {
+                                    "type": "array",
+                                    "minItems": 1,
+                                    "items": { "type": "string" }
+                                }
+                            ]
+                        }
                     },
                     "required": ["widget"]
+                }
+            }
+        },
+
+        "arrayObjectPropertyParam": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "key",
+                "label",
+                "description",
+                "type",
+                "required",
+                "item"
+            ],
+            "properties": {
+                "key": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_]*$",
+                    "minLength": 2
+                },
+                "label": { "type": "string", "minLength": 1 },
+                "description": { "type": "string", "minLength": 1 },
+                "type": { "const": "array" },
+                "minItems": { "type": "integer", "minimum": 0 },
+                "required": { "type": "boolean" },
+                "uniqueBy": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9_]*$",
+                        "minLength": 2
+                    }
+                },
+                "item": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": ["type", "properties"],
+                    "properties": {
+                        "type": { "const": "object" },
+                        "properties": {
+                            "type": "array",
+                            "minItems": 1,
+                            "items": { "$ref": "#/$defs/objectPropertyParam" }
+                        }
+                    }
+                },
+                "uiHint": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "widget": { "const": "repeater" },
+                        "addButtonLabel": { "type": "string" },
+                        "dependsOn": {
+                            "oneOf": [
+                                { "type": "string" },
+                                {
+                                    "type": "array",
+                                    "minItems": 1,
+                                    "items": { "type": "string" }
+                                }
+                            ]
+                        }
+                    },
+                    "required": ["widget"]
+                }
+            }
+        },
+
+        "resourceCatalog": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["chains"],
+            "properties": {
+                "chains": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": { "$ref": "#/$defs/resourceCatalogChain" }
+                }
+            }
+        },
+
+        "resourceCatalogChain": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "label", "resources"],
+            "properties": {
+                "key": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_]*$",
+                    "minLength": 2
+                },
+                "label": { "type": "string", "minLength": 1 },
+                "resources": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": { "$ref": "#/$defs/resourceCatalogResource" }
+                }
+            }
+        },
+
+        "resourceCatalogResource": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "key",
+                "label",
+                "kind",
+                "identifier",
+                "tokenIdentifier",
+                "tokenKey"
+            ],
+            "properties": {
+                "key": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_]*$",
+                    "minLength": 2
+                },
+                "label": { "type": "string", "minLength": 1 },
+                "description": { "type": "string", "minLength": 1 },
+                "kind": {
+                    "type": "string",
+                    "enum": ["token", "contract"]
+                },
+                "identifier": { "type": "string", "minLength": 1 },
+                "tokenIdentifier": { "type": "string", "minLength": 1 },
+                "tokenKey": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_]*$",
+                    "minLength": 2
+                },
+                "parentResourceKey": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_]*$",
+                    "minLength": 2
+                },
+                "explorerUrl": {
+                    "type": "string",
+                    "format": "uri"
+                },
+                "explorerLabel": { "type": "string", "minLength": 1 },
+                "iconUrl": {
+                    "type": "string",
+                    "format": "uri"
+                }
+            }
+        },
+
+        "validationConfig": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["rules"],
+            "properties": {
+                "rules": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": { "$ref": "#/$defs/validationRule" }
+                }
+            }
+        },
+
+        "validationRule": {
+            "oneOf": [{ "$ref": "#/$defs/jsonChainCoverageRule" }]
+        },
+
+        "jsonChainCoverageRule": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "kind",
+                "walletInputKey",
+                "selectorInputKey",
+                "selectorChainField"
+            ],
+            "properties": {
+                "kind": { "const": "json_chain_coverage" },
+                "walletInputKey": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_]*$",
+                    "minLength": 2
+                },
+                "selectorInputKey": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_]*$",
+                    "minLength": 2
+                },
+                "selectorChainField": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_]*$",
+                    "minLength": 2
                 }
             }
         },

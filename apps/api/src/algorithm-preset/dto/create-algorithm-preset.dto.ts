@@ -5,15 +5,19 @@ import { IsArray, IsNotEmpty, IsOptional, IsString, MaxLength, MinLength, Valida
 class AlgorithmPresetInputDto {
   @ApiProperty({
     description: 'Input key',
-    example: 'votes',
+    example: 'selected_resources',
   })
   @IsString()
   @IsNotEmpty()
   key: string;
 
   @ApiProperty({
-    description: 'Input value',
-    example: 's3://tc/votes.csv',
+    description: 'Input value. The exact shape is defined by the algorithm definition for the given key/version.',
+    example: [
+      { chain: 'ethereum', resource_key: 'fet_token' },
+      { chain: 'ethereum', resource_key: 'fet_staking_1' },
+      { chain: 'cardano', resource_key: 'fet_token' },
+    ],
   })
   @IsNotEmpty()
   value: unknown;
@@ -39,7 +43,18 @@ export class CreateAlgorithmPresetDto {
   @ApiProperty({
     description: 'Array of input parameters for the algorithm preset',
     type: [AlgorithmPresetInputDto],
-    example: [{ key: 'votes', value: 's3://tc/votes.csv' }],
+    example: [
+      { key: 'wallets', value: 'uploads/example/wallets.json' },
+      { key: 'maturation_threshold_days', value: 90 },
+      {
+        key: 'selected_resources',
+        value: [
+          { chain: 'ethereum', resource_key: 'fet_token' },
+          { chain: 'ethereum', resource_key: 'fet_staking_1' },
+          { chain: 'cardano', resource_key: 'fet_token' },
+        ],
+      },
+    ],
   })
   @IsArray()
   @IsNotEmpty()

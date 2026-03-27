@@ -1,5 +1,5 @@
 /**
- * Display metadata for chains and tokens.
+ * Display metadata for chains and chain-scoped targets.
  *
  * Icons are a presentation concern and never alter stored runtime inputs,
  * API payload structure, validation keys, or algorithm definition identity.
@@ -10,9 +10,9 @@ export interface ChainDisplayMeta {
   iconUrl: string
 }
 
-export interface TokenDisplayMeta {
+export interface TargetDisplayMeta {
   chainId: string
-  assetIdentifier: string
+  targetIdentifier: string
   label: string
   iconUrl: string
   explorerUrl?: string
@@ -37,10 +37,10 @@ const CHAIN_META: Record<string, ChainDisplayMeta> = {
   },
 }
 
-const TOKEN_META: Record<string, TokenDisplayMeta> = {
+const TARGET_META: Record<string, TargetDisplayMeta> = {
   "ethereum:0xaea46A60368A7bD060eec7DF8CBa43b7EF41Ad85": {
     chainId: "ethereum",
-    assetIdentifier: "0xaea46A60368A7bD060eec7DF8CBa43b7EF41Ad85",
+    targetIdentifier: "0xaea46A60368A7bD060eec7DF8CBa43b7EF41Ad85",
     label: "FET",
     iconUrl:
       "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xaea46A60368A7bD060eec7DF8CBa43b7EF41Ad85/logo.png",
@@ -48,9 +48,30 @@ const TOKEN_META: Record<string, TokenDisplayMeta> = {
       "https://etherscan.io/token/0xaea46A60368A7bD060eec7DF8CBa43b7EF41Ad85",
     explorerName: "Etherscan",
   },
+  "ethereum:0xCB85b101C4822A4E3ABCa20e57f1DFf0E2673475": {
+    chainId: "ethereum",
+    targetIdentifier: "0xCB85b101C4822A4E3ABCa20e57f1DFf0E2673475",
+    label: "FET Staking 1",
+    iconUrl:
+      "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xaea46A60368A7bD060eec7DF8CBa43b7EF41Ad85/logo.png",
+    explorerUrl:
+      "https://etherscan.io/address/0xCB85b101C4822A4E3ABCa20e57f1DFf0E2673475",
+    explorerName: "Etherscan",
+  },
+  "ethereum:0x351baC612B50e87B46e4b10A282f632D41397DE2": {
+    chainId: "ethereum",
+    targetIdentifier: "0x351baC612B50e87B46e4b10A282f632D41397DE2",
+    label: "FET Staking 2",
+    iconUrl:
+      "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xaea46A60368A7bD060eec7DF8CBa43b7EF41Ad85/logo.png",
+    explorerUrl:
+      "https://etherscan.io/address/0x351baC612B50e87B46e4b10A282f632D41397DE2",
+    explorerName: "Etherscan",
+  },
   "cardano:e824c0011176f0926ad51f492bcc63ac6a03a589653520839dc7e3d9": {
     chainId: "cardano",
-    assetIdentifier: "e824c0011176f0926ad51f492bcc63ac6a03a589653520839dc7e3d9",
+    targetIdentifier:
+      "e824c0011176f0926ad51f492bcc63ac6a03a589653520839dc7e3d9",
     label: "FET",
     iconUrl:
       "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xaea46A60368A7bD060eec7DF8CBa43b7EF41Ad85/logo.png",
@@ -60,7 +81,7 @@ const TOKEN_META: Record<string, TokenDisplayMeta> = {
   },
   "cosmos:afet": {
     chainId: "cosmos",
-    assetIdentifier: "afet",
+    targetIdentifier: "afet",
     label: "FET",
     iconUrl:
       "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xaea46A60368A7bD060eec7DF8CBa43b7EF41Ad85/logo.png",
@@ -73,9 +94,9 @@ export function getChainMeta(chainId: string): ChainDisplayMeta | undefined {
   return CHAIN_META[chainId]
 }
 
-export function getTokenMeta(
+export function getTargetMeta(
   chainId: string,
-  assetIdentifier: string
-): TokenDisplayMeta | undefined {
-  return TOKEN_META[`${chainId}:${assetIdentifier}`]
+  targetIdentifier: string
+): TargetDisplayMeta | undefined {
+  return TARGET_META[`${chainId}:${targetIdentifier}`]
 }

@@ -7,13 +7,14 @@ import {
   type ArrayIoItem,
   getAlgorithmDefinition,
   type JsonIoItem,
+  type ResourceCatalog,
 } from "@reputo/reputation-algorithms"
 import type { Algorithm } from "./algorithms"
 
 /** A preset that populates the entire array field with a fixed set of rows when applied. */
 export interface ArrayPreset {
   label: string
-  value: Array<Record<string, string>>
+  value: Array<Record<string, unknown>>
 }
 
 /** Value/label pair for select options. */
@@ -22,6 +23,8 @@ export interface SelectOption {
   label: string
   /** When set, this option is shown only when the sibling `dependsOn` field equals this value. */
   filterBy?: string
+  /** When set, all listed sibling or ancestor field values must match. */
+  filters?: Record<string, string>
 }
 
 /** Property definition for nested object fields inside a repeater. */
@@ -29,12 +32,18 @@ export interface FormInputProperty {
   key: string
   label: string
   type: string
+  widget?: string
   description?: string
   required?: boolean
   enum?: string[]
   default?: string | number
   options?: SelectOption[]
-  dependsOn?: string
+  dependsOn?: string | string[]
+  minItems?: number
+  uniqueBy?: string[]
+  addButtonLabel?: string
+  itemProperties?: FormInputProperty[]
+  arrayPresets?: ArrayPreset[]
   filterBy?: string
 }
 
@@ -46,8 +55,11 @@ export interface FormInput {
   key: string
   label: string
   type: string
+  widget?: string
   description?: string
   required?: boolean
+  /** Keys that must stay unique together across repeater rows */
+  uniqueBy?: string[]
   /** Suffix to display after the input (e.g. "days") */
   suffix?: string
   /** Preset quick-select values */
@@ -60,6 +72,8 @@ export interface FormInput {
   itemProperties?: FormInputProperty[]
   /** Quick-fill presets for array fields */
   arrayPresets?: ArrayPreset[]
+  /** Definition-driven resource selector catalog */
+  resourceCatalog?: ResourceCatalog
   /** JSON validation config */
   json?: {
     maxBytes?: number
@@ -70,7 +84,7 @@ export interface FormInput {
   /** Options for select/enum fields */
   options?: SelectOption[]
   /** Key of sibling field this depends on */
-  dependsOn?: string
+  dependsOn?: string | string[]
   [key: string]: any
 }
 
@@ -360,32 +374,24 @@ function transformInputToFormInput(
     }
 
     case "array": {
-      const arrayInput = fullInput as ArrayIoItem | null
+      const arrayInput = fullInput as
+        | (ArrayIoItem & { uniqueBy?: string[] })
+        | null
       const itemProps = arrayInput?.item?.properties ?? []
 
       return {
         key: inputKey,
         label: algoInput.label,
         type: "array",
+        widget: arrayInput?.uiHint?.widget,
         description: arrayInput?.description,
         required: arrayInput?.required !== false,
         minItems: arrayInput?.minItems,
+        uniqueBy: arrayInput?.uniqueBy,
         addButtonLabel: arrayInput?.uiHint?.addButtonLabel ?? "Add item",
         arrayPresets: arrayInput?.uiHint?.presets,
-        itemProperties: itemProps.map((prop) => ({
-          key: prop.key,
-          label: prop.label ?? prop.key,
-          type:
-            prop.uiHint?.widget === "select" && prop.uiHint.options
-              ? "select"
-              : prop.type,
-          description: prop.description,
-          required: prop.required !== false,
-          enum: prop.enum,
-          default: prop.default,
-          options: prop.uiHint?.options,
-          dependsOn: prop.uiHint?.dependsOn,
-        })),
+        resourceCatalog: arrayInput?.uiHint?.resourceCatalog,
+        itemProperties: itemProps.map(transformObjectPropertyToFormProperty),
       }
     }
 
@@ -396,6 +402,43 @@ function transformInputToFormInput(
         type: "text",
         required: true,
       }
+  }
+}
+
+function transformObjectPropertyToFormProperty(prop: any): FormInputProperty {
+  if (prop.type === "array") {
+    return {
+      key: prop.key,
+      label: prop.label ?? prop.key,
+      type: "array",
+      widget: prop.uiHint?.widget,
+      description: prop.description,
+      required: prop.required !== false,
+      minItems: prop.minItems,
+      uniqueBy: prop.uniqueBy,
+      addButtonLabel: prop.uiHint?.addButtonLabel ?? "Add item",
+      arrayPresets: prop.uiHint?.presets,
+      itemProperties: (prop.item?.properties ?? []).map(
+        transformObjectPropertyToFormProperty
+      ),
+      dependsOn: prop.uiHint?.dependsOn,
+    }
+  }
+
+  return {
+    key: prop.key,
+    label: prop.label ?? prop.key,
+    widget: prop.uiHint?.widget,
+    type:
+      prop.uiHint?.widget === "select" && prop.uiHint.options
+        ? "select"
+        : prop.type,
+    description: prop.description,
+    required: prop.required !== false,
+    enum: prop.enum,
+    default: prop.default,
+    options: prop.uiHint?.options,
+    dependsOn: prop.uiHint?.dependsOn,
   }
 }
 

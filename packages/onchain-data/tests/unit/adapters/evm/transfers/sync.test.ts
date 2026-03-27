@@ -128,7 +128,7 @@ describe('syncEvmAssetTransferWithAdapter', () => {
     });
   });
 
-  it('batches 10 fetched pages into a single insert and sync-state write', async () => {
+  it('batches fetched pages in groups of 5 into a single insert and sync-state write', async () => {
     const chain = 'ethereum';
     const assetIdentifier = FET_ETHEREUM_IDENTIFIER;
     const pages = Array.from({ length: 10 }, (_, index) => ({
@@ -160,13 +160,14 @@ describe('syncEvmAssetTransferWithAdapter', () => {
     expect(result.attemptedCount).toBe(10);
     expect(result.insertedCount).toBe(10);
     expect(result.ignoredCount).toBe(0);
-    expect(mockDb.insertValues).toHaveLength(1);
-    expect(mockDb.insertValues[0]).toHaveLength(10);
-    expect(mockDb.syncStateUpsertCount).toBe(1);
+    expect(mockDb.insertValues).toHaveLength(2);
+    expect(mockDb.insertValues[0]).toHaveLength(5);
+    expect(mockDb.insertValues[1]).toHaveLength(5);
+    expect(mockDb.syncStateUpsertCount).toBe(2);
     expect(mockDb.syncState?.last_synced_block).toBe('0x109');
   });
 
-  it('flushes a final partial batch after the first 10 pages', async () => {
+  it('flushes a final partial batch after full 5-page batches', async () => {
     const chain = 'ethereum';
     const assetIdentifier = FET_ETHEREUM_IDENTIFIER;
     const pages = Array.from({ length: 11 }, (_, index) => ({
@@ -198,10 +199,11 @@ describe('syncEvmAssetTransferWithAdapter', () => {
     expect(result.attemptedCount).toBe(11);
     expect(result.insertedCount).toBe(11);
     expect(result.ignoredCount).toBe(0);
-    expect(mockDb.insertValues).toHaveLength(2);
-    expect(mockDb.insertValues[0]).toHaveLength(10);
-    expect(mockDb.insertValues[1]).toHaveLength(1);
-    expect(mockDb.syncStateUpsertCount).toBe(2);
+    expect(mockDb.insertValues).toHaveLength(3);
+    expect(mockDb.insertValues[0]).toHaveLength(5);
+    expect(mockDb.insertValues[1]).toHaveLength(5);
+    expect(mockDb.insertValues[2]).toHaveLength(1);
+    expect(mockDb.syncStateUpsertCount).toBe(3);
     expect(mockDb.syncState?.last_synced_block).toBe('0x20A');
   });
 });
