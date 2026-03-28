@@ -23,7 +23,10 @@ export function createOnchainDataSyncActivity(ctx: OnchainDataSyncContext) {
 
     try {
       for (const target of syncTargets) {
-        logger.info('Syncing asset', { chain: target.chain, identifier: target.identifier });
+        logger.info('Syncing asset', {
+          chain: target.chain,
+          identifier: target.identifier,
+        });
 
         if (target.chain === 'cardano') {
           const result = await syncCardanoAssetTransfer({
@@ -37,7 +40,7 @@ export function createOnchainDataSyncActivity(ctx: OnchainDataSyncContext) {
             pageCount: result.pageCount,
             insertedAssetTransactionCount: result.insertedAssetTransactionCount,
           });
-        } else {
+        } else if (target.chain === 'ethereum') {
           const result = await syncEvmAssetTransfer({
             db,
             chain: target.chain,
@@ -53,7 +56,10 @@ export function createOnchainDataSyncActivity(ctx: OnchainDataSyncContext) {
           });
         }
 
-        Context.current().heartbeat({ chain: target.chain, identifier: target.identifier });
+        Context.current().heartbeat({
+          chain: target.chain,
+          identifier: target.identifier,
+        });
       }
 
       logger.info('On-chain data sync completed for all targets');
