@@ -32,17 +32,6 @@ export interface TimeWeightResult {
 export function calculateTimeWeight(createdAt: Date, now: Date, params: TimeWeightParams): TimeWeightResult {
   const { engagementWindowMonths, monthlyDecayRatePercent } = params;
 
-  const isValid = !Number.isNaN(createdAt.getTime());
-  if (!isValid) {
-    return {
-      tw: 0,
-      ageMonths: 0,
-      bucketIndex: 0,
-      isValid: false,
-      isWithinWindow: false,
-    };
-  }
-
   const ageMs = now.getTime() - createdAt.getTime();
   const ageMonths = ageMs / (1000 * 60 * 60 * 24 * 30.44);
 

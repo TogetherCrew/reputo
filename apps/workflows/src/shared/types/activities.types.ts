@@ -76,14 +76,6 @@ export interface DeepfundingSyncContext {
   storageConfig: StorageConfig;
 }
 
-export type PaginatedResponse = {
-  // biome-ignore lint/suspicious/noExplicitAny: External API response data
-  data: any[];
-  pagination?: {
-    current_page?: string | number;
-  };
-};
-
 export interface DeepFundingSyncInput {
   snapshotId: string;
 }

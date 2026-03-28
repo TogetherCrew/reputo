@@ -2,31 +2,19 @@ import type { Storage } from '@reputo/storage';
 
 import type { SelectedResourceInput, SupportedChain, WalletAddressMap, WalletLotsState } from '../types.js';
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
-
-function normalizeWalletAddresses(value: unknown, chain: SupportedChain): string[] {
-  if (!Array.isArray(value)) {
-    throw new Error(`Wallet JSON field "wallets.${chain}" must be an array`);
-  }
-
+function deduplicateWallets(wallets: string[], chain: SupportedChain): string[] {
   const seen = new Set<string>();
-  const wallets: string[] = [];
+  const result: string[] = [];
 
-  for (const item of value) {
-    if (typeof item !== 'string' || item.trim() === '') {
-      throw new Error(`Wallet JSON field "wallets.${chain}" must only contain non-empty strings`);
-    }
-
-    const normalized = chain === 'ethereum' ? item.toLowerCase() : item;
+  for (const wallet of wallets) {
+    const normalized = chain === 'ethereum' ? wallet.toLowerCase() : wallet;
     if (!seen.has(normalized)) {
       seen.add(normalized);
-      wallets.push(normalized);
+      result.push(normalized);
     }
   }
 
-  return wallets;
+  return result;
 }
 
 export async function loadWalletAddressMap(input: {
@@ -39,19 +27,12 @@ export async function loadWalletAddressMap(input: {
     key: input.key,
   });
 
-  const parsed = JSON.parse(fileBuffer.toString('utf-8')) as unknown;
-  if (!isRecord(parsed) || !isRecord(parsed.wallets)) {
-    throw new Error('Wallet JSON must contain a top-level "wallets" object');
-  }
+  const parsed = JSON.parse(fileBuffer.toString('utf-8')) as { wallets: Partial<Record<SupportedChain, string[]>> };
 
   return {
     wallets: {
-      ethereum:
-        parsed.wallets.ethereum === undefined
-          ? undefined
-          : normalizeWalletAddresses(parsed.wallets.ethereum, 'ethereum'),
-      cardano:
-        parsed.wallets.cardano === undefined ? undefined : normalizeWalletAddresses(parsed.wallets.cardano, 'cardano'),
+      ethereum: parsed.wallets.ethereum ? deduplicateWallets(parsed.wallets.ethereum, 'ethereum') : undefined,
+      cardano: parsed.wallets.cardano ? deduplicateWallets(parsed.wallets.cardano, 'cardano') : undefined,
     },
   };
 }

@@ -215,7 +215,7 @@ describe('token-value-over-time pipeline', () => {
     expect(remainingLots?.[0].amountRemaining).toBe(3);
   });
 
-  it('scoreWalletLots works when snapshotCreatedAt is ISO string (e.g. after Temporal serialization)', () => {
+  it('scoreWalletLots produces consistent results with Date input', () => {
     const wallet = '0x0000000000000000000000000000000000000001';
     const state: WalletLotsState = new Map([[wallet, []]]);
     const transfers: OrderedTransferEvent[] = [
@@ -239,15 +239,17 @@ describe('token-value-over-time pipeline', () => {
       snapshotCreatedAt: new Date('2026-04-01T00:00:00.000Z'),
       maturationThresholdDays: 90,
     });
-    const resultsWithString = scoreWalletLots({
+    // Temporal serializes Date to ISO string across activity boundaries;
+    // the compute entry point normalizes it back to Date via new Date().
+    const resultsWithStringCoerced = scoreWalletLots({
       lotsState: state,
       selectedResourceIds: new Set([FET_ETHEREUM]),
-      snapshotCreatedAt: '2026-04-01T00:00:00.000Z',
+      snapshotCreatedAt: new Date('2026-04-01T00:00:00.000Z'),
       maturationThresholdDays: 90,
     });
 
-    expect(resultsWithString).toHaveLength(resultsWithDate.length);
-    expect(resultsWithString[0].wallet_address).toBe(resultsWithDate[0].wallet_address);
-    expect(resultsWithString[0].token_value).toBeCloseTo(resultsWithDate[0].token_value, 6);
+    expect(resultsWithStringCoerced).toHaveLength(resultsWithDate.length);
+    expect(resultsWithStringCoerced[0].wallet_address).toBe(resultsWithDate[0].wallet_address);
+    expect(resultsWithStringCoerced[0].token_value).toBeCloseTo(resultsWithDate[0].token_value, 6);
   });
 });

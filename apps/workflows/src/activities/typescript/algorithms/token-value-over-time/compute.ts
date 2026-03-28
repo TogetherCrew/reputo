@@ -39,9 +39,7 @@ export async function computeTokenValueOverTime(snapshot: Snapshot, storage: Sto
   const logger = ctx.log;
   const snapshotId = snapshot._id;
 
-  const createdAt = snapshot.createdAt;
-  const snapshotCreatedAt =
-    createdAt instanceof Date ? createdAt : createdAt != null ? new Date(createdAt) : new Date();
+  const snapshotCreatedAt = new Date(snapshot.createdAt ?? new Date());
 
   const params = extractInputs(snapshot.algorithmPresetFrozen.inputs, snapshotCreatedAt);
   const catalog = loadResourceCatalog();

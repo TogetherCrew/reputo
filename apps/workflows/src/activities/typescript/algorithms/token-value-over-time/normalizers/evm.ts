@@ -3,9 +3,6 @@ import type { EvmAssetTransferRow } from '@reputo/onchain-data';
 import type { OrderedTransferEvent, ResourceId } from '../types.js';
 
 function normalizeHexBlock(block: string): string {
-  if (typeof block === 'string' && block.startsWith('0x')) {
-    return `0x${BigInt(block).toString(16)}`;
-  }
   return `0x${BigInt(block).toString(16)}`;
 }
 

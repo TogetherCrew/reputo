@@ -5,7 +5,7 @@ import { computeLinearWeight, computeLotAgeDays } from './weight.js';
 export function scoreWalletLots(input: {
   lotsState: WalletLotsState;
   selectedResourceIds: Set<ResourceId>;
-  snapshotCreatedAt: Date | string;
+  snapshotCreatedAt: Date;
   maturationThresholdDays: number;
 }): WalletScoreDetail[] {
   const rows: WalletScoreDetail[] = [];

@@ -9,7 +9,6 @@ import type {
   DeepFundingSyncInput,
   DeepFundingSyncOutput,
   DeepfundingSyncContext,
-  PaginatedResponse,
 } from '../../shared/types/index.js';
 
 export function createDeepfundingSyncActivity(ctx: DeepfundingSyncContext) {
@@ -122,8 +121,7 @@ export function createDeepfundingSyncActivity(ctx: DeepfundingSyncContext) {
               contentType: 'application/json',
             }),
             repos.proposals.createMany(
-              // biome-ignore lint/suspicious/noExplicitAny: External API type
-              (proposals as any[]).map((p: any) => ({
+              proposals.map((p) => ({
                 ...p,
                 round_id: round.id,
               })),
@@ -146,8 +144,7 @@ export function createDeepfundingSyncActivity(ctx: DeepfundingSyncContext) {
 
       // 4) Milestones (paginated)
       for await (const page of fetchMilestones(client)) {
-        const typedPage = page as PaginatedResponse;
-        const pageNumber = typedPage.pagination?.current_page ?? 'unknown';
+        const pageNumber = page.pagination.current_page;
         await Promise.all([
           storage.putObject({
             bucket,
@@ -155,14 +152,13 @@ export function createDeepfundingSyncActivity(ctx: DeepfundingSyncContext) {
             body: JSON.stringify(page),
             contentType: 'application/json',
           }),
-          repos.milestones.createMany(typedPage.data),
+          repos.milestones.createMany(page.data),
         ]);
       }
 
       // 5) Reviews (paginated)
       for await (const page of fetchReviews(client)) {
-        const typedPage = page as PaginatedResponse;
-        const pageNumber = typedPage.pagination?.current_page ?? 'unknown';
+        const pageNumber = page.pagination.current_page;
         await Promise.all([
           storage.putObject({
             bucket,
@@ -170,14 +166,13 @@ export function createDeepfundingSyncActivity(ctx: DeepfundingSyncContext) {
             body: JSON.stringify(page),
             contentType: 'application/json',
           }),
-          repos.reviews.createMany(typedPage.data),
+          repos.reviews.createMany(page.data),
         ]);
       }
 
       // 6) Comments (paginated)
       for await (const page of fetchComments(client)) {
-        const typedPage = page as PaginatedResponse;
-        const pageNumber = typedPage.pagination?.current_page ?? 'unknown';
+        const pageNumber = page.pagination.current_page;
         await Promise.all([
           storage.putObject({
             bucket,
@@ -185,14 +180,13 @@ export function createDeepfundingSyncActivity(ctx: DeepfundingSyncContext) {
             body: JSON.stringify(page),
             contentType: 'application/json',
           }),
-          repos.comments.createMany(typedPage.data),
+          repos.comments.createMany(page.data),
         ]);
       }
 
       // 7) Comment votes (paginated)
       for await (const page of fetchCommentVotes(client)) {
-        const typedPage = page as PaginatedResponse;
-        const pageNumber = typedPage.pagination?.current_page ?? 'unknown';
+        const pageNumber = page.pagination.current_page;
         await Promise.all([
           storage.putObject({
             bucket,
@@ -200,14 +194,13 @@ export function createDeepfundingSyncActivity(ctx: DeepfundingSyncContext) {
             body: JSON.stringify(page),
             contentType: 'application/json',
           }),
-          repos.commentVotes.createMany(typedPage.data),
+          repos.commentVotes.createMany(page.data),
         ]);
       }
 
       // 8) Users (paginated)
       for await (const page of fetchUsers(client)) {
-        const typedPage = page as PaginatedResponse;
-        const pageNumber = typedPage.pagination?.current_page ?? 'unknown';
+        const pageNumber = page.pagination.current_page;
         await Promise.all([
           storage.putObject({
             bucket,
@@ -215,7 +208,7 @@ export function createDeepfundingSyncActivity(ctx: DeepfundingSyncContext) {
             body: JSON.stringify(page),
             contentType: 'application/json',
           }),
-          repos.users.createMany(typedPage.data),
+          repos.users.createMany(page.data),
         ]);
       }
 

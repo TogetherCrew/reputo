@@ -37,8 +37,10 @@ export function extractOnchainSyncTargets(
   preset: AlgorithmPresetFrozenLike,
   definition: AlgorithmDefinitionLike,
 ): SyncTarget[] {
-  const selectedResourcesRaw = preset.inputs.find((i) => i.key === 'selected_resources')?.value;
-  if (!Array.isArray(selectedResourcesRaw) || selectedResourcesRaw.length === 0) {
+  const selectedResourcesRaw = preset.inputs.find((i) => i.key === 'selected_resources')?.value as
+    | Array<{ chain: string; resource_key: string }>
+    | undefined;
+  if (!selectedResourcesRaw || selectedResourcesRaw.length === 0) {
     return [];
   }
 
@@ -58,7 +60,7 @@ export function extractOnchainSyncTargets(
   const seen = new Set<string>();
   const targets: SyncTarget[] = [];
 
-  for (const sel of selectedResourcesRaw as Array<{ chain: string; resource_key: string }>) {
+  for (const sel of selectedResourcesRaw) {
     // Find all matching catalog entries (there may be multiple for same key, e.g. two staking contracts)
     for (const chain of catalog.chains) {
       if (chain.key !== sel.chain) continue;
