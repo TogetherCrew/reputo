@@ -18,7 +18,7 @@ const algorithm: Algorithm = {
   summary: "Scores voting diversity.",
   description: "Calculates voting engagement from a vote file.",
   duration: "~2-5 min",
-  dependencies: "2 inputs",
+  inputSummary: "2 configurable inputs",
   level: "Intermediate",
   inputs: [
     { key: "wallets", type: "json", label: "Wallet Addresses JSON" },
@@ -27,7 +27,7 @@ const algorithm: Algorithm = {
     { key: "include_inactive", type: "boolean", label: "Include Inactive" },
     { key: "label", type: "string", label: "Display Label" },
   ],
-  dataSourceLabels: [],
+  dependencyLabels: [],
 }
 
 const definition: AlgorithmDefinition = {
@@ -224,7 +224,7 @@ describe("buildSchemaFromAlgorithm", () => {
       summary: "Tracks held token value.",
       description: "Measures holdings over time.",
       duration: "~2-5 min",
-      dependencies: "2 inputs",
+      inputSummary: "2 configurable inputs",
       level: "Intermediate",
       inputs: [
         {
@@ -233,7 +233,7 @@ describe("buildSchemaFromAlgorithm", () => {
           label: "Resources to Include",
         },
       ],
-      dataSourceLabels: [],
+      dependencyLabels: [],
     }
 
     mockGetAlgorithmDefinition.mockReturnValue(
@@ -271,7 +271,7 @@ describe("buildSchemaFromAlgorithm", () => {
                       },
                       {
                         key: "fet_staking_1",
-                        label: "FET Staking 1",
+                        label: "FET Staking",
                         kind: "contract",
                         identifier: "0xbbb",
                         tokenIdentifier: "0xaaa",
@@ -332,7 +332,7 @@ describe("buildSchemaFromAlgorithm", () => {
                       },
                       {
                         value: "fet_staking_1",
-                        label: "FET Staking 1",
+                        label: "FET Staking",
                         filterBy: "ethereum",
                       },
                       {

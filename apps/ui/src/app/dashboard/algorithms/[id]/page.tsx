@@ -1,8 +1,9 @@
-import { ArrowLeft, Clock, Users } from "lucide-react"
+import { ArrowLeft, Clock, Database, SlidersHorizontal } from "lucide-react"
 import Link from "next/link"
 import { notFound } from "next/navigation"
 import { Suspense } from "react"
 import { AlgorithmTabs } from "@/components/app/algorithm-tabs"
+import { InputTypeBadge } from "@/components/app/input-type-badge"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { algorithms, getAlgorithmById } from "@/core/algorithms"
@@ -49,11 +50,42 @@ export default async function AlgorithmPage({ params }: PageProps) {
               <Clock className="size-4" /> {algo.duration}
             </span>
             <span className="inline-flex items-center gap-2 text-muted-foreground">
-              <Users className="size-4" /> {algo.dependencies}
+              <SlidersHorizontal className="size-4" /> {algo.inputSummary}
             </span>
             <Badge className="bg-emerald-500 text-white border-transparent">
               {algo.level}
             </Badge>
+          </div>
+          <div className="flex flex-col gap-3 pt-2">
+            <div className="flex flex-col gap-2">
+              <span className="text-sm font-medium">Configurable Inputs</span>
+              <div className="flex flex-wrap gap-1.5">
+                {algo.inputs.map((input) => (
+                  <InputTypeBadge
+                    key={input.key}
+                    type={input.type}
+                    label={input.label}
+                  />
+                ))}
+              </div>
+            </div>
+            {algo.dependencyLabels.length > 0 && (
+              <div className="flex flex-col gap-2">
+                <span className="text-sm font-medium">Dependencies</span>
+                <div className="flex flex-wrap gap-1.5">
+                  {algo.dependencyLabels.map((label) => (
+                    <span
+                      key={label}
+                      className="inline-flex items-center gap-1.5 rounded-md bg-emerald-100 px-2 py-1 text-xs font-medium text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300"
+                      title="Data is fetched from this dependency"
+                    >
+                      <Database className="size-3" />
+                      {label}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </section>

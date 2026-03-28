@@ -74,7 +74,7 @@ describe('SnapshotService', () => {
                   },
                   {
                     key: 'fet_staking_1',
-                    label: 'FET Staking 1',
+                    label: 'FET Staking',
                     kind: 'contract',
                     identifier: '0xCB85b101C4822A4E3ABCa20e57f1DFf0E2673475',
                     tokenIdentifier: '0xaea46A60368A7bD060eec7DF8CBa43b7EF41Ad85',
@@ -83,7 +83,7 @@ describe('SnapshotService', () => {
                   },
                   {
                     key: 'fet_staking_2',
-                    label: 'FET Staking 2',
+                    label: 'FET Staking',
                     kind: 'contract',
                     identifier: '0x351baC612B50e87B46e4b10A282f632D41397DE2',
                     tokenIdentifier: '0xaea46A60368A7bD060eec7DF8CBa43b7EF41Ad85',

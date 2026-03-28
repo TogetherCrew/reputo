@@ -192,7 +192,7 @@ export function ResourceSelectorField({
                             )}
                             aria-pressed={row.selected}
                           >
-                            <div className="flex min-w-0 items-center gap-3">
+                            <div className="flex min-w-0 items-start gap-3">
                               <Checkbox
                                 checked={row.selected}
                                 onCheckedChange={(value) =>
@@ -213,7 +213,7 @@ export function ResourceSelectorField({
                                 />
                               )}
 
-                              <div className="min-w-0">
+                              <div className="min-w-0 space-y-1">
                                 <div className="flex min-w-0 flex-wrap items-center gap-2">
                                   <span className="truncate text-sm font-semibold">
                                     {row.label}
@@ -229,6 +229,11 @@ export function ResourceSelectorField({
                                     {row.kindLabel}
                                   </Badge>
                                 </div>
+                                {row.description && (
+                                  <p className="text-muted-foreground text-xs leading-relaxed">
+                                    {row.description}
+                                  </p>
+                                )}
                               </div>
                             </div>
 

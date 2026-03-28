@@ -47,7 +47,7 @@ const definition: AlgorithmDefinition = {
                 },
                 {
                   key: 'fet_staking_1',
-                  label: 'FET Staking 1',
+                  label: 'FET Staking',
                   kind: 'contract',
                   identifier: '0xbbb',
                   tokenIdentifier: '0xaaa',

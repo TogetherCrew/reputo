@@ -157,6 +157,11 @@ function ResourceSelectorValueDisplay({
                 {resource.identifier}
               </p>
             )}
+            {resource?.description && (
+              <p className="text-muted-foreground mt-1 text-xs leading-relaxed">
+                {resource.description}
+              </p>
+            )}
           </div>
         )
       })}

@@ -40,7 +40,7 @@ const catalog: ResourceCatalog = {
         },
         {
           key: "fet_staking_1",
-          label: "FET Staking 1",
+          label: "FET Staking",
           kind: "contract",
           identifier: "0xCB85b101C4822A4E3ABCa20e57f1DFf0E2673475",
           tokenIdentifier: "0xaea46A60368A7bD060eec7DF8CBa43b7EF41Ad85",

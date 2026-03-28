@@ -2,14 +2,14 @@
     "key": "voting_engagement",
     "name": "Voting Engagement",
     "category": "Engagement",
-    "summary": "Measures how varied a user’s votes are. Higher scores mean they use a wider range of options (skip and/or 1 to 10) instead of always choosing the same value. Output is between 0 and 1.",
-    "description": "### What this algorithm is\nThis algorithm measures how varied a voter’s choices are.\n\nIt does not judge whether votes are correct. It only checks whether the voter uses a range of options (skip and/or 1 to 10) or keeps choosing the same option.\n\n### How to interpret the score\n- A lower score means the voter almost always chooses the same option.\n- A higher score means the voter spreads their votes across more options.\n\n### Inputs (Votes CSV)\nEach row is one vote. Votes are grouped by voter using collection_id.\n\nRows are ignored if collection_id, question_id, or answer is missing, or if answer is not one of: skip, 1, 2, ..., 10.\n\n### Outputs\n- A per-voter CSV with a score between 0 and 1.\n- A JSON details file with each voter’s vote distribution and processing stats.",
+    "summary": "Rewards voters who spread their ratings across the full range (skip through 10) rather than repeatedly selecting the same value — normalized to a 0–1 score per voter.",
+    "description": "### What it measures\nMeasures how varied each voter's answers are across the available rating options.\n\n### How scoring works\n- Using a broad spread of different ratings raises the score.\n- Repeatedly selecting the same rating lowers the score.\n- The final score is normalized to the 0–1 range.\n- The algorithm measures diversity only — it does not judge whether any individual rating is correct.\n\n### Required input\nUpload one CSV file where each row represents a single vote. Votes are grouped by `collection_id` (voter identifier).\n\nRows are skipped when `collection_id`, `question_id`, or `answer` is missing, or when `answer` is not `skip` or `1` through `10`.\n\n### Output files\n- A per-voter CSV with `collection_id` and `voting_engagement`.\n- A JSON details file with vote distributions and row-processing statistics.",
     "version": "1.0.0",
     "inputs": [
         {
             "key": "votes",
-            "label": "Votes CSV",
-            "description": "Votes input CSV that includes voter id, proposal id, and an answer value of skip or 1 to 10 (invalid rows are ignored).",
+            "label": "Vote History (CSV)",
+            "description": "Upload a CSV of votes. Each row must include a voter ID (`collection_id`), a question or proposal ID (`question_id`), and an `answer` of `skip` or `1` through `10`.",
             "type": "csv",
             "csv": {
                 "hasHeader": true,
@@ -21,13 +21,13 @@
                         "key": "id",
                         "type": "number",
                         "required": false,
-                        "description": "Row identifier"
+                        "description": "Optional source row identifier"
                     },
                     {
                         "key": "event_id",
                         "type": "number",
                         "required": false,
-                        "description": "Voting event identifier"
+                        "description": "Optional vote event identifier"
                     },
                     {
                         "key": "answer",
@@ -45,47 +45,47 @@
                             "9",
                             "10"
                         ],
-                        "description": "Vote value or skip"
+                        "description": "The voter's rating — `skip` to abstain, or `1` through `10`"
                     },
                     {
                         "key": "created_on",
                         "type": "date",
                         "required": false,
-                        "description": "Creation timestamp of the vote"
+                        "description": "Optional timestamp when the vote was cast"
                     },
                     {
                         "key": "updated_on",
                         "type": "date",
                         "required": false,
-                        "description": "Last update timestamp of the vote"
+                        "description": "Optional timestamp when the vote was last updated"
                     },
                     {
                         "key": "question_id",
                         "type": "string",
-                        "description": "Unique proposal/question identifier"
+                        "description": "Identifier of the proposal or question being voted on"
                     },
                     {
                         "key": "balance",
                         "type": "number",
                         "required": false,
-                        "description": "Balance at time of vote (if provided)"
+                        "description": "Optional balance recorded alongside the vote"
                     },
                     {
                         "key": "stake",
                         "type": "number",
                         "required": false,
-                        "description": "Stake associated with the vote (if provided)"
+                        "description": "Optional stake recorded alongside the vote"
                     },
                     {
                         "key": "collection_id",
                         "type": "string",
-                        "description": "Unique voter identifier"
+                        "description": "Voter identifier — all votes sharing this value are grouped together"
                     },
                     {
                         "key": "vote_id",
                         "type": "number",
                         "required": false,
-                        "description": "Vote identifier"
+                        "description": "Optional unique identifier for the vote record"
                     }
                 ]
             }
@@ -94,8 +94,8 @@
     "outputs": [
         {
             "key": "voting_engagement",
-            "label": "Voting Engagement by Voter",
-            "description": "Per-voter CSV with columns: collection_id (voter id), voting_engagement (score in [0, 1]).",
+            "label": "Voting Engagement (CSV)",
+            "description": "One row per voter with columns: `collection_id` and `voting_engagement` (score in the 0–1 range).",
             "type": "csv",
             "csv": {
                 "hasHeader": true,
@@ -104,12 +104,12 @@
                     {
                         "key": "collection_id",
                         "type": "string",
-                        "description": "Unique voter identifier"
+                        "description": "Voter identifier"
                     },
                     {
                         "key": "voting_engagement",
                         "type": "number",
-                        "description": "Voting engagement score in [0, 1]"
+                        "description": "Vote diversity score, normalized to the 0–1 range"
                     }
                 ]
             }
@@ -117,7 +117,7 @@
         {
             "key": "voting_engagement_details",
             "label": "Voting Engagement Details (JSON)",
-            "description": "Per-voter breakdown including vote distribution across the 11 categories plus processing metrics (valid/invalid rows). For debugging and auditing.",
+            "description": "Per-voter vote distributions and row-processing statistics, useful for auditing results.",
             "type": "json"
         }
     ],

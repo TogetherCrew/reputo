@@ -90,7 +90,7 @@ describe('Build: Schema Validation', () => {
                       },
                       {
                         key: 'fet_staking_1',
-                        label: 'FET Staking 1',
+                        label: 'FET Staking',
                         kind: 'contract',
                         identifier: '0xstaking',
                         tokenIdentifier: '0xtoken',
@@ -132,7 +132,7 @@ describe('Build: Schema Validation', () => {
                     dependsOn: 'chain',
                     options: [
                       { value: 'fet_token', label: 'FET', filterBy: 'ethereum' },
-                      { value: 'fet_staking_1', label: 'FET Staking 1', filterBy: 'ethereum' },
+                      { value: 'fet_staking_1', label: 'FET Staking', filterBy: 'ethereum' },
                     ],
                   },
                 },

@@ -8,8 +8,19 @@ import {
 /** Display labels for known algorithm dependency keys (e.g. external data sources) */
 const DEPENDENCY_KEY_TO_LABEL: Record<string, string> = {
   "deepfunding-portal-api": "DeepFunding Portal API",
+  "onchain-data": "Onchain Data",
   "onchain-data-service": "Onchain Data",
 }
+
+/** Per-algorithm display metadata not derived from the definition itself */
+const ALGORITHM_META: Record<string, { duration: string; level: string }> = {
+  contribution_score: { duration: "~3-6 min", level: "Intermediate" },
+  proposal_engagement: { duration: "~2-4 min", level: "Beginner" },
+  voting_engagement: { duration: "~1-3 min", level: "Beginner" },
+  token_value_over_time: { duration: "~4-8 min", level: "Intermediate" },
+}
+
+const DEFAULT_META = { duration: "~2-5 min", level: "Intermediate" }
 
 // Transform the AlgorithmDefinition from the package to match the UI's expected format
 export interface Algorithm {
@@ -19,23 +30,29 @@ export interface Algorithm {
   summary: string
   description: string
   duration: string
-  dependencies: string
+  inputSummary: string
   level: string
   inputs: Array<{
     key: string
     type: string
     label: string
   }>
-  /** Labels for data-source dependencies (e.g. external APIs) to show in Inputs section */
-  dataSourceLabels: string[]
+  /** Labels for read-only dependencies (e.g. external APIs or indexed services). */
+  dependencyLabels: string[]
+}
+
+function formatInputSummary(inputCount: number): string {
+  return `${inputCount} configurable input${inputCount !== 1 ? "s" : ""}`
 }
 
 // Transform AlgorithmDefinition to UI Algorithm format
 function transformAlgorithm(definition: AlgorithmDefinition): Algorithm {
-  const dataSourceLabels =
+  const dependencyLabels =
     definition.dependencies
       ?.map((dep) => DEPENDENCY_KEY_TO_LABEL[dep.key])
       .filter((label): label is string => Boolean(label)) ?? []
+
+  const meta = ALGORITHM_META[definition.key] ?? DEFAULT_META
 
   return {
     id: definition.key,
@@ -43,17 +60,15 @@ function transformAlgorithm(definition: AlgorithmDefinition): Algorithm {
     category: definition.category, // Preserve original category
     summary: definition.summary,
     description: definition.description,
-    duration: "~2-5 min", // Default duration since it's not in the definition
-    dependencies: `${definition.inputs.length} input${
-      definition.inputs.length !== 1 ? "s" : ""
-    }`,
-    level: "Intermediate", // Default level since it's not in the definition
+    duration: meta.duration,
+    inputSummary: formatInputSummary(definition.inputs.length),
+    level: meta.level,
     inputs: definition.inputs.map((input) => ({
       key: input.key,
       type: input.type,
       label: input.label || input.key,
     })),
-    dataSourceLabels,
+    dependencyLabels,
   }
 }
 

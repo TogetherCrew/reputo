@@ -2,14 +2,14 @@
     "key": "proposal_engagement",
     "name": "Proposal Engagement",
     "category": "Engagement",
-    "summary": "Estimates a user’s proposal impact by rewarding highly rated proposals that were funded and completed, and penalizing proposals that were not funded (especially if community ratings were low). Newer proposals can matter more if time decay is enabled.",
-    "description": "### What this algorithm is\nThis algorithm estimates a user’s impact through proposals.\n\nIt looks at each proposal, decides whether it should count as a reward or a penalty, and then applies that result to the proposal’s owners (the proposer plus any listed team members). Each owner receives the full result for that proposal (it is not split).\n\n### What increases or decreases the score\n- Funded and completed proposals increase the score, especially when community ratings are strong.\n- Unfunded proposals decrease the score, especially when community ratings are weak.\n- Newer proposals can matter more than older proposals if time decay is enabled.\n\n### Important scope / limitations\nOnly proposals from rounds 31, 36, and 107 are eligible. Proposals from other rounds are skipped because those rounds do not have reliable team-member ownership data.\n\n### What data is used\nNo file upload is needed. The algorithm fetches proposals, users, and reviews from DeepFunding Portal data.\n\n### Outputs\n- A per-user CSV with user_id and proposal_engagement.\n- A JSON details file with per-proposal breakdown and skip reasons.",
+    "summary": "Scores proposal owners based on whether their submissions were funded and how the community rated them, with optional time weighting to favor recent rounds.",
+    "description": "### What it measures\nScores the owners of eligible proposals by combining funding outcome and community rating signals. Both the proposer and any listed team members each receive the full proposal score — scores are not divided across owners.\n\n### How scoring works\n- Funded and completed proposals add to the score.\n- Unfunded proposals subtract from the score.\n- Higher community ratings amplify rewards and soften penalties.\n- An optional monthly decay rate gives more weight to proposals from recent rounds.\n\n### Scope and limitations\nOnly proposals from rounds 31, 36, and 107 are scored because those rounds contain reliable team-member ownership data. Proposals from all other rounds are skipped.\n\n### Data source\nNo file upload is required. The algorithm reads proposals, users, and reviews directly from the DeepFunding Portal.\n\n### Output files\n- A per-user CSV with `user_id` and `proposal_engagement`.\n- A JSON details file with per-proposal scoring breakdowns and skip reasons.",
     "version": "1.0.0",
     "inputs": [
         {
             "key": "funded_concluded_reward_weight",
-            "label": "Funded & Concluded Reward Weight",
-            "description": "How strongly funded and completed proposals increase the final score (0 disables rewards).",
+            "label": "Funded Proposal Reward",
+            "description": "How strongly funded and completed proposals increase the final score. Set to `0` to disable rewards entirely.",
             "type": "number",
             "min": 0,
             "max": 10,
@@ -20,8 +20,8 @@
         },
         {
             "key": "unfunded_penalty_weight",
-            "label": "Unfunded Penalty Weight",
-            "description": "How strongly unfunded proposals decrease the final score (0 disables penalties).",
+            "label": "Unfunded Proposal Penalty",
+            "description": "How strongly unfunded proposals reduce the final score. Set to `0` to disable penalties entirely.",
             "type": "number",
             "min": 0,
             "max": 10,
@@ -32,8 +32,8 @@
         },
         {
             "key": "engagement_window_months",
-            "label": "Engagement Window (Months)",
-            "description": "How many months back proposals are allowed to count; older proposals are ignored.",
+            "label": "Lookback Window (Months)",
+            "description": "Only proposals created within this many months before the snapshot are scored. Proposals older than this window are ignored entirely.",
             "type": "integer",
             "min": 1,
             "max": 72,
@@ -44,7 +44,7 @@
         {
             "key": "monthly_decay_rate_percent",
             "label": "Monthly Decay Rate (%)",
-            "description": "How quickly older proposals lose influence each month (0 means no decay).",
+            "description": "Percentage by which a proposal's contribution is reduced for each month of age. Set to `0` to treat all proposals within the window equally.",
             "type": "integer",
             "min": 0,
             "max": 100,
@@ -57,8 +57,8 @@
     "outputs": [
         {
             "key": "proposal_engagement",
-            "label": "Proposal Engagement by User",
-            "description": "Per-user CSV with columns: user_id (DeepFunding user ID), proposal_engagement (numeric score).",
+            "label": "Proposal Engagement (CSV)",
+            "description": "One row per user with columns: `user_id` and `proposal_engagement`.",
             "type": "csv",
             "csv": {
                 "hasHeader": true,
@@ -72,7 +72,7 @@
                     {
                         "key": "proposal_engagement",
                         "type": "number",
-                        "description": "Proposal engagement score"
+                        "description": "Aggregated proposal engagement score"
                     }
                 ]
             }
@@ -80,7 +80,7 @@
         {
             "key": "proposal_engagement_details",
             "label": "Proposal Engagement Details (JSON)",
-            "description": "Full per-user breakdown including per-proposal intermediate values (rewards, penalties, time weights). For debugging and auditing.",
+            "description": "Per-proposal scoring breakdown with intermediate values and skip reasons for each user, useful for auditing results.",
             "type": "json"
         }
     ],
