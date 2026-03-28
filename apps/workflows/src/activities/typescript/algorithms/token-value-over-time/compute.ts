@@ -81,9 +81,22 @@ export async function computeTokenValueOverTime(snapshot: Snapshot, storage: Sto
       skippedStaking: 0,
     };
     let transferCount = 0;
+    const processedTokens = new Set<string>();
 
     for (let i = 0; i < resolvedResources.length; i++) {
       const resource = resolvedResources[i];
+      const tokenDedupeKey = `${resource.chain}:${resource.tokenIdentifier.toLowerCase()}`;
+      if (processedTokens.has(tokenDedupeKey)) {
+        logger.info('Skipping duplicate token transfer loading', {
+          resourceId: resource.resourceId,
+          tokenDedupeKey,
+          resourceIndex: i + 1,
+          totalResources: resolvedResources.length,
+        });
+        continue;
+      }
+      processedTokens.add(tokenDedupeKey);
+
       const chainWallets = getWalletsForChain(walletAddressMap, resource.chain);
       const walletChunks = chunkArray(chainWallets, WALLET_CHUNK_SIZE);
       let pagesProcessed = 0;
