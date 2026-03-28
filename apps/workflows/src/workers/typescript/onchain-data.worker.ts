@@ -8,7 +8,7 @@ import { logger } from '../../shared/utils/index.js';
 
 export type OnchainDataWorkerConfig = {
   alchemyApiKey: string;
-  blockfrostProjectId: string;
+  blockfrostAPIKey: string;
   databaseUrl: string;
 };
 
@@ -17,13 +17,13 @@ export function getOnchainDataWorkerConfig(): OnchainDataWorkerConfig {
     throw new Error('Config validation error: ALCHEMY_API_KEY is required for onchain-data worker');
   }
 
-  if (config.onchainData.blockfrostProjectId == null) {
-    throw new Error('Config validation error: BLOCKFROST_PROJECT_ID is required for onchain-data worker');
+  if (config.onchainData.blockfrostAPIKey == null) {
+    throw new Error('Config validation error: BLOCKFROST_API_KEY is required for onchain-data worker');
   }
 
   return {
     alchemyApiKey: config.onchainData.alchemyApiKey,
-    blockfrostProjectId: config.onchainData.blockfrostProjectId,
+    blockfrostAPIKey: config.onchainData.blockfrostAPIKey,
     databaseUrl: config.onchainData.uri,
   };
 }
@@ -41,7 +41,7 @@ export async function runOnchainDataWorker(): Promise<void> {
   const activities = createOnchainDataDependencyResolverActivities({
     databaseUrl: onchainDataConfig.databaseUrl,
     alchemyApiKey: onchainDataConfig.alchemyApiKey,
-    blockfrostProjectId: onchainDataConfig.blockfrostProjectId,
+    blockfrostAPIKey: onchainDataConfig.blockfrostAPIKey,
   });
 
   logger.info(`Activities initialized: [${Object.keys(activities).join(', ')}]`);

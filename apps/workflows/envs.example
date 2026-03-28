@@ -42,3 +42,4 @@ ONCHAIN_DATA_POSTGRES_DB_NAME=reputo_onchain
 
 # Alchemy (onchain-data worker only)
 ALCHEMY_API_KEY=
+BLOCKFROST_API_KEY=

@@ -64,21 +64,21 @@ describe('onchain-data worker config', () => {
     expect(() => workerModule.getOnchainDataWorkerConfig()).toThrow(/ALCHEMY_API_KEY/);
   });
 
-  it('requires BLOCKFROST_PROJECT_ID for the onchain-data worker', async () => {
+  it('requires BLOCKFROST_API_KEY for the onchain-data worker', async () => {
     process.env.ALCHEMY_API_KEY = 'test-alchemy-key';
     const workerModule = await import('../../../src/workers/typescript/onchain-data.worker.js');
 
-    expect(() => workerModule.getOnchainDataWorkerConfig()).toThrow(/BLOCKFROST_PROJECT_ID/);
+    expect(() => workerModule.getOnchainDataWorkerConfig()).toThrow(/BLOCKFROST_API_KEY/);
   });
 
-  it('returns the worker runtime config when ALCHEMY_API_KEY and BLOCKFROST_PROJECT_ID are present', async () => {
+  it('returns the worker runtime config when ALCHEMY_API_KEY and BLOCKFROST_API_KEY are present', async () => {
     process.env.ALCHEMY_API_KEY = 'test-alchemy-key';
-    process.env.BLOCKFROST_PROJECT_ID = 'test-blockfrost-project';
+    process.env.BLOCKFROST_API_KEY = 'test-blockfrost-api-key';
     const workerModule = await import('../../../src/workers/typescript/onchain-data.worker.js');
 
     expect(workerModule.getOnchainDataWorkerConfig()).toEqual({
       alchemyApiKey: 'test-alchemy-key',
-      blockfrostProjectId: 'test-blockfrost-project',
+      blockfrostAPIKey: 'test-blockfrost-api-key',
       databaseUrl: 'postgresql://postgres:postgres@localhost:5432/reputo_onchain_test',
     });
   });

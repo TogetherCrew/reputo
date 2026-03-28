@@ -22,10 +22,10 @@ const CARDANO_UTXO_FETCH_CONCURRENCY = 5;
 export async function syncCardanoAssetTransfer(input: {
   db: DataSource;
   assetIdentifier: string;
-  blockfrostProjectId: string;
+  blockfrostAPIKey: string;
 }): Promise<SyncCardanoAssetTransferResult> {
   const adapter = createBlockfrostCardanoAssetTransferProvider({
-    projectId: input.blockfrostProjectId,
+    projectId: input.blockfrostAPIKey,
   });
 
   return syncCardanoAssetTransferWithAdapter({

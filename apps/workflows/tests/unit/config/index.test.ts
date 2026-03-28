@@ -54,7 +54,7 @@ describe('workflows config', () => {
       dbName: 'reputo_onchain_test',
       uri: 'postgresql://postgres:postgres@localhost:5432/reputo_onchain_test',
       alchemyApiKey: null,
-      blockfrostProjectId: null,
+      blockfrostAPIKey: null,
     });
   });
 
@@ -87,7 +87,7 @@ describe('workflows config', () => {
       dbName: 'reputo_onchain_test',
       uri: 'postgresql://postgres:postgres@localhost:5432/reputo_onchain_test',
       alchemyApiKey: 'test-alchemy-key',
-      blockfrostProjectId: null,
+      blockfrostAPIKey: null,
     });
   });
 });

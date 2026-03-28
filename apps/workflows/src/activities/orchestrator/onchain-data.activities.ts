@@ -4,7 +4,7 @@ import { Context } from '@temporalio/activity';
 import type { OnchainDataSyncContext, SyncTarget } from '../../shared/types/index.js';
 
 export function createOnchainDataSyncActivity(ctx: OnchainDataSyncContext) {
-  const { databaseUrl, alchemyApiKey, blockfrostProjectId } = ctx;
+  const { databaseUrl, alchemyApiKey, blockfrostAPIKey } = ctx;
 
   return async function onchainDataSync(syncTargets: SyncTarget[]): Promise<void> {
     const logger = Context.current().log;
@@ -32,7 +32,7 @@ export function createOnchainDataSyncActivity(ctx: OnchainDataSyncContext) {
           const result = await syncCardanoAssetTransfer({
             db,
             assetIdentifier: target.identifier,
-            blockfrostProjectId,
+            blockfrostAPIKey,
           });
           logger.info('Cardano asset sync completed', {
             chain: target.chain,

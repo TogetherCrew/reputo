@@ -34,7 +34,7 @@ describe('Onchain Data Sync Activity', () => {
   const ctx = {
     databaseUrl: 'postgresql://postgres:postgres@localhost:5432/reputo_onchain_test',
     alchemyApiKey: 'test-alchemy-key',
-    blockfrostProjectId: 'test-blockfrost-project',
+    blockfrostAPIKey: 'test-blockfrost-api-key',
   };
 
   beforeEach(() => {
@@ -77,7 +77,7 @@ describe('Onchain Data Sync Activity', () => {
     expect(mockSyncCardanoAssetTransfer).toHaveBeenCalledWith({
       db: { destroy: mockDbDestroy },
       assetIdentifier: 'e824c001...',
-      blockfrostProjectId: 'test-blockfrost-project',
+      blockfrostAPIKey: 'test-blockfrost-api-key',
     });
     expect(mockDbDestroy).toHaveBeenCalledOnce();
   });
