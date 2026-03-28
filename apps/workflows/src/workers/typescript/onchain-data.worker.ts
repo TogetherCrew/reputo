@@ -1,7 +1,7 @@
 import { pathToFileURL } from 'node:url';
 import { NativeConnection, Worker } from '@temporalio/worker';
 
-import { createOnchainDataDependencyResolverActivities } from '../../activities/orchestrator/index.js';
+import { createOnchainDataDependencyResolverActivities } from '../../activities/onchain-data/index.js';
 import config from '../../config/index.js';
 import { ONCHAIN_DATA_WORKER_MAX_CONCURRENT_ACTIVITIES } from '../../shared/constants/index.js';
 import { logger } from '../../shared/utils/index.js';
