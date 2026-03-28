@@ -8,7 +8,7 @@ import {
 } from '../../../../utils/mock-helpers.js';
 
 describe('createBlockfrostCardanoAssetTransferProvider', () => {
-  it('pages raw asset transactions with the requested order', async () => {
+  it('pages raw asset transactions with the requested order and starting page', async () => {
     const firstPage = Array.from({ length: 100 }, (_, index) =>
       createMockBlockfrostAssetTransaction({
         tx_hash: `tx-${index}`,
@@ -39,6 +39,7 @@ describe('createBlockfrostCardanoAssetTransferProvider', () => {
     for await (const page of provider.fetchAssetTransactions({
       assetIdentifier: FET_CARDANO_IDENTIFIER,
       order: 'desc',
+      fromPage: 3,
     })) {
       pages.push(page);
     }
@@ -47,12 +48,12 @@ describe('createBlockfrostCardanoAssetTransferProvider', () => {
     expect(blockfrostApi.assetsTransactions).toHaveBeenNthCalledWith(1, FET_CARDANO_IDENTIFIER, {
       count: 100,
       order: 'desc',
-      page: 1,
+      page: 3,
     });
     expect(blockfrostApi.assetsTransactions).toHaveBeenNthCalledWith(2, FET_CARDANO_IDENTIFIER, {
       count: 100,
       order: 'desc',
-      page: 2,
+      page: 4,
     });
   });
 

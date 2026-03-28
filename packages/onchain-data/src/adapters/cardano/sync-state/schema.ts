@@ -11,6 +11,7 @@ export interface CardanoAssetTransactionSyncStateRow {
   last_tx_index: number;
   last_block_height: number;
   last_block_time: number;
+  last_synced_page: number;
   last_asset_transaction_raw_json: RawCardanoAssetTransaction;
   updated_at: Date;
 }
@@ -37,6 +38,9 @@ export const CardanoAssetTransactionSyncStateEntitySchema = new EntitySchema<Car
       type: 'integer',
     },
     last_block_time: {
+      type: 'integer',
+    },
+    last_synced_page: {
       type: 'integer',
     },
     last_asset_transaction_raw_json: {

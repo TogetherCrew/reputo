@@ -49,7 +49,7 @@ export function createOnchainDataDependencyResolverActivities(
   return {
     async resolveDependency(input: ResolveDependencyInput): Promise<void> {
       const logger = Context.current().log;
-      const { dependencyKey, snapshotId } = input;
+      const { dependencyKey, snapshotId, syncTargets } = input;
 
       if (dependencyKey !== 'onchain-data') {
         throw new Error(
@@ -60,9 +60,10 @@ export function createOnchainDataDependencyResolverActivities(
       logger.info('Resolving dependency', {
         dependencyKey,
         snapshotId,
+        syncTargetCount: syncTargets?.length ?? 0,
       });
 
-      await onchainDataSync();
+      await onchainDataSync(syncTargets ?? []);
 
       logger.info('Dependency resolved successfully', {
         dependencyKey,

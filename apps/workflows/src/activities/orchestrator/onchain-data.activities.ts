@@ -1,42 +1,64 @@
-import { createSyncAssetTransfersService } from '@reputo/onchain-data';
+import { createDb, syncCardanoAssetTransfer, syncEvmAssetTransfer } from '@reputo/onchain-data';
 import { Context } from '@temporalio/activity';
 
-import type { OnchainDataSyncContext } from '../../shared/types/index.js';
+import type { OnchainDataSyncContext, SyncTarget } from '../../shared/types/index.js';
 
 export function createOnchainDataSyncActivity(ctx: OnchainDataSyncContext) {
-  const { databaseUrl, alchemyApiKey } = ctx;
+  const { databaseUrl, alchemyApiKey, blockfrostProjectId } = ctx;
 
-  return async function onchainDataSync(): Promise<void> {
+  return async function onchainDataSync(syncTargets: SyncTarget[]): Promise<void> {
     const logger = Context.current().log;
 
-    logger.info('Starting on-chain data sync', {
-      databaseBackend: 'postgresql',
-      assetKey: 'fet_ethereum',
-    });
-
-    logger.info('Opening PostgreSQL database for on-chain data sync');
-    const service = await createSyncAssetTransfersService({
-      assetKey: 'fet_ethereum',
-      databaseUrl,
-      alchemyApiKey,
-    });
-    logger.info('PostgreSQL database opened successfully, starting asset sync');
-
-    try {
-      const result = await service.sync();
-
-      logger.info('Asset sync completed', {
-        assetKey: result.assetKey,
-        fromBlock: result.fromBlock,
-        toBlock: result.toBlock,
-        insertedCount: result.insertedCount,
-      });
-    } finally {
-      await service.close();
+    if (syncTargets.length === 0) {
+      logger.info('No sync targets provided, skipping on-chain data sync');
+      return;
     }
 
-    Context.current().heartbeat('fet_ethereum');
+    logger.info('Starting on-chain data sync', {
+      targetCount: syncTargets.length,
+      targets: syncTargets,
+    });
 
-    logger.info('On-chain data sync completed for all assets');
+    const db = await createDb({ databaseUrl });
+
+    try {
+      for (const target of syncTargets) {
+        logger.info('Syncing asset', { chain: target.chain, identifier: target.identifier });
+
+        if (target.chain === 'cardano') {
+          const result = await syncCardanoAssetTransfer({
+            db,
+            assetIdentifier: target.identifier,
+            blockfrostProjectId,
+          });
+          logger.info('Cardano asset sync completed', {
+            chain: target.chain,
+            assetIdentifier: result.assetIdentifier,
+            pageCount: result.pageCount,
+            insertedAssetTransactionCount: result.insertedAssetTransactionCount,
+          });
+        } else {
+          const result = await syncEvmAssetTransfer({
+            db,
+            chain: target.chain,
+            assetIdentifier: target.identifier,
+            alchemyApiKey,
+          });
+          logger.info('EVM asset sync completed', {
+            chain: target.chain,
+            assetIdentifier: result.assetIdentifier,
+            fromBlock: result.fromBlock,
+            toBlock: result.toBlock,
+            insertedCount: result.insertedCount,
+          });
+        }
+
+        Context.current().heartbeat({ chain: target.chain, identifier: target.identifier });
+      }
+
+      logger.info('On-chain data sync completed for all targets');
+    } finally {
+      await db.destroy();
+    }
   };
 }

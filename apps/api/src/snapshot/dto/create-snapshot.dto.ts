@@ -41,7 +41,7 @@ class SnapshotOutputsDto {
 export class CreateSnapshotDto {
   /**
    * AlgorithmPreset ID that will be resolved and embedded as a frozen copy in the snapshot.
-   * The service fetches the full preset and stores it as algorithmPresetFrozen, identical to AlgorithmPreset.
+   * The service fetches the full preset and stores it as algorithmPresetFrozen with the same input values.
    */
   @ApiProperty({
     description: 'AlgorithmPreset ID to embed as frozen preset in the snapshot',

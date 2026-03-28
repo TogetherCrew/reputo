@@ -18,9 +18,11 @@ import type {
   DependencyKey,
   DependencyResolverActivities,
   OrchestratorWorkflowInput,
+  SyncTarget,
   TypescriptAlgorithmDispatcherActivities,
 } from '../shared/types/index.js';
 import { getAlgorithmTaskQueueFromRuntime } from '../shared/utils/orchestrator-input.utils.js';
+import { extractOnchainSyncTargets } from '../shared/utils/sync-targets.utils.js';
 
 const { getSnapshot, updateSnapshot } = workflow.proxyActivities<DbActivities>({
   startToCloseTimeout: DB_ACTIVITY_TIMEOUT,
@@ -114,6 +116,11 @@ export async function OrchestratorWorkflow(input: OrchestratorWorkflowInput): Pr
       dependencies: algorithmDefinition.dependencies.map((d) => d.key),
     });
 
+    const syncTargets: SyncTarget[] = extractOnchainSyncTargets(
+      snapshot.algorithmPresetFrozen,
+      algorithmDefinition as Parameters<typeof extractOnchainSyncTargets>[1],
+    );
+
     await Promise.all(
       algorithmDefinition.dependencies.map(async (dependency) => {
         const dependencyKey = dependency.key as DependencyKey;
@@ -121,6 +128,7 @@ export async function OrchestratorWorkflow(input: OrchestratorWorkflowInput): Pr
           await resolveOnchainDataDependency({
             dependencyKey,
             snapshotId,
+            syncTargets,
           });
         } else {
           await resolveOrchestratorDependency({

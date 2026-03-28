@@ -6,12 +6,7 @@ import type { FilterQuery } from 'mongoose';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { AlgorithmPresetRepository } from '../algorithm-preset/algorithm-preset.repository';
 import { throwNotFoundError } from '../shared/exceptions';
-import {
-  buildFrozenAlgorithmPresetInputs,
-  getAlgorithmDefinitionOrThrow,
-  pick,
-  validateAlgorithmInputs,
-} from '../shared/utils';
+import { getAlgorithmDefinitionOrThrow, pick, validateAlgorithmInputs } from '../shared/utils';
 import { StorageService } from '../storage/storage.service';
 import { TemporalService } from '../temporal';
 import type { CreateSnapshotDto, ListSnapshotsQueryDto } from './dto';
@@ -52,10 +47,7 @@ export class SnapshotService {
     const { algorithmPresetId: _, outputs, ...snapshotData } = createDto;
     const frozenAlgorithmPreset: AlgorithmPresetFrozen = {
       ...(algorithmPreset as AlgorithmPresetFrozen),
-      inputs: buildFrozenAlgorithmPresetInputs({
-        definition: algorithmDefinition,
-        inputs: algorithmPreset.inputs,
-      }),
+      inputs: algorithmPreset.inputs.map((input) => ({ ...input })),
     };
 
     const snapshot: Omit<Snapshot, 'createdAt' | 'updatedAt'> = {

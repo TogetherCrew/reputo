@@ -64,12 +64,21 @@ describe('onchain-data worker config', () => {
     expect(() => workerModule.getOnchainDataWorkerConfig()).toThrow(/ALCHEMY_API_KEY/);
   });
 
-  it('returns the worker runtime config when ALCHEMY_API_KEY is present', async () => {
+  it('requires BLOCKFROST_PROJECT_ID for the onchain-data worker', async () => {
     process.env.ALCHEMY_API_KEY = 'test-alchemy-key';
+    const workerModule = await import('../../../src/workers/typescript/onchain-data.worker.js');
+
+    expect(() => workerModule.getOnchainDataWorkerConfig()).toThrow(/BLOCKFROST_PROJECT_ID/);
+  });
+
+  it('returns the worker runtime config when ALCHEMY_API_KEY and BLOCKFROST_PROJECT_ID are present', async () => {
+    process.env.ALCHEMY_API_KEY = 'test-alchemy-key';
+    process.env.BLOCKFROST_PROJECT_ID = 'test-blockfrost-project';
     const workerModule = await import('../../../src/workers/typescript/onchain-data.worker.js');
 
     expect(workerModule.getOnchainDataWorkerConfig()).toEqual({
       alchemyApiKey: 'test-alchemy-key',
+      blockfrostProjectId: 'test-blockfrost-project',
       databaseUrl: 'postgresql://postgres:postgres@localhost:5432/reputo_onchain_test',
     });
   });

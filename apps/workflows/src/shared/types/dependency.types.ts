@@ -8,6 +8,14 @@
 export type DependencyKey = 'deepfunding-portal-api' | 'onchain-data';
 
 /**
+ * A chain+identifier pair that the onchain worker should sync.
+ */
+export interface SyncTarget {
+  chain: string;
+  identifier: string;
+}
+
+/**
  * Input for resolving a single dependency.
  */
 export interface ResolveDependencyInput {
@@ -15,6 +23,8 @@ export interface ResolveDependencyInput {
   dependencyKey: DependencyKey;
   /** The snapshot ID for context */
   snapshotId: string;
+  /** For onchain-data: which chain+identifier pairs to sync */
+  syncTargets?: SyncTarget[];
 }
 
 /**

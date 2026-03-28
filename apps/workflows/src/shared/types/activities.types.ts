@@ -58,6 +58,7 @@ export interface AlgorithmLibraryActivities {
 export interface OnchainDataSyncContext {
   databaseUrl: string;
   alchemyApiKey: string;
+  blockfrostProjectId: string;
 }
 
 /** Context for dependency resolution activities on the orchestrator worker (non-onchain). */

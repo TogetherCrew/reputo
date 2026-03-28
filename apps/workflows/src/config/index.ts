@@ -95,6 +95,7 @@ const commonEnvVarsSchema = Joi.object()
     ONCHAIN_DATA_POSTGRES_PASSWORD: Joi.string().allow('').required().description('On-chain PostgreSQL password'),
     ONCHAIN_DATA_POSTGRES_DB_NAME: Joi.string().required().description('On-chain PostgreSQL database name'),
     ALCHEMY_API_KEY: Joi.string().allow('').description('Alchemy API key'),
+    BLOCKFROST_PROJECT_ID: Joi.string().allow('').description('Blockfrost project ID for Cardano'),
   })
   .unknown();
 
@@ -178,6 +179,10 @@ const config = {
     dbName: envVars.ONCHAIN_DATA_POSTGRES_DB_NAME,
     uri: onchainDataUri.toString(),
     alchemyApiKey: envVars.ALCHEMY_API_KEY == null || envVars.ALCHEMY_API_KEY === '' ? null : envVars.ALCHEMY_API_KEY,
+    blockfrostProjectId:
+      envVars.BLOCKFROST_PROJECT_ID == null || envVars.BLOCKFROST_PROJECT_ID === ''
+        ? null
+        : envVars.BLOCKFROST_PROJECT_ID,
   },
 };
 

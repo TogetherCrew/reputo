@@ -7,15 +7,20 @@ import type { AlgorithmResult, Snapshot } from '../../../../shared/types/index.j
 import { stringifyCsvAsync } from '../../../../shared/utils/index.js';
 import { formatBenchmarkOutput } from './benchmark/index.js';
 import { replayTransfers, scoreWalletLots } from './pipeline/index.js';
+import type { ResolvedResource } from './types.js';
+import { buildResourceId } from './types.js';
 import {
-  createOnchainTransferRepo,
+  createOnchainRepos,
   extractInputs,
+  getStakingContractAddresses,
   getWalletsForChain,
-  getWalletsForSelectedAssets,
+  getWalletsForSelectedResources,
   initializeWalletLots,
-  loadTransferPageForWallets,
+  loadCardanoTransferPage,
+  loadEvmTransferPage,
+  loadResourceCatalog,
   loadWalletAddressMap,
-  resolveSelectedAssets,
+  resolveSelectedResources,
 } from './utils/index.js';
 
 const TRANSFERS_PAGE_LIMIT = 500;
@@ -39,28 +44,32 @@ export async function computeTokenValueOverTime(snapshot: Snapshot, storage: Sto
     createdAt instanceof Date ? createdAt : createdAt != null ? new Date(createdAt) : new Date();
 
   const params = extractInputs(snapshot.algorithmPresetFrozen.inputs, snapshotCreatedAt);
-  const resolvedSelectedAssets = resolveSelectedAssets(params.selectedAssets);
-  const selectedAssetKeys = resolvedSelectedAssets.map((asset) => asset.assetKey);
+  const catalog = loadResourceCatalog();
+  const resolvedResources = resolveSelectedResources(params.selectedResources, catalog);
+  const stakingAddresses = getStakingContractAddresses(catalog);
+  const selectedResourceIds = new Set(resolvedResources.map((r) => r.resourceId));
+
   const walletAddressMap = await loadWalletAddressMap({
     storage,
     bucket: config.storage.bucket,
     key: params.walletsKey,
   });
-  const targetWallets = getWalletsForSelectedAssets(walletAddressMap, params.selectedAssets);
+  const targetWallets = getWalletsForSelectedResources(walletAddressMap, params.selectedResources);
 
   logger.info('Starting token_value_over_time algorithm', { snapshotId });
   logger.info('Algorithm parameters', {
     maturationThresholdDays: params.maturationThresholdDays,
-    selectedAssets: params.selectedAssets,
+    selectedResources: params.selectedResources,
+    resolvedResourceCount: resolvedResources.length,
     walletsKey: params.walletsKey,
     effectiveDateRange: params.effectiveDateRange,
   });
   logger.info('Target wallets loaded', {
     walletCount: targetWallets.length,
-    assetKeyCount: selectedAssetKeys.length,
+    resourceIdCount: selectedResourceIds.size,
   });
 
-  const repo = await createOnchainTransferRepo();
+  const repos = await createOnchainRepos();
 
   try {
     const targetWalletSet = new Set(targetWallets);
@@ -69,21 +78,25 @@ export async function computeTokenValueOverTime(snapshot: Snapshot, storage: Sto
       processed: 0,
       skippedZeroAmount: 0,
       skippedSelfTransfers: 0,
+      skippedStaking: 0,
     };
     let transferCount = 0;
 
-    for (let i = 0; i < resolvedSelectedAssets.length; i++) {
-      const asset = resolvedSelectedAssets[i];
-      const assetWallets = getWalletsForChain(walletAddressMap, asset.chain);
-      const walletChunks = chunkArray(assetWallets, WALLET_CHUNK_SIZE);
+    for (let i = 0; i < resolvedResources.length; i++) {
+      const resource = resolvedResources[i];
+      const chainWallets = getWalletsForChain(walletAddressMap, resource.chain);
+      const walletChunks = chunkArray(chainWallets, WALLET_CHUNK_SIZE);
       let pagesProcessed = 0;
       let chainTransferCount = 0;
-      logger.info('Processing asset', {
-        assetKey: asset.assetKey,
-        chain: asset.chain,
-        assetIndex: i + 1,
-        totalAssets: resolvedSelectedAssets.length,
-        walletCount: assetWallets.length,
+
+      logger.info('Processing resource', {
+        resourceId: resource.resourceId,
+        chain: resource.chain,
+        identifier: resource.tokenIdentifier,
+        kind: resource.kind,
+        resourceIndex: i + 1,
+        totalResources: resolvedResources.length,
+        walletCount: chainWallets.length,
         walletChunkCount: walletChunks.length,
       });
 
@@ -94,36 +107,30 @@ export async function computeTokenValueOverTime(snapshot: Snapshot, storage: Sto
         while (true) {
           ctx.heartbeat({
             phase: 'load-transfers',
-            assetKey: asset.assetKey,
-            processedAssets: i + 1,
-            totalAssets: resolvedSelectedAssets.length,
+            resourceId: resource.resourceId,
+            processedResources: i + 1,
+            totalResources: resolvedResources.length,
             pageNumber,
             chunkIndex: chunkIndex + 1,
             totalChunks: walletChunks.length,
             transferCount,
           });
-          logger.info('Fetching transfer page', {
-            assetKey: asset.assetKey,
-            pageNumber,
-            chunkIndex: chunkIndex + 1,
-            totalChunks: walletChunks.length,
-          });
 
           const fetchStartedAt = Date.now();
-          const transferPage = await loadTransferPageForWallets({
-            repo,
-            assetKey: asset.assetKey,
-            walletAddresses: walletChunk,
-            page: pageNumber,
+          const transferPage = await loadTransferPage(resource, {
+            repos,
+            walletChunk,
+            pageNumber,
             limit: TRANSFERS_PAGE_LIMIT,
-            fromTimestampUnix: params.effectiveDateRange.fromTimestampUnix,
-            toTimestampUnix: params.effectiveDateRange.toTimestampUnix,
+            stakingAddresses,
+            walletAddressMap,
+            effectiveDateRange: params.effectiveDateRange,
           });
           const fetchDurationMs = Date.now() - fetchStartedAt;
 
           pagesProcessed += 1;
           logger.info('Transfer page received', {
-            assetKey: asset.assetKey,
+            resourceId: resource.resourceId,
             pageNumber,
             chunkIndex: chunkIndex + 1,
             totalChunks: walletChunks.length,
@@ -138,13 +145,14 @@ export async function computeTokenValueOverTime(snapshot: Snapshot, storage: Sto
           replayStats.processed += pageReplayStats.processed;
           replayStats.skippedZeroAmount += pageReplayStats.skippedZeroAmount;
           replayStats.skippedSelfTransfers += pageReplayStats.skippedSelfTransfers;
+          replayStats.skippedStaking += pageReplayStats.skippedStaking;
 
           if (pagesProcessed % HEARTBEAT_INTERVAL === 0 || !transferPage.hasMore) {
             ctx.heartbeat({
               phase: 'load-transfers',
-              assetKey: asset.assetKey,
-              processedAssets: i + 1,
-              totalAssets: resolvedSelectedAssets.length,
+              resourceId: resource.resourceId,
+              processedResources: i + 1,
+              totalResources: resolvedResources.length,
               pageNumber,
               chunkIndex: chunkIndex + 1,
               totalChunks: walletChunks.length,
@@ -154,7 +162,7 @@ export async function computeTokenValueOverTime(snapshot: Snapshot, storage: Sto
 
           if (transferPage.items.length === 0 && transferPage.hasMore) {
             logger.warn('Stopping pagination due to empty transfer page with hasMore=true', {
-              assetKey: asset.assetKey,
+              resourceId: resource.resourceId,
               chunkIndex: chunkIndex + 1,
               pageNumber,
             });
@@ -168,17 +176,17 @@ export async function computeTokenValueOverTime(snapshot: Snapshot, storage: Sto
         }
       }
 
-      logger.info('Asset completed', {
-        assetKey: asset.assetKey,
+      logger.info('Resource completed', {
+        resourceId: resource.resourceId,
         pagesProcessed,
-        transfersInAsset: chainTransferCount,
+        transfersInResource: chainTransferCount,
       });
     }
 
     logger.info('Computing wallet scores');
     const walletScores = scoreWalletLots({
       lotsState: walletLots,
-      selectedAssetKeys,
+      selectedResourceIds,
       snapshotCreatedAt,
       maturationThresholdDays: params.maturationThresholdDays,
     });
@@ -213,8 +221,8 @@ export async function computeTokenValueOverTime(snapshot: Snapshot, storage: Sto
     const benchmark = formatBenchmarkOutput({
       snapshotId,
       maturationThresholdDays: params.maturationThresholdDays,
-      selectedAssets: params.selectedAssets,
-      selectedAssetKeys,
+      selectedResources: params.selectedResources,
+      selectedResourceIds: [...selectedResourceIds],
       targetWalletCount: targetWallets.length,
       transferCount,
       replay: replayStats,
@@ -244,6 +252,47 @@ export async function computeTokenValueOverTime(snapshot: Snapshot, storage: Sto
       },
     };
   } finally {
-    await repo.close();
+    await repos.close();
+  }
+}
+
+async function loadTransferPage(
+  resource: ResolvedResource,
+  ctx: {
+    repos: Awaited<ReturnType<typeof createOnchainRepos>>;
+    walletChunk: string[];
+    pageNumber: number;
+    limit: number;
+    stakingAddresses: Set<string>;
+    walletAddressMap: { wallets: Partial<Record<string, string[]>> };
+    effectiveDateRange: { fromTimestampUnix?: number; toTimestampUnix: number };
+  },
+) {
+  const commonInput = {
+    repos: ctx.repos,
+    resourceId: resource.resourceId,
+    walletAddresses: ctx.walletChunk,
+    page: ctx.pageNumber,
+    limit: ctx.limit,
+    fromTimestampUnix: ctx.effectiveDateRange.fromTimestampUnix,
+    toTimestampUnix: ctx.effectiveDateRange.toTimestampUnix,
+  };
+
+  switch (resource.chain) {
+    case 'ethereum':
+      return loadEvmTransferPage({
+        ...commonInput,
+        chain: resource.chain,
+        assetIdentifier: resource.tokenIdentifier,
+        stakingAddresses: ctx.stakingAddresses,
+      });
+    case 'cardano':
+      return loadCardanoTransferPage({
+        ...commonInput,
+        assetIdentifier: resource.tokenIdentifier,
+        trackedAddresses: new Set(ctx.walletChunk),
+      });
+    default:
+      throw new Error(`Unsupported chain: ${resource.chain}`);
   }
 }

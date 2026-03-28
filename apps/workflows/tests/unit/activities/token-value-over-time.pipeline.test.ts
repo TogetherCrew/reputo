@@ -1,4 +1,3 @@
-import type { AssetKey } from '@reputo/onchain-data';
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -7,10 +6,11 @@ import {
 } from '../../../src/activities/typescript/algorithms/token-value-over-time/pipeline/index.js';
 import type {
   OrderedTransferEvent,
+  ResourceId,
   WalletLotsState,
 } from '../../../src/activities/typescript/algorithms/token-value-over-time/types.js';
 
-const FET_ETHEREUM: AssetKey = 'fet_ethereum';
+const FET_ETHEREUM: ResourceId = 'ethereum:0xaea46a60368a7bd060eec7df8cba43b7ef41ad85';
 
 describe('token-value-over-time pipeline', () => {
   it('consumes lots in FIFO order and computes linear maturation weights', () => {
@@ -18,34 +18,37 @@ describe('token-value-over-time pipeline', () => {
     const state: WalletLotsState = new Map([[wallet, []]]);
     const transfers: OrderedTransferEvent[] = [
       {
-        assetKey: FET_ETHEREUM,
-        blockNumber: '0x1',
+        resourceId: FET_ETHEREUM,
+        blockOrdinal: '0x1',
         transactionHash: '0xaaa',
         logIndex: 0,
         fromAddress: '0x0000000000000000000000000000000000000010',
         toAddress: wallet,
         amount: 10,
         blockTimestamp: '2026-01-01T00:00:00.000Z',
+        isStaking: false,
       },
       {
-        assetKey: FET_ETHEREUM,
-        blockNumber: '0x2',
+        resourceId: FET_ETHEREUM,
+        blockOrdinal: '0x2',
         transactionHash: '0xbbb',
         logIndex: 0,
         fromAddress: '0x0000000000000000000000000000000000000020',
         toAddress: wallet,
         amount: 6,
         blockTimestamp: '2026-02-01T00:00:00.000Z',
+        isStaking: false,
       },
       {
-        assetKey: FET_ETHEREUM,
-        blockNumber: '0x3',
+        resourceId: FET_ETHEREUM,
+        blockOrdinal: '0x3',
         transactionHash: '0xccc',
         logIndex: 0,
         fromAddress: wallet,
         toAddress: '0x0000000000000000000000000000000000000030',
         amount: 12,
         blockTimestamp: '2026-03-01T00:00:00.000Z',
+        isStaking: false,
       },
     ];
 
@@ -54,11 +57,12 @@ describe('token-value-over-time pipeline', () => {
       processed: 3,
       skippedZeroAmount: 0,
       skippedSelfTransfers: 0,
+      skippedStaking: 0,
     });
 
     const results = scoreWalletLots({
       lotsState: state,
-      selectedAssetKeys: [FET_ETHEREUM],
+      selectedResourceIds: new Set([FET_ETHEREUM]),
       snapshotCreatedAt: new Date('2026-04-01T00:00:00.000Z'),
       maturationThresholdDays: 90,
     });
@@ -78,24 +82,26 @@ describe('token-value-over-time pipeline', () => {
     const state: WalletLotsState = new Map([[wallet, []]]);
     const transfers: OrderedTransferEvent[] = [
       {
-        assetKey: FET_ETHEREUM,
-        blockNumber: '0x1',
+        resourceId: FET_ETHEREUM,
+        blockOrdinal: '0x1',
         transactionHash: '0xaaa',
         logIndex: 0,
         fromAddress: wallet,
         toAddress: wallet,
         amount: 100,
         blockTimestamp: '2026-01-01T00:00:00.000Z',
+        isStaking: false,
       },
       {
-        assetKey: FET_ETHEREUM,
-        blockNumber: '0x2',
+        resourceId: FET_ETHEREUM,
+        blockOrdinal: '0x2',
         transactionHash: '0xbbb',
         logIndex: 0,
         fromAddress: '0x0000000000000000000000000000000000000002',
         toAddress: wallet,
         amount: 0,
         blockTimestamp: '2026-01-02T00:00:00.000Z',
+        isStaking: false,
       },
     ];
 
@@ -107,41 +113,96 @@ describe('token-value-over-time pipeline', () => {
     expect(state.get(wallet)).toEqual([]);
   });
 
+  it('skips staking transfers without affecting lots', () => {
+    const wallet = '0x0000000000000000000000000000000000000001';
+    const stakingContract = '0xcb85b101c4822a4e3abca20e57f1dff0e2673475';
+    const state: WalletLotsState = new Map([[wallet, []]]);
+
+    const transfers: OrderedTransferEvent[] = [
+      {
+        resourceId: FET_ETHEREUM,
+        blockOrdinal: '0x1',
+        transactionHash: '0xaaa',
+        logIndex: 0,
+        fromAddress: '0x0000000000000000000000000000000000000010',
+        toAddress: wallet,
+        amount: 100,
+        blockTimestamp: '2026-01-01T00:00:00.000Z',
+        isStaking: false,
+      },
+      {
+        resourceId: FET_ETHEREUM,
+        blockOrdinal: '0x2',
+        transactionHash: '0xbbb',
+        logIndex: 0,
+        fromAddress: wallet,
+        toAddress: stakingContract,
+        amount: 50,
+        blockTimestamp: '2026-02-01T00:00:00.000Z',
+        isStaking: true,
+      },
+      {
+        resourceId: FET_ETHEREUM,
+        blockOrdinal: '0x3',
+        transactionHash: '0xccc',
+        logIndex: 0,
+        fromAddress: stakingContract,
+        toAddress: wallet,
+        amount: 50,
+        blockTimestamp: '2026-03-01T00:00:00.000Z',
+        isStaking: true,
+      },
+    ];
+
+    const stats = replayTransfers(state, transfers, new Set([wallet]));
+
+    expect(stats.processed).toBe(3);
+    expect(stats.skippedStaking).toBe(2);
+
+    const lots = state.get(wallet)!;
+    expect(lots).toHaveLength(1);
+    expect(lots[0].amountRemaining).toBe(100);
+  });
+
   it('preserves FIFO semantics when replaying multiple batches', () => {
     const wallet = '0x0000000000000000000000000000000000000001';
     const state: WalletLotsState = new Map([[wallet, []]]);
+    const resourceId = FET_ETHEREUM;
     const batchOne: OrderedTransferEvent[] = [
       {
-        assetKey: FET_ETHEREUM,
-        blockNumber: '0x1',
+        resourceId,
+        blockOrdinal: '0x1',
         transactionHash: '0xaaa',
         logIndex: 0,
         fromAddress: '0x0000000000000000000000000000000000000010',
         toAddress: wallet,
         amount: 10,
         blockTimestamp: '2026-01-01T00:00:00.000Z',
+        isStaking: false,
       },
     ];
     const batchTwo: OrderedTransferEvent[] = [
       {
-        assetKey: FET_ETHEREUM,
-        blockNumber: '0x2',
+        resourceId,
+        blockOrdinal: '0x2',
         transactionHash: '0xbbb',
         logIndex: 0,
         fromAddress: '0x0000000000000000000000000000000000000020',
         toAddress: wallet,
         amount: 5,
         blockTimestamp: '2026-01-02T00:00:00.000Z',
+        isStaking: false,
       },
       {
-        assetKey: FET_ETHEREUM,
-        blockNumber: '0x3',
+        resourceId,
+        blockOrdinal: '0x3',
         transactionHash: '0xccc',
         logIndex: 0,
         fromAddress: wallet,
         toAddress: '0x0000000000000000000000000000000000000030',
         amount: 12,
         blockTimestamp: '2026-01-03T00:00:00.000Z',
+        isStaking: false,
       },
     ];
 
@@ -150,7 +211,7 @@ describe('token-value-over-time pipeline', () => {
 
     const remainingLots = state.get(wallet);
     expect(remainingLots).toHaveLength(1);
-    expect(remainingLots?.[0].sourceTransferId).toBe('fet_ethereum:0xbbb:0');
+    expect(remainingLots?.[0].sourceTransferId).toBe(`${resourceId}:0xbbb:0`);
     expect(remainingLots?.[0].amountRemaining).toBe(3);
   });
 
@@ -159,27 +220,28 @@ describe('token-value-over-time pipeline', () => {
     const state: WalletLotsState = new Map([[wallet, []]]);
     const transfers: OrderedTransferEvent[] = [
       {
-        assetKey: FET_ETHEREUM,
-        blockNumber: '0x1',
+        resourceId: FET_ETHEREUM,
+        blockOrdinal: '0x1',
         transactionHash: '0xaaa',
         logIndex: 0,
         fromAddress: '0x0000000000000000000000000000000000000010',
         toAddress: wallet,
         amount: 10,
         blockTimestamp: '2026-01-01T00:00:00.000Z',
+        isStaking: false,
       },
     ];
     replayTransfers(state, transfers, new Set([wallet]));
 
     const resultsWithDate = scoreWalletLots({
       lotsState: state,
-      selectedAssetKeys: [FET_ETHEREUM],
+      selectedResourceIds: new Set([FET_ETHEREUM]),
       snapshotCreatedAt: new Date('2026-04-01T00:00:00.000Z'),
       maturationThresholdDays: 90,
     });
     const resultsWithString = scoreWalletLots({
       lotsState: state,
-      selectedAssetKeys: [FET_ETHEREUM],
+      selectedResourceIds: new Set([FET_ETHEREUM]),
       snapshotCreatedAt: '2026-04-01T00:00:00.000Z',
       maturationThresholdDays: 90,
     });

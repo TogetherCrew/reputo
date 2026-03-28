@@ -254,7 +254,7 @@ describe('SnapshotService', () => {
       expect(result).toBe(mockSnapshot);
     });
 
-    it('should derive deduped selected_assets from grouped selected_resources', async () => {
+    it('should preserve selected_resources as-is for token_value_over_time snapshots', async () => {
       vi.mocked(getAlgorithmDefinition).mockReturnValue(JSON.stringify(tokenValueOverTimeDefinition));
       mockStorageService.getObjectMetadata = vi.fn().mockResolvedValue({
         filename: 'wallets.json',
@@ -343,13 +343,6 @@ describe('SnapshotService', () => {
               chain: 'cardano',
               resource_key: 'fet_token',
             },
-          ],
-        },
-        {
-          key: 'selected_assets',
-          value: [
-            { chain: 'ethereum', asset_identifier: '0xaea46A60368A7bD060eec7DF8CBa43b7EF41Ad85' },
-            { chain: 'cardano', asset_identifier: 'e824c0011176f0926ad51f492bcc63ac6a03a589653520839dc7e3d9' },
           ],
         },
       ]);

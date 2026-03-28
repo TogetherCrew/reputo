@@ -3,6 +3,7 @@ import type { DataSource } from 'typeorm';
 import { insertCardanoAssetTransactions } from '../asset-transactions/repository.js';
 import { toCardanoAssetTransactionRow } from '../asset-transactions/schema.js';
 import { createBlockfrostCardanoAssetTransferProvider } from '../provider/provider.js';
+import type { RawCardanoAssetTransaction } from '../provider/types.js';
 import {
   findCardanoAssetTransactionSyncState,
   upsertCardanoAssetTransactionSyncState,
@@ -45,7 +46,8 @@ export async function syncCardanoAssetTransferWithAdapter(input: {
     assetIdentifier: input.assetIdentifier,
   };
   const syncState = await findCardanoAssetTransactionSyncState(input.db.manager, target);
-  const order = syncState ? 'desc' : 'asc';
+  const fromPage = syncState?.last_synced_page ?? 1;
+  const order = 'asc';
   const fromTxHash = syncState?.last_tx_hash ?? null;
 
   let pageCount = 0;
@@ -55,42 +57,38 @@ export async function syncCardanoAssetTransferWithAdapter(input: {
   let attemptedUtxoCount = 0;
   let insertedUtxoCount = 0;
   let ignoredUtxoCount = 0;
-
-  let nextSyncTransaction = null;
-  let lastInitialTransaction = null;
-  let hasNewTransactions = false;
+  let currentPage = fromPage;
+  let syncBoundaryFound = syncState == null;
+  let lastSyncedTransaction: RawCardanoAssetTransaction | null = null;
 
   for await (const page of input.adapter.fetchAssetTransactions({
     assetIdentifier: target.assetIdentifier,
     order,
+    fromPage,
   })) {
     pageCount += 1;
 
-    if (syncState && !nextSyncTransaction && page.items.length > 0) {
-      nextSyncTransaction = page.items[0];
-    }
-
     let pageItems = page.items;
-    let shouldStop = false;
 
     if (syncState) {
-      const syncBoundaryIndex = page.items.findIndex((item) => item.tx_hash === syncState.last_tx_hash);
+      if (!syncBoundaryFound) {
+        const syncBoundaryIndex = page.items.findIndex((item) => item.tx_hash === syncState.last_tx_hash);
 
-      if (syncBoundaryIndex >= 0) {
-        pageItems = page.items.slice(0, syncBoundaryIndex);
-        shouldStop = true;
+        if (syncBoundaryIndex >= 0) {
+          syncBoundaryFound = true;
+          pageItems = page.items.slice(syncBoundaryIndex + 1);
+        } else {
+          throw new Error(
+            `Cardano sync boundary transaction ${syncState.last_tx_hash} was not found on page ${currentPage} for asset ${target.assetIdentifier}`,
+          );
+        }
       }
     }
 
     if (pageItems.length === 0) {
-      if (shouldStop) {
-        break;
-      }
-
+      currentPage += 1;
       continue;
     }
-
-    hasNewTransactions = true;
 
     const transactionUtxos = await mapWithConcurrency(
       pageItems,
@@ -109,6 +107,8 @@ export async function syncCardanoAssetTransferWithAdapter(input: {
         transactionUtxo: item.transactionUtxo,
       }),
     );
+    const lastPageTransaction = pageItems[pageItems.length - 1];
+    lastSyncedTransaction = lastPageTransaction;
 
     const batchResult = await input.db.transaction(async (transactionalEntityManager) => {
       const assetTransactionResult = await insertCardanoAssetTransactions(
@@ -120,16 +120,13 @@ export async function syncCardanoAssetTransferWithAdapter(input: {
         transactionUtxoWriteSets,
       );
 
-      if (!syncState) {
-        const lastPageTransaction = pageItems[pageItems.length - 1];
-
-        await upsertCardanoAssetTransactionSyncState(transactionalEntityManager, {
-          chain: target.chain,
-          assetIdentifier: target.assetIdentifier,
-          lastAssetTransaction: lastPageTransaction,
-          updatedAt: input.clock?.() ?? new Date(),
-        });
-      }
+      await upsertCardanoAssetTransactionSyncState(transactionalEntityManager, {
+        chain: target.chain,
+        assetIdentifier: target.assetIdentifier,
+        lastAssetTransaction: lastPageTransaction,
+        lastSyncedPage: currentPage,
+        updatedAt: input.clock?.() ?? new Date(),
+      });
 
       return {
         assetTransactionResult,
@@ -143,25 +140,13 @@ export async function syncCardanoAssetTransferWithAdapter(input: {
     attemptedUtxoCount += batchResult.transactionUtxoResult.attemptedCount;
     insertedUtxoCount += batchResult.transactionUtxoResult.insertedCount;
     ignoredUtxoCount += batchResult.transactionUtxoResult.ignoredCount;
-
-    if (!syncState) {
-      lastInitialTransaction = pageItems[pageItems.length - 1];
-    }
-
-    if (shouldStop) {
-      break;
-    }
+    currentPage += 1;
   }
 
-  if (syncState && hasNewTransactions && nextSyncTransaction) {
-    await input.db.transaction(async (transactionalEntityManager) => {
-      await upsertCardanoAssetTransactionSyncState(transactionalEntityManager, {
-        chain: target.chain,
-        assetIdentifier: target.assetIdentifier,
-        lastAssetTransaction: nextSyncTransaction,
-        updatedAt: input.clock?.() ?? new Date(),
-      });
-    });
+  if (syncState && !syncBoundaryFound) {
+    throw new Error(
+      `Cardano sync boundary transaction ${syncState.last_tx_hash} was not found on page ${fromPage} for asset ${target.assetIdentifier}`,
+    );
   }
 
   return {
@@ -169,11 +154,7 @@ export async function syncCardanoAssetTransferWithAdapter(input: {
     assetIdentifier: target.assetIdentifier,
     order,
     fromTxHash,
-    toTxHash: syncState
-      ? hasNewTransactions
-        ? (nextSyncTransaction?.tx_hash ?? fromTxHash)
-        : fromTxHash
-      : (lastInitialTransaction?.tx_hash ?? null),
+    toTxHash: lastSyncedTransaction?.tx_hash ?? fromTxHash,
     pageCount,
     attemptedAssetTransactionCount,
     insertedAssetTransactionCount,

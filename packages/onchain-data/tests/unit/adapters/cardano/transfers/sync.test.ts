@@ -156,6 +156,7 @@ describe('syncCardanoAssetTransferWithAdapter', () => {
     expect(adapter.fetchAssetTransactions).toHaveBeenCalledWith({
       assetIdentifier,
       order: 'asc',
+      fromPage: 1,
     });
     expect(mockDb.assetTransactionInsertValues[0]).toEqual([
       {
@@ -358,12 +359,13 @@ describe('syncCardanoAssetTransferWithAdapter', () => {
       last_tx_index: 2,
       last_block_height: 101,
       last_block_time: 1_700_000_200,
+      last_synced_page: 1,
       last_asset_transaction_raw_json: secondTransaction,
       updated_at: new Date('2024-01-15T12:00:00.000Z'),
     });
   });
 
-  it('resumes in descending order until it reaches the stored transaction hash', async () => {
+  it('resumes in ascending order from the stored page', async () => {
     const assetIdentifier = FET_CARDANO_IDENTIFIER;
     const storedTransaction = createMockBlockfrostAssetTransaction({
       tx_hash: 'tx-known',
@@ -380,7 +382,7 @@ describe('syncCardanoAssetTransferWithAdapter', () => {
     const adapter = {
       fetchAssetTransactions: vi.fn(async function* fetchAssetTransactions() {
         yield {
-          items: [newestTransaction, storedTransaction],
+          items: [storedTransaction, newestTransaction],
         };
       }),
       fetchTransactionUtxo: vi
@@ -395,6 +397,7 @@ describe('syncCardanoAssetTransferWithAdapter', () => {
         last_tx_index: storedTransaction.tx_index,
         last_block_height: storedTransaction.block_height,
         last_block_time: storedTransaction.block_time,
+        last_synced_page: 3,
         last_asset_transaction_raw_json: storedTransaction,
         updated_at: new Date('2024-01-14T00:00:00.000Z'),
       },
@@ -410,7 +413,7 @@ describe('syncCardanoAssetTransferWithAdapter', () => {
     expect(result).toEqual({
       chain: 'cardano',
       assetIdentifier,
-      order: 'desc',
+      order: 'asc',
       fromTxHash: storedTransaction.tx_hash,
       toTxHash: newestTransaction.tx_hash,
       pageCount: 1,
@@ -423,11 +426,87 @@ describe('syncCardanoAssetTransferWithAdapter', () => {
     });
     expect(adapter.fetchAssetTransactions).toHaveBeenCalledWith({
       assetIdentifier,
-      order: 'desc',
+      order: 'asc',
+      fromPage: 3,
     });
     expect(adapter.fetchTransactionUtxo).toHaveBeenCalledTimes(1);
     expect(adapter.fetchTransactionUtxo).toHaveBeenCalledWith(newestTransaction.tx_hash);
-    expect(mockDb.syncState?.last_tx_hash).toBe(newestTransaction.tx_hash);
+    expect(mockDb.syncState).toEqual({
+      chain: 'cardano',
+      asset_identifier: assetIdentifier,
+      last_tx_hash: newestTransaction.tx_hash,
+      last_tx_index: newestTransaction.tx_index,
+      last_block_height: newestTransaction.block_height,
+      last_block_time: newestTransaction.block_time,
+      last_synced_page: 3,
+      last_asset_transaction_raw_json: newestTransaction,
+      updated_at: new Date('2024-01-15T12:00:00.000Z'),
+    });
+  });
+
+  it('fails fast when the stored page does not contain the sync boundary transaction', async () => {
+    const assetIdentifier = FET_CARDANO_IDENTIFIER;
+    const storedTransaction = createMockBlockfrostAssetTransaction({
+      tx_hash: 'tx-known',
+      tx_index: 4,
+      block_height: 200,
+      block_time: 1_700_000_400,
+    });
+    const unexpectedTransaction = createMockBlockfrostAssetTransaction({
+      tx_hash: 'tx-other',
+      tx_index: 5,
+      block_height: 201,
+      block_time: 1_700_000_500,
+    });
+    const adapter = {
+      fetchAssetTransactions: vi.fn(async function* fetchAssetTransactions() {
+        yield {
+          items: [unexpectedTransaction],
+        };
+      }),
+      fetchTransactionUtxo: vi.fn(),
+    };
+    const mockDb = createMockTransferSyncDb({
+      syncState: {
+        chain: 'cardano',
+        asset_identifier: assetIdentifier,
+        last_tx_hash: storedTransaction.tx_hash,
+        last_tx_index: storedTransaction.tx_index,
+        last_block_height: storedTransaction.block_height,
+        last_block_time: storedTransaction.block_time,
+        last_synced_page: 2,
+        last_asset_transaction_raw_json: storedTransaction,
+        updated_at: new Date('2024-01-14T00:00:00.000Z'),
+      },
+    });
+
+    await expect(
+      syncCardanoAssetTransferWithAdapter({
+        db: mockDb.db,
+        assetIdentifier,
+        adapter,
+      }),
+    ).rejects.toThrow('Cardano sync boundary transaction tx-known was not found on page 2');
+
+    expect(adapter.fetchAssetTransactions).toHaveBeenCalledWith({
+      assetIdentifier,
+      order: 'asc',
+      fromPage: 2,
+    });
+    expect(adapter.fetchTransactionUtxo).not.toHaveBeenCalled();
+    expect(mockDb.assetTransactionInsertValues).toEqual([]);
+    expect(mockDb.transactionUtxoInsertValues).toEqual([]);
+    expect(mockDb.syncState).toEqual({
+      chain: 'cardano',
+      asset_identifier: assetIdentifier,
+      last_tx_hash: storedTransaction.tx_hash,
+      last_tx_index: storedTransaction.tx_index,
+      last_block_height: storedTransaction.block_height,
+      last_block_time: storedTransaction.block_time,
+      last_synced_page: 2,
+      last_asset_transaction_raw_json: storedTransaction,
+      updated_at: new Date('2024-01-14T00:00:00.000Z'),
+    });
   });
 
   it('leaves sync state unchanged when there are no new transactions', async () => {
@@ -445,6 +524,7 @@ describe('syncCardanoAssetTransferWithAdapter', () => {
       last_tx_index: storedTransaction.tx_index,
       last_block_height: storedTransaction.block_height,
       last_block_time: storedTransaction.block_time,
+      last_synced_page: 4,
       last_asset_transaction_raw_json: storedTransaction,
       updated_at: new Date('2024-01-14T00:00:00.000Z'),
     };
@@ -469,7 +549,7 @@ describe('syncCardanoAssetTransferWithAdapter', () => {
     expect(result).toEqual({
       chain: 'cardano',
       assetIdentifier,
-      order: 'desc',
+      order: 'asc',
       fromTxHash: storedTransaction.tx_hash,
       toTxHash: storedTransaction.tx_hash,
       pageCount: 1,
@@ -479,6 +559,11 @@ describe('syncCardanoAssetTransferWithAdapter', () => {
       attemptedUtxoCount: 0,
       insertedUtxoCount: 0,
       ignoredUtxoCount: 0,
+    });
+    expect(adapter.fetchAssetTransactions).toHaveBeenCalledWith({
+      assetIdentifier,
+      order: 'asc',
+      fromPage: 4,
     });
     expect(adapter.fetchTransactionUtxo).not.toHaveBeenCalled();
     expect(mockDb.syncState).toEqual(syncState);

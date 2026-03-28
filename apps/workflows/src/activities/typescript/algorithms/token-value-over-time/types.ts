@@ -1,52 +1,66 @@
-import type { AssetKey, AssetTransferEntity } from '@reputo/onchain-data';
-import { normalizeHexBlock } from '@reputo/onchain-data';
+export type SupportedChain = 'ethereum' | 'cardano';
 
-export type SupportedWalletChain = 'ethereum' | 'cardano';
+export interface ResourceCatalogEntry {
+  chain: SupportedChain;
+  key: string;
+  kind: 'token' | 'contract';
+  identifier: string;
+  tokenIdentifier: string;
+  tokenKey: string;
+  parentResourceKey?: string;
+}
 
-export interface SelectedAssetInput {
-  chain: SupportedWalletChain;
-  assetIdentifier: string;
+/** Unique resource identifier: `${chain}:${identifier}` */
+export type ResourceId = string;
+
+export function buildResourceId(chain: string, identifier: string): ResourceId {
+  return `${chain}:${identifier.toLowerCase()}`;
+}
+
+export interface SelectedResourceInput {
+  chain: SupportedChain;
+  resourceKey: string;
+}
+
+export interface ResolvedResource {
+  chain: SupportedChain;
+  resourceKey: string;
+  kind: 'token' | 'contract';
+  identifier: string;
+  tokenIdentifier: string;
+  resourceId: ResourceId;
 }
 
 export interface WalletAddressMap {
-  wallets: Partial<Record<SupportedWalletChain, string[]>>;
+  wallets: Partial<Record<SupportedChain, string[]>>;
 }
 
-export interface ResolvedSelectedAsset {
-  chain: SupportedWalletChain;
-  assetIdentifier: string;
-  assetKey: AssetKey;
-}
-
-/** Effective transfer window: token genesis (no lower bound) through snapshot run time. */
 export interface EffectiveDateRange {
-  /** Unix timestamp (seconds) for the lower transfer bound. Undefined = no lower bound (full history from genesis). */
   fromTimestampUnix: number | undefined;
-  /** Unix timestamp (seconds) for the upper transfer bound (snapshot run time). */
   toTimestampUnix: number;
 }
 
 export interface TokenValueOverTimeParams {
   maturationThresholdDays: number;
-  selectedAssets: SelectedAssetInput[];
+  selectedResources: SelectedResourceInput[];
   walletsKey: string;
-  /** Always full history: genesis through snapshot run time. */
   effectiveDateRange: EffectiveDateRange;
 }
 
 export interface OrderedTransferEvent {
-  assetKey: AssetKey;
-  blockNumber: string;
+  resourceId: ResourceId;
+  blockOrdinal: string;
   transactionHash: string;
   logIndex: number;
   fromAddress: string | null;
   toAddress: string | null;
   amount: number;
   blockTimestamp: string | null;
+  isStaking: boolean;
 }
 
 export type WalletLot = {
-  assetKey: AssetKey;
+  resourceId: ResourceId;
   amountRemaining: number;
   receivedAt: string | null;
   sourceTransferId: string;
@@ -58,10 +72,11 @@ export interface ReplayStats {
   processed: number;
   skippedZeroAmount: number;
   skippedSelfTransfers: number;
+  skippedStaking: number;
 }
 
 export interface LotScoreDetail {
-  asset_key: AssetKey;
+  resource_id: ResourceId;
   source_transfer_id: string;
   amount_remaining: number;
   age_days: number;
@@ -81,8 +96,8 @@ export interface TokenValueOverTimeBenchmark {
     snapshot_id: string;
     computed_at: string;
     maturation_threshold_days: number;
-    selected_assets: SelectedAssetInput[];
-    selected_asset_keys: AssetKey[];
+    selected_resources: SelectedResourceInput[];
+    selected_resource_ids: ResourceId[];
     target_wallet_count: number;
     transfer_count: number;
     replay: ReplayStats;
@@ -93,18 +108,4 @@ export const SCORE_PRECISION = 6;
 
 export function roundScore(score: number): number {
   return Math.round(score * 10 ** SCORE_PRECISION) / 10 ** SCORE_PRECISION;
-}
-
-export function toTransferEvent(entity: AssetTransferEntity, assetKey: AssetKey): OrderedTransferEvent {
-  return {
-    assetKey,
-    blockNumber: normalizeHexBlock(entity.block_number),
-    transactionHash: entity.transaction_hash,
-    logIndex: entity.log_index,
-    fromAddress: entity.from_address,
-    toAddress: entity.to_address,
-    amount: Number(entity.amount),
-    blockTimestamp:
-      entity.block_timestamp_unix != null ? new Date(entity.block_timestamp_unix * 1000).toISOString() : null,
-  };
 }

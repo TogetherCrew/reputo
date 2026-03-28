@@ -32,7 +32,7 @@ export function createBlockfrostCardanoAssetTransferProvider(input: {
 
   return {
     async *fetchAssetTransactions(inputWindow) {
-      let page = 1;
+      let page = inputWindow.fromPage ?? 1;
 
       for (;;) {
         const items = await api.assetsTransactions(inputWindow.assetIdentifier, {

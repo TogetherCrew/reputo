@@ -3,6 +3,7 @@ export type CardanoAssetTransferOrder = 'asc' | 'desc';
 export type CardanoAssetTransferWindow = {
   assetIdentifier: string;
   order: CardanoAssetTransferOrder;
+  fromPage?: number;
 };
 
 export type CardanoAssetTransferProviderPage<TTransaction> = {

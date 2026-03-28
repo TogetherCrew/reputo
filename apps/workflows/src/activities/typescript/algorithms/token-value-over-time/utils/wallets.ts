@@ -1,12 +1,12 @@
 import type { Storage } from '@reputo/storage';
 
-import type { SelectedAssetInput, SupportedWalletChain, WalletAddressMap, WalletLotsState } from '../types.js';
+import type { SelectedResourceInput, SupportedChain, WalletAddressMap, WalletLotsState } from '../types.js';
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
-function normalizeWalletAddresses(value: unknown, chain: SupportedWalletChain): string[] {
+function normalizeWalletAddresses(value: unknown, chain: SupportedChain): string[] {
   if (!Array.isArray(value)) {
     throw new Error(`Wallet JSON field "wallets.${chain}" must be an array`);
   }
@@ -56,11 +56,11 @@ export async function loadWalletAddressMap(input: {
   };
 }
 
-export function getWalletsForSelectedAssets(
+export function getWalletsForSelectedResources(
   walletAddressMap: WalletAddressMap,
-  selectedAssets: SelectedAssetInput[],
+  selectedResources: SelectedResourceInput[],
 ): string[] {
-  const selectedChains = new Set(selectedAssets.map((asset) => asset.chain));
+  const selectedChains = new Set(selectedResources.map((r) => r.chain));
   const wallets = new Set<string>();
 
   for (const chain of selectedChains) {
@@ -72,7 +72,7 @@ export function getWalletsForSelectedAssets(
   return [...wallets];
 }
 
-export function getWalletsForChain(walletAddressMap: WalletAddressMap, chain: SupportedWalletChain): string[] {
+export function getWalletsForChain(walletAddressMap: WalletAddressMap, chain: SupportedChain): string[] {
   return [...(walletAddressMap.wallets[chain] ?? [])];
 }
 

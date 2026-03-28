@@ -4,8 +4,6 @@ import {
   type AlgorithmDefinition,
   type CsvIoItem,
   getAlgorithmDefinition,
-  getResourceCatalog,
-  getResourceCatalogResource,
   type JsonIoItem,
 } from '@reputo/reputation-algorithms';
 import type { StorageMetadata } from '@reputo/storage';
@@ -15,80 +13,6 @@ import { type StorageInputValidationError, StorageInputValidationException } fro
 export interface AlgorithmInputValue {
   key: string;
   value?: unknown;
-}
-
-interface TokenValueOverTimeSelectedResourceInput {
-  chain: string;
-  resource_key: string;
-}
-
-interface TokenValueOverTimeSelectedAssetInput {
-  chain: string;
-  asset_identifier: string;
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
-
-function getTokenValueOverTimeSelectedResources(
-  payload: Record<string, unknown>,
-): TokenValueOverTimeSelectedResourceInput[] {
-  const selectedResources = payload.selected_resources;
-  if (!Array.isArray(selectedResources)) {
-    return [];
-  }
-
-  return selectedResources.flatMap((item) =>
-    isRecord(item) && typeof item.chain === 'string' && typeof item.resource_key === 'string'
-      ? [
-          {
-            chain: item.chain,
-            resource_key: item.resource_key,
-          },
-        ]
-      : [],
-  );
-}
-
-function normalizeTokenValueOverTimeSelectedAssets(
-  definition: AlgorithmDefinition,
-  selectedResources: ReadonlyArray<TokenValueOverTimeSelectedResourceInput>,
-): TokenValueOverTimeSelectedAssetInput[] {
-  const catalog = getResourceCatalog({
-    definition,
-    inputKey: 'selected_resources',
-  });
-  if (!catalog) {
-    return [];
-  }
-
-  const seen = new Set<string>();
-  const normalizedAssets: TokenValueOverTimeSelectedAssetInput[] = [];
-
-  for (const selectedResource of selectedResources) {
-    const catalogEntry = getResourceCatalogResource({
-      catalog,
-      chainKey: selectedResource.chain,
-      resourceKey: selectedResource.resource_key,
-    });
-    if (!catalogEntry) {
-      continue;
-    }
-
-    const dedupeKey = `${selectedResource.chain}:${catalogEntry.tokenIdentifier}`;
-    if (seen.has(dedupeKey)) {
-      continue;
-    }
-
-    seen.add(dedupeKey);
-    normalizedAssets.push({
-      chain: selectedResource.chain,
-      asset_identifier: catalogEntry.tokenIdentifier,
-    });
-  }
-
-  return normalizedAssets;
 }
 
 function getStorageInputFileLabel(input: CsvIoItem | JsonIoItem): string {
@@ -174,32 +98,6 @@ export function buildAlgorithmPayload(inputs: ReadonlyArray<AlgorithmInputValue>
   }
 
   return payload;
-}
-
-export function buildFrozenAlgorithmPresetInputs(params: {
-  definition: AlgorithmDefinition;
-  inputs: ReadonlyArray<AlgorithmInputValue>;
-}): AlgorithmInputValue[] {
-  if (params.definition.key !== 'token_value_over_time') {
-    return params.inputs.map((input) => ({ ...input }));
-  }
-
-  const payload = buildAlgorithmPayload(params.inputs);
-  const normalizedSelectedAssets = normalizeTokenValueOverTimeSelectedAssets(
-    params.definition,
-    getTokenValueOverTimeSelectedResources(payload),
-  );
-
-  const frozenInputs = params.inputs.filter((input) => input.key !== 'selected_assets').map((input) => ({ ...input }));
-
-  if (normalizedSelectedAssets.length > 0) {
-    frozenInputs.push({
-      key: 'selected_assets',
-      value: normalizedSelectedAssets,
-    });
-  }
-
-  return frozenInputs;
 }
 
 export async function validateAlgorithmInputs(params: {

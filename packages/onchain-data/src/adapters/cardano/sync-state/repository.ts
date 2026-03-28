@@ -20,6 +20,7 @@ export async function upsertCardanoAssetTransactionSyncState(
     chain: string;
     assetIdentifier: string;
     lastAssetTransaction: RawCardanoAssetTransaction;
+    lastSyncedPage: number;
     updatedAt: Date;
   },
 ): Promise<void> {
@@ -31,6 +32,7 @@ export async function upsertCardanoAssetTransactionSyncState(
       last_tx_index: input.lastAssetTransaction.tx_index,
       last_block_height: input.lastAssetTransaction.block_height,
       last_block_time: input.lastAssetTransaction.block_time,
+      last_synced_page: input.lastSyncedPage,
       last_asset_transaction_raw_json: input.lastAssetTransaction,
       updated_at: input.updatedAt,
     },

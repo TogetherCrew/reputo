@@ -162,6 +162,7 @@ describe('OrchestratorWorkflow task queue routing', () => {
     expect(resolveDependency).toHaveBeenCalledWith({
       dependencyKey: 'onchain-data',
       snapshotId: 'snapshot-1',
+      syncTargets: [],
     });
   });
 });
