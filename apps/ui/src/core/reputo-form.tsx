@@ -11,8 +11,10 @@ import {
   CSVField,
   DateField,
   EnumField,
+  JSONField,
   NumberField,
   RepeaterField,
+  ResourceSelectorField,
   SelectField,
   SliderField,
   TextField,
@@ -95,9 +97,14 @@ function ReputoFormInner({
         return <SliderField key={input.key} {...commonProps} />
       case "csv":
         return <CSVField key={input.key} {...commonProps} />
+      case "json":
+        return <JSONField key={input.key} {...commonProps} />
       case "date":
         return <DateField key={input.key} {...commonProps} />
       case "array":
+        if (input.widget === "resource_selector") {
+          return <ResourceSelectorField key={input.key} {...commonProps} />
+        }
         return <RepeaterField key={input.key} {...commonProps} />
       default:
         return null
@@ -119,7 +126,10 @@ function ReputoFormInner({
       if (value === undefined || value === null || value === "") {
         return false
       }
-      if (input.type === "csv" && value instanceof File) {
+      if (
+        (input.type === "csv" || input.type === "json") &&
+        value instanceof File
+      ) {
         return false
       }
       if (input.type === "array" && Array.isArray(value)) {
@@ -190,6 +200,29 @@ function getDefaultValues(
     return Number.isFinite(n) ? n : value
   }
 
+  const buildArrayDefaultRow = (
+    itemProps: Array<{
+      key: string
+      type?: string
+      default?: unknown
+      minItems?: number
+      itemProperties?: Array<any>
+    }>
+  ): Record<string, unknown> => {
+    const row: Record<string, unknown> = {}
+    for (const prop of itemProps) {
+      if (prop.type === "array") {
+        const minItems = prop.minItems ?? 1
+        row[prop.key] = Array.from({ length: minItems }, () =>
+          buildArrayDefaultRow(prop.itemProperties ?? [])
+        )
+      } else {
+        row[prop.key] = prop.default ?? ""
+      }
+    }
+    return row
+  }
+
   schema.inputs.forEach((input) => {
     if (userDefaults[input.key] !== undefined) {
       const raw = userDefaults[input.key]
@@ -212,18 +245,17 @@ function getDefaultValues(
           defaults[input.key] = ""
           break
         case "array": {
+          if ((input as any).widget === "resource_selector") {
+            defaults[input.key] = []
+            break
+          }
+
           const itemProps = (input as any).itemProperties as
             | Array<{ key: string; default?: unknown }>
             | undefined
-          const defaultRow: Record<string, unknown> = {}
-          if (itemProps) {
-            for (const prop of itemProps) {
-              defaultRow[prop.key] = prop.default ?? ""
-            }
-          }
           const minItems = (input as any).minItems ?? 1
           defaults[input.key] = Array.from({ length: minItems }, () => ({
-            ...defaultRow,
+            ...buildArrayDefaultRow((itemProps as Array<any>) ?? []),
           }))
           break
         }
@@ -232,6 +264,7 @@ function getDefaultValues(
         case "select":
         case "date":
         case "csv":
+        case "json":
           if (!isRequired) {
             defaults[input.key] = undefined
           } else {

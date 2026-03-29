@@ -4,13 +4,8 @@ import type { ProposalRecord } from '@reputo/deepfunding-portal-api';
  * Parse team members JSON string to array of user IDs.
  */
 export function parseTeamMembers(teamMembersJson: string): number[] {
-  try {
-    const raw = JSON.parse(teamMembersJson) as unknown;
-    if (!Array.isArray(raw)) return [];
-    return raw.map((x) => Number(x)).filter((n) => Number.isFinite(n));
-  } catch {
-    return [];
-  }
+  const raw = JSON.parse(teamMembersJson) as number[];
+  return raw.map((x) => Number(x));
 }
 
 /**

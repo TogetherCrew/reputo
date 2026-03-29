@@ -10,6 +10,7 @@ export function replayTransfers(
     processed: 0,
     skippedZeroAmount: 0,
     skippedSelfTransfers: 0,
+    skippedStaking: 0,
   };
 
   for (const transfer of transfers) {

@@ -1,4 +1,15 @@
-export { createOnchainTransferRepo } from './db.js';
-export { extractInputs, resolveSelectedAssetKeys } from './inputs.js';
-export { loadTransferPageForWallets, type TransferPage } from './transfers.js';
-export { initializeWalletLots, loadTargetWallets } from './wallets.js';
+export { createOnchainRepos } from './db.js';
+export { extractInputs } from './inputs.js';
+export {
+  getStakingContractAddresses,
+  getSyncTargets,
+  loadResourceCatalog,
+  resolveSelectedResources,
+} from './resource-catalog.js';
+export { loadCardanoTransferPage, loadEvmTransferPage, type TransferPage } from './transfers.js';
+export {
+  getWalletsForChain,
+  getWalletsForSelectedResources,
+  initializeWalletLots,
+  loadWalletAddressMap,
+} from './wallets.js';

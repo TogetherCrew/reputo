@@ -4,9 +4,12 @@ import {
   type AlgorithmDefinition,
   type ArrayIoItem,
   getAlgorithmDefinition,
+  getResourceCatalog,
 } from "@reputo/reputation-algorithms"
+import { ExternalLink } from "lucide-react"
 import Image from "next/image"
 import { useMemo } from "react"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -16,7 +19,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { getChainMeta, getTokenMeta } from "@/core/chain-token-metadata"
+import { getChainMeta, getTargetMeta } from "@/core/chain-token-metadata"
 import type { AlgorithmPresetResponseDto } from "@/lib/api/types"
 import { FileDisplay } from "../file-display"
 
@@ -51,13 +54,140 @@ function MetaIcon({ url, label }: { url: string; label: string }) {
   )
 }
 
-function ArrayValueDisplay({
+function isResourceSelectionItem(
+  value: unknown
+): value is { chain: string; resource_key: string } {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "chain" in value &&
+    "resource_key" in value &&
+    typeof (value as { chain?: unknown }).chain === "string" &&
+    typeof (value as { resource_key?: unknown }).resource_key === "string"
+  )
+}
+
+function ResourceSelectorValueDisplay({
   value,
+  definition,
   definitionInput,
 }: {
   value: unknown[]
+  definition: AlgorithmDefinition
+  definitionInput: ArrayIoItem
+}) {
+  const catalog = getResourceCatalog({
+    definition,
+    inputKey: definitionInput.key,
+  })
+
+  if (!catalog) {
+    return (
+      <div className="space-y-1.5">
+        {value.map((item, idx) => (
+          <div key={`${idx}-${String(item)}`} className="text-sm font-medium">
+            {typeof item === "object" && item
+              ? JSON.stringify(item)
+              : String(item)}
+          </div>
+        ))}
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-1.5">
+      {value.map((item, idx) => {
+        if (!isResourceSelectionItem(item)) {
+          return (
+            <div key={`${idx}-${String(item)}`} className="text-sm font-medium">
+              {String(item)}
+            </div>
+          )
+        }
+
+        const chain = catalog.chains.find(
+          (candidate) => candidate.key === item.chain
+        )
+        const resource = chain?.resources.find(
+          (candidate) => candidate.key === item.resource_key
+        )
+
+        return (
+          <div
+            key={`${item.chain}:${item.resource_key}`}
+            className="rounded border bg-muted/30 p-2 text-sm"
+          >
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-muted-foreground">
+                {chain?.label ?? toTitleCase(item.chain)}
+              </span>
+              <span className="text-muted-foreground">/</span>
+              {resource?.iconUrl && (
+                <MetaIcon
+                  url={resource.iconUrl}
+                  label={resource.label ?? item.resource_key}
+                />
+              )}
+              <span className="font-medium">
+                {resource?.label ?? item.resource_key}
+              </span>
+              {resource?.kind && (
+                <Badge
+                  variant={resource.kind === "token" ? "secondary" : "outline"}
+                  className="capitalize"
+                >
+                  {resource.kind}
+                </Badge>
+              )}
+              {resource?.explorerUrl && (
+                <a
+                  href={resource.explorerUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
+                >
+                  <span>{resource.explorerLabel ?? "Explorer"}</span>
+                  <ExternalLink className="size-3.5" />
+                </a>
+              )}
+            </div>
+            {resource?.identifier && (
+              <p className="text-muted-foreground mt-1 break-all font-mono text-xs">
+                {resource.identifier}
+              </p>
+            )}
+            {resource?.description && (
+              <p className="text-muted-foreground mt-1 text-xs leading-relaxed">
+                {resource.description}
+              </p>
+            )}
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+function ArrayValueDisplay({
+  value,
+  definition,
+  definitionInput,
+}: {
+  value: unknown[]
+  definition?: AlgorithmDefinition
   definitionInput?: ArrayIoItem
 }) {
+  if (definition && definitionInput?.uiHint?.widget === "resource_selector") {
+    return (
+      <ResourceSelectorValueDisplay
+        value={value}
+        definition={definition}
+        definitionInput={definitionInput}
+      />
+    )
+  }
+
   const properties = definitionInput?.item?.properties ?? []
   const propLabels = new Map(properties.map((p) => [p.key, p.label ?? p.key]))
 
@@ -84,17 +214,17 @@ function ArrayValueDisplay({
             className="flex flex-wrap gap-x-4 gap-y-1 p-2 rounded border bg-muted/30 text-sm"
           >
             {entries.map(([k, v]) => {
-              const chain = (item as Record<string, unknown>).chain_id
+              const chain = (item as Record<string, unknown>).chain
               const chainMeta =
-                k === "chain_id" ? getChainMeta(String(v)) : undefined
-              const tokenMeta =
-                k === "contract_address" && chain
-                  ? getTokenMeta(String(chain), String(v))
+                k === "chain" ? getChainMeta(String(v)) : undefined
+              const targetMeta =
+                (k === "target_identifier" || k === "asset_identifier") && chain
+                  ? getTargetMeta(String(chain), String(v))
                   : undefined
 
               const displayLabel =
-                chainMeta?.label ?? tokenMeta?.label ?? String(v)
-              const iconUrl = chainMeta?.iconUrl ?? tokenMeta?.iconUrl
+                chainMeta?.label ?? targetMeta?.label ?? String(v)
+              const iconUrl = chainMeta?.iconUrl ?? targetMeta?.iconUrl
 
               return (
                 <div key={k} className="flex items-center gap-1.5">
@@ -121,7 +251,10 @@ export function PresetDetailsDialog({
   const algorithmDefinition = useMemo(() => {
     if (!preset) return null
     try {
-      const definitionJson = getAlgorithmDefinition({ key: preset.key })
+      const definitionJson = getAlgorithmDefinition({
+        key: preset.key,
+        version: preset.version,
+      })
       return JSON.parse(definitionJson) as AlgorithmDefinition
     } catch (error) {
       console.warn(`Could not fetch definition for ${preset.key}:`, error)
@@ -204,6 +337,7 @@ export function PresetDetailsDialog({
                         </span>
                         <ArrayValueDisplay
                           value={input.value}
+                          definition={algorithmDefinition ?? undefined}
                           definitionInput={
                             defInput?.type === "array"
                               ? (defInput as ArrayIoItem)

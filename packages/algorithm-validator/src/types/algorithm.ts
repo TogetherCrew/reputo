@@ -92,6 +92,19 @@ export interface CsvIoItem extends BaseIoItem {
 export interface JsonIoItem extends BaseIoItem {
   /** Type identifier for JSON data */
   type: 'json';
+  /** Whether this input is required */
+  required?: boolean;
+  /** JSON parsing and validation configuration for file-backed inputs */
+  json?: {
+    /** Maximum file size in bytes */
+    maxBytes?: number;
+    /** Named validation shape applied to the JSON content */
+    schema?: string;
+    /** Required root key for object-shaped JSON inputs */
+    rootKey?: string;
+    /** Allowed chain keys for wallet-address map inputs */
+    allowedChains?: string[];
+  };
   /** Optional entity type that this JSON represents */
   entity?: string;
 }
@@ -150,28 +163,100 @@ export interface StringIoItem extends BaseIoItem {
   /** UI rendering hints */
   uiHint?: {
     widget?: 'select' | string;
-    options?: Array<{ value: string; label: string }>;
-    dependsOn?: string;
+    options?: Array<{
+      value: string;
+      label: string;
+      filterBy?: string;
+      filters?: Record<string, string>;
+    }>;
+    dependsOn?: string | string[];
+  };
+}
+
+/**
+ * Catalog of chain-scoped resources available to a resource selector input.
+ */
+export interface ResourceCatalog {
+  chains: ResourceCatalogChain[];
+}
+
+/**
+ * Resource catalog entry for a single chain.
+ */
+export interface ResourceCatalogChain {
+  key: string;
+  label: string;
+  resources: ResourceCatalogResource[];
+}
+
+/**
+ * Selectable resource entry for a chain within a resource selector input.
+ */
+export interface ResourceCatalogResource {
+  key: string;
+  label: string;
+  description?: string;
+  kind: 'token' | 'contract';
+  identifier: string;
+  tokenIdentifier: string;
+  tokenKey: string;
+  parentResourceKey?: string;
+  explorerUrl?: string;
+  explorerLabel?: string;
+  iconUrl?: string;
+}
+
+/**
+ * Shared fields for object property definitions inside array item schemas.
+ */
+interface BaseObjectPropertyParam {
+  key: string;
+  label?: string;
+  description?: string;
+  required?: boolean;
+}
+
+/**
+ * Scalar property definition inside an array item's object schema.
+ */
+export interface ScalarObjectPropertyParam extends BaseObjectPropertyParam {
+  type: 'string' | 'integer' | 'number';
+  enum?: string[];
+  default?: string | number;
+  uiHint?: {
+    widget?: 'select' | string;
+    options?: Array<{
+      value: string;
+      label: string;
+      filterBy?: string;
+      filters?: Record<string, string>;
+    }>;
+    dependsOn?: string | string[];
+  };
+}
+
+/**
+ * Nested array property definition inside an array item's object schema.
+ */
+export interface ArrayObjectPropertyParam extends BaseObjectPropertyParam {
+  type: 'array';
+  minItems?: number;
+  uniqueBy?: string[];
+  uiHint?: {
+    widget?: 'repeater' | string;
+    addButtonLabel?: string;
+    dependsOn?: string | string[];
+  };
+  item: {
+    type: 'object';
+    properties: ObjectPropertyParam[];
   };
 }
 
 /**
  * Property definition inside an array item's object schema.
  */
-export interface ObjectPropertyParam {
-  key: string;
-  label?: string;
-  description?: string;
-  type: 'string' | 'integer' | 'number';
-  enum?: string[];
-  default?: string | number;
-  required?: boolean;
-  uiHint?: {
-    widget?: 'select' | string;
-    options?: Array<{ value: string; label: string }>;
-    dependsOn?: string;
-  };
-}
+export type ObjectPropertyParam = ScalarObjectPropertyParam | ArrayObjectPropertyParam;
 
 /**
  * Array input item configuration for algorithm definitions.
@@ -181,9 +266,14 @@ export interface ArrayIoItem extends BaseIoItem {
   type: 'array';
   minItems?: number;
   required?: boolean;
+  /** Keys that must be unique across all array rows when combined together. */
+  uniqueBy?: string[];
   uiHint?: {
-    widget?: 'repeater' | string;
+    widget?: 'repeater' | 'resource_selector' | string;
     addButtonLabel?: string;
+    presets?: Array<{ label: string; value: Array<Record<string, unknown>> }>;
+    dependsOn?: string | string[];
+    resourceCatalog?: ResourceCatalog;
   };
   item: {
     type: 'object';
@@ -195,6 +285,29 @@ export interface ArrayIoItem extends BaseIoItem {
  * Union type for all supported input/output item types.
  */
 export type IoItem = CsvIoItem | JsonIoItem | NumericIoItem | BooleanIoItem | StringIoItem | ArrayIoItem;
+
+/**
+ * Root-level validation rule that uses a wallet JSON input to validate
+ * chain coverage for a selector input.
+ */
+export interface JsonChainCoverageValidationRule {
+  kind: 'json_chain_coverage';
+  walletInputKey: string;
+  selectorInputKey: string;
+  selectorChainField: string;
+}
+
+/**
+ * Supported root-level validation rules for algorithm definitions.
+ */
+export type AlgorithmValidationRule = JsonChainCoverageValidationRule;
+
+/**
+ * Additional validation metadata attached to an algorithm definition.
+ */
+export interface AlgorithmValidationConfig {
+  rules: AlgorithmValidationRule[];
+}
 
 /**
  * Supported runtimes (languages) for algorithm execution.
@@ -215,6 +328,8 @@ export interface AlgorithmDefinition {
   name: string;
   /** Category classification for organizing algorithms */
   category: AlgorithmCategory;
+  /** Short summary of the algorithm for card displays */
+  summary: string;
   /** Detailed description of what the algorithm does and how it works */
   description: string;
   /** Semantic version of the algorithm definition */
@@ -225,4 +340,8 @@ export interface AlgorithmDefinition {
   outputs: IoItem[];
   /** Runtime (language) used for execution routing */
   runtime: AlgorithmRuntime;
+  /** Optional array of external dependencies required by this algorithm */
+  dependencies?: Array<{ key: string }>;
+  /** Optional root-level validation rules enforced by the shared validator */
+  validation?: AlgorithmValidationConfig;
 }

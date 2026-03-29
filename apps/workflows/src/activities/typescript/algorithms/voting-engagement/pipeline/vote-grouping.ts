@@ -23,24 +23,16 @@ export function groupVotesByVoter(votes: VoteRecord[]): {
   let invalidVotesCount = 0;
 
   for (const vote of votes) {
-    const voterId =
-      vote.collection_id !== null && vote.collection_id !== undefined && typeof vote.collection_id === 'string'
-        ? vote.collection_id.trim()
-        : null;
-
-    const questionId =
-      vote.question_id !== null && vote.question_id !== undefined && typeof vote.question_id === 'string'
-        ? vote.question_id.trim()
-        : null;
-
-    const rawVote = vote.answer !== null && vote.answer !== undefined ? String(vote.answer) : null;
+    const voterId = vote.collection_id.trim();
+    const questionId = vote.question_id.trim();
+    const rawVote = vote.answer.trim().toLowerCase();
 
     if (!voterId || !questionId || !rawVote) {
       invalidVotesCount++;
       continue;
     }
 
-    const voteValue = rawVote.trim().toLowerCase();
+    const voteValue = rawVote;
 
     if (!voteValue || !VALID_VOTES.includes(voteValue as ValidVote)) {
       invalidVotesCount++;

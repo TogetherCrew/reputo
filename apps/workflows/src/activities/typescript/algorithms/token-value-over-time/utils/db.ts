@@ -1,9 +1,9 @@
-import { createAssetTransferRepository } from '@reputo/onchain-data';
+import { createOnchainReadRepositories } from '@reputo/onchain-data';
 
 import config from '../../../../../config/index.js';
 
-export async function createOnchainTransferRepo() {
-  return createAssetTransferRepository({
+export async function createOnchainRepos() {
+  return createOnchainReadRepositories({
     databaseUrl: config.onchainData.uri,
   });
 }

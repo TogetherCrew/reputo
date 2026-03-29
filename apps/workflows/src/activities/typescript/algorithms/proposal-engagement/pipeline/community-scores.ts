@@ -26,8 +26,6 @@ export function aggregateCommunityRatings(reviews: ReviewRecord[]): Map<number, 
     if (!review.proposalId) continue;
 
     const rating = Number.parseFloat(review.overallRating);
-    if (!Number.isFinite(rating)) continue;
-    if (rating < 0) continue;
 
     const entry = byProposal.get(review.proposalId) ?? { sum: 0, count: 0 };
     entry.sum += rating;

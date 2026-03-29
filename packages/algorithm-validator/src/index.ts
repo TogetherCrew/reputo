@@ -15,6 +15,12 @@
 
 // CSV validation exports
 export { validateCSVContent } from './csv-validation.js';
+export { validateJSONContent } from './json-validation.js';
+export {
+  type ResolveInputContentArgs,
+  type ValidateAlgorithmPresetArgs,
+  validateAlgorithmPreset,
+} from './preset-validation.js';
 // Schema exports (for algorithm presets, etc.)
 export {
   type AlgorithmPresetInputType,
@@ -28,11 +34,22 @@ export {
 export type {
   AlgorithmCategory,
   AlgorithmDefinition,
+  AlgorithmPresetValidationResult,
   AlgorithmRuntime,
+  AlgorithmValidationConfig,
+  AlgorithmValidationRule,
+  ArrayObjectPropertyParam,
   CSVValidationResult,
   CsvIoItem,
   IoItem,
   IoType,
+  JSONValidationResult,
+  JsonChainCoverageValidationRule,
+  JsonIoItem,
+  ResourceCatalog,
+  ResourceCatalogChain,
+  ResourceCatalogResource,
+  ScalarObjectPropertyParam,
   ValidationResult,
 } from './types/index.js';
 

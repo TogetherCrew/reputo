@@ -31,7 +31,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { getChainMeta, getTokenMeta } from "../chain-token-metadata"
+import { getChainMeta, getTargetMeta } from "../chain-token-metadata"
 import type {
   ArrayPreset,
   FormInput,
@@ -42,6 +42,23 @@ import type {
 interface RepeaterFieldProps {
   input: FormInput
   control: Control<any>
+}
+
+interface RepeaterLikeInput {
+  key: string
+  label: string
+  type: "array"
+  description?: string
+  required?: boolean
+  minItems?: number
+  uniqueBy?: string[]
+  addButtonLabel?: string
+  itemProperties?: FormInputProperty[]
+  arrayPresets?: ArrayPreset[]
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value)
 }
 
 function OptionIcon({ url, label }: { url: string; label: string }) {
@@ -57,49 +74,177 @@ function OptionIcon({ url, label }: { url: string; label: string }) {
   )
 }
 
+function getDependencyKeys(prop: FormInputProperty): string[] {
+  if (Array.isArray(prop.dependsOn)) {
+    return prop.dependsOn
+  }
+
+  return typeof prop.dependsOn === "string" ? [prop.dependsOn] : []
+}
+
+function optionMatchesContext(
+  prop: FormInputProperty,
+  option: SelectOption,
+  rowContextValues?: Record<string, unknown>
+): boolean {
+  if (option.filters && Object.keys(option.filters).length > 0) {
+    return Object.entries(option.filters).every(
+      ([key, value]) => String(rowContextValues?.[key] ?? "") === value
+    )
+  }
+
+  if (option.filterBy == null) {
+    return true
+  }
+
+  const dependencyKeys = getDependencyKeys(prop)
+  const dependencyKey = dependencyKeys[0] ?? "chain"
+  return String(rowContextValues?.[dependencyKey] ?? "") === option.filterBy
+}
+
+function getVisibleOptions(
+  prop: FormInputProperty,
+  rowContextValues?: Record<string, unknown>
+): SelectOption[] {
+  return (prop.options ?? []).filter((option) =>
+    optionMatchesContext(prop, option, rowContextValues)
+  )
+}
+
 function getIconForProperty(
   prop: FormInputProperty,
   value: string,
-  rowValues?: Record<string, unknown>
+  rowContextValues?: Record<string, unknown>
 ): string | undefined {
   if (prop.key === "chain") {
     return getChainMeta(value)?.iconUrl
   }
-  if (prop.key === "asset_identifier" && rowValues?.chain) {
-    return getTokenMeta(String(rowValues.chain), value)?.iconUrl
+
+  if (
+    (prop.key === "asset_identifier" ||
+      prop.key === "target_identifier" ||
+      prop.key === "address") &&
+    rowContextValues?.chain
+  ) {
+    return getTargetMeta(String(rowContextValues.chain), value)?.iconUrl
   }
+
   return undefined
+}
+
+function buildUniqueKey(
+  values: Record<string, unknown>,
+  uniqueBy?: string[]
+): string | null {
+  if (!uniqueBy || uniqueBy.length === 0) {
+    return null
+  }
+
+  const parts: string[] = []
+  for (const key of uniqueBy) {
+    const value = values[key]
+    if (value == null || value === "") {
+      return null
+    }
+    parts.push(String(value))
+  }
+
+  return parts.join("\u0000")
+}
+
+function buildOptionUniqueKey(params: {
+  rowContextValues?: Record<string, unknown>
+  uniqueBy?: string[]
+  currentPropKey: string
+  optionValue: string
+}): string | null {
+  if (!params.rowContextValues) {
+    return null
+  }
+
+  return buildUniqueKey(
+    {
+      ...params.rowContextValues,
+      [params.currentPropKey]: params.optionValue,
+    },
+    params.uniqueBy
+  )
+}
+
+function buildDefaultValueForProperty(prop: FormInputProperty): unknown {
+  if (prop.type === "array") {
+    const minItems = prop.minItems ?? 1
+    return Array.from({ length: minItems }, () =>
+      buildDefaultRow(prop.itemProperties ?? [])
+    )
+  }
+
+  return prop.default ?? ""
+}
+
+function buildDefaultRow(
+  properties: FormInputProperty[]
+): Record<string, unknown> {
+  const row: Record<string, unknown> = {}
+
+  for (const prop of properties) {
+    row[prop.key] = buildDefaultValueForProperty(prop)
+  }
+
+  return row
+}
+
+function getSelectedUniqueKeysInOtherRows(
+  values: Array<Record<string, unknown>> | undefined,
+  rowIndex: number,
+  uniqueBy?: string[]
+): Set<string> {
+  if (!Array.isArray(values)) return new Set()
+
+  const set = new Set<string>()
+  for (let i = 0; i < values.length; i++) {
+    if (i === rowIndex) continue
+    const row = values[i]
+    const uniqueKey = buildUniqueKey(row, uniqueBy)
+    if (uniqueKey != null) {
+      set.add(uniqueKey)
+    }
+  }
+  return set
 }
 
 function PropertyField({
   prop,
   fieldPrefix,
   control,
-  rowValues,
+  rowContextValues,
   onDependentChange,
-  selectedPairsInOtherRows,
+  selectedUniqueKeysInOtherRows,
+  uniqueBy,
 }: {
   prop: FormInputProperty
   fieldPrefix: string
   control: Control<any>
-  rowValues?: Record<string, unknown>
+  rowContextValues?: Record<string, unknown>
   onDependentChange?: (key: string) => void
-  /** When set, token (contract_address) options already selected in other rows are disabled */
-  selectedPairsInOtherRows?: Set<string>
+  selectedUniqueKeysInOtherRows?: Set<string>
+  uniqueBy?: string[]
 }) {
   const fieldName = `${fieldPrefix}.${prop.key}`
 
-  if (prop.type === "select" && prop.options) {
-    const isTokenSelect =
-      prop.key === "asset_identifier" &&
-      selectedPairsInOtherRows &&
-      rowValues?.chain != null
-
-    const chainId =
-      rowValues?.chain != null ? String(rowValues.chain) : undefined
-    const visibleOptions = (prop.options ?? []).filter(
-      (o) => o.filterBy == null || o.filterBy === chainId
+  if (prop.type === "array" && prop.itemProperties) {
+    return (
+      <NestedRepeaterField
+        input={prop}
+        control={control}
+        fieldName={fieldName}
+        ancestorValues={rowContextValues}
+      />
     )
+  }
+
+  if (prop.type === "select" && prop.options) {
+    const visibleOptions = getVisibleOptions(prop, rowContextValues)
 
     return (
       <FormField
@@ -128,12 +273,12 @@ function PropertyField({
                     {field.value &&
                       (() => {
                         const selected = prop.options?.find(
-                          (o) => o.value === field.value
+                          (option) => option.value === field.value
                         )
                         const icon = getIconForProperty(
                           prop,
                           field.value,
-                          rowValues
+                          rowContextValues
                         )
                         if (!selected) return field.value
                         const content = (
@@ -144,7 +289,12 @@ function PropertyField({
                             {selected.label}
                           </span>
                         )
-                        if (prop.key === "asset_identifier") {
+
+                        if (
+                          prop.key === "asset_identifier" ||
+                          prop.key === "target_identifier" ||
+                          prop.key === "address"
+                        ) {
                           return (
                             <Tooltip>
                               <TooltipTrigger asChild>{content}</TooltipTrigger>
@@ -156,21 +306,29 @@ function PropertyField({
                             </Tooltip>
                           )
                         }
+
                         return content
                       })()}
                   </SelectValue>
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
-                {visibleOptions.map((option: SelectOption) => {
-                  const icon = getIconForProperty(prop, option.value, rowValues)
-                  const pairKey =
-                    isTokenSelect && rowValues?.chain != null
-                      ? `${String(rowValues.chain)}:${option.value}`
-                      : null
+                {visibleOptions.map((option) => {
+                  const icon = getIconForProperty(
+                    prop,
+                    option.value,
+                    rowContextValues
+                  )
+                  const uniqueKey = buildOptionUniqueKey({
+                    rowContextValues,
+                    uniqueBy,
+                    currentPropKey: prop.key,
+                    optionValue: option.value,
+                  })
                   const disabled =
-                    pairKey != null &&
-                    (selectedPairsInOtherRows?.has(pairKey) ?? false)
+                    uniqueKey != null &&
+                    (selectedUniqueKeysInOtherRows?.has(uniqueKey) ?? false)
+
                   return (
                     <SelectItem
                       key={option.value}
@@ -180,7 +338,9 @@ function PropertyField({
                       <span
                         className="flex items-center gap-2"
                         title={
-                          prop.key === "asset_identifier"
+                          prop.key === "asset_identifier" ||
+                          prop.key === "target_identifier" ||
+                          prop.key === "address"
                             ? option.value
                             : undefined
                         }
@@ -218,6 +378,10 @@ function PropertyField({
               placeholder={prop.description || prop.label}
               {...field}
               value={field.value ?? ""}
+              onChange={(event) => {
+                field.onChange(event)
+                onDependentChange?.(prop.key)
+              }}
             />
           </FormControl>
           <FormMessage />
@@ -234,7 +398,9 @@ function RepeaterRow({
   control,
   canRemove,
   onRemove,
-  selectedPairsInOtherRows,
+  selectedUniqueKeysInOtherRows,
+  uniqueBy,
+  ancestorValues,
 }: {
   index: number
   fieldPrefix: string
@@ -242,57 +408,99 @@ function RepeaterRow({
   control: Control<any>
   canRemove: boolean
   onRemove: () => void
-  selectedPairsInOtherRows?: Set<string>
+  selectedUniqueKeysInOtherRows?: Set<string>
+  uniqueBy?: string[]
+  ancestorValues?: Record<string, unknown>
 }) {
   const { setValue } = useFormContext()
   const rowValues = useWatch({ control, name: fieldPrefix }) as
     | Record<string, unknown>
     | undefined
+  const rowContextValues = {
+    ...(ancestorValues ?? {}),
+    ...(rowValues ?? {}),
+  }
 
-  const dependencyMap = new Map<string, string[]>()
+  const dependencyMap = new Map<string, FormInputProperty[]>()
   for (const prop of properties) {
-    if (prop.dependsOn) {
-      const deps = dependencyMap.get(prop.dependsOn) ?? []
-      deps.push(prop.key)
-      dependencyMap.set(prop.dependsOn, deps)
+    for (const dependencyKey of getDependencyKeys(prop)) {
+      const deps = dependencyMap.get(dependencyKey) ?? []
+      deps.push(prop)
+      dependencyMap.set(dependencyKey, deps)
     }
   }
 
   const handleDependentChange = (changedKey: string) => {
     const dependents = dependencyMap.get(changedKey)
     if (!dependents) return
-    for (const depKey of dependents) {
-      setValue(`${fieldPrefix}.${depKey}`, "", { shouldValidate: false })
+
+    for (const dependent of dependents) {
+      setValue(
+        `${fieldPrefix}.${dependent.key}`,
+        buildDefaultValueForProperty(dependent),
+        {
+          shouldDirty: true,
+          shouldValidate: true,
+        }
+      )
     }
   }
 
   const selectedChain =
-    rowValues?.chain != null ? String(rowValues.chain) : undefined
-  const selectedAsset =
-    rowValues?.asset_identifier != null && rowValues.asset_identifier !== ""
-      ? String(rowValues.asset_identifier)
-      : undefined
-  const tokenMeta =
-    selectedChain && selectedAsset
-      ? getTokenMeta(selectedChain, selectedAsset)
+    rowContextValues.chain != null ? String(rowContextValues.chain) : undefined
+  const selectedTarget =
+    rowContextValues.target_identifier != null &&
+    rowContextValues.target_identifier !== ""
+      ? String(rowContextValues.target_identifier)
+      : rowContextValues.asset_identifier != null &&
+          rowContextValues.asset_identifier !== ""
+        ? String(rowContextValues.asset_identifier)
+        : rowContextValues.address != null && rowContextValues.address !== ""
+          ? String(rowContextValues.address)
+          : undefined
+  const targetMeta =
+    selectedChain && selectedTarget
+      ? getTargetMeta(selectedChain, selectedTarget)
       : undefined
 
+  const inlineProperties = properties.filter((prop) => prop.type !== "array")
+  const nestedProperties = properties.filter((prop) => prop.type === "array")
+
   return (
-    <div className="flex flex-col gap-2 p-3 rounded-lg border bg-muted/30">
-      <div className="flex items-end gap-3">
-        <div className="flex-1 flex gap-3">
-          {properties.map((prop) => (
+    <div className="flex flex-col gap-3 p-3 rounded-lg border bg-muted/30">
+      <div className="flex items-start gap-3">
+        <div className="flex-1 flex flex-col gap-3">
+          {inlineProperties.length > 0 && (
+            <div className="flex items-end gap-3">
+              {inlineProperties.map((prop) => (
+                <PropertyField
+                  key={prop.key}
+                  prop={prop}
+                  fieldPrefix={fieldPrefix}
+                  control={control}
+                  rowContextValues={rowContextValues}
+                  onDependentChange={handleDependentChange}
+                  selectedUniqueKeysInOtherRows={selectedUniqueKeysInOtherRows}
+                  uniqueBy={uniqueBy}
+                />
+              ))}
+            </div>
+          )}
+
+          {nestedProperties.map((prop) => (
             <PropertyField
               key={prop.key}
               prop={prop}
               fieldPrefix={fieldPrefix}
               control={control}
-              rowValues={rowValues as Record<string, unknown>}
+              rowContextValues={rowContextValues}
               onDependentChange={handleDependentChange}
-              selectedPairsInOtherRows={selectedPairsInOtherRows}
+              selectedUniqueKeysInOtherRows={selectedUniqueKeysInOtherRows}
+              uniqueBy={uniqueBy}
             />
           ))}
         </div>
+
         <Button
           type="button"
           variant="ghost"
@@ -305,63 +513,45 @@ function RepeaterRow({
           <Trash2 className="size-4" />
         </Button>
       </div>
-      {tokenMeta?.explorerUrl && (
+
+      {targetMeta?.explorerUrl && (
         <a
-          href={tokenMeta.explorerUrl}
+          href={targetMeta.explorerUrl}
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center gap-1 w-fit text-xs text-muted-foreground hover:text-foreground transition-colors"
         >
           <ExternalLink className="size-3" />
-          View on {tokenMeta.explorerName}
+          View on {targetMeta.explorerName}
         </a>
       )}
     </div>
   )
 }
 
-function getSelectedPairsInOtherRows(
-  values: Array<Record<string, unknown>> | undefined,
-  rowIndex: number
-): Set<string> {
-  if (!Array.isArray(values)) return new Set()
-  const set = new Set<string>()
-  for (let i = 0; i < values.length; i++) {
-    if (i === rowIndex) continue
-    const row = values[i]
-    const c = row?.chain
-    const t = row?.asset_identifier
-    if (c != null && c !== "" && t != null && t !== "") {
-      set.add(`${String(c)}:${String(t)}`)
-    }
-  }
-  return set
-}
-
-export function RepeaterField({ input, control }: RepeaterFieldProps) {
+function RepeaterFieldBase({
+  input,
+  control,
+  fieldName,
+  ancestorValues,
+}: {
+  input: RepeaterLikeInput
+  control: Control<any>
+  fieldName: string
+  ancestorValues?: Record<string, unknown>
+}) {
   const properties = input.itemProperties ?? []
   const minItems = input.minItems ?? 0
+  const uniqueBy = input.uniqueBy
 
-  const values = useWatch({ control, name: input.key }) as
+  const values = useWatch({ control, name: fieldName }) as
     | Array<Record<string, unknown>>
     | undefined
 
-  const hasChainTokenPair =
-    properties.some((p) => p.key === "chain") &&
-    properties.some((p) => p.key === "asset_identifier")
-
   const { fields, append, remove, replace } = useFieldArray({
     control,
-    name: input.key,
+    name: fieldName,
   })
-
-  const buildDefaultRow = (): Record<string, unknown> => {
-    const row: Record<string, unknown> = {}
-    for (const prop of properties) {
-      row[prop.key] = prop.default ?? ""
-    }
-    return row
-  }
 
   return (
     <FormItem>
@@ -371,17 +561,21 @@ export function RepeaterField({ input, control }: RepeaterFieldProps) {
           <span className="text-destructive ml-1">*</span>
         )}
       </FormLabel>
+
       {input.description && (
         <FormDescription>{input.description}</FormDescription>
       )}
 
       {input.arrayPresets && input.arrayPresets.length > 0 && (
         <div className="flex flex-wrap items-center gap-2 mt-1">
-          {input.arrayPresets.map((preset: ArrayPreset) => {
+          {input.arrayPresets.map((preset) => {
             const chains = preset.value
-              .map((row) => row.chain)
+              .map((row) =>
+                isRecord(row) && typeof row.chain === "string" ? row.chain : ""
+              )
               .filter(Boolean)
               .join(", ")
+
             return (
               <Tooltip key={preset.label}>
                 <TooltipTrigger asChild>
@@ -412,16 +606,18 @@ export function RepeaterField({ input, control }: RepeaterFieldProps) {
           <RepeaterRow
             key={field.id}
             index={index}
-            fieldPrefix={`${input.key}.${index}`}
+            fieldPrefix={`${fieldName}.${index}`}
             properties={properties}
             control={control}
             canRemove={fields.length > minItems}
             onRemove={() => remove(index)}
-            selectedPairsInOtherRows={
-              hasChainTokenPair
-                ? getSelectedPairsInOtherRows(values, index)
-                : undefined
-            }
+            selectedUniqueKeysInOtherRows={getSelectedUniqueKeysInOtherRows(
+              values,
+              index,
+              uniqueBy
+            )}
+            uniqueBy={uniqueBy}
+            ancestorValues={ancestorValues}
           />
         ))}
       </div>
@@ -431,7 +627,7 @@ export function RepeaterField({ input, control }: RepeaterFieldProps) {
         variant="outline"
         size="sm"
         className="mt-2"
-        onClick={() => append(buildDefaultRow())}
+        onClick={() => append(buildDefaultRow(properties))}
       >
         <Plus className="mr-2 size-4" />
         {input.addButtonLabel ?? "Add item"}
@@ -439,9 +635,66 @@ export function RepeaterField({ input, control }: RepeaterFieldProps) {
 
       <FormField
         control={control}
-        name={input.key}
+        name={fieldName}
         render={() => <FormMessage />}
       />
     </FormItem>
+  )
+}
+
+function NestedRepeaterField({
+  input,
+  control,
+  fieldName,
+  ancestorValues,
+}: {
+  input: FormInputProperty
+  control: Control<any>
+  fieldName: string
+  ancestorValues?: Record<string, unknown>
+}) {
+  if (input.type !== "array" || !input.itemProperties) {
+    return null
+  }
+
+  return (
+    <RepeaterFieldBase
+      input={{
+        key: input.key,
+        label: input.label,
+        type: "array",
+        description: input.description,
+        required: input.required,
+        minItems: input.minItems,
+        uniqueBy: input.uniqueBy,
+        addButtonLabel: input.addButtonLabel,
+        itemProperties: input.itemProperties,
+        arrayPresets: input.arrayPresets,
+      }}
+      control={control}
+      fieldName={fieldName}
+      ancestorValues={ancestorValues}
+    />
+  )
+}
+
+export function RepeaterField({ input, control }: RepeaterFieldProps) {
+  return (
+    <RepeaterFieldBase
+      input={{
+        key: input.key,
+        label: input.label,
+        type: "array",
+        description: input.description,
+        required: input.required,
+        minItems: input.minItems,
+        uniqueBy: input.uniqueBy as string[] | undefined,
+        addButtonLabel: input.addButtonLabel,
+        itemProperties: input.itemProperties,
+        arrayPresets: input.arrayPresets,
+      }}
+      control={control}
+      fieldName={input.key}
+    />
   )
 }

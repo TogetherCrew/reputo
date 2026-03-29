@@ -1,17 +1,13 @@
-import type { AssetKey } from '@reputo/onchain-data';
-
-import type { LotScoreDetail, WalletLotsState, WalletScoreDetail } from '../types.js';
+import type { LotScoreDetail, ResourceId, WalletLotsState, WalletScoreDetail } from '../types.js';
 import { roundScore } from '../types.js';
 import { computeLinearWeight, computeLotAgeDays } from './weight.js';
 
 export function scoreWalletLots(input: {
   lotsState: WalletLotsState;
-  selectedAssetKeys: AssetKey[];
-  /** Snapshot timestamp as Date or ISO string (e.g. after Temporal serialization). */
-  snapshotCreatedAt: Date | string;
+  selectedResourceIds: Set<ResourceId>;
+  snapshotCreatedAt: Date;
   maturationThresholdDays: number;
 }): WalletScoreDetail[] {
-  const selectedSet = new Set(input.selectedAssetKeys);
   const rows: WalletScoreDetail[] = [];
 
   for (const [walletAddress, lots] of input.lotsState.entries()) {
@@ -19,7 +15,7 @@ export function scoreWalletLots(input: {
     let total = 0;
 
     for (const lot of lots) {
-      if (!selectedSet.has(lot.assetKey)) continue;
+      if (!input.selectedResourceIds.has(lot.resourceId)) continue;
       if (lot.amountRemaining <= 0) continue;
 
       const ageDays = computeLotAgeDays(lot.receivedAt, input.snapshotCreatedAt);
@@ -28,7 +24,7 @@ export function scoreWalletLots(input: {
       total += lotValue;
 
       details.push({
-        asset_key: lot.assetKey,
+        resource_id: lot.resourceId,
         source_transfer_id: lot.sourceTransferId,
         amount_remaining: roundScore(lot.amountRemaining),
         age_days: roundScore(ageDays),

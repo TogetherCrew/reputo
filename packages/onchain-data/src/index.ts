@@ -1,46 +1,15 @@
+export { type SyncCardanoAssetTransferResult, syncCardanoAssetTransfer } from './adapters/cardano/transfers/index.js';
 export type {
-  AssetTransferRepository,
-  GetTransfersInput,
-} from './db/repos/asset-transfer-repo.js';
-export type { AssetTransferEntity } from './db/schema.js';
+  CardanoRawTransactionUtxoData,
+  CardanoTransferReadRepository,
+  CardanoUtxoInput,
+  CardanoUtxoOutput,
+} from './adapters/cardano/transfers/read-repository.js';
+export { type SyncEvmAssetTransferResult, syncEvmAssetTransfer } from './adapters/evm/transfers/index.js';
+export type { EvmTransferReadRepository } from './adapters/evm/transfers/read-repository.js';
+export type { EvmAssetTransferRow } from './adapters/evm/transfers/schema.js';
 export {
-  normalizeAlchemyEthereumTransfer,
-  parseLogIndex,
-} from './providers/ethereum/normalize-alchemy-transfer.js';
-export {
-  type CreateSyncAssetTransfersServiceInput,
-  createSyncAssetTransfersService,
-  type SyncAssetTransfersResult,
-  type SyncAssetTransfersService,
-} from './services/sync-asset-transfers-service.js';
-
-export {
-  type AssetKey,
-  type AssetTransferRecord,
-  type AssetTransferSyncState,
-  normalizeHexBlock,
-  ONCHAIN_ASSET_KEYS,
-  ONCHAIN_ASSETS,
-  type OnchainAsset,
-  OnchainAssets,
-} from './shared/index.js';
-
-import { createDataSource } from './db/postgres.js';
-import type { AssetTransferRepository } from './db/repos/asset-transfer-repo.js';
-import { createAssetTransferRepository as _createInternalRepo } from './db/repos/asset-transfer-repo.js';
-
-export type AssetTransferReadRepository = AssetTransferRepository & {
-  close(): Promise<void>;
-};
-
-export async function createAssetTransferRepository(input: {
-  databaseUrl: string;
-}): Promise<AssetTransferReadRepository> {
-  const dataSource = await createDataSource(input.databaseUrl);
-  const repo = _createInternalRepo(dataSource);
-  return {
-    insertMany: repo.insertMany,
-    findTransfersByAddresses: repo.findTransfersByAddresses,
-    close: () => dataSource.destroy(),
-  };
-}
+  createOnchainReadRepositories,
+  type OnchainReadRepositories,
+} from './adapters/read-repositories.js';
+export { createDb } from './db/client.js';

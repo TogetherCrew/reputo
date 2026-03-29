@@ -2,10 +2,12 @@
 
 import {
   Clock,
+  Database,
   FolderOpen,
   LayoutGrid,
   List,
   Search,
+  SlidersHorizontal,
   Target,
   Users,
 } from "lucide-react"
@@ -214,8 +216,8 @@ export default function Home() {
                                   <Clock className="size-4" /> {algo.duration}
                                 </span>
                                 <span className="inline-flex items-center gap-2 text-muted-foreground">
-                                  <Users className="size-4" />{" "}
-                                  {algo.dependencies}
+                                  <SlidersHorizontal className="size-4" />{" "}
+                                  {algo.inputSummary}
                                 </span>
                                 <Badge className="bg-emerald-500 text-white border-transparent">
                                   {algo.level}
@@ -223,28 +225,40 @@ export default function Home() {
                               </div>
                             </CardContent>
 
-                            <CardFooter className="flex-col items-start gap-2">
-                              <span className="text-sm font-medium">
-                                Inputs:
-                              </span>
-                              <div className="flex flex-wrap gap-1.5">
-                                {algo.inputs.map((input) => (
-                                  <InputTypeBadge
-                                    key={input.key}
-                                    type={input.type}
-                                    label={input.label}
-                                  />
-                                ))}
-                                {algo.dataSourceLabels.map((label) => (
-                                  <span
-                                    key={label}
-                                    className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 text-xs font-medium"
-                                    title="Data is fetched from this source"
-                                  >
-                                    {label}
-                                  </span>
-                                ))}
+                            <CardFooter className="flex-col items-start gap-3">
+                              <div className="flex flex-col items-start gap-2">
+                                <span className="text-sm font-medium">
+                                  Configurable Inputs
+                                </span>
+                                <div className="flex flex-wrap gap-1.5">
+                                  {algo.inputs.map((input) => (
+                                    <InputTypeBadge
+                                      key={input.key}
+                                      type={input.type}
+                                      label={input.label}
+                                    />
+                                  ))}
+                                </div>
                               </div>
+                              {algo.dependencyLabels.length > 0 && (
+                                <div className="flex flex-col items-start gap-2">
+                                  <span className="text-sm font-medium">
+                                    Dependencies
+                                  </span>
+                                  <div className="flex flex-wrap gap-1.5">
+                                    {algo.dependencyLabels.map((label) => (
+                                      <span
+                                        key={label}
+                                        className="inline-flex items-center gap-1.5 rounded-md bg-emerald-100 px-2 py-1 text-xs font-medium text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300"
+                                        title="Data is fetched from this dependency"
+                                      >
+                                        <Database className="size-3" />
+                                        {label}
+                                      </span>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
                             </CardFooter>
                           </Card>
                         </Link>

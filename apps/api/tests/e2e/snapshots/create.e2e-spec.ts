@@ -32,17 +32,14 @@ describe('POST /api/v1/snapshots', () => {
   });
 
   it('should create snapshot (201) with frozen preset and status defaulting to "queued"', async () => {
-    const preset = await insertAlgorithmPreset(algorithmPresetModel, {
-      key: 'test_algo',
-      version: '1.0.0',
-    });
+    const preset = await insertAlgorithmPreset(algorithmPresetModel);
     const dto = makeSnapshotDto(preset._id.toString());
 
     const res = await api(app).post('/snapshots').send(dto).expect(201);
 
     expect(res.body).toHaveProperty('_id');
     expect(res.body.algorithmPresetFrozen).toBeInstanceOf(Object);
-    expect(res.body.algorithmPresetFrozen.key).toBe('test_algo');
+    expect(res.body.algorithmPresetFrozen.key).toBe('voting_engagement');
     expect(res.body.algorithmPresetFrozen.version).toBe('1.0.0');
     // Verify timestamps are preserved in frozen preset
     expect(typeof res.body.algorithmPresetFrozen.createdAt).toBe('string');

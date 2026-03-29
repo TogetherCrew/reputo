@@ -2,14 +2,27 @@
     "key": "token_value_over_time",
     "name": "Token Value Over Time",
     "category": "Activity",
-    "summary": "Measures wallet holdings of selected tokens, with more weight for longer-held amounts. Each lot gains value over time until it reaches full value after the configured holding period.",
-    "description": "### What this algorithm is\nThis algorithm measures a wallet's token holdings for selected chain/token pairs, giving more credit to tokens held longer.\n\nEach incoming transfer creates a separate lot. A new lot starts at zero value and gains value over time until it reaches full value after the maturation threshold.\n\n### How value is calculated\n- Each lot's age is measured in days.\n- Lot value grows linearly from 0 to 100% over the maturation threshold.\n- Once a lot reaches the threshold, it counts at full value.\n\nThe final wallet score is the sum of all remaining lot values across all selected tokens.\n\n### Multiple transfers\n- Every incoming transfer is a separate lot.\n- Outgoing transfers consume the oldest lots first (FIFO).\n- The algorithm evaluates remaining lots at the snapshot run time.\n\n### What data is used\nNo file upload is needed. The algorithm reads indexed token transfer history from the database.\n\n### Outputs\n- A per-wallet CSV with wallet_address and token_value.\n- A JSON details file with per-token and per-lot calculations.",
+    "summary": "Scores FET holders based on how long each token lot has been held — using FIFO lot accounting to reward long-term retention over recent acquisitions.",
+    "description": "### What it measures\nScores each wallet based on how much FET it still holds and how long those holdings have been retained.\n\n### How scoring works\n- Every incoming transfer creates a separate lot.\n- A lot's value grows linearly from 0% to 100% as it ages toward the maturation threshold.\n- Outgoing transfers consume the oldest lots first (FIFO), so selling recent acquisitions costs less score than selling long-held tokens.\n- The final score is the sum of all remaining normalized lot values at snapshot time.\n\n### Required input\nUpload one JSON file with a top-level `wallets` object mapping each chain to an array of wallet addresses.\n\nExample:\n```json\n{\n  \"wallets\": {\n    \"ethereum\": [\"0x1234567890abcdef1234567890abcdef12345678\"],\n    \"cardano\": [\"addr1q9exampleexampleexampleexampleexampleexample\"]\n  }\n}\n```\n\n### Resource selection\nSelect one or more token or staking resources to include. Token resources represent the canonical FET token. Staking-contract resources are stored separately in the preset but resolve to the parent FET token during data sync and scoring.\n\n### Data source\nThe algorithm reads indexed token transfer history from the onchain-data dependency for the uploaded wallets only.\n\n### Output files\n- A per-wallet CSV with `wallet_address` and `token_value`.\n- A JSON details file with per-resource and per-lot calculations for auditing.",
     "version": "1.0.0",
     "inputs": [
         {
+            "key": "wallets",
+            "label": "Wallet Addresses (JSON)",
+            "description": "Upload a JSON file with a `wallets` object containing `ethereum` and/or `cardano` wallet address arrays. Only wallets listed here will be scored.",
+            "type": "json",
+            "required": true,
+            "json": {
+                "maxBytes": 5242880,
+                "schema": "wallet_address_map",
+                "rootKey": "wallets",
+                "allowedChains": ["ethereum", "cardano"]
+            }
+        },
+        {
             "key": "maturation_threshold_days",
-            "label": "Maturation Threshold (Days)",
-            "description": "Number of days a token lot must be held before it reaches full value.",
+            "label": "Maturation Period (Days)",
+            "description": "How many days a token lot must be held before it reaches full value (100%). Lots held for less than this period are credited proportionally.",
             "type": "integer",
             "min": 1,
             "max": 3650,
@@ -23,31 +36,96 @@
             }
         },
         {
-            "key": "selected_assets",
-            "label": "Assets to Include",
-            "description": "Select one or more supported tokens to include in the score. Holdings across all selected assets are combined into one wallet score.",
+            "key": "selected_resources",
+            "label": "Token Resources to Score",
+            "description": "Select one or more FET token or staking contract resources. Each selected resource is tracked separately and resolved to the FET token during sync and scoring.",
             "type": "array",
             "minItems": 1,
             "required": true,
+            "uniqueBy": ["chain", "resource_key"],
             "uiHint": {
-                "widget": "repeater",
-                "addButtonLabel": "Add token",
+                "widget": "resource_selector",
                 "presets": [
                     {
-                        "label": "FET",
+                        "label": "FET (all chains)",
                         "value": [
                             {
                                 "chain": "ethereum",
-                                "asset_identifier": "0xaea46A60368A7bD060eec7DF8CBa43b7EF41Ad85"
+                                "resource_key": "fet_token"
                             },
                             {
                                 "chain": "cardano",
-                                "asset_identifier": "e824c0011176f0926ad51f492bcc63ac6a03a589653520839dc7e3d9"
-                            },
-                            { "chain": "cosmos", "asset_identifier": "afet" }
+                                "resource_key": "fet_token"
+                            }
                         ]
                     }
-                ]
+                ],
+                "resourceCatalog": {
+                    "chains": [
+                        {
+                            "key": "ethereum",
+                            "label": "Ethereum",
+                            "resources": [
+                                {
+                                    "key": "fet_token",
+                                    "label": "FET",
+                                    "description": "Canonical ERC-20 FET token on Ethereum.",
+                                    "kind": "token",
+                                    "identifier": "0xaea46A60368A7bD060eec7DF8CBa43b7EF41Ad85",
+                                    "tokenIdentifier": "0xaea46A60368A7bD060eec7DF8CBa43b7EF41Ad85",
+                                    "tokenKey": "fet",
+                                    "explorerUrl": "https://etherscan.io/token/0xaea46A60368A7bD060eec7DF8CBa43b7EF41Ad85",
+                                    "explorerLabel": "Etherscan",
+                                    "iconUrl": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xaea46A60368A7bD060eec7DF8CBa43b7EF41Ad85/logo.png"
+                                },
+                                {
+                                    "key": "fet_staking_1",
+                                    "label": "FET Staking",
+                                    "description": "FET staking contract on Ethereum at 0xCB85...3475.",
+                                    "kind": "contract",
+                                    "identifier": "0xCB85b101C4822A4E3ABCa20e57f1DFf0E2673475",
+                                    "tokenIdentifier": "0xaea46A60368A7bD060eec7DF8CBa43b7EF41Ad85",
+                                    "tokenKey": "fet",
+                                    "parentResourceKey": "fet_token",
+                                    "explorerUrl": "https://etherscan.io/address/0xCB85b101C4822A4E3ABCa20e57f1DFf0E2673475",
+                                    "explorerLabel": "Etherscan",
+                                    "iconUrl": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xaea46A60368A7bD060eec7DF8CBa43b7EF41Ad85/logo.png"
+                                },
+                                {
+                                    "key": "fet_staking_2",
+                                    "label": "FET Staking",
+                                    "description": "FET staking contract on Ethereum at 0x351b...7DE2.",
+                                    "kind": "contract",
+                                    "identifier": "0x351baC612B50e87B46e4b10A282f632D41397DE2",
+                                    "tokenIdentifier": "0xaea46A60368A7bD060eec7DF8CBa43b7EF41Ad85",
+                                    "tokenKey": "fet",
+                                    "parentResourceKey": "fet_token",
+                                    "explorerUrl": "https://etherscan.io/address/0x351baC612B50e87B46e4b10A282f632D41397DE2",
+                                    "explorerLabel": "Etherscan",
+                                    "iconUrl": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xaea46A60368A7bD060eec7DF8CBa43b7EF41Ad85/logo.png"
+                                }
+                            ]
+                        },
+                        {
+                            "key": "cardano",
+                            "label": "Cardano",
+                            "resources": [
+                                {
+                                    "key": "fet_token",
+                                    "label": "FET",
+                                    "description": "Canonical FET asset on Cardano.",
+                                    "kind": "token",
+                                    "identifier": "e824c0011176f0926ad51f492bcc63ac6a03a589653520839dc7e3d9464554",
+                                    "tokenIdentifier": "e824c0011176f0926ad51f492bcc63ac6a03a589653520839dc7e3d9464554",
+                                    "tokenKey": "fet",
+                                    "explorerUrl": "https://cardanoscan.io/token/e824c0011176f0926ad51f492bcc63ac6a03a589653520839dc7e3d9464554?address=addr1qyq5d39ksne5v0sk3fphv8yhts6kydarzx6r3t3vvmmcdkt5r52wtka55ssha0mdrs8je9r60pp0ve9ys8he6jv88jvsmuztnz",
+                                    "explorerLabel": "Cardanoscan",
+                                    "iconUrl": "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xaea46A60368A7bD060eec7DF8CBa43b7EF41Ad85/logo.png"
+                                }
+                            ]
+                        }
+                    ]
+                }
             },
             "item": {
                 "type": "object",
@@ -55,49 +133,48 @@
                     {
                         "key": "chain",
                         "label": "Chain",
-                        "description": "Blockchain network for the token.",
+                        "description": "Blockchain network for the selected resource.",
                         "type": "string",
-                        "enum": ["ethereum", "cardano", "cosmos"],
-                        "default": "ethereum",
+                        "enum": ["ethereum", "cardano"],
                         "required": true,
                         "uiHint": {
                             "widget": "select",
                             "options": [
                                 { "value": "ethereum", "label": "Ethereum" },
-                                { "value": "cardano", "label": "Cardano" },
-                                { "value": "cosmos", "label": "Cosmos" }
+                                { "value": "cardano", "label": "Cardano" }
                             ]
                         }
                     },
                     {
-                        "key": "asset_identifier",
-                        "label": "Token",
-                        "description": "Aset identifier on the selected chain.",
+                        "key": "resource_key",
+                        "label": "Resource",
+                        "description": "Token or staking contract to include from the selected chain.",
                         "type": "string",
-                        "enum": [
-                            "0xaea46A60368A7bD060eec7DF8CBa43b7EF41Ad85",
-                            "e824c0011176f0926ad51f492bcc63ac6a03a589653520839dc7e3d9",
-                            "afet"
-                        ],
+                        "enum": ["fet_token", "fet_staking_1", "fet_staking_2"],
                         "required": true,
                         "uiHint": {
                             "widget": "select",
                             "dependsOn": "chain",
                             "options": [
                                 {
-                                    "value": "0xaea46A60368A7bD060eec7DF8CBa43b7EF41Ad85",
+                                    "value": "fet_token",
                                     "label": "FET",
                                     "filterBy": "ethereum"
                                 },
                                 {
-                                    "value": "e824c0011176f0926ad51f492bcc63ac6a03a589653520839dc7e3d9",
-                                    "label": "FET",
-                                    "filterBy": "cardano"
+                                    "value": "fet_staking_1",
+                                    "label": "FET Staking",
+                                    "filterBy": "ethereum"
                                 },
                                 {
-                                    "value": "afet",
+                                    "value": "fet_staking_2",
+                                    "label": "FET Staking",
+                                    "filterBy": "ethereum"
+                                },
+                                {
+                                    "value": "fet_token",
                                     "label": "FET",
-                                    "filterBy": "cosmos"
+                                    "filterBy": "cardano"
                                 }
                             ]
                         }
@@ -107,11 +184,21 @@
         }
     ],
     "dependencies": [{ "key": "onchain-data" }],
+    "validation": {
+        "rules": [
+            {
+                "kind": "json_chain_coverage",
+                "walletInputKey": "wallets",
+                "selectorInputKey": "selected_resources",
+                "selectorChainField": "chain"
+            }
+        ]
+    },
     "outputs": [
         {
             "key": "token_value_over_time",
-            "label": "Token Value Over Time by Wallet Address",
-            "description": "Per-wallet CSV with columns: wallet_address, token_value (numeric score).",
+            "label": "Token Value Over Time (CSV)",
+            "description": "One row per wallet with columns: `wallet_address` and `token_value`.",
             "type": "csv",
             "csv": {
                 "hasHeader": true,
@@ -125,7 +212,7 @@
                     {
                         "key": "token_value",
                         "type": "number",
-                        "description": "Token value over time"
+                        "description": "Aggregated token value-over-time score"
                     }
                 ]
             }
@@ -133,7 +220,7 @@
         {
             "key": "token_value_over_time_details",
             "label": "Token Value Over Time Details (JSON)",
-            "description": "Full per-wallet breakdown including per-token and per-lot calculations. For debugging and auditing.",
+            "description": "Per-wallet resource and lot calculations, useful for auditing results.",
             "type": "json"
         }
     ],

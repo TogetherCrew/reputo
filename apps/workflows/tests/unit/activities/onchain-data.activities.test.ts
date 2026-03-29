@@ -1,16 +1,19 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const mockSync = vi.fn();
-const mockClose = vi.fn();
+const { mockCreateDb, mockSyncEvmAssetTransfer, mockSyncCardanoAssetTransfer, mockDbDestroy, mockHeartbeat } =
+  vi.hoisted(() => ({
+    mockCreateDb: vi.fn(),
+    mockSyncEvmAssetTransfer: vi.fn(),
+    mockSyncCardanoAssetTransfer: vi.fn(),
+    mockDbDestroy: vi.fn(),
+    mockHeartbeat: vi.fn(),
+  }));
 
 vi.mock('@reputo/onchain-data', () => ({
-  createSyncAssetTransfersService: vi.fn(async () => ({
-    sync: mockSync,
-    close: mockClose,
-  })),
+  createDb: mockCreateDb,
+  syncEvmAssetTransfer: mockSyncEvmAssetTransfer,
+  syncCardanoAssetTransfer: mockSyncCardanoAssetTransfer,
 }));
-
-const mockHeartbeat = vi.fn();
 
 vi.mock('@temporalio/activity', () => ({
   Context: {
@@ -25,77 +28,116 @@ vi.mock('@temporalio/activity', () => ({
   },
 }));
 
-import { createSyncAssetTransfersService } from '@reputo/onchain-data';
-import { createOnchainDataSyncActivity } from '../../../src/activities/orchestrator/onchain-data.activities.js';
+import { createOnchainDataSyncActivity } from '../../../src/activities/onchain-data/index.js';
 
 describe('Onchain Data Sync Activity', () => {
   const ctx = {
     databaseUrl: 'postgresql://postgres:postgres@localhost:5432/reputo_onchain_test',
     alchemyApiKey: 'test-alchemy-key',
+    blockfrostAPIKey: 'test-blockfrost-api-key',
   };
 
   beforeEach(() => {
     vi.clearAllMocks();
+    mockCreateDb.mockResolvedValue({ destroy: mockDbDestroy });
   });
 
-  it('should sync on-chain data for ethereum asset', async () => {
-    mockSync.mockResolvedValue({
-      assetKey: 'fet_ethereum',
+  it('should sync EVM asset when given ethereum target', async () => {
+    mockSyncEvmAssetTransfer.mockResolvedValue({
+      chain: 'ethereum',
+      assetIdentifier: '0xtoken',
       fromBlock: '0xa7d13c',
       toBlock: '0xb00000',
       insertedCount: 150,
     });
 
     const activity = createOnchainDataSyncActivity(ctx);
-    await activity();
+    await activity([{ chain: 'ethereum', identifier: '0xtoken' }]);
 
-    expect(createSyncAssetTransfersService).toHaveBeenCalledWith({
-      assetKey: 'fet_ethereum',
-      databaseUrl: 'postgresql://postgres:postgres@localhost:5432/reputo_onchain_test',
+    expect(mockSyncEvmAssetTransfer).toHaveBeenCalledWith({
+      db: { destroy: mockDbDestroy },
+      chain: 'ethereum',
+      assetIdentifier: '0xtoken',
       alchemyApiKey: 'test-alchemy-key',
     });
-    expect(mockSync).toHaveBeenCalledTimes(1);
-    expect(mockClose).toHaveBeenCalledTimes(1);
+    expect(mockDbDestroy).toHaveBeenCalledOnce();
   });
 
-  it('should heartbeat after sync', async () => {
-    mockSync.mockResolvedValue({
-      assetKey: 'fet_ethereum',
-      fromBlock: '0xa7d13c',
-      toBlock: '0xb00000',
+  it('should sync Cardano asset when given cardano target', async () => {
+    mockSyncCardanoAssetTransfer.mockResolvedValue({
+      chain: 'cardano',
+      assetIdentifier: 'e824c001...',
+      pageCount: 5,
+      insertedAssetTransactionCount: 100,
+    });
+
+    const activity = createOnchainDataSyncActivity(ctx);
+    await activity([{ chain: 'cardano', identifier: 'e824c001...' }]);
+
+    expect(mockSyncCardanoAssetTransfer).toHaveBeenCalledWith({
+      db: { destroy: mockDbDestroy },
+      assetIdentifier: 'e824c001...',
+      blockfrostAPIKey: 'test-blockfrost-api-key',
+    });
+    expect(mockDbDestroy).toHaveBeenCalledOnce();
+  });
+
+  it('should heartbeat after each target sync', async () => {
+    mockSyncEvmAssetTransfer.mockResolvedValue({
+      chain: 'ethereum',
+      assetIdentifier: '0xtoken',
+      fromBlock: '0x0',
+      toBlock: '0x1',
       insertedCount: 0,
     });
 
     const activity = createOnchainDataSyncActivity(ctx);
-    await activity();
+    await activity([{ chain: 'ethereum', identifier: '0xtoken' }]);
 
-    expect(mockHeartbeat).toHaveBeenCalledWith('fet_ethereum');
-    expect(mockHeartbeat).toHaveBeenCalledTimes(1);
+    expect(mockHeartbeat).toHaveBeenCalledWith({ chain: 'ethereum', identifier: '0xtoken' });
   });
 
-  it('should close the service even when sync throws', async () => {
-    mockSync.mockRejectedValue(new Error('Alchemy RPC error'));
+  it('should close the db even when sync throws', async () => {
+    mockSyncEvmAssetTransfer.mockRejectedValue(new Error('Alchemy RPC error'));
 
     const activity = createOnchainDataSyncActivity(ctx);
-    await expect(activity()).rejects.toThrow('Alchemy RPC error');
+    await expect(activity([{ chain: 'ethereum', identifier: '0xtoken' }])).rejects.toThrow('Alchemy RPC error');
 
-    expect(mockClose).toHaveBeenCalledOnce();
+    expect(mockDbDestroy).toHaveBeenCalledOnce();
   });
 
-  it('should work on first run when no database exists yet', async () => {
-    mockSync.mockResolvedValue({
-      assetKey: 'fet_ethereum',
-      fromBlock: '0xa7d13c',
-      toBlock: '0xb00000',
-      insertedCount: 5000,
+  it('should skip sync when no targets provided', async () => {
+    const activity = createOnchainDataSyncActivity(ctx);
+    await activity([]);
+
+    expect(mockCreateDb).not.toHaveBeenCalled();
+    expect(mockSyncEvmAssetTransfer).not.toHaveBeenCalled();
+  });
+
+  it('should sync multiple targets sequentially', async () => {
+    mockSyncEvmAssetTransfer.mockResolvedValue({
+      chain: 'ethereum',
+      assetIdentifier: '0xtoken',
+      fromBlock: '0x0',
+      toBlock: '0x1',
+      insertedCount: 50,
+    });
+    mockSyncCardanoAssetTransfer.mockResolvedValue({
+      chain: 'cardano',
+      assetIdentifier: 'e824c001...',
+      pageCount: 3,
+      insertedAssetTransactionCount: 30,
     });
 
     const activity = createOnchainDataSyncActivity(ctx);
-    await activity();
+    await activity([
+      { chain: 'ethereum', identifier: '0xtoken' },
+      { chain: 'cardano', identifier: 'e824c001...' },
+    ]);
 
-    expect(createSyncAssetTransfersService).toHaveBeenCalledWith(
-      expect.objectContaining({ databaseUrl: 'postgresql://postgres:postgres@localhost:5432/reputo_onchain_test' }),
-    );
-    expect(mockSync).toHaveBeenCalledTimes(1);
+    expect(mockSyncEvmAssetTransfer).toHaveBeenCalledTimes(1);
+    expect(mockSyncCardanoAssetTransfer).toHaveBeenCalledTimes(1);
+    expect(mockHeartbeat).toHaveBeenCalledTimes(2);
+    expect(mockDbDestroy).toHaveBeenCalledOnce();
   });
 });

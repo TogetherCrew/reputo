@@ -16,57 +16,14 @@ import type { Algorithm } from "@/core/algorithms"
 import { ReputoForm } from "@/core/reputo-form"
 import { buildSchemaFromAlgorithm } from "@/core/schema-builder"
 import type { CreateAlgorithmPresetDto } from "@/lib/api/types"
+import { cn } from "@/lib/utils"
+import { validateAlgorithmPresetClient } from "./algorithm-client-validation"
+import { extractApiErrorMessages } from "./error-utils"
 
 interface CreatePresetDialogProps {
   algo?: Algorithm
   onCreatePreset: (data: CreateAlgorithmPresetDto) => Promise<void>
   isLoading: boolean
-}
-
-interface BackendError {
-  statusCode?: number
-  message?:
-    | {
-        message?: string[]
-        error?: string
-        statusCode?: number
-      }
-    | string
-}
-
-/**
- * Parse backend error response to extract error messages
- */
-function parseBackendErrorMessages(error: unknown): string[] {
-  const messages: string[] = []
-
-  if (!error || typeof error !== "object") {
-    return messages
-  }
-
-  const backendError = error as BackendError
-
-  // Handle nested message structure
-  if (backendError.message) {
-    if (typeof backendError.message === "string") {
-      messages.push(backendError.message)
-    } else if (
-      typeof backendError.message === "object" &&
-      backendError.message.message
-    ) {
-      const messageArray = Array.isArray(backendError.message.message)
-        ? backendError.message.message
-        : [backendError.message.message]
-
-      messageArray.forEach((msg) => {
-        if (typeof msg === "string") {
-          messages.push(msg)
-        }
-      })
-    }
-  }
-
-  return messages
 }
 
 /** Normalize numeric value: "1,2" (locale) → number 1.2 for API validity. */
@@ -93,6 +50,15 @@ export function CreatePresetDialog({
     if (!algo) return null
     return buildSchemaFromAlgorithm(algo, "1.0.0")
   }, [algo])
+
+  const hasResourceSelector = useMemo(
+    () =>
+      schema?.inputs.some(
+        (input) =>
+          input.type === "array" && input.widget === "resource_selector"
+      ) ?? false,
+    [schema]
+  )
 
   const handleSubmit = async (data: Record<string, unknown>) => {
     if (!algo) return
@@ -125,6 +91,21 @@ export function CreatePresetDialog({
         }),
       }
 
+      const clientErrors = await validateAlgorithmPresetClient({
+        key: createData.key,
+        version: createData.version,
+        inputs: createData.inputs,
+        name: createData.name,
+        description: createData.description,
+      })
+
+      if (clientErrors.length > 0) {
+        clientErrors.forEach((error) => {
+          toast.error(error.message)
+        })
+        return
+      }
+
       await onCreatePreset(createData)
 
       // Close dialog on success
@@ -132,7 +113,7 @@ export function CreatePresetDialog({
       toast.success("Preset created successfully")
     } catch (err) {
       // Show errors as toasts instead of in-modal alerts
-      const errorMessages = parseBackendErrorMessages(err)
+      const errorMessages = extractApiErrorMessages(err)
       if (errorMessages.length > 0) {
         errorMessages.forEach((msg) => {
           toast.error(msg)
@@ -154,7 +135,12 @@ export function CreatePresetDialog({
           <Plus className="mr-2 size-4" /> Create New Preset
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-lg max-h-[85vh] flex flex-col p-0">
+      <DialogContent
+        className={cn(
+          "max-h-[90vh] flex flex-col p-0",
+          hasResourceSelector ? "sm:max-w-5xl" : "sm:max-w-lg"
+        )}
+      >
         <DialogHeader className="flex-shrink-0 px-6 pt-6 pb-4 border-b">
           <DialogTitle>Create New Preset</DialogTitle>
           <DialogDescription>

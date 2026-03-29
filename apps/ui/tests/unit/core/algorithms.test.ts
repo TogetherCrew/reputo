@@ -59,11 +59,11 @@ describe("ui algorithms", () => {
         category: "Engagement",
         summary: "Scores voting diversity.",
         description: "Calculates voting engagement from a vote file.",
-        duration: "~2-5 min",
-        dependencies: "1 input",
-        level: "Intermediate",
+        duration: "~1-3 min",
+        inputSummary: "1 configurable input",
+        level: "Beginner",
         inputs: [{ key: "votes_csv", type: "csv", label: "Votes CSV" }],
-        dataSourceLabels: ["DeepFunding Portal API"],
+        dependencyLabels: ["DeepFunding Portal API"],
       },
     ])
     expect(getAlgorithmById("voting_engagement")).toEqual(algorithms[0])
@@ -106,14 +106,14 @@ describe("ui algorithms", () => {
         category: "Engagement",
         summary: "Scores proposal outcomes.",
         description: "Calculates proposal engagement.",
-        duration: "~2-5 min",
-        dependencies: "2 inputs",
-        level: "Intermediate",
+        duration: "~2-4 min",
+        inputSummary: "2 configurable inputs",
+        level: "Beginner",
         inputs: [
           { key: "reviews_csv", type: "csv", label: "Reviews CSV" },
           { key: "threshold", type: "number", label: "Threshold" },
         ],
-        dataSourceLabels: [],
+        dependencyLabels: [],
       },
     ])
     expect(mockSearchAlgorithmDefinitions).toHaveBeenNthCalledWith(1, {
@@ -126,5 +126,54 @@ describe("ui algorithms", () => {
       "Failed to search algorithms:",
       expect.any(Error)
     )
+  })
+
+  it("maps the canonical onchain-data dependency label for browse surfaces", async () => {
+    mockGetAlgorithmDefinitionKeys.mockReturnValue([])
+    mockSearchAlgorithmDefinitions.mockReturnValue([
+      JSON.stringify({
+        key: "token_value_over_time",
+        name: "Token Value Over Time",
+        category: "Activity",
+        summary: "Scores held token value.",
+        description: "Measures holdings over time.",
+        version: "1.0.0",
+        inputs: [
+          { key: "wallets", type: "json", label: "Wallet List JSON" },
+          {
+            key: "selected_resources",
+            type: "array",
+            label: "Resources to Score",
+          },
+        ],
+        outputs: [],
+        runtime: "typescript",
+        dependencies: [{ key: "onchain-data" }],
+      }),
+    ])
+
+    const { searchAlgorithms } = await loadAlgorithmsModule()
+
+    expect(searchAlgorithms("token")).toEqual([
+      {
+        id: "token_value_over_time",
+        title: "Token Value Over Time",
+        category: "Activity",
+        summary: "Scores held token value.",
+        description: "Measures holdings over time.",
+        duration: "~4-8 min",
+        inputSummary: "2 configurable inputs",
+        level: "Intermediate",
+        inputs: [
+          { key: "wallets", type: "json", label: "Wallet List JSON" },
+          {
+            key: "selected_resources",
+            type: "array",
+            label: "Resources to Score",
+          },
+        ],
+        dependencyLabels: ["Onchain Data"],
+      },
+    ])
   })
 })

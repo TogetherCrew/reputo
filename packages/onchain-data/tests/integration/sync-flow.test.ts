@@ -1,313 +1,263 @@
 import type { DataSource } from 'typeorm';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { AssetTransferSyncStore } from '../../src/db/postgres-asset-transfer-sync-store.js';
-import { createPostgresAssetTransferSyncStore } from '../../src/db/postgres-asset-transfer-sync-store.js';
-import type { AssetTransferRepository } from '../../src/db/repos/asset-transfer-repo.js';
-import { createAssetTransferRepository } from '../../src/db/repos/asset-transfer-repo.js';
-import type { AssetTransferSyncStateRepository } from '../../src/db/repos/asset-transfer-sync-state-repo.js';
-import { createAssetTransferSyncStateRepository } from '../../src/db/repos/asset-transfer-sync-state-repo.js';
-import type { AssetTransferEntity } from '../../src/db/schema.js';
-import type { AlchemyEthereumAssetTransferProvider } from '../../src/providers/ethereum/alchemy-ethereum-asset-transfer-provider.js';
-import { normalizeAlchemyEthereumTransfer } from '../../src/providers/ethereum/normalize-alchemy-transfer.js';
-import { DefaultSyncAssetTransfersService } from '../../src/services/sync-asset-transfers-service.js';
-import { type AssetKey, ONCHAIN_ASSET_KEYS, OnchainAssets } from '../../src/shared/index.js';
 
-const FET_ETHEREUM: AssetKey = 'fet_ethereum';
-const FET_ETHEREUM_ID = ONCHAIN_ASSET_KEYS.indexOf(FET_ETHEREUM);
-const asset = OnchainAssets.fet_ethereum;
-const FET_START_BLOCK = asset.startblock;
-const FET_START_BLOCK_NUM = parseInt(FET_START_BLOCK, 16);
-
-function blockToHex(n: number): string {
-  return `0x${n.toString(16)}`;
-}
-
-import {
-  closeTestDataSource,
-  createTestDataSource,
-  getTestDataSourceDatabaseUrl,
-  hasContainerRuntime,
-} from '../utils/db-helpers.js';
-import { createMockAlchemyTransfer } from '../utils/mock-helpers.js';
+import { syncEvmAssetTransferWithAdapter } from '../../src/adapters/evm/transfers/sync.js';
+import { closeTestDb, createTestDb, hasContainerRuntime } from '../utils/db-helpers.js';
+import { createMockAlchemyAssetTransfer, FET_ETHEREUM_IDENTIFIER } from '../utils/mock-helpers.js';
 
 const describePostgres = hasContainerRuntime ? describe : describe.skip;
 
-describePostgres('Sync Flow Integration', () => {
-  let ds: DataSource;
-  let syncStore: AssetTransferSyncStore;
-  let transferRepo: AssetTransferRepository;
-  let syncStateRepo: AssetTransferSyncStateRepository;
-  const fixedClock = () => '2024-01-15T12:00:00.000Z';
+describePostgres('EVM raw sync flow', () => {
+  let db: DataSource;
 
   beforeEach(async () => {
-    ds = await createTestDataSource();
-    syncStore = await createPostgresAssetTransferSyncStore({
-      databaseUrl: getTestDataSourceDatabaseUrl(ds),
-    });
-    transferRepo = createAssetTransferRepository(ds);
-    syncStateRepo = createAssetTransferSyncStateRepository(ds);
+    db = await createTestDb();
   });
 
   afterEach(async () => {
-    await syncStore.close();
-    await closeTestDataSource(ds);
+    await closeTestDb(db);
   });
 
-  function makeProvider(
-    toBlock: number,
-    batchesFn: () => AsyncGenerator<{
-      items: AssetTransferEntity[];
-      lastBlock: string;
-    }>,
-  ): AlchemyEthereumAssetTransferProvider {
-    return {
-      getToBlock: vi.fn().mockResolvedValue(blockToHex(toBlock)),
-      fetchAssetTransfers: batchesFn,
-    };
-  }
+  it('bootstraps the PostgreSQL schema on database creation', async () => {
+    const result = await db.query<{ table_name: string }>(
+      `
+        SELECT table_name
+        FROM information_schema.tables
+        WHERE table_schema = 'public'
+          AND table_name IN ('evm_asset_transfers', 'evm_asset_transfer_sync_state')
+        ORDER BY table_name
+      `,
+    );
 
-  it('first sync writes transfers and creates sync state', async () => {
-    const block1 = FET_START_BLOCK_NUM;
-    const block2 = FET_START_BLOCK_NUM + 1;
-    const toBlock = FET_START_BLOCK_NUM + 100;
-    const transfers = [
-      createMockAlchemyTransfer({
-        blockNum: blockToHex(block1),
-        uniqueId: '0xaaa:log:0x0',
-        hash: '0xaaa',
-        from: '0x1111111111111111111111111111111111111111',
-        to: '0x2222222222222222222222222222222222222222',
-        value: 100,
-      }),
-      createMockAlchemyTransfer({
-        blockNum: blockToHex(block2),
-        uniqueId: '0xbbb:log:0x1',
-        hash: '0xbbb',
-        from: '0x3333333333333333333333333333333333333333',
-        to: '0x2222222222222222222222222222222222222222',
-        value: 200,
-      }),
-    ];
-
-    async function* batches() {
-      const items = transfers.map((t) =>
-        normalizeAlchemyEthereumTransfer({
-          assetKey: FET_ETHEREUM,
-          transfer: t,
-        }),
-      );
-      yield { items, lastBlock: blockToHex(block2) };
-    }
-
-    const provider = makeProvider(toBlock, batches);
-    const service = new DefaultSyncAssetTransfersService(FET_ETHEREUM, ds, syncStore, provider, fixedClock);
-
-    const result = await service.sync();
-    expect(result.insertedCount).toBe(2);
-    expect(result.fromBlock).toBe(FET_START_BLOCK);
-
-    const syncState = await syncStateRepo.findByAssetKey(FET_ETHEREUM);
-    expect(syncState).not.toBeNull();
-    expect(syncState?.lastSyncedBlock).toBe(blockToHex(block2));
+    expect(result).toEqual([{ table_name: 'evm_asset_transfer_sync_state' }, { table_name: 'evm_asset_transfers' }]);
   });
 
-  it('second sync only fetches new blocks', async () => {
-    const lastSynced = FET_START_BLOCK_NUM + 50;
-    await syncStateRepo.upsert({
-      chain: asset.chain,
-      assetIdentifier: asset.assetIdentifier,
-      lastSyncedBlock: blockToHex(lastSynced),
-      updatedAt: '2024-01-14T00:00:00.000Z',
-    });
-
-    const fetchFn = vi.fn();
-    const newBlock = lastSynced;
-    const toBlock = FET_START_BLOCK_NUM + 200;
-    async function* batches() {
-      fetchFn();
-      const raw = createMockAlchemyTransfer({
-        blockNum: blockToHex(newBlock),
-        uniqueId: '0xccc:log:0x0',
-        hash: '0xccc',
-      });
-      const items = [
-        normalizeAlchemyEthereumTransfer({
-          assetKey: FET_ETHEREUM,
-          transfer: raw,
-        }),
-      ];
-      yield { items, lastBlock: blockToHex(newBlock) };
-    }
-
-    const provider = makeProvider(toBlock, batches);
-    const service = new DefaultSyncAssetTransfersService(FET_ETHEREUM, ds, syncStore, provider, fixedClock);
-
-    const result = await service.sync();
-    expect(result.fromBlock).toBe(blockToHex(lastSynced));
-    expect(result.toBlock).toBe(blockToHex(toBlock));
-    expect(result.insertedCount).toBe(1);
-  });
-
-  it('provider failure before flush does not persist buffered page or sync state', async () => {
-    const block1 = FET_START_BLOCK_NUM;
-    const toBlock = FET_START_BLOCK_NUM + 100;
-    const transfer1 = createMockAlchemyTransfer({
-      blockNum: blockToHex(block1),
+  it('syncs raw asset transfers into PostgreSQL', async () => {
+    const chain = 'ethereum';
+    const assetIdentifier = FET_ETHEREUM_IDENTIFIER;
+    const firstTransfer = createMockAlchemyAssetTransfer({
       uniqueId: '0xfirst:log:0x0',
-      hash: '0xfirst',
+      blockNum: '0x100',
     });
-
-    let batchIndex = 0;
-    async function* batches() {
-      const items = [
-        normalizeAlchemyEthereumTransfer({
-          assetKey: FET_ETHEREUM,
-          transfer: transfer1,
-        }),
-      ];
-      yield { items, lastBlock: blockToHex(block1) };
-      batchIndex++;
-      throw new Error('Provider failure');
-    }
-
-    const provider = makeProvider(toBlock, batches);
-    const service = new DefaultSyncAssetTransfersService(FET_ETHEREUM, ds, syncStore, provider, fixedClock);
-
-    await expect(service.sync()).rejects.toThrow('Provider failure');
-
-    const syncState = await syncStateRepo.findByAssetKey(FET_ETHEREUM);
-    expect(syncState).toBeNull();
-    expect(batchIndex).toBe(1);
-  });
-
-  it('rolls back transfer inserts when sync-state upsert fails during flush', async () => {
-    const block = FET_START_BLOCK_NUM;
-    const toBlock = FET_START_BLOCK_NUM + 100;
-    const trackedAddress = '0xaaaa000000000000000000000000000000000001';
-
-    async function* batches() {
-      const items = Array.from({ length: 10_000 }, (_, i) =>
-        normalizeAlchemyEthereumTransfer({
-          assetKey: FET_ETHEREUM,
-          transfer: createMockAlchemyTransfer({
-            blockNum: blockToHex(block),
-            uniqueId: `0xrollback-${i}:log:0x${i.toString(16)}`,
-            hash: `0xrollback-${i}`,
-            from: trackedAddress,
-          }),
-        }),
-      );
-      yield { items, lastBlock: blockToHex(block) };
-    }
-
-    const provider = makeProvider(toBlock, batches);
-    const failingSyncStore: AssetTransferSyncStore = {
-      findByAssetKey: syncStore.findByAssetKey.bind(syncStore),
-      close: syncStore.close.bind(syncStore),
-      withTransaction: (callback) =>
-        syncStore.withTransaction(async (tx) =>
-          callback({
-            insertTransferBatch: tx.insertTransferBatch,
-            upsertSyncState: vi.fn().mockRejectedValue(new Error('sync state write failed')),
-          }),
-        ),
+    const secondTransfer = createMockAlchemyAssetTransfer({
+      uniqueId: '0xsecond:log:0x1',
+      blockNum: '0x101',
+      from: '0xAAAA000000000000000000000000000000000001',
+      value: null,
+    });
+    const adapter = {
+      getFinalizedBlock: vi.fn().mockResolvedValue('0x101'),
+      fetchAssetTransfers: vi.fn(async function* fetchAssetTransfers() {
+        yield {
+          items: [firstTransfer, secondTransfer],
+          lastBlock: '0x101',
+        };
+      }),
     };
 
-    const service = new DefaultSyncAssetTransfersService(FET_ETHEREUM, ds, failingSyncStore, provider, fixedClock);
-
-    await expect(service.sync()).rejects.toThrow('sync state write failed');
-
-    const syncState = await syncStateRepo.findByAssetKey(FET_ETHEREUM);
-    expect(syncState).toBeNull();
-
-    const persistedTransfers = await transferRepo.findTransfersByAddresses({
-      assetId: FET_ETHEREUM_ID,
-      addresses: [trackedAddress],
-      page: 1,
-      limit: 20_000,
-      orderBy: 'time_asc',
+    const transferResult = await syncEvmAssetTransferWithAdapter({
+      db,
+      chain,
+      assetIdentifier,
+      adapter,
+      clock: () => new Date('2024-01-15T12:00:00.000Z'),
     });
-    expect(persistedTransfers).toHaveLength(0);
+
+    expect(transferResult).toEqual({
+      chain,
+      assetIdentifier,
+      fromBlock: '0x0',
+      toBlock: '0x101',
+      pageCount: 1,
+      attemptedCount: 2,
+      insertedCount: 2,
+      ignoredCount: 0,
+    });
+
+    const transferRows = await db.query<{
+      block_num: string;
+      from_address: string;
+      value: number | null;
+      raw_json: unknown;
+    }>(
+      `
+        SELECT block_num, from_address, value, raw_json
+        FROM evm_asset_transfers
+        ORDER BY unique_id
+      `,
+    );
+
+    expect(transferRows).toEqual([
+      {
+        block_num: '0x100',
+        from_address: firstTransfer.from,
+        value: 100,
+        raw_json: firstTransfer,
+      },
+      {
+        block_num: '0x101',
+        from_address: secondTransfer.from,
+        value: null,
+        raw_json: secondTransfer,
+      },
+    ]);
+
+    const syncStateRows = await db.query<{
+      last_synced_block: string;
+      updated_at: Date;
+    }>('SELECT last_synced_block, updated_at FROM evm_asset_transfer_sync_state');
+
+    expect(syncStateRows).toEqual([
+      {
+        last_synced_block: '0x101',
+        updated_at: new Date('2024-01-15T12:00:00.000Z'),
+      },
+    ]);
   });
 
-  it('synced data can be queried by findTransfersByAddresses', async () => {
-    const addr = '0xaaaa000000000000000000000000000000000001';
-    const other = '0xbbbb000000000000000000000000000000000002';
-
-    const block1 = FET_START_BLOCK_NUM;
-    const block2 = FET_START_BLOCK_NUM + 1;
-    const block3 = FET_START_BLOCK_NUM + 2;
-    const toBlock = FET_START_BLOCK_NUM + 100;
-    const transfers = [
-      createMockAlchemyTransfer({
-        blockNum: blockToHex(block1),
-        uniqueId: '0xout1:log:0x0',
-        hash: '0xout1',
-        from: addr,
-        to: other,
-        value: 10,
-      }),
-      createMockAlchemyTransfer({
-        blockNum: blockToHex(block2),
-        uniqueId: '0xin1:log:0x0',
-        hash: '0xin1',
-        from: other,
-        to: addr,
-        value: 20,
-      }),
-      createMockAlchemyTransfer({
-        blockNum: blockToHex(block3),
-        uniqueId: '0xout2:log:0x0',
-        hash: '0xout2',
-        from: addr,
-        to: other,
-        value: 30,
-      }),
-    ];
-
-    async function* batches() {
-      const items = transfers.map((t) =>
-        normalizeAlchemyEthereumTransfer({
-          assetKey: FET_ETHEREUM,
-          transfer: t,
-        }),
-      );
-      yield { items, lastBlock: blockToHex(block3) };
-    }
-
-    const provider = makeProvider(toBlock, batches);
-    const service = new DefaultSyncAssetTransfersService(FET_ETHEREUM, ds, syncStore, provider, fixedClock);
-    await service.sync();
-
-    const all = await transferRepo.findTransfersByAddresses({
-      assetId: FET_ETHEREUM_ID,
-      addresses: [addr],
-      page: 1,
-      limit: 100,
-      orderBy: 'time_asc',
+  it('resumes from sync state and ignores duplicate transfer rows on rerun', async () => {
+    const chain = 'ethereum';
+    const assetIdentifier = FET_ETHEREUM_IDENTIFIER;
+    const firstTransfer = createMockAlchemyAssetTransfer({
+      uniqueId: '0xdup:log:0x0',
+      blockNum: '0x100',
+      hash: '0xdup',
     });
-    expect(all).toHaveLength(3);
-
-    const rangeFiltered = await transferRepo.findTransfersByAddresses({
-      assetId: FET_ETHEREUM_ID,
-      addresses: [addr],
-      page: 1,
-      limit: 100,
-      orderBy: 'time_asc',
-      fromBlock: block1,
-      toBlock: block2,
+    const secondTransfer = createMockAlchemyAssetTransfer({
+      uniqueId: '0xnew:log:0x1',
+      blockNum: '0x200',
+      hash: '0xnew',
     });
-    expect(rangeFiltered).toHaveLength(2);
 
-    const noResults = await transferRepo.findTransfersByAddresses({
-      assetId: FET_ETHEREUM_ID,
-      addresses: [addr],
-      page: 1,
-      limit: 100,
-      orderBy: 'time_asc',
-      fromBlock: FET_START_BLOCK_NUM + 1_000_000,
-      toBlock: FET_START_BLOCK_NUM + 2_000_000,
+    const firstAdapter = {
+      getFinalizedBlock: vi.fn().mockResolvedValue('0x100'),
+      fetchAssetTransfers: vi.fn(async function* fetchAssetTransfers() {
+        yield {
+          items: [firstTransfer],
+          lastBlock: '0x100',
+        };
+      }),
+    };
+
+    await syncEvmAssetTransferWithAdapter({
+      db,
+      chain,
+      assetIdentifier,
+      adapter: firstAdapter,
     });
-    expect(noResults).toHaveLength(0);
+
+    const secondAdapter = {
+      getFinalizedBlock: vi.fn().mockResolvedValue('0x200'),
+      fetchAssetTransfers: vi.fn(async function* fetchAssetTransfers() {
+        yield {
+          items: [firstTransfer, secondTransfer],
+          lastBlock: '0x200',
+        };
+      }),
+    };
+
+    const result = await syncEvmAssetTransferWithAdapter({
+      db,
+      chain,
+      assetIdentifier,
+      adapter: secondAdapter,
+    });
+
+    expect(result).toEqual({
+      chain,
+      assetIdentifier,
+      fromBlock: '0x100',
+      toBlock: '0x200',
+      pageCount: 1,
+      attemptedCount: 2,
+      insertedCount: 1,
+      ignoredCount: 1,
+    });
+    expect(secondAdapter.fetchAssetTransfers).toHaveBeenCalledWith({
+      chain,
+      assetIdentifier,
+      fromBlock: '0x100',
+      toBlock: '0x200',
+    });
+
+    const transferRows = await db.query<{ unique_id: string }>(
+      `
+        SELECT unique_id
+        FROM evm_asset_transfers
+        ORDER BY unique_id
+      `,
+    );
+
+    expect(transferRows).toEqual([{ unique_id: '0xdup:log:0x0' }, { unique_id: '0xnew:log:0x1' }]);
+  });
+
+  it('persists multi-page syncs in 10-page batches and keeps the final sync state', async () => {
+    const chain = 'ethereum';
+    const assetIdentifier = FET_ETHEREUM_IDENTIFIER;
+    const pages = Array.from({ length: 11 }, (_, index) => {
+      const blockNum = `0x${(0x300 + index).toString(16).toUpperCase()}`;
+      const transfer = createMockAlchemyAssetTransfer({
+        uniqueId: `0xmulti:${index}:0x0`,
+        blockNum,
+        hash: `0xmulti-${index}`,
+      });
+
+      return {
+        items: [transfer],
+        lastBlock: blockNum,
+      };
+    });
+    const adapter = {
+      getFinalizedBlock: vi.fn().mockResolvedValue('0x30A'),
+      fetchAssetTransfers: vi.fn(async function* fetchAssetTransfers() {
+        yield* pages;
+      }),
+    };
+
+    const result = await syncEvmAssetTransferWithAdapter({
+      db,
+      chain,
+      assetIdentifier,
+      adapter,
+      clock: () => new Date('2024-01-15T12:00:00.000Z'),
+    });
+
+    expect(result).toEqual({
+      chain,
+      assetIdentifier,
+      fromBlock: '0x0',
+      toBlock: '0x30A',
+      pageCount: 11,
+      attemptedCount: 11,
+      insertedCount: 11,
+      ignoredCount: 0,
+    });
+
+    const transferRows = await db.query<{ unique_id: string; block_num: string }>(
+      `
+        SELECT unique_id, block_num
+        FROM evm_asset_transfers
+        WHERE chain = $1 AND asset_identifier = $2
+        ORDER BY unique_id
+      `,
+      [chain, assetIdentifier],
+    );
+
+    expect(transferRows).toHaveLength(11);
+    expect(transferRows.at(-1)).toEqual({
+      unique_id: '0xmulti:9:0x0',
+      block_num: '0x309',
+    });
+
+    const syncStateRows = await db.query<{ last_synced_block: string }>(
+      `
+        SELECT last_synced_block
+        FROM evm_asset_transfer_sync_state
+        WHERE chain = $1 AND asset_identifier = $2
+      `,
+      [chain, assetIdentifier],
+    );
+
+    expect(syncStateRows).toEqual([{ last_synced_block: '0x30A' }]);
   });
 });

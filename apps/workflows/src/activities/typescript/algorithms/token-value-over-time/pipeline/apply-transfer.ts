@@ -22,6 +22,11 @@ export function applyTransfer(
     return;
   }
 
+  if (transfer.isStaking) {
+    stats.skippedStaking += 1;
+    return;
+  }
+
   if (from && targetWalletSet.has(from)) {
     const senderLots = state.get(from);
     if (senderLots) {
@@ -33,10 +38,10 @@ export function applyTransfer(
     const receiverLots = state.get(to);
     if (receiverLots) {
       pushLot(receiverLots, {
-        assetKey: transfer.assetKey,
+        resourceId: transfer.resourceId,
         amountRemaining: transfer.amount,
         receivedAt: transfer.blockTimestamp,
-        sourceTransferId: `${transfer.assetKey}:${transfer.transactionHash}:${transfer.logIndex}`,
+        sourceTransferId: `${transfer.resourceId}:${transfer.transactionHash}:${transfer.logIndex}`,
       });
     }
   }

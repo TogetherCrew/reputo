@@ -17,6 +17,9 @@ import type {
   AlgorithmPresetResponseDto,
   UpdateAlgorithmPresetDto,
 } from "@/lib/api/types"
+import { cn } from "@/lib/utils"
+import { validateAlgorithmPresetClient } from "./algorithm-client-validation"
+import { extractApiFieldErrors } from "./error-utils"
 
 interface EditPresetDialogProps {
   isOpen: boolean
@@ -25,58 +28,6 @@ interface EditPresetDialogProps {
   onUpdatePreset: (data: UpdateAlgorithmPresetDto) => Promise<void>
   isLoading: boolean
   error?: unknown
-}
-
-interface BackendError {
-  statusCode?: number
-  message?:
-    | {
-        message?: string[]
-        error?: string
-        statusCode?: number
-      }
-    | string
-}
-
-/**
- * Parse backend error response to extract field errors
- */
-function parseBackendError(
-  error: unknown
-): { field: string; message: string }[] {
-  const errors: { field: string; message: string }[] = []
-
-  if (!error || typeof error !== "object") {
-    return errors
-  }
-
-  const backendError = error as BackendError
-
-  // Handle nested message structure
-  if (backendError.message) {
-    if (typeof backendError.message === "string") {
-      errors.push({ field: "_general", message: backendError.message })
-    } else if (
-      typeof backendError.message === "object" &&
-      backendError.message.message
-    ) {
-      const messageArray = Array.isArray(backendError.message.message)
-        ? backendError.message.message
-        : [backendError.message.message]
-
-      messageArray.forEach((msg) => {
-        if (typeof msg === "string") {
-          // Try to extract field name from error message
-          // Format: "fieldName must be..."
-          const fieldMatch = msg.match(/^(\w+)\s+/)
-          const field = fieldMatch ? fieldMatch[1] : "_general"
-          errors.push({ field, message: msg })
-        }
-      })
-    }
-  }
-
-  return errors
 }
 
 /** Normalize numeric value: accept "1,2" (locale) and return number 1.2 so UI and API use dot. */
@@ -117,6 +68,15 @@ export function EditPresetDialog({
     return buildSchemaFromAlgorithm(algorithm, preset?.version || "1.0.0")
   }, [algorithm, preset])
 
+  const hasResourceSelector = useMemo(
+    () =>
+      schema?.inputs.some(
+        (input) =>
+          input.type === "array" && input.widget === "resource_selector"
+      ) ?? false,
+    [schema]
+  )
+
   // Build default values from preset (preset.inputs use algorithm input keys)
   const defaultValues = useMemo(() => {
     if (!preset || !algorithm) return {}
@@ -147,7 +107,7 @@ export function EditPresetDialog({
   // Parse backend errors
   const backendErrors = useMemo(() => {
     if (!backendError) return []
-    return parseBackendError(backendError)
+    return extractApiFieldErrors(backendError)
   }, [backendError])
 
   // Combine form errors and backend errors
@@ -194,10 +154,26 @@ export function EditPresetDialog({
       })
       updateData.inputs = inputs
 
+      const clientErrors = await validateAlgorithmPresetClient({
+        key: preset.key,
+        version: preset.version,
+        inputs,
+        name: updateData.name !== undefined ? updateData.name : preset.name,
+        description:
+          updateData.description !== undefined
+            ? updateData.description
+            : preset.description,
+      })
+
+      if (clientErrors.length > 0) {
+        setFormErrors(clientErrors)
+        return
+      }
+
       await onUpdatePreset(updateData)
       onClose()
     } catch (err) {
-      const parsedErrors = parseBackendError(err)
+      const parsedErrors = extractApiFieldErrors(err)
       setFormErrors(parsedErrors)
     } finally {
       isSubmittingRef.current = false
@@ -220,7 +196,12 @@ export function EditPresetDialog({
         if (!open) handleClose()
       }}
     >
-      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent
+        className={cn(
+          "max-h-[90vh] overflow-y-auto",
+          hasResourceSelector ? "sm:max-w-5xl" : "sm:max-w-2xl"
+        )}
+      >
         <DialogHeader>
           <DialogTitle>Edit Preset</DialogTitle>
           <DialogDescription>
@@ -229,16 +210,18 @@ export function EditPresetDialog({
           </DialogDescription>
         </DialogHeader>
 
-        {/* Display general errors */}
-        {allErrors.filter((e) => e.field === "_general").length > 0 && (
+        {/* Display submit errors */}
+        {allErrors.length > 0 && (
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
-              {allErrors
-                .filter((e) => e.field === "_general")
-                .map((e) => (
-                  <div key={e.message}>{e.message}</div>
-                ))}
+              {allErrors.map((e) => (
+                <div key={`${e.field}:${e.message}`}>
+                  {e.field !== "_general"
+                    ? `${e.field}: ${e.message}`
+                    : e.message}
+                </div>
+              ))}
             </AlertDescription>
           </Alert>
         )}

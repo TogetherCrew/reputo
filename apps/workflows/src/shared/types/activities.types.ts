@@ -58,6 +58,7 @@ export interface AlgorithmLibraryActivities {
 export interface OnchainDataSyncContext {
   databaseUrl: string;
   alchemyApiKey: string;
+  blockfrostAPIKey: string;
 }
 
 /** Context for dependency resolution activities on the orchestrator worker (non-onchain). */
@@ -74,14 +75,6 @@ export interface DeepfundingSyncContext {
   storage: Storage;
   storageConfig: StorageConfig;
 }
-
-export type PaginatedResponse = {
-  // biome-ignore lint/suspicious/noExplicitAny: External API response data
-  data: any[];
-  pagination?: {
-    current_page?: string | number;
-  };
-};
 
 export interface DeepFundingSyncInput {
   snapshotId: string;

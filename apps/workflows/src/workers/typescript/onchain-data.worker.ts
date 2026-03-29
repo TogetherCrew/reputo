@@ -1,13 +1,14 @@
 import { pathToFileURL } from 'node:url';
 import { NativeConnection, Worker } from '@temporalio/worker';
 
-import { createOnchainDataDependencyResolverActivities } from '../../activities/orchestrator/index.js';
+import { createOnchainDataDependencyResolverActivities } from '../../activities/onchain-data/index.js';
 import config from '../../config/index.js';
 import { ONCHAIN_DATA_WORKER_MAX_CONCURRENT_ACTIVITIES } from '../../shared/constants/index.js';
 import { logger } from '../../shared/utils/index.js';
 
 export type OnchainDataWorkerConfig = {
   alchemyApiKey: string;
+  blockfrostAPIKey: string;
   databaseUrl: string;
 };
 
@@ -16,8 +17,13 @@ export function getOnchainDataWorkerConfig(): OnchainDataWorkerConfig {
     throw new Error('Config validation error: ALCHEMY_API_KEY is required for onchain-data worker');
   }
 
+  if (config.onchainData.blockfrostAPIKey == null) {
+    throw new Error('Config validation error: BLOCKFROST_API_KEY is required for onchain-data worker');
+  }
+
   return {
     alchemyApiKey: config.onchainData.alchemyApiKey,
+    blockfrostAPIKey: config.onchainData.blockfrostAPIKey,
     databaseUrl: config.onchainData.uri,
   };
 }
@@ -35,6 +41,7 @@ export async function runOnchainDataWorker(): Promise<void> {
   const activities = createOnchainDataDependencyResolverActivities({
     databaseUrl: onchainDataConfig.databaseUrl,
     alchemyApiKey: onchainDataConfig.alchemyApiKey,
+    blockfrostAPIKey: onchainDataConfig.blockfrostAPIKey,
   });
 
   logger.info(`Activities initialized: [${Object.keys(activities).join(', ')}]`);

@@ -24,7 +24,7 @@ STORAGE_BUCKET=reputo-dev
 STORAGE_PRESIGN_PUT_TTL=120
 STORAGE_PRESIGN_GET_TTL=300
 STORAGE_MAX_SIZE_BYTES=52428800
-STORAGE_CONTENT_TYPE_ALLOWLIST=text/csv
+STORAGE_CONTENT_TYPE_ALLOWLIST=text/csv,application/json
 
 # Optional explicit AWS credentials (non-production only; recommended to use LocalStack/MinIO creds here)
 AWS_ACCESS_KEY_ID=
@@ -42,3 +42,4 @@ ONCHAIN_DATA_POSTGRES_DB_NAME=reputo_onchain
 
 # Alchemy (onchain-data worker only)
 ALCHEMY_API_KEY=
+BLOCKFROST_API_KEY=

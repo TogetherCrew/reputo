@@ -1,6 +1,6 @@
-import { NotFoundException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { validateCSVContent, validatePayload } from '@reputo/algorithm-validator';
+import { validateAlgorithmPreset } from '@reputo/algorithm-validator';
 import { MODEL_NAMES } from '@reputo/database';
 import { getAlgorithmDefinition } from '@reputo/reputation-algorithms';
 import type { StorageMetadata } from '@reputo/storage';
@@ -12,7 +12,7 @@ import type {
   ListAlgorithmPresetsQueryDto,
   UpdateAlgorithmPresetDto,
 } from '../../../src/algorithm-preset/dto';
-import { CSVValidationException } from '../../../src/shared/exceptions';
+import { StorageInputValidationException } from '../../../src/shared/exceptions';
 import { SnapshotRepository } from '../../../src/snapshot/snapshot.repository';
 import { StorageService } from '../../../src/storage/storage.service';
 import { TemporalService } from '../../../src/temporal';
@@ -29,8 +29,7 @@ vi.mock('@reputo/algorithm-validator', async () => {
   const actual = await vi.importActual('@reputo/algorithm-validator');
   return {
     ...actual,
-    validateCSVContent: vi.fn(),
-    validatePayload: vi.fn(),
+    validateAlgorithmPreset: vi.fn(),
   };
 });
 
@@ -53,7 +52,7 @@ describe('AlgorithmPresetService', () => {
 
   const defaultStorageConfig = {
     maxSizeBytes: 52428800, // 50MB
-    contentTypeAllowlist: 'text/csv,text/plain',
+    contentTypeAllowlist: 'text/csv,text/plain,application/json',
   };
 
   const mockAlgorithmDefinition = {
@@ -144,14 +143,12 @@ describe('AlgorithmPresetService', () => {
 
     vi.mocked(getAlgorithmDefinition).mockReturnValue(JSON.stringify(mockAlgorithmDefinition));
 
-    vi.mocked(validatePayload).mockReturnValue({
+    vi.mocked(validateAlgorithmPreset).mockResolvedValue({
       success: true,
-      data: {},
-    });
-
-    vi.mocked(validateCSVContent).mockResolvedValue({
-      valid: true,
-      errors: [],
+      data: {
+        preset: {},
+        payload: {},
+      },
     });
 
     service = new AlgorithmPresetService(
@@ -197,12 +194,24 @@ describe('AlgorithmPresetService', () => {
 
       expect(mockStorageService.getObjectMetadata).toHaveBeenCalledWith('uploads/test.csv');
       expect(mockStorageService.getObject).toHaveBeenCalledWith('uploads/test.csv');
-      expect(validateCSVContent).toHaveBeenCalledWith(validCsvBuffer, mockAlgorithmDefinition.inputs[0].csv);
+      expect(validateAlgorithmPreset).toHaveBeenCalledWith(
+        expect.objectContaining({
+          definition: expect.objectContaining({
+            key: 'test_key',
+            version: '1.0.0',
+          }),
+          preset: expect.objectContaining({
+            key: 'test_key',
+            version: '1.0.0',
+            inputs: createDto.inputs,
+          }),
+        }),
+      );
     });
   });
 
   describe('validateStorageInputs - metadata validation', () => {
-    it('should throw CSVValidationException when content type is not allowed', async () => {
+    it('should throw StorageInputValidationException when the uploaded file does not match the csv input type', async () => {
       const createDto: CreateAlgorithmPresetDto = {
         key: 'test_key',
         version: '1.0.0',
@@ -215,20 +224,19 @@ describe('AlgorithmPresetService', () => {
       };
       mockStorageService.getObjectMetadata = vi.fn().mockResolvedValue(invalidMetadata);
 
-      await expect(service.create(createDto)).rejects.toThrow(CSVValidationException);
+      await expect(service.create(createDto)).rejects.toThrow(StorageInputValidationException);
 
       try {
         await service.create(createDto);
       } catch (error) {
-        expect(error).toBeInstanceOf(CSVValidationException);
-        const response = (error as CSVValidationException).getResponse() as any;
+        expect(error).toBeInstanceOf(StorageInputValidationException);
+        const response = (error as StorageInputValidationException).getResponse() as any;
         expect(response.errors[0].inputKey).toBe('input1');
-        expect(response.errors[0].errors[0]).toContain('Invalid content type');
-        expect(response.errors[0].errors[0]).toContain('application/json');
+        expect(response.errors[0].errors[0]).toContain('must be a CSV file');
       }
     });
 
-    it('should throw CSVValidationException when file exceeds API config maxSizeBytes', async () => {
+    it('should throw StorageInputValidationException when file exceeds API config maxSizeBytes', async () => {
       const createDto: CreateAlgorithmPresetDto = {
         key: 'test_key',
         version: '1.0.0',
@@ -241,17 +249,17 @@ describe('AlgorithmPresetService', () => {
       };
       mockStorageService.getObjectMetadata = vi.fn().mockResolvedValue(oversizedMetadata);
 
-      await expect(service.create(createDto)).rejects.toThrow(CSVValidationException);
+      await expect(service.create(createDto)).rejects.toThrow(StorageInputValidationException);
 
       try {
         await service.create(createDto);
       } catch (error) {
-        const response = (error as CSVValidationException).getResponse() as any;
+        const response = (error as StorageInputValidationException).getResponse() as any;
         expect(response.errors[0].errors).toContainEqual(expect.stringContaining('exceeds API limit'));
       }
     });
 
-    it('should throw CSVValidationException when file exceeds algorithm definition maxBytes', async () => {
+    it('should throw StorageInputValidationException when file exceeds algorithm definition maxBytes', async () => {
       const definitionWithMaxBytes = {
         ...mockAlgorithmDefinition,
         inputs: [
@@ -274,12 +282,12 @@ describe('AlgorithmPresetService', () => {
       };
 
       // Metadata size is 1024 bytes, which exceeds the 500 byte limit
-      await expect(service.create(createDto)).rejects.toThrow(CSVValidationException);
+      await expect(service.create(createDto)).rejects.toThrow(StorageInputValidationException);
 
       try {
         await service.create(createDto);
       } catch (error) {
-        const response = (error as CSVValidationException).getResponse() as any;
+        const response = (error as StorageInputValidationException).getResponse() as any;
         expect(response.errors[0].errors).toContainEqual(expect.stringContaining('exceeds algorithm limit'));
       }
     });
@@ -317,24 +325,24 @@ describe('AlgorithmPresetService', () => {
   });
 
   describe('validateStorageInputs - CSV content validation', () => {
-    it('should throw CSVValidationException when CSV content is invalid', async () => {
+    it('should throw StorageInputValidationException when CSV content is invalid', async () => {
       const createDto: CreateAlgorithmPresetDto = {
         key: 'test_key',
         version: '1.0.0',
         inputs: [{ key: 'input1', value: 'uploads/test.csv' }],
       };
 
-      vi.mocked(validateCSVContent).mockResolvedValue({
-        valid: false,
-        errors: ['Missing required column: column1'],
+      vi.mocked(validateAlgorithmPreset).mockResolvedValue({
+        success: false,
+        errors: [{ field: 'input1', message: 'Missing required column: column1', source: 'file' }],
       });
 
-      await expect(service.create(createDto)).rejects.toThrow(CSVValidationException);
+      await expect(service.create(createDto)).rejects.toThrow(StorageInputValidationException);
 
       try {
         await service.create(createDto);
       } catch (error) {
-        const response = (error as CSVValidationException).getResponse() as any;
+        const response = (error as StorageInputValidationException).getResponse() as any;
         expect(response.errors[0].inputKey).toBe('input1');
         expect(response.errors[0].errors).toContain('Missing required column: column1');
       }
@@ -347,15 +355,18 @@ describe('AlgorithmPresetService', () => {
         inputs: [{ key: 'input1', value: 'uploads/test.csv' }],
       };
 
-      vi.mocked(validateCSVContent).mockResolvedValue({
-        valid: false,
-        errors: ['Missing required column: column1', 'CSV must contain at least one data row'],
+      vi.mocked(validateAlgorithmPreset).mockResolvedValue({
+        success: false,
+        errors: [
+          { field: 'input1', message: 'Missing required column: column1', source: 'file' },
+          { field: 'input1', message: 'CSV must contain at least one data row', source: 'file' },
+        ],
       });
 
       try {
         await service.create(createDto);
       } catch (error) {
-        const response = (error as CSVValidationException).getResponse() as any;
+        const response = (error as StorageInputValidationException).getResponse() as any;
         expect(response.errors[0].errors).toHaveLength(2);
         expect(response.errors[0].errors).toContain('Missing required column: column1');
         expect(response.errors[0].errors).toContain('CSV must contain at least one data row');
@@ -364,7 +375,7 @@ describe('AlgorithmPresetService', () => {
   });
 
   describe('validateStorageInputs - multiple errors collection', () => {
-    it('should collect metadata and CSV content errors together', async () => {
+    it('should stop before shared validation when metadata is invalid', async () => {
       const createDto: CreateAlgorithmPresetDto = {
         key: 'test_key',
         version: '1.0.0',
@@ -378,20 +389,14 @@ describe('AlgorithmPresetService', () => {
       };
       mockStorageService.getObjectMetadata = vi.fn().mockResolvedValue(invalidMetadata);
 
-      // Also invalid CSV content
-      vi.mocked(validateCSVContent).mockResolvedValue({
-        valid: false,
-        errors: ['Missing required column: column1'],
-      });
-
       try {
         await service.create(createDto);
       } catch (error) {
-        const response = (error as CSVValidationException).getResponse() as any;
-        expect(response.errors[0].errors.length).toBeGreaterThanOrEqual(2);
+        const response = (error as StorageInputValidationException).getResponse() as any;
         expect(response.errors[0].errors).toContainEqual(expect.stringContaining('Invalid content type'));
-        expect(response.errors[0].errors).toContain('Missing required column: column1');
       }
+
+      expect(validateAlgorithmPreset).not.toHaveBeenCalled();
     });
 
     it('should collect errors from multiple CSV inputs', async () => {
@@ -430,20 +435,18 @@ describe('AlgorithmPresetService', () => {
         ],
       };
 
-      vi.mocked(validateCSVContent)
-        .mockResolvedValueOnce({
-          valid: false,
-          errors: ['Error in file 1'],
-        })
-        .mockResolvedValueOnce({
-          valid: false,
-          errors: ['Error in file 2'],
-        });
+      vi.mocked(validateAlgorithmPreset).mockResolvedValue({
+        success: false,
+        errors: [
+          { field: 'input1', message: 'Error in file 1', source: 'file' },
+          { field: 'input2', message: 'Error in file 2', source: 'file' },
+        ],
+      });
 
       try {
         await service.create(createDto);
       } catch (error) {
-        const response = (error as CSVValidationException).getResponse() as any;
+        const response = (error as StorageInputValidationException).getResponse() as any;
         expect(response.errors).toHaveLength(2);
         expect(response.errors[0].inputKey).toBe('input1');
         expect(response.errors[0].errors).toContain('Error in file 1');
@@ -494,6 +497,271 @@ describe('AlgorithmPresetService', () => {
       expect(mockStorageService.getObjectMetadata).toHaveBeenCalledTimes(1);
       expect(mockStorageService.getObject).toHaveBeenCalledTimes(1);
       expect(mockStorageService.getObjectMetadata).toHaveBeenCalledWith('uploads/test.csv');
+    });
+  });
+
+  describe('validateStorageInputs - JSON content validation', () => {
+    it('should validate storage metadata and JSON content for json inputs', async () => {
+      const jsonDefinition = {
+        ...mockAlgorithmDefinition,
+        inputs: [
+          {
+            key: 'wallets',
+            label: 'Wallet Addresses JSON',
+            description: 'Wallet input',
+            type: 'json',
+            required: true,
+            json: {
+              maxBytes: 5242880,
+              schema: 'wallet_address_map',
+              rootKey: 'wallets',
+              allowedChains: ['ethereum', 'cardano'],
+            },
+          },
+        ],
+      };
+      vi.mocked(getAlgorithmDefinition).mockReturnValue(JSON.stringify(jsonDefinition));
+
+      const jsonMetadata: StorageMetadata = {
+        filename: 'wallets.json',
+        ext: 'json',
+        size: 512,
+        contentType: 'application/json',
+        timestamp: Date.now(),
+      };
+      const validJsonBuffer = Buffer.from(
+        JSON.stringify({
+          wallets: {
+            ethereum: ['0x1234567890abcdef1234567890abcdef12345678'],
+          },
+        }),
+        'utf-8',
+      );
+
+      mockStorageService.getObjectMetadata = vi.fn().mockResolvedValue(jsonMetadata);
+      mockStorageService.getObject = vi.fn().mockResolvedValue(validJsonBuffer);
+
+      const createDto: CreateAlgorithmPresetDto = {
+        key: 'test_key',
+        version: '1.0.0',
+        inputs: [{ key: 'wallets', value: 'uploads/wallets.json' }],
+      };
+
+      const mockPreset = { _id: '507f1f77bcf86cd799439011', ...createDto };
+      mockRepository.create = vi.fn().mockResolvedValue(mockPreset);
+
+      await service.create(createDto);
+
+      expect(mockStorageService.getObjectMetadata).toHaveBeenCalledWith('uploads/wallets.json');
+      expect(mockStorageService.getObject).toHaveBeenCalledWith('uploads/wallets.json');
+      expect(validateAlgorithmPreset).toHaveBeenCalledWith(
+        expect.objectContaining({
+          definition: expect.objectContaining({
+            key: 'test_key',
+          }),
+        }),
+      );
+    });
+
+    it('should surface shared rule errors when selected chains have no wallets in the uploaded json', async () => {
+      const tokenValueDefinition = {
+        key: 'token_value_over_time',
+        name: 'Token Value Over Time',
+        category: 'Activity',
+        summary: 'Test algorithm summary',
+        description: 'Test algorithm definition',
+        version: '1.0.0',
+        inputs: [
+          {
+            key: 'wallets',
+            label: 'Wallet Addresses JSON',
+            description: 'Wallet input',
+            type: 'json',
+            required: true,
+            json: {
+              maxBytes: 5242880,
+              schema: 'wallet_address_map',
+              rootKey: 'wallets',
+              allowedChains: ['ethereum', 'cardano'],
+            },
+          },
+          {
+            key: 'selected_resources',
+            label: 'Resources',
+            description: 'Selected resources',
+            type: 'array',
+            required: true,
+            minItems: 1,
+            uniqueBy: ['chain', 'resource_key'],
+            uiHint: {
+              widget: 'resource_selector',
+              resourceCatalog: {
+                chains: [
+                  {
+                    key: 'ethereum',
+                    label: 'Ethereum',
+                    resources: [
+                      {
+                        key: 'fet_token',
+                        label: 'FET',
+                        kind: 'token',
+                        identifier: '0xaaa',
+                        tokenIdentifier: '0xaaa',
+                        tokenKey: 'fet',
+                      },
+                    ],
+                  },
+                  {
+                    key: 'cardano',
+                    label: 'Cardano',
+                    resources: [
+                      {
+                        key: 'fet_token',
+                        label: 'FET',
+                        kind: 'token',
+                        identifier: 'asset1',
+                        tokenIdentifier: 'asset1',
+                        tokenKey: 'fet',
+                      },
+                    ],
+                  },
+                ],
+              },
+            },
+            item: {
+              type: 'object',
+              properties: [
+                { key: 'chain', label: 'Chain', description: 'Chain', type: 'string', required: true },
+                {
+                  key: 'resource_key',
+                  label: 'Resource',
+                  description: 'Resource key',
+                  type: 'string',
+                  required: true,
+                },
+              ],
+            },
+          },
+        ],
+        outputs: [],
+        runtime: 'typescript',
+        validation: {
+          rules: [
+            {
+              kind: 'json_chain_coverage',
+              walletInputKey: 'wallets',
+              selectorInputKey: 'selected_resources',
+              selectorChainField: 'chain',
+            },
+          ],
+        },
+      };
+      vi.mocked(getAlgorithmDefinition).mockReturnValue(JSON.stringify(tokenValueDefinition));
+
+      const jsonMetadata: StorageMetadata = {
+        filename: 'wallets.json',
+        ext: 'json',
+        size: 512,
+        contentType: 'application/json',
+        timestamp: Date.now(),
+      };
+      const ethereumOnlyWallets = Buffer.from(
+        JSON.stringify({
+          wallets: {
+            ethereum: ['0x1234567890abcdef1234567890abcdef12345678'],
+          },
+        }),
+        'utf-8',
+      );
+
+      mockStorageService.getObjectMetadata = vi.fn().mockResolvedValue(jsonMetadata);
+      mockStorageService.getObject = vi.fn().mockResolvedValue(ethereumOnlyWallets);
+      vi.mocked(validateAlgorithmPreset).mockResolvedValue({
+        success: false,
+        errors: [
+          {
+            field: 'wallets',
+            message: 'Wallet JSON is missing wallet addresses for selected chain(s): cardano',
+            source: 'rule',
+          },
+        ],
+      });
+
+      const createDto: CreateAlgorithmPresetDto = {
+        key: 'token_value_over_time',
+        version: '1.0.0',
+        inputs: [
+          { key: 'wallets', value: 'uploads/wallets.json' },
+          {
+            key: 'selected_resources',
+            value: [
+              {
+                chain: 'cardano',
+                resource_key: 'fet_token',
+              },
+            ],
+          },
+        ],
+      };
+
+      await expect(service.create(createDto)).rejects.toThrow(StorageInputValidationException);
+
+      try {
+        await service.create(createDto);
+      } catch (error) {
+        const response = (error as StorageInputValidationException).getResponse() as any;
+        expect(response.errors[0].inputKey).toBe('wallets');
+        expect(response.errors[0].errors).toContain(
+          'Wallet JSON is missing wallet addresses for selected chain(s): cardano',
+        );
+      }
+    });
+
+    it('should reject stale selected_targets presets with a recreate message', async () => {
+      vi.mocked(getAlgorithmDefinition).mockReturnValue(
+        JSON.stringify({
+          key: 'token_value_over_time',
+          name: 'Token Value Over Time',
+          category: 'Activity',
+          summary: 'Test algorithm summary',
+          description: 'Test algorithm definition',
+          version: '1.0.0',
+          inputs: [
+            {
+              key: 'selected_resources',
+              label: 'Resources',
+              description: 'Selected resources',
+              type: 'array',
+              required: true,
+              item: {
+                type: 'object',
+                properties: [{ key: 'chain', label: 'Chain', description: 'Chain', type: 'string', required: true }],
+              },
+            },
+          ],
+          outputs: [],
+          runtime: 'typescript',
+        }),
+      );
+      vi.mocked(validateAlgorithmPreset).mockResolvedValue({
+        success: false,
+        errors: [
+          {
+            field: 'selected_targets',
+            message:
+              'Input "selected_targets" is not supported by token_value_over_time@1.0.0. Recreate the preset using the current algorithm definition.',
+            source: 'definition',
+          },
+        ],
+      });
+
+      await expect(
+        service.create({
+          key: 'token_value_over_time',
+          version: '1.0.0',
+          inputs: [{ key: 'selected_targets', value: [] }],
+        }),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 
@@ -620,10 +888,17 @@ describe('AlgorithmPresetService', () => {
         ...updateDto,
       };
 
+      mockRepository.findById = vi.fn().mockResolvedValue({
+        _id: id,
+        key: 'test_key',
+        version: '1.0.0',
+        inputs: [{ key: 'input1', value: 'uploads/test.csv' }],
+      });
       mockRepository.updateById = vi.fn().mockResolvedValue(mockUpdatedPreset);
 
       const result = await service.updateById(id, updateDto);
 
+      expect(mockStorageService.getObjectMetadata).toHaveBeenCalledWith('uploads/test.csv');
       expect(mockRepository.updateById).toHaveBeenCalledOnce();
       expect(mockRepository.updateById).toHaveBeenCalledWith(id, updateDto);
       expect(result).toBe(mockUpdatedPreset);
@@ -633,7 +908,7 @@ describe('AlgorithmPresetService', () => {
       const id = '507f1f77bcf86cd799439011';
       const updateDto: UpdateAlgorithmPresetDto = { name: 'Updated' };
 
-      mockRepository.updateById = vi.fn().mockResolvedValue(null);
+      mockRepository.findById = vi.fn().mockResolvedValue(null);
 
       const promise = service.updateById(id, updateDto);
 

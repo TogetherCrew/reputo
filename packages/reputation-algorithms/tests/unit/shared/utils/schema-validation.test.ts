@@ -32,6 +32,140 @@ describe('Build: Schema Validation', () => {
       expect(result.isValid).toBe(true);
       expect(result.errors).toEqual([]);
     });
+
+    it('should validate token_value_over_time from registry', () => {
+      const algorithmPath = join(__dirname, '../../../../src/registry/token_value_over_time/1.0.0.json');
+      const algorithm = JSON.parse(readFileSync(algorithmPath, 'utf-8'));
+
+      const result = validator.validate(algorithm);
+      expect(result.isValid).toBe(true);
+      expect(result.errors).toEqual([]);
+    });
+
+    it('should validate resource selector inputs and root validation rules', () => {
+      const resourceSelectorDefinition = {
+        key: 'chain_resource_selector',
+        name: 'Chain Resource Selector',
+        category: 'Activity',
+        summary: 'Validates resource selector metadata.',
+        description: 'Uses a resource selector input and root validation rules.',
+        version: '1.0.0',
+        inputs: [
+          {
+            key: 'wallets',
+            label: 'Wallet Addresses JSON',
+            description: 'Wallet input',
+            type: 'json',
+            required: true,
+            json: {
+              maxBytes: 1024,
+              schema: 'wallet_address_map',
+              rootKey: 'wallets',
+              allowedChains: ['ethereum', 'cardano'],
+            },
+          },
+          {
+            key: 'selected_resources',
+            label: 'Resources',
+            description: 'Chain-scoped resource selections.',
+            type: 'array',
+            minItems: 1,
+            required: true,
+            uniqueBy: ['chain', 'resource_key'],
+            uiHint: {
+              widget: 'resource_selector',
+              resourceCatalog: {
+                chains: [
+                  {
+                    key: 'ethereum',
+                    label: 'Ethereum',
+                    resources: [
+                      {
+                        key: 'fet_token',
+                        label: 'FET',
+                        kind: 'token',
+                        identifier: '0xtoken',
+                        tokenIdentifier: '0xtoken',
+                        tokenKey: 'fet',
+                      },
+                      {
+                        key: 'fet_staking_1',
+                        label: 'FET Staking',
+                        kind: 'contract',
+                        identifier: '0xstaking',
+                        tokenIdentifier: '0xtoken',
+                        tokenKey: 'fet',
+                        parentResourceKey: 'fet_token',
+                      },
+                    ],
+                  },
+                ],
+              },
+            },
+            item: {
+              type: 'object',
+              properties: [
+                {
+                  key: 'chain',
+                  label: 'Chain',
+                  description: 'Selected chain.',
+                  type: 'string',
+                  required: true,
+                  enum: ['ethereum', 'cardano'],
+                  uiHint: {
+                    widget: 'select',
+                    options: [
+                      { value: 'ethereum', label: 'Ethereum' },
+                      { value: 'cardano', label: 'Cardano' },
+                    ],
+                  },
+                },
+                {
+                  key: 'resource_key',
+                  label: 'Resource',
+                  description: 'Resource key from the catalog.',
+                  type: 'string',
+                  required: true,
+                  enum: ['fet_token', 'fet_staking_1'],
+                  uiHint: {
+                    widget: 'select',
+                    dependsOn: 'chain',
+                    options: [
+                      { value: 'fet_token', label: 'FET', filterBy: 'ethereum' },
+                      { value: 'fet_staking_1', label: 'FET Staking', filterBy: 'ethereum' },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+        outputs: [
+          {
+            key: 'result',
+            type: 'csv',
+            csv: {
+              columns: [{ key: 'wallet_address', type: 'string' }],
+            },
+          },
+        ],
+        runtime: 'typescript',
+        validation: {
+          rules: [
+            {
+              kind: 'json_chain_coverage',
+              walletInputKey: 'wallets',
+              selectorInputKey: 'selected_resources',
+              selectorChainField: 'chain',
+            },
+          ],
+        },
+      };
+
+      const result = validator.validate(resourceSelectorDefinition);
+      expect(result.isValid).toBe(true);
+      expect(result.errors).toEqual([]);
+    });
   });
 
   describe('Invalid Fixtures', () => {

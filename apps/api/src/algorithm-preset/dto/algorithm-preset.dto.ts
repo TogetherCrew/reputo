@@ -3,13 +3,17 @@ import { ApiProperty } from '@nestjs/swagger';
 class AlgorithmPresetInputDto {
   @ApiProperty({
     description: 'Parameter key/name',
-    example: 'votes',
+    example: 'selected_resources',
   })
   key: string;
 
   @ApiProperty({
-    description: 'Parameter value (can be any type)',
-    example: 's3://tc/votes.csv',
+    description: 'Parameter value. The exact shape is defined by the algorithm definition for the stored key/version.',
+    example: [
+      { chain: 'ethereum', resource_key: 'fet_token' },
+      { chain: 'ethereum', resource_key: 'fet_staking_1' },
+      { chain: 'cardano', resource_key: 'fet_token' },
+    ],
     required: false,
   })
   value?: unknown;

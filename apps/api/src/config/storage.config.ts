@@ -6,7 +6,7 @@ export default registerAs('storage', () => ({
   presignPutTtl: Number(process.env.STORAGE_PRESIGN_PUT_TTL ?? 120),
   presignGetTtl: Number(process.env.STORAGE_PRESIGN_GET_TTL ?? 300),
   maxSizeBytes: Number(process.env.STORAGE_MAX_SIZE_BYTES ?? 52428800),
-  contentTypeAllowlist: process.env.STORAGE_CONTENT_TYPE_ALLOWLIST ?? 'text/csv,text/plain',
+  contentTypeAllowlist: process.env.STORAGE_CONTENT_TYPE_ALLOWLIST ?? 'text/csv,text/plain,application/json',
 }));
 
 export const storageConfigSchema = {
@@ -27,6 +27,6 @@ export const storageConfigSchema = {
     .default(52428800)
     .description('Maximum file size in bytes (default 50MB)'),
   STORAGE_CONTENT_TYPE_ALLOWLIST: Joi.string()
-    .default('text/csv,text/plain')
+    .default('text/csv,text/plain,application/json')
     .description('Comma-separated list of allowed MIME types'),
 };

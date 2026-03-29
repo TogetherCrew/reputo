@@ -39,7 +39,7 @@ describe('StorageService', () => {
           'storage.presignPutTtl': 3600,
           'storage.presignGetTtl': 900,
           'storage.maxSizeBytes': 10485760,
-          'storage.contentTypeAllowlist': 'text/csv,text/plain',
+          'storage.contentTypeAllowlist': 'text/csv,text/plain,application/json',
         };
         return config[key];
       }),
@@ -81,6 +81,21 @@ describe('StorageService', () => {
       expect(result.url).toBe(mockUrl);
       expect(result.expiresIn).toBe(3600);
       expect(result.key).toMatch(/^uploads\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/notes\.txt$/);
+    });
+
+    it('should generate presigned upload URL for application/json', async () => {
+      const filename = 'wallets.json';
+      const contentType = 'application/json';
+      const mockUrl = 'https://s3.amazonaws.com/presigned-put-url-json';
+
+      const { getSignedUrl } = await import('@aws-sdk/s3-request-presigner');
+      vi.mocked(getSignedUrl).mockResolvedValue(mockUrl);
+
+      const result = await service.presignPut(filename, contentType);
+
+      expect(result.url).toBe(mockUrl);
+      expect(result.expiresIn).toBe(3600);
+      expect(result.key).toMatch(/^uploads\/[0-9a-f-]+\/wallets\.json$/);
     });
 
     it('should use filename as-is in key', async () => {
@@ -157,6 +172,26 @@ describe('StorageService', () => {
       expect(result.metadata.ext).toBe('txt');
       expect(result.metadata.size).toBe(1024);
       expect(result.metadata.contentType).toBe('text/plain');
+      expect(result.metadata.timestamp).toBeGreaterThan(0);
+    });
+
+    it('should handle application/json content type', async () => {
+      const uuid = '550e8400-e29b-41d4-a716-446655440000';
+      const key = `uploads/${uuid}/wallets.json`;
+      const mockHeadResponse = {
+        ContentLength: 2048,
+        ContentType: 'application/json',
+      };
+
+      mockS3Client.send = vi.fn().mockResolvedValue(mockHeadResponse);
+
+      const result = await service.verifyUpload(key);
+
+      expect(result.key).toBe(key);
+      expect(result.metadata.filename).toBe('wallets.json');
+      expect(result.metadata.ext).toBe('json');
+      expect(result.metadata.size).toBe(2048);
+      expect(result.metadata.contentType).toBe('application/json');
       expect(result.metadata.timestamp).toBeGreaterThan(0);
     });
 

@@ -1,18 +1,22 @@
-import { type AssetKey, type AssetTransferReadRepository, ONCHAIN_ASSET_KEYS } from '@reputo/onchain-data';
+import type { OnchainReadRepositories } from '@reputo/onchain-data';
 
-import { type OrderedTransferEvent, toTransferEvent } from '../types.js';
+import { normalizeCardanoTransactions, normalizeEvmTransfers } from '../normalizers/index.js';
+import type { OrderedTransferEvent, ResourceId } from '../types.js';
 
 export type TransferPage = {
   items: OrderedTransferEvent[];
   hasMore: boolean;
 };
 
-export async function loadTransferPageForWallets(input: {
-  repo: AssetTransferReadRepository;
-  assetKey: AssetKey;
+export async function loadEvmTransferPage(input: {
+  repos: OnchainReadRepositories;
+  chain: string;
+  assetIdentifier: string;
+  resourceId: ResourceId;
   walletAddresses: string[];
   page: number;
   limit: number;
+  stakingAddresses: Set<string>;
   fromTimestampUnix?: number;
   toTimestampUnix?: number;
 }): Promise<TransferPage> {
@@ -20,10 +24,9 @@ export async function loadTransferPageForWallets(input: {
     return { items: [], hasMore: false };
   }
 
-  const assetId = ONCHAIN_ASSET_KEYS.indexOf(input.assetKey);
-
-  const rows = await input.repo.findTransfersByAddresses({
-    assetId,
+  const rows = await input.repos.evm.findTransfersByAddresses({
+    chain: input.chain,
+    assetIdentifier: input.assetIdentifier,
     addresses: input.walletAddresses,
     page: input.page,
     limit: input.limit,
@@ -32,15 +35,42 @@ export async function loadTransferPageForWallets(input: {
     toTimestampUnix: input.toTimestampUnix,
   });
 
-  const byId = new Map<string, OrderedTransferEvent>();
-  for (const record of rows) {
-    const event = toTransferEvent(record, input.assetKey);
-    const id = `${event.assetKey}:${event.transactionHash}:${event.logIndex}`;
-    if (!byId.has(id)) byId.set(id, event);
-  }
+  const events = normalizeEvmTransfers(rows, input.resourceId, input.stakingAddresses);
 
   return {
-    items: [...byId.values()],
+    items: events,
     hasMore: rows.length === input.limit,
+  };
+}
+
+export async function loadCardanoTransferPage(input: {
+  repos: OnchainReadRepositories;
+  assetIdentifier: string;
+  resourceId: ResourceId;
+  walletAddresses: string[];
+  page: number;
+  limit: number;
+  trackedAddresses: Set<string>;
+  fromTimestampUnix?: number;
+  toTimestampUnix?: number;
+}): Promise<TransferPage> {
+  if (input.walletAddresses.length === 0) {
+    return { items: [], hasMore: false };
+  }
+
+  const txs = await input.repos.cardano.findTransactionsByAddresses({
+    assetIdentifier: input.assetIdentifier,
+    addresses: input.walletAddresses,
+    page: input.page,
+    limit: input.limit,
+    fromTimestampUnix: input.fromTimestampUnix,
+    toTimestampUnix: input.toTimestampUnix,
+  });
+
+  const events = normalizeCardanoTransactions(txs, input.resourceId, input.assetIdentifier, input.trackedAddresses);
+
+  return {
+    items: events,
+    hasMore: txs.length === input.limit,
   };
 }
