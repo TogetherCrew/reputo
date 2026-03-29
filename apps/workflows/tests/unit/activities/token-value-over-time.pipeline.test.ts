@@ -159,7 +159,11 @@ describe('token-value-over-time pipeline', () => {
     expect(stats.processed).toBe(3);
     expect(stats.skippedStaking).toBe(2);
 
-    const lots = state.get(wallet)!;
+    const lots = state.get(wallet);
+    expect(lots).toBeDefined();
+    if (lots == null) {
+      throw new Error(`Expected wallet lots for ${wallet}`);
+    }
     expect(lots).toHaveLength(1);
     expect(lots[0].amountRemaining).toBe(100);
   });

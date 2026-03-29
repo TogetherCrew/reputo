@@ -7,5 +7,10 @@ import type { AlgorithmPresetFrozen } from '@reputo/database';
  * @returns The storage key for the votes CSV file
  */
 export function extractVotesKey(inputs: AlgorithmPresetFrozen['inputs']): string {
-  return inputs.find((i) => i.key === 'votes')!.value as string;
+  const votesInput = inputs.find((input) => input.key === 'votes');
+  if (votesInput == null || typeof votesInput.value !== 'string') {
+    throw new Error('Missing required "votes" input');
+  }
+
+  return votesInput.value;
 }

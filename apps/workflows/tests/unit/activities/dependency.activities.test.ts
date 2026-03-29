@@ -7,7 +7,7 @@ vi.mock('../../../src/activities/orchestrator/deepfunding-portal-api.activities.
   createDeepfundingSyncActivity: vi.fn(() => mockDeepfundingSync),
 }));
 
-vi.mock('../../../src/activities/orchestrator/onchain-data.activities.js', () => ({
+vi.mock('../../../src/activities/onchain-data/onchain-data.activities.js', () => ({
   createOnchainDataSyncActivity: vi.fn(() => mockOnchainDataSync),
 }));
 
@@ -24,10 +24,8 @@ vi.mock('@temporalio/activity', () => ({
 }));
 
 import type { Storage } from '@reputo/storage';
-import {
-  createOnchainDataDependencyResolverActivities,
-  createOrchestratorDependencyResolverActivities,
-} from '../../../src/activities/orchestrator/dependency.activities.js';
+import { createOnchainDataDependencyResolverActivities } from '../../../src/activities/onchain-data/index.js';
+import { createOrchestratorDependencyResolverActivities } from '../../../src/activities/orchestrator/dependency.activities.js';
 import type { OrchestratorDependencyResolverContext } from '../../../src/shared/types/index.js';
 
 describe('Dependency Resolver Activities', () => {

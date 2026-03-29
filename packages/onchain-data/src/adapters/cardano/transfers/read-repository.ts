@@ -195,7 +195,14 @@ export function createCardanoTransferReadRepository(db: DataSource): CardanoTran
       }
 
       // Return in order
-      return txRows.map((row) => txMap.get(row.tx_hash)!);
+      return txRows.map((row) => {
+        const transaction = txMap.get(row.tx_hash);
+        if (!transaction) {
+          throw new Error(`Missing transfer transaction for hash ${row.tx_hash}`);
+        }
+
+        return transaction;
+      });
     },
   };
 }

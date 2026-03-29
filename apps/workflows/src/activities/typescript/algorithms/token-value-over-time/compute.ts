@@ -8,7 +8,6 @@ import { stringifyCsvAsync } from '../../../../shared/utils/index.js';
 import { formatBenchmarkOutput } from './benchmark/index.js';
 import { replayTransfers, scoreWalletLots } from './pipeline/index.js';
 import type { ResolvedResource } from './types.js';
-import { buildResourceId } from './types.js';
 import {
   createOnchainRepos,
   extractInputs,

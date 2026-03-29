@@ -28,7 +28,7 @@ vi.mock('@temporalio/activity', () => ({
   },
 }));
 
-import { createOnchainDataSyncActivity } from '../../../src/activities/orchestrator/onchain-data.activities.js';
+import { createOnchainDataSyncActivity } from '../../../src/activities/onchain-data/index.js';
 
 describe('Onchain Data Sync Activity', () => {
   const ctx = {
