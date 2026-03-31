@@ -37,14 +37,13 @@ describe('SnapshotService', () => {
     inputs: [
       {
         key: 'wallets',
-        label: 'Wallet Addresses JSON',
+        label: 'Sub-ID Wallet Map JSON',
         description: 'Wallet input',
         type: 'json',
         required: true,
         json: {
           maxBytes: 5242880,
-          schema: 'wallet_address_map',
-          rootKey: 'wallets',
+          schema: 'sub_id_wallet_address_map',
           allowedChains: ['ethereum', 'cardano'],
         },
       },
@@ -266,7 +265,7 @@ describe('SnapshotService', () => {
       mockStorageService.getObject = vi.fn().mockResolvedValue(
         Buffer.from(
           JSON.stringify({
-            wallets: {
+            'SubID-1': {
               ethereum: ['0x1234567890abcdef1234567890abcdef12345678'],
               cardano: ['addr1q9exampleexampleexampleexampleexampleexample'],
             },
@@ -434,8 +433,7 @@ describe('SnapshotService', () => {
               required: true,
               json: {
                 maxBytes: 5242880,
-                schema: 'wallet_address_map',
-                rootKey: 'wallets',
+                schema: 'sub_id_wallet_address_map',
                 allowedChains: ['ethereum', 'cardano'],
               },
             },

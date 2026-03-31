@@ -7,11 +7,13 @@ import type { AlgorithmResult, Snapshot } from '../../../../shared/types/index.j
 import { stringifyCsvAsync } from '../../../../shared/utils/index.js';
 import { formatBenchmarkOutput } from './benchmark/index.js';
 import { replayTransfers, scoreWalletLots } from './pipeline/index.js';
-import type { ResolvedResource } from './types.js';
+import { type ResolvedResource, roundScore, type SubIdScoreDetail, type WalletScoreDetail } from './types.js';
 import {
+  buildWalletSubIdsIndex,
   createOnchainRepos,
   extractInputs,
   getStakingContractAddresses,
+  getSubIds,
   getWalletsForChain,
   getWalletsForSelectedResources,
   initializeWalletLots,
@@ -51,6 +53,8 @@ export async function computeTokenValueOverTime(snapshot: Snapshot, storage: Sto
     bucket: config.storage.bucket,
     key: params.walletsKey,
   });
+  const subIds = getSubIds(walletAddressMap);
+  const walletSubIdsIndex = buildWalletSubIdsIndex(walletAddressMap);
   const targetWallets = getWalletsForSelectedResources(walletAddressMap, params.selectedResources);
 
   logger.info('Starting token_value_over_time algorithm', { snapshotId });
@@ -62,6 +66,7 @@ export async function computeTokenValueOverTime(snapshot: Snapshot, storage: Sto
     effectiveDateRange: params.effectiveDateRange,
   });
   logger.info('Target wallets loaded', {
+    subIdCount: subIds.length,
     walletCount: targetWallets.length,
     resourceIdCount: selectedResourceIds.size,
   });
@@ -133,7 +138,6 @@ export async function computeTokenValueOverTime(snapshot: Snapshot, storage: Sto
             pageNumber,
             limit: TRANSFERS_PAGE_LIMIT,
             stakingAddresses,
-            walletAddressMap,
             effectiveDateRange: params.effectiveDateRange,
           });
           const fetchDurationMs = Date.now() - fetchStartedAt;
@@ -200,8 +204,14 @@ export async function computeTokenValueOverTime(snapshot: Snapshot, storage: Sto
       snapshotCreatedAt,
       maturationThresholdDays: params.maturationThresholdDays,
     });
+    const subIdScores = aggregateWalletScoresBySubId({
+      subIds,
+      walletScores,
+      walletSubIdsIndex,
+    });
 
     logger.info('Computed token value over time scores', {
+      subIdCount: subIdScores.length,
       walletCount: walletScores.length,
       transferCount,
       replayStats,
@@ -210,13 +220,13 @@ export async function computeTokenValueOverTime(snapshot: Snapshot, storage: Sto
     ctx.heartbeat({ phase: 'upload' });
     logger.info('Uploading outputs');
 
-    const csvRows = walletScores.map((wallet) => ({
-      wallet_address: wallet.wallet_address,
-      token_value: wallet.token_value,
+    const csvRows = subIdScores.map((subId) => ({
+      sub_id: subId.sub_id,
+      token_value: subId.token_value,
     }));
     const csv = await stringifyCsvAsync(csvRows, {
       header: true,
-      columns: ['wallet_address', 'token_value'],
+      columns: ['sub_id', 'token_value'],
     });
 
     const outputKey = generateKey('snapshot', snapshotId, `${snapshot.algorithmPresetFrozen.key}.csv`);
@@ -233,10 +243,11 @@ export async function computeTokenValueOverTime(snapshot: Snapshot, storage: Sto
       maturationThresholdDays: params.maturationThresholdDays,
       selectedResources: params.selectedResources,
       selectedResourceIds: [...selectedResourceIds],
+      subIdCount: subIds.length,
       targetWalletCount: targetWallets.length,
       transferCount,
       replay: replayStats,
-      wallets: walletScores,
+      subIds: subIdScores,
     });
 
     const detailsKey = generateKey('snapshot', snapshotId, 'token_value_over_time_details.json');
@@ -274,7 +285,6 @@ async function loadTransferPage(
     pageNumber: number;
     limit: number;
     stakingAddresses: Set<string>;
-    walletAddressMap: { wallets: Partial<Record<string, string[]>> };
     effectiveDateRange: { fromTimestampUnix?: number; toTimestampUnix: number };
   },
 ) {
@@ -305,4 +315,40 @@ async function loadTransferPage(
     default:
       throw new Error(`Unsupported chain: ${resource.chain}`);
   }
+}
+
+function aggregateWalletScoresBySubId(input: {
+  subIds: string[];
+  walletScores: WalletScoreDetail[];
+  walletSubIdsIndex: Map<string, string[]>;
+}): SubIdScoreDetail[] {
+  const subIdMap = new Map<string, SubIdScoreDetail>(
+    input.subIds.map((subId) => [
+      subId,
+      {
+        sub_id: subId,
+        token_value: 0,
+        wallets: [],
+      },
+    ]),
+  );
+
+  for (const walletScore of input.walletScores) {
+    const targetSubIds = input.walletSubIdsIndex.get(walletScore.wallet_address) ?? [];
+
+    for (const subId of targetSubIds) {
+      const aggregate = subIdMap.get(subId);
+      if (!aggregate) continue;
+
+      aggregate.token_value = roundScore(aggregate.token_value + walletScore.token_value);
+      aggregate.wallets.push(walletScore);
+    }
+  }
+
+  const rows = [...subIdMap.values()];
+  for (const row of rows) {
+    row.wallets.sort((a, b) => a.wallet_address.localeCompare(b.wallet_address));
+  }
+
+  return rows.sort((a, b) => a.sub_id.localeCompare(b.sub_id));
 }

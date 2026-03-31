@@ -21,15 +21,15 @@ describe("algorithm client validation", () => {
     vi.stubGlobal("fetch", vi.fn())
   })
 
-  it("rejects token_value_over_time when a selected chain has no wallets", async () => {
+  it("accepts token_value_over_time when selected chains have no uploaded wallets", async () => {
     vi.mocked(fetch).mockResolvedValue({
       ok: true,
       text: async () =>
         JSON.stringify({
-          wallets: {
+          "SubID-1": {
             ethereum: ["0x68ab14C41040BF440A93CA6fb559D6E4AD82c25D"],
-            cardano: [],
           },
+          "SubID-2": {},
         }),
     } as Response)
 
@@ -57,13 +57,7 @@ describe("algorithm client validation", () => {
           },
         ],
       })
-    ).resolves.toEqual([
-      {
-        field: "wallets",
-        message:
-          "Wallet JSON is missing wallet addresses for selected chain(s): cardano",
-      },
-    ])
+    ).resolves.toEqual([])
   })
 
   it("passes token_value_over_time when selected chains have wallets", async () => {
@@ -71,7 +65,7 @@ describe("algorithm client validation", () => {
       ok: true,
       text: async () =>
         JSON.stringify({
-          wallets: {
+          "SubID-1": {
             ethereum: ["0x68ab14C41040BF440A93CA6fb559D6E4AD82c25D"],
             cardano: ["addr1q9exampleexampleexampleexampleexampleexample"],
           },
@@ -109,12 +103,97 @@ describe("algorithm client validation", () => {
     ).resolves.toEqual([])
   })
 
-  it("surfaces a recreate message for stale selected_targets presets", async () => {
+  it("rejects old-format token_value_over_time wallet files", async () => {
     vi.mocked(fetch).mockResolvedValue({
       ok: true,
       text: async () =>
         JSON.stringify({
           wallets: {
+            ethereum: ["0x68ab14C41040BF440A93CA6fb559D6E4AD82c25D"],
+          },
+        }),
+    } as Response)
+
+    await expect(
+      validateAlgorithmPresetClient({
+        key: "token_value_over_time",
+        version: "1.0.0",
+        inputs: [
+          {
+            key: "wallets",
+            value: "uploads/acd324f5-9ead-4b04-8ae2-7eeda5a1dea4/index.json",
+          },
+          {
+            key: "maturation_threshold_days",
+            value: 90,
+          },
+          {
+            key: "selected_resources",
+            value: [
+              {
+                chain: "ethereum",
+                resource_key: "fet_token",
+              },
+            ],
+          },
+        ],
+      })
+    ).resolves.toEqual([
+      {
+        field: "wallets",
+        message:
+          'JSON must not contain the top-level key "wallets"; provide sub-id keys at the root',
+      },
+    ])
+  })
+
+  it("allows duplicate wallets across different sub-ids", async () => {
+    vi.mocked(fetch).mockResolvedValue({
+      ok: true,
+      text: async () =>
+        JSON.stringify({
+          "SubID-1": {
+            ethereum: ["0x68ab14C41040BF440A93CA6fb559D6E4AD82c25D"],
+          },
+          "SubID-2": {
+            ethereum: ["0x68ab14c41040bf440a93ca6fb559d6e4ad82c25d"],
+          },
+        }),
+    } as Response)
+
+    await expect(
+      validateAlgorithmPresetClient({
+        key: "token_value_over_time",
+        version: "1.0.0",
+        inputs: [
+          {
+            key: "wallets",
+            value: "uploads/acd324f5-9ead-4b04-8ae2-7eeda5a1dea4/index.json",
+          },
+          {
+            key: "maturation_threshold_days",
+            value: 90,
+          },
+          {
+            key: "selected_resources",
+            value: [
+              {
+                chain: "ethereum",
+                resource_key: "fet_staking_1",
+              },
+            ],
+          },
+        ],
+      })
+    ).resolves.toEqual([])
+  })
+
+  it("surfaces a recreate message for stale selected_targets presets", async () => {
+    vi.mocked(fetch).mockResolvedValue({
+      ok: true,
+      text: async () =>
+        JSON.stringify({
+          "SubID-1": {
             ethereum: ["0x68ab14C41040BF440A93CA6fb559D6E4AD82c25D"],
           },
         }),
