@@ -2,20 +2,19 @@
     "key": "token_value_over_time",
     "name": "Token Value Over Time",
     "category": "Activity",
-    "summary": "Scores FET holders based on how long each token lot has been held — using FIFO lot accounting to reward long-term retention over recent acquisitions.",
-    "description": "### What it measures\nScores each wallet based on how much FET it still holds and how long those holdings have been retained.\n\n### How scoring works\n- Every incoming transfer creates a separate lot.\n- A lot's value grows linearly from 0% to 100% as it ages toward the maturation threshold.\n- Outgoing transfers consume the oldest lots first (FIFO), so selling recent acquisitions costs less score than selling long-held tokens.\n- The final score is the sum of all remaining normalized lot values at snapshot time.\n\n### Required input\nUpload one JSON file with a top-level `wallets` object mapping each chain to an array of wallet addresses.\n\nExample:\n```json\n{\n  \"wallets\": {\n    \"ethereum\": [\"0x1234567890abcdef1234567890abcdef12345678\"],\n    \"cardano\": [\"addr1q9exampleexampleexampleexampleexampleexample\"]\n  }\n}\n```\n\n### Resource selection\nSelect one or more token or staking resources to include. Token resources represent the canonical FET token. Staking-contract resources are stored separately in the preset but resolve to the parent FET token during data sync and scoring.\n\n### Data source\nThe algorithm reads indexed token transfer history from the onchain-data dependency for the uploaded wallets only.\n\n### Output files\n- A per-wallet CSV with `wallet_address` and `token_value`.\n- A JSON details file with per-resource and per-lot calculations for auditing.",
+    "summary": "Scores sub-ids based on the retained value of their linked FET wallets, using FIFO lot accounting to reward long-term retention over recent acquisitions.",
+    "description": "### What it measures\nScores each sub-id based on how much FET its linked wallets still hold and how long those holdings have been retained.\n\n### How scoring works\n- Every incoming transfer creates a separate lot.\n- A lot's value grows linearly from 0% to 100% as it ages toward the maturation threshold.\n- Outgoing transfers consume the oldest lots first (FIFO), so selling recent acquisitions costs less score than selling long-held tokens.\n- Wallets are scored individually, then aggregated by sub-id.\n- The final score is the sum of all remaining normalized lot values across all wallets linked to the sub-id.\n\n### Required input\nUpload one JSON file whose top-level keys are sub-ids. Each sub-id maps to an object containing optional `ethereum` and/or `cardano` wallet arrays.\n\nExample:\n```json\n{\n  \"SubID-1\": {\n    \"ethereum\": [\"0x1234567890abcdef1234567890abcdef12345678\"],\n    \"cardano\": [\"addr1q9exampleexampleexampleexampleexampleexample\"]\n  },\n  \"SubID-2\": {\n    \"ethereum\": [\"0xabcdefabcdefabcdefabcdefabcdefabcdefabcd\"],\n    \"cardano\": []\n  },\n  \"SubID-3\": {}\n}\n```\n\n### Resource selection\nSelect one or more token or staking resources to include. Token resources represent the canonical FET token. Staking-contract resources are stored separately in the preset but resolve to the parent FET token during data sync and scoring.\n\n### Data source\nThe algorithm reads indexed token transfer history from the onchain-data dependency for the uploaded wallets only.\n\n### Output files\n- A per-sub-id CSV with `sub_id` and `token_value`.\n- A JSON details file with per-sub-id, per-wallet, and per-lot calculations for auditing.",
     "version": "1.0.0",
     "inputs": [
         {
             "key": "wallets",
-            "label": "Wallet Addresses (JSON)",
-            "description": "Upload a JSON file with a `wallets` object containing `ethereum` and/or `cardano` wallet address arrays. Only wallets listed here will be scored.",
+            "label": "Sub-ID Wallet Map (JSON)",
+            "description": "Upload a JSON file where each top-level key is a sub-id and each value contains optional `ethereum` and/or `cardano` wallet address arrays. Only wallets listed here will be scored.",
             "type": "json",
             "required": true,
             "json": {
                 "maxBytes": 5242880,
-                "schema": "wallet_address_map",
-                "rootKey": "wallets",
+                "schema": "sub_id_wallet_address_map",
                 "allowedChains": ["ethereum", "cardano"]
             }
         },
@@ -184,35 +183,25 @@
         }
     ],
     "dependencies": [{ "key": "onchain-data" }],
-    "validation": {
-        "rules": [
-            {
-                "kind": "json_chain_coverage",
-                "walletInputKey": "wallets",
-                "selectorInputKey": "selected_resources",
-                "selectorChainField": "chain"
-            }
-        ]
-    },
     "outputs": [
         {
             "key": "token_value_over_time",
             "label": "Token Value Over Time (CSV)",
-            "description": "One row per wallet with columns: `wallet_address` and `token_value`.",
+            "description": "One row per sub-id with columns: `sub_id` and `token_value`.",
             "type": "csv",
             "csv": {
                 "hasHeader": true,
                 "delimiter": ",",
                 "columns": [
                     {
-                        "key": "wallet_address",
+                        "key": "sub_id",
                         "type": "string",
-                        "description": "Wallet address"
+                        "description": "Subscriber or aggregation identifier"
                     },
                     {
                         "key": "token_value",
                         "type": "number",
-                        "description": "Aggregated token value-over-time score"
+                        "description": "Aggregated token value-over-time score for all wallets linked to the sub-id"
                     }
                 ]
             }
@@ -220,7 +209,7 @@
         {
             "key": "token_value_over_time_details",
             "label": "Token Value Over Time Details (JSON)",
-            "description": "Per-wallet resource and lot calculations, useful for auditing results.",
+            "description": "Per-sub-id aggregates with nested per-wallet and per-lot calculations, useful for auditing results.",
             "type": "json"
         }
     ],

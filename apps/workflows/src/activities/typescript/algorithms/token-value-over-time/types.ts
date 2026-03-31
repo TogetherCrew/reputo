@@ -32,7 +32,7 @@ export interface ResolvedResource {
 }
 
 export interface WalletAddressMap {
-  wallets: Partial<Record<SupportedChain, string[]>>;
+  subIds: Record<string, Partial<Record<SupportedChain, string[]>>>;
 }
 
 export interface EffectiveDateRange {
@@ -90,14 +90,21 @@ export interface WalletScoreDetail {
   lots: LotScoreDetail[];
 }
 
-export interface TokenValueOverTimeBenchmark {
+export interface SubIdScoreDetail {
+  sub_id: string;
+  token_value: number;
   wallets: WalletScoreDetail[];
+}
+
+export interface TokenValueOverTimeBenchmark {
+  sub_ids: SubIdScoreDetail[];
   metadata: {
     snapshot_id: string;
     computed_at: string;
     maturation_threshold_days: number;
     selected_resources: SelectedResourceInput[];
     selected_resource_ids: ResourceId[];
+    sub_id_count: number;
     target_wallet_count: number;
     transfer_count: number;
     replay: ReplayStats;

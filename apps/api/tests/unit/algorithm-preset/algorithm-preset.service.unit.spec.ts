@@ -563,7 +563,7 @@ describe('AlgorithmPresetService', () => {
       );
     });
 
-    it('should surface shared rule errors when selected chains have no wallets in the uploaded json', async () => {
+    it('should surface validator errors when token_value_over_time wallet files still use the old top-level wallets key', async () => {
       const tokenValueDefinition = {
         key: 'token_value_over_time',
         name: 'Token Value Over Time',
@@ -574,14 +574,13 @@ describe('AlgorithmPresetService', () => {
         inputs: [
           {
             key: 'wallets',
-            label: 'Wallet Addresses JSON',
+            label: 'Sub-ID Wallet Map JSON',
             description: 'Wallet input',
             type: 'json',
             required: true,
             json: {
               maxBytes: 5242880,
-              schema: 'wallet_address_map',
-              rootKey: 'wallets',
+              schema: 'sub_id_wallet_address_map',
               allowedChains: ['ethereum', 'cardano'],
             },
           },
@@ -645,16 +644,6 @@ describe('AlgorithmPresetService', () => {
         ],
         outputs: [],
         runtime: 'typescript',
-        validation: {
-          rules: [
-            {
-              kind: 'json_chain_coverage',
-              walletInputKey: 'wallets',
-              selectorInputKey: 'selected_resources',
-              selectorChainField: 'chain',
-            },
-          ],
-        },
       };
       vi.mocked(getAlgorithmDefinition).mockReturnValue(JSON.stringify(tokenValueDefinition));
 
@@ -665,7 +654,7 @@ describe('AlgorithmPresetService', () => {
         contentType: 'application/json',
         timestamp: Date.now(),
       };
-      const ethereumOnlyWallets = Buffer.from(
+      const oldFormatWallets = Buffer.from(
         JSON.stringify({
           wallets: {
             ethereum: ['0x1234567890abcdef1234567890abcdef12345678'],
@@ -675,14 +664,14 @@ describe('AlgorithmPresetService', () => {
       );
 
       mockStorageService.getObjectMetadata = vi.fn().mockResolvedValue(jsonMetadata);
-      mockStorageService.getObject = vi.fn().mockResolvedValue(ethereumOnlyWallets);
+      mockStorageService.getObject = vi.fn().mockResolvedValue(oldFormatWallets);
       vi.mocked(validateAlgorithmPreset).mockResolvedValue({
         success: false,
         errors: [
           {
             field: 'wallets',
-            message: 'Wallet JSON is missing wallet addresses for selected chain(s): cardano',
-            source: 'rule',
+            message: 'JSON must not contain the top-level key "wallets"; provide sub-id keys at the root',
+            source: 'file',
           },
         ],
       });
@@ -712,7 +701,7 @@ describe('AlgorithmPresetService', () => {
         const response = (error as StorageInputValidationException).getResponse() as any;
         expect(response.errors[0].inputKey).toBe('wallets');
         expect(response.errors[0].errors).toContain(
-          'Wallet JSON is missing wallet addresses for selected chain(s): cardano',
+          'JSON must not contain the top-level key "wallets"; provide sub-id keys at the root',
         );
       }
     });

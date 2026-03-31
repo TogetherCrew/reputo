@@ -27,13 +27,18 @@ export async function loadWalletAddressMap(input: {
     key: input.key,
   });
 
-  const parsed = JSON.parse(fileBuffer.toString('utf-8')) as { wallets: Partial<Record<SupportedChain, string[]>> };
+  const parsed = JSON.parse(fileBuffer.toString('utf-8')) as Record<string, Partial<Record<SupportedChain, string[]>>>;
+  const subIds: WalletAddressMap['subIds'] = {};
+
+  for (const [subId, chainMap] of Object.entries(parsed)) {
+    subIds[subId] = {
+      ethereum: chainMap.ethereum ? deduplicateWallets(chainMap.ethereum, 'ethereum') : undefined,
+      cardano: chainMap.cardano ? deduplicateWallets(chainMap.cardano, 'cardano') : undefined,
+    };
+  }
 
   return {
-    wallets: {
-      ethereum: parsed.wallets.ethereum ? deduplicateWallets(parsed.wallets.ethereum, 'ethereum') : undefined,
-      cardano: parsed.wallets.cardano ? deduplicateWallets(parsed.wallets.cardano, 'cardano') : undefined,
-    },
+    subIds,
   };
 }
 
@@ -44,9 +49,11 @@ export function getWalletsForSelectedResources(
   const selectedChains = new Set(selectedResources.map((r) => r.chain));
   const wallets = new Set<string>();
 
-  for (const chain of selectedChains) {
-    for (const wallet of walletAddressMap.wallets[chain] ?? []) {
-      wallets.add(wallet);
+  for (const chainMap of Object.values(walletAddressMap.subIds)) {
+    for (const chain of selectedChains) {
+      for (const wallet of chainMap[chain] ?? []) {
+        wallets.add(wallet);
+      }
     }
   }
 
@@ -54,7 +61,37 @@ export function getWalletsForSelectedResources(
 }
 
 export function getWalletsForChain(walletAddressMap: WalletAddressMap, chain: SupportedChain): string[] {
-  return [...(walletAddressMap.wallets[chain] ?? [])];
+  const wallets = new Set<string>();
+  for (const chainMap of Object.values(walletAddressMap.subIds)) {
+    for (const wallet of chainMap[chain] ?? []) {
+      wallets.add(wallet);
+    }
+  }
+  return [...wallets];
+}
+
+export function getSubIds(walletAddressMap: WalletAddressMap): string[] {
+  return Object.keys(walletAddressMap.subIds).sort((a, b) => a.localeCompare(b));
+}
+
+export function buildWalletSubIdsIndex(walletAddressMap: WalletAddressMap): Map<string, string[]> {
+  const index = new Map<string, string[]>();
+
+  for (const [subId, chainMap] of Object.entries(walletAddressMap.subIds)) {
+    for (const chain of ['ethereum', 'cardano'] as const) {
+      for (const wallet of chainMap[chain] ?? []) {
+        const subIds = index.get(wallet) ?? [];
+        subIds.push(subId);
+        index.set(wallet, subIds);
+      }
+    }
+  }
+
+  for (const subIds of index.values()) {
+    subIds.sort((a, b) => a.localeCompare(b));
+  }
+
+  return index;
 }
 
 export function initializeWalletLots(wallets: string[]): WalletLotsState {
