@@ -3,20 +3,24 @@ import { BadGatewayException, Injectable, UnauthorizedException } from '@nestjs/
 import { ConfigService } from '@nestjs/config';
 import { type AuthSessionWithId, DeepIdProvider, type DeepIdUser, type DeepIdUserWithId } from '@reputo/database';
 import type { Request, Response } from 'express';
+import {
+  type AuthRequestContext,
+  type CurrentAuthSession,
+  type DeepIdAuthFlowState,
+  type DeepIdCallbackQuery,
+  type DeepIdCurrentSession,
+  type DeepIdSessionUserView,
+  type DeepIdTokenResponse,
+  type DeepIdUserInfo,
+  getAuthRequestContext,
+  setAuthRequestContext,
+} from '../shared/types';
+import { decryptValue, encryptValue } from '../shared/utils';
 import { AuthCookieService } from './auth-cookie.service';
 import { AuthSessionRepository } from './auth-session.repository';
 import { DeepIdOAuthService } from './deep-id-oauth.service';
 import { DeepIdTokenValidationService } from './deep-id-token-validation.service';
 import { DeepIdUserRepository } from './deep-id-user.repository';
-import type {
-  DeepIdAuthFlowState,
-  DeepIdCallbackQuery,
-  DeepIdCurrentSession,
-  DeepIdSessionUserView,
-  DeepIdTokenResponse,
-  DeepIdUserInfo,
-} from './types';
-import { decryptValue, encryptValue } from './utils';
 
 function toBase64Url(buffer: Buffer): string {
   return buffer.toString('base64url');
@@ -57,6 +61,7 @@ function toDateFromNow(seconds: number | undefined, fallbackSeconds: number): Da
 
 @Injectable()
 export class DeepIdAuthService {
+  private static readonly UNAUTHORIZED_MESSAGE = 'Authentication required.';
   private readonly tokenEncryptionKey: string;
   private readonly sessionTtlSeconds: number;
   private readonly refreshLeewaySeconds: number;
@@ -128,24 +133,35 @@ export class DeepIdAuthService {
   }
 
   async getCurrentSession(request: Request, response: Response): Promise<DeepIdCurrentSession> {
+    const { session, user } = await this.requireSession(request, response);
+    return this.toCurrentSessionView(session, user);
+  }
+
+  async requireSession(request: Request, response: Response): Promise<AuthRequestContext> {
+    const existingContext = getAuthRequestContext(request);
+
+    if (existingContext) {
+      return existingContext;
+    }
+
     const sessionId = this.authCookieService.getSessionId(request);
 
     if (!sessionId) {
-      return { authenticated: false };
+      throw new UnauthorizedException(DeepIdAuthService.UNAUTHORIZED_MESSAGE);
     }
 
     const session = await this.authSessionRepository.findActiveBySessionId(sessionId, true);
 
     if (!session) {
       this.authCookieService.clearSessionCookie(response);
-      return { authenticated: false };
+      throw new UnauthorizedException(DeepIdAuthService.UNAUTHORIZED_MESSAGE);
     }
 
     const activeSession = await this.refreshSessionIfNeeded(session);
 
     if (!activeSession) {
       this.authCookieService.clearSessionCookie(response);
-      return { authenticated: false };
+      throw new UnauthorizedException(DeepIdAuthService.UNAUTHORIZED_MESSAGE);
     }
 
     const user = await this.deepIdUserRepository.findById(String(activeSession.userId));
@@ -153,29 +169,32 @@ export class DeepIdAuthService {
     if (!user) {
       await this.authSessionRepository.revokeBySessionId(activeSession.sessionId);
       this.authCookieService.clearSessionCookie(response);
-      return { authenticated: false };
+      throw new UnauthorizedException(DeepIdAuthService.UNAUTHORIZED_MESSAGE);
     }
 
     this.authCookieService.setSessionCookie(response, activeSession.sessionId, activeSession.expiresAt);
 
-    return {
-      authenticated: true,
-      provider: DeepIdProvider,
-      expiresAt: activeSession.expiresAt.toISOString(),
-      scope: activeSession.scope,
-      user: this.toSessionUserView(user),
-    };
+    return setAuthRequestContext(request, {
+      session: this.toCurrentAuthSession(activeSession),
+      user,
+    });
   }
 
-  async logout(request: Request, response: Response): Promise<void> {
-    const sessionId = this.authCookieService.getSessionId(request);
-
-    if (sessionId) {
-      await this.authSessionRepository.revokeBySessionId(sessionId);
-    }
+  async logout(session: CurrentAuthSession, response: Response): Promise<void> {
+    await this.authSessionRepository.revokeBySessionId(session.sessionId);
 
     this.authCookieService.clearSessionCookie(response);
     this.authCookieService.clearAuthFlowCookie(response);
+  }
+
+  toCurrentSessionView(session: CurrentAuthSession, user: DeepIdUserWithId): DeepIdCurrentSession {
+    return {
+      authenticated: true,
+      provider: DeepIdProvider,
+      expiresAt: session.expiresAt.toISOString(),
+      scope: session.scope,
+      user: this.toSessionUserView(user),
+    };
   }
 
   private createAuthFlow(): DeepIdAuthFlowState {
@@ -333,6 +352,19 @@ export class DeepIdAuthService {
       await this.authSessionRepository.revokeBySessionId(session.sessionId);
       return null;
     }
+  }
+
+  private toCurrentAuthSession(session: AuthSessionWithId): CurrentAuthSession {
+    const {
+      accessTokenCiphertext: _accessTokenCiphertext,
+      refreshTokenCiphertext: _refreshTokenCiphertext,
+      nonce: _nonce,
+      state: _state,
+      codeVerifier: _codeVerifier,
+      ...currentSession
+    } = session;
+
+    return currentSession;
   }
 
   private toSessionUserView(user: DeepIdUserWithId): DeepIdSessionUserView {

@@ -1,8 +1,8 @@
 import { createPublicKey, createVerify, constants as cryptoConstants } from 'node:crypto';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import type { DeepIdIdTokenClaims, JsonWebKey } from '../shared/types';
 import { DeepIdOAuthService } from './deep-id-oauth.service';
-import type { DeepIdIdTokenClaims, JsonWebKey } from './types';
 
 interface JwtHeader {
   alg?: string;

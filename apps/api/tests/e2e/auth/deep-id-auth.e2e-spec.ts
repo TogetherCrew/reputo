@@ -13,25 +13,10 @@ import { DeepIdAuthModule } from '../../../src/auth';
 import { DeepIdOAuthService } from '../../../src/auth/deep-id-oauth.service';
 import { DeepIdTokenValidationService } from '../../../src/auth/deep-id-token-validation.service';
 import { configModules } from '../../../src/config';
+import { HttpExceptionFilter } from '../../../src/shared/filters/http-exception.filter';
+import { AUTH_TEST_ENV, applyAuthTestEnv } from '../../utils/auth-session';
 import { startMongo, stopMongo } from '../../utils/mongo-memory-server';
 import { base } from '../../utils/request';
-
-const TEST_ENV = {
-  NODE_ENV: 'test',
-  DEEP_ID_ISSUER_URL: 'https://identity.deep-id.ai',
-  DEEP_ID_CLIENT_ID: 'deep-id-test-client',
-  DEEP_ID_CLIENT_SECRET: 'deep-id-test-secret',
-  DEEP_ID_REDIRECT_URI: 'http://localhost:3000/api/v1/auth/deep-id/callback',
-  DEEP_ID_SCOPES: 'openid profile email offline_access',
-  AUTH_COOKIE_NAME: 'reputo_test_session',
-  AUTH_COOKIE_DOMAIN: '',
-  AUTH_COOKIE_SECURE: 'false',
-  AUTH_COOKIE_SAME_SITE: 'lax',
-  AUTH_SESSION_TTL_SECONDS: '3600',
-  AUTH_REFRESH_LEEWAY_SECONDS: '60',
-  AUTH_TOKEN_ENCRYPTION_KEY: '0123456789abcdef0123456789abcdef',
-  APP_PUBLIC_URL: 'http://localhost:5173',
-} as const;
 
 describe('Deep ID auth e2e', () => {
   let app: INestApplication;
@@ -56,9 +41,7 @@ describe('Deep ID auth e2e', () => {
   };
 
   beforeAll(async () => {
-    for (const [key, value] of Object.entries(TEST_ENV)) {
-      process.env[key] = value;
-    }
+    applyAuthTestEnv();
 
     const mongoUri = await startMongo();
 
@@ -88,6 +71,7 @@ describe('Deep ID auth e2e', () => {
     deepIdUserModel = moduleRef.get(getModelToken(MODEL_NAMES.DEEP_ID_USER));
     app = moduleRef.createNestApplication();
 
+    app.useGlobalFilters(new HttpExceptionFilter());
     app.useGlobalPipes(
       new ValidationPipe({
         whitelist: true,
@@ -125,8 +109,24 @@ describe('Deep ID auth e2e', () => {
     expect(redirectUrl.pathname).toBe('/oauth2/auth');
     expect(redirectUrl.searchParams.get('state')).toBeTruthy();
     expect(response.headers['set-cookie']).toEqual(
-      expect.arrayContaining([expect.stringContaining(`${TEST_ENV.AUTH_COOKIE_NAME}.flow=`)]),
+      expect.arrayContaining([expect.stringContaining(`${AUTH_TEST_ENV.AUTH_COOKIE_NAME}.flow=`)]),
     );
+  });
+
+  it('requires a session for /me and /logout', async () => {
+    const agent = supertest.agent(app.getHttpServer());
+
+    const currentSession = await agent.get(base('/auth/deep-id/me')).expect(401);
+    const logoutResponse = await agent.post(base('/auth/deep-id/logout')).expect(401);
+
+    expect(currentSession.body).toMatchObject({
+      statusCode: 401,
+      path: base('/auth/deep-id/me'),
+    });
+    expect(logoutResponse.body).toMatchObject({
+      statusCode: 401,
+      path: base('/auth/deep-id/logout'),
+    });
   });
 
   it('completes the callback flow, syncs the user, creates the session, and bootstraps /me', async () => {
@@ -142,9 +142,9 @@ describe('Deep ID auth e2e', () => {
       scope: 'openid profile email offline_access',
     });
     mockTokenValidationService.validateIdToken.mockImplementation(async (_token: string, nonce: string) => ({
-      iss: TEST_ENV.DEEP_ID_ISSUER_URL,
+      iss: AUTH_TEST_ENV.DEEP_ID_ISSUER_URL,
       sub: 'did:deep-id:123',
-      aud: TEST_ENV.DEEP_ID_CLIENT_ID,
+      aud: AUTH_TEST_ENV.DEEP_ID_CLIENT_ID,
       exp: Math.floor(Date.now() / 1000) + 300,
       nonce,
       amr: ['pwd'],
@@ -169,9 +169,9 @@ describe('Deep ID auth e2e', () => {
 
     const callbackResponse = await agent.get(base(`/auth/deep-id/callback?code=code-123&state=${state}`)).expect(302);
 
-    expect(callbackResponse.headers.location).toBe(TEST_ENV.APP_PUBLIC_URL);
+    expect(callbackResponse.headers.location).toBe(AUTH_TEST_ENV.APP_PUBLIC_URL);
     expect(callbackResponse.headers['set-cookie']).toEqual(
-      expect.arrayContaining([expect.stringContaining(`${TEST_ENV.AUTH_COOKIE_NAME}=`)]),
+      expect.arrayContaining([expect.stringContaining(`${AUTH_TEST_ENV.AUTH_COOKIE_NAME}=`)]),
     );
 
     const storedUser = await deepIdUserModel.findOne({ did: 'did:deep-id:123' }).lean();
@@ -232,9 +232,9 @@ describe('Deep ID auth e2e', () => {
       scope: 'openid profile email offline_access',
     });
     mockTokenValidationService.validateIdToken.mockImplementation(async (_token: string, nonce: string) => ({
-      iss: TEST_ENV.DEEP_ID_ISSUER_URL,
+      iss: AUTH_TEST_ENV.DEEP_ID_ISSUER_URL,
       sub: 'did:deep-id:refresh',
-      aud: TEST_ENV.DEEP_ID_CLIENT_ID,
+      aud: AUTH_TEST_ENV.DEEP_ID_CLIENT_ID,
       exp: Math.floor(Date.now() / 1000) + 300,
       nonce,
       amr: ['pwd'],
@@ -297,9 +297,9 @@ describe('Deep ID auth e2e', () => {
       scope: 'openid profile email offline_access',
     });
     mockTokenValidationService.validateIdToken.mockImplementation(async (_token: string, nonce: string) => ({
-      iss: TEST_ENV.DEEP_ID_ISSUER_URL,
+      iss: AUTH_TEST_ENV.DEEP_ID_ISSUER_URL,
       sub: 'did:deep-id:logout',
-      aud: TEST_ENV.DEEP_ID_CLIENT_ID,
+      aud: AUTH_TEST_ENV.DEEP_ID_CLIENT_ID,
       exp: Math.floor(Date.now() / 1000) + 300,
       nonce,
       amr: ['pwd'],
@@ -325,13 +325,16 @@ describe('Deep ID auth e2e', () => {
     const logoutResponse = await agent.post(base('/auth/deep-id/logout')).expect(204);
 
     expect(logoutResponse.headers['set-cookie']).toEqual(
-      expect.arrayContaining([expect.stringContaining(`${TEST_ENV.AUTH_COOKIE_NAME}=;`)]),
+      expect.arrayContaining([expect.stringContaining(`${AUTH_TEST_ENV.AUTH_COOKIE_NAME}=;`)]),
     );
 
     const revokedSession = await authSessionModel.findById(activeSession?._id).lean();
-    const currentSession = await agent.get(base('/auth/deep-id/me')).expect(200);
+    const currentSession = await agent.get(base('/auth/deep-id/me')).expect(401);
 
     expect(revokedSession?.revokedAt).toBeTruthy();
-    expect(currentSession.body).toEqual({ authenticated: false });
+    expect(currentSession.body).toMatchObject({
+      statusCode: 401,
+      path: base('/auth/deep-id/me'),
+    });
   });
 });

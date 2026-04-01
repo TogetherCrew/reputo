@@ -45,7 +45,15 @@ export class AuthSessionRepository {
     >,
   ): Promise<AuthSessionWithId | null> {
     return (await this.model
-      .findOneAndUpdate({ sessionId }, update, { new: true })
+      .findOneAndUpdate(
+        {
+          sessionId,
+          revokedAt: { $exists: false },
+          expiresAt: { $gt: new Date() },
+        },
+        update,
+        { new: true },
+      )
       .lean()
       .exec()) as AuthSessionWithId | null;
   }

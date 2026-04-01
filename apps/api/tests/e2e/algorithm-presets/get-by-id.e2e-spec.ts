@@ -4,17 +4,20 @@ import type { Model } from 'mongoose';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { insertAlgorithmPreset } from '../../factories/algorithmPreset.factory';
 import { createTestApp } from '../../utils/app-test.module';
+import { createAuthenticatedSession } from '../../utils/auth-session';
 import { startMongo, stopMongo } from '../../utils/mongo-memory-server';
 import { api } from '../../utils/request';
 
 describe('GET /api/v1/algorithm-presets/:id', () => {
   let app: INestApplication;
+  let authCookie: string;
   let algorithmPresetModel: Model<any>;
 
   beforeAll(async () => {
     const uri = await startMongo();
     const boot = await createTestApp({ mongoUri: uri });
     app = boot.app;
+    authCookie = (await createAuthenticatedSession(boot.moduleRef)).cookie;
     algorithmPresetModel = boot.moduleRef.get(getModelToken('AlgorithmPreset'));
   });
 
@@ -33,7 +36,7 @@ describe('GET /api/v1/algorithm-presets/:id', () => {
       description: 'Test description for the preset',
     });
 
-    const res = await api(app).get(`/algorithm-presets/${preset._id}`).expect(200);
+    const res = await api(app, authCookie).get(`/algorithm-presets/${preset._id}`).expect(200);
 
     expect(res.body._id).toBe(preset._id.toString());
     expect(res.body.key).toBe(preset.key);
@@ -46,12 +49,12 @@ describe('GET /api/v1/algorithm-presets/:id', () => {
   });
 
   it('should return 400 for invalid id format', async () => {
-    await api(app).get('/algorithm-presets/invalid-id').expect(400);
+    await api(app, authCookie).get('/algorithm-presets/invalid-id').expect(400);
   });
 
   it('should return 404 when preset does not exist', async () => {
     const fakeId = '507f1f77bcf86cd799439011';
 
-    await api(app).get(`/algorithm-presets/${fakeId}`).expect(404);
+    await api(app, authCookie).get(`/algorithm-presets/${fakeId}`).expect(404);
   });
 });

@@ -6,14 +6,14 @@ import {
   DEEP_ID_DEFAULT_TOKEN_PATH,
   DEEP_ID_DEFAULT_USERINFO_PATH,
   DEEP_ID_DISCOVERY_PATH,
-} from './constants';
-import type {
-  DeepIdAuthFlowState,
-  DeepIdDiscoveryDocument,
-  DeepIdTokenResponse,
-  DeepIdUserInfo,
-  JsonWebKeySet,
-} from './types';
+} from '../shared/constants';
+import {
+  type DeepIdAuthFlowState,
+  type DeepIdDiscoveryDocument,
+  type DeepIdTokenResponse,
+  type DeepIdUserInfo,
+  type JsonWebKeySet,
+} from '../shared/types';
 
 function normalizeUrl(value: string): string {
   return value.replace(/\/+$/u, '');

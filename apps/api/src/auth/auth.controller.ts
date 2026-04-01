@@ -8,10 +8,12 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+import type { DeepIdUserWithId } from '@reputo/database';
 import type { Request, Response } from 'express';
+import { CurrentSession, CurrentUser, Public } from '../shared/decorators';
+import type { CurrentAuthSession, DeepIdCallbackQuery } from '../shared/types';
 import { DeepIdAuthService } from './deep-id-auth.service';
 import { DeepIdCurrentSessionDto } from './dto';
-import type { DeepIdCallbackQuery } from './types';
 
 @ApiTags('Deep ID Auth')
 @Controller('auth/deep-id')
@@ -19,6 +21,7 @@ export class DeepIdAuthController {
   constructor(private readonly deepIdAuthService: DeepIdAuthService) {}
 
   @Get('login')
+  @Public()
   @ApiOperation({
     summary: 'Start the Deep ID OAuth flow',
     description: 'Creates the transient PKCE/OIDC flow state and redirects the browser to Deep ID.',
@@ -30,6 +33,7 @@ export class DeepIdAuthController {
   }
 
   @Get('callback')
+  @Public()
   @ApiOperation({
     summary: 'Handle the Deep ID OAuth callback',
     description:
@@ -60,8 +64,9 @@ export class DeepIdAuthController {
     description: 'Returns the current auth session bootstrap payload.',
     type: DeepIdCurrentSessionDto,
   })
-  me(@Req() request: Request, @Res({ passthrough: true }) response: Response) {
-    return this.deepIdAuthService.getCurrentSession(request, response);
+  @ApiUnauthorizedResponse({ description: 'Deep ID-backed session required.' })
+  me(@CurrentSession() session: CurrentAuthSession, @CurrentUser() user: DeepIdUserWithId) {
+    return this.deepIdAuthService.toCurrentSessionView(session, user);
   }
 
   @Post('logout')
@@ -71,7 +76,8 @@ export class DeepIdAuthController {
     description: 'Revokes the current opaque application session and clears the auth cookies.',
   })
   @ApiNoContentResponse({ description: 'Auth session invalidated and cookie cleared.' })
-  logout(@Req() request: Request, @Res({ passthrough: true }) response: Response) {
-    return this.deepIdAuthService.logout(request, response);
+  @ApiUnauthorizedResponse({ description: 'Deep ID-backed session required.' })
+  logout(@CurrentSession() session: CurrentAuthSession, @Res({ passthrough: true }) response: Response) {
+    return this.deepIdAuthService.logout(session, response);
   }
 }

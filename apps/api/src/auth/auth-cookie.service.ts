@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { CookieOptions, Request, Response } from 'express';
-import { AUTH_FLOW_COOKIE_SUFFIX } from './constants';
-import type { DeepIdAuthFlowState } from './types';
-import { decryptValue, encryptValue } from './utils';
+import { AUTH_FLOW_COOKIE_SUFFIX } from '../shared/constants';
+import type { DeepIdAuthFlowState } from '../shared/types';
+import { decryptValue, encryptValue } from '../shared/utils';
 
 function parseCookieHeader(cookieHeader: string | undefined): Record<string, string> {
   if (!cookieHeader) {

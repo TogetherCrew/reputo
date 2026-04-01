@@ -10,6 +10,7 @@ import {
   ApiOperation,
   ApiParam,
   ApiTags,
+  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { PaginationDto } from '../shared/dto';
 import { ParseObjectIdPipe } from '../shared/pipes';
@@ -23,6 +24,7 @@ import {
 
 @ApiExtraModels(PaginationDto, AlgorithmPresetDto)
 @ApiTags('Algorithm Presets')
+@ApiUnauthorizedResponse({ description: 'Deep ID-backed session required.' })
 @Controller('algorithm-presets')
 export class AlgorithmPresetController {
   constructor(private readonly algorithmPresetService: AlgorithmPresetService) {}

@@ -5,11 +5,13 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { insertAlgorithmPreset } from '../../factories/algorithmPreset.factory';
 import { makeSnapshotDto } from '../../factories/snapshot.factory';
 import { createTestApp } from '../../utils/app-test.module';
+import { createAuthenticatedSession } from '../../utils/auth-session';
 import { startMongo, stopMongo } from '../../utils/mongo-memory-server';
 import { api } from '../../utils/request';
 
 describe('POST /api/v1/snapshots', () => {
   let app: INestApplication;
+  let authCookie: string;
   let algorithmPresetModel: Model<any>;
   let snapshotModel: Model<any>;
 
@@ -17,6 +19,7 @@ describe('POST /api/v1/snapshots', () => {
     const uri = await startMongo();
     const boot = await createTestApp({ mongoUri: uri });
     app = boot.app;
+    authCookie = (await createAuthenticatedSession(boot.moduleRef)).cookie;
     algorithmPresetModel = boot.moduleRef.get(getModelToken('AlgorithmPreset'));
     snapshotModel = boot.moduleRef.get(getModelToken('Snapshot'));
   });
@@ -35,7 +38,7 @@ describe('POST /api/v1/snapshots', () => {
     const preset = await insertAlgorithmPreset(algorithmPresetModel);
     const dto = makeSnapshotDto(preset._id.toString());
 
-    const res = await api(app).post('/snapshots').send(dto).expect(201);
+    const res = await api(app, authCookie).post('/snapshots').send(dto).expect(201);
 
     expect(res.body).toHaveProperty('_id');
     expect(res.body.algorithmPresetFrozen).toBeInstanceOf(Object);
@@ -50,19 +53,19 @@ describe('POST /api/v1/snapshots', () => {
   });
 
   it('should reject when algorithmPresetId is missing (400)', async () => {
-    await api(app).post('/snapshots').send({ outputs: {} }).expect(400);
+    await api(app, authCookie).post('/snapshots').send({ outputs: {} }).expect(400);
   });
 
   it('should reject when algorithmPresetId format is invalid (400)', async () => {
     const dto = makeSnapshotDto('invalid-id');
 
-    await api(app).post('/snapshots').send(dto).expect(400);
+    await api(app, authCookie).post('/snapshots').send(dto).expect(400);
   });
 
   it('should reject when algorithmPresetId does not exist (404)', async () => {
     const nonExistentId = '507f1f77bcf86cd799439011';
     const dto = makeSnapshotDto(nonExistentId);
 
-    await api(app).post('/snapshots').send(dto).expect(404);
+    await api(app, authCookie).post('/snapshots').send(dto).expect(404);
   });
 });

@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { Types } from 'mongoose';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { DeepIdAuthService } from '../../../src/auth/deep-id-auth.service';
-import { encryptValue } from '../../../src/auth/utils';
+import { encryptValue } from '../../../src/shared/utils';
 
 describe('DeepIdAuthService', () => {
   const configValues = {
@@ -192,14 +192,14 @@ describe('DeepIdAuthService', () => {
     expect(cookieService.clearAuthFlowCookie).toHaveBeenCalledWith(response);
   });
 
-  it('returns unauthenticated and clears the cookie when the opaque session is missing', async () => {
+  it('rejects and clears the cookie when the opaque session is missing', async () => {
     const response = {} as any;
     const request = { headers: {} } as any;
 
     cookieService.getSessionId.mockReturnValue('missing-session');
     authSessionRepository.findActiveBySessionId.mockResolvedValue(null);
 
-    await expect(service.getCurrentSession(request, response)).resolves.toEqual({ authenticated: false });
+    await expect(service.getCurrentSession(request, response)).rejects.toThrow(UnauthorizedException);
     expect(cookieService.clearSessionCookie).toHaveBeenCalledWith(response);
   });
 
@@ -286,11 +286,13 @@ describe('DeepIdAuthService', () => {
 
   it('revokes the current session and clears cookies during logout', async () => {
     const response = {} as any;
-    const request = { headers: {} } as any;
 
-    cookieService.getSessionId.mockReturnValue('session-123');
-
-    await service.logout(request, response);
+    await service.logout(
+      {
+        sessionId: 'session-123',
+      } as any,
+      response,
+    );
 
     expect(authSessionRepository.revokeBySessionId).toHaveBeenCalledWith('session-123');
     expect(cookieService.clearSessionCookie).toHaveBeenCalledWith(response);

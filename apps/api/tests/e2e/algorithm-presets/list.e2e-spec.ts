@@ -4,18 +4,21 @@ import type { Model } from 'mongoose';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { insertAlgorithmPreset, randomAlgorithmPreset } from '../../factories/algorithmPreset.factory';
 import { createTestApp } from '../../utils/app-test.module';
+import { createAuthenticatedSession } from '../../utils/auth-session';
 import { startMongo, stopMongo } from '../../utils/mongo-memory-server';
 import { assertPaginationMath, assertPaginationStructure } from '../../utils/pagination';
 import { api } from '../../utils/request';
 
 describe('GET /api/v1/algorithm-presets', () => {
   let app: INestApplication;
+  let authCookie: string;
   let algorithmPresetModel: Model<any>;
 
   beforeAll(async () => {
     const uri = await startMongo();
     const boot = await createTestApp({ mongoUri: uri });
     app = boot.app;
+    authCookie = (await createAuthenticatedSession(boot.moduleRef)).cookie;
     algorithmPresetModel = boot.moduleRef.get(getModelToken('AlgorithmPreset'));
   });
 
@@ -33,7 +36,7 @@ describe('GET /api/v1/algorithm-presets', () => {
       await insertAlgorithmPreset(algorithmPresetModel, randomAlgorithmPreset());
     }
 
-    const res = await api(app).get('/algorithm-presets').expect(200);
+    const res = await api(app, authCookie).get('/algorithm-presets').expect(200);
 
     assertPaginationStructure(res.body);
 
@@ -61,7 +64,7 @@ describe('GET /api/v1/algorithm-presets', () => {
       await insertAlgorithmPreset(algorithmPresetModel, randomAlgorithmPreset());
     }
 
-    const res = await api(app).get('/algorithm-presets?page=2&limit=5').expect(200);
+    const res = await api(app, authCookie).get('/algorithm-presets?page=2&limit=5').expect(200);
 
     assertPaginationStructure(res.body);
     expect(res.body.page).toBe(2);
@@ -84,7 +87,7 @@ describe('GET /api/v1/algorithm-presets', () => {
       key: 'preset_3',
     });
 
-    const res = await api(app).get('/algorithm-presets').expect(200);
+    const res = await api(app, authCookie).get('/algorithm-presets').expect(200);
 
     expect(res.body.results[0].key).toBe('preset_3');
     expect(res.body.results[1].key).toBe('preset_2');
@@ -105,7 +108,7 @@ describe('GET /api/v1/algorithm-presets', () => {
       version: '2.0.0',
     });
 
-    const res = await api(app).get('/algorithm-presets?sortBy=key:asc,version:desc').expect(200);
+    const res = await api(app, authCookie).get('/algorithm-presets?sortBy=key:asc,version:desc').expect(200);
 
     expect(res.body.results[0].version).toBe('2.0.0');
     expect(res.body.results[1].version).toBe('1.0.0');
@@ -117,7 +120,7 @@ describe('GET /api/v1/algorithm-presets', () => {
     await insertAlgorithmPreset(algorithmPresetModel, { key: 'other_key' });
     await insertAlgorithmPreset(algorithmPresetModel, { key: 'target_key' });
 
-    const res = await api(app).get('/algorithm-presets?key=target_key').expect(200);
+    const res = await api(app, authCookie).get('/algorithm-presets?key=target_key').expect(200);
 
     expect(res.body.totalResults).toBe(2);
     res.body.results.forEach((preset: any) => {
@@ -130,7 +133,7 @@ describe('GET /api/v1/algorithm-presets', () => {
     await insertAlgorithmPreset(algorithmPresetModel, { version: '1.0.0' });
     await insertAlgorithmPreset(algorithmPresetModel, { version: '2.0.0' });
 
-    const res = await api(app).get('/algorithm-presets?version=2.0.0').expect(200);
+    const res = await api(app, authCookie).get('/algorithm-presets?version=2.0.0').expect(200);
 
     expect(res.body.totalResults).toBe(2);
     res.body.results.forEach((preset: any) => {
@@ -142,7 +145,7 @@ describe('GET /api/v1/algorithm-presets', () => {
     await insertAlgorithmPreset(algorithmPresetModel, { key: 'key_1' });
     await insertAlgorithmPreset(algorithmPresetModel, { key: 'key_2' });
 
-    const res = await api(app).get('/algorithm-presets?key=non_existent_key').expect(200);
+    const res = await api(app, authCookie).get('/algorithm-presets?key=non_existent_key').expect(200);
 
     assertPaginationStructure(res.body);
     expect(res.body.results).toEqual([]);
