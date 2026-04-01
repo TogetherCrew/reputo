@@ -2,14 +2,14 @@
     "key": "proposal_engagement",
     "name": "Proposal Engagement",
     "category": "Engagement",
-    "summary": "Scores proposal owners based on whether their submissions were funded and how the community rated them, with optional time weighting to favor recent rounds.",
-    "description": "### What it measures\nScores the owners of eligible proposals by combining funding outcome and community rating signals. Both the proposer and any listed team members each receive the full proposal score — scores are not divided across owners.\n\n### How scoring works\n- Funded and completed proposals add to the score.\n- Unfunded proposals subtract from the score.\n- Higher community ratings amplify rewards and soften penalties.\n- An optional monthly decay rate gives more weight to proposals from recent rounds.\n\n### Scope and limitations\nOnly proposals from rounds 31, 36, and 107 are scored because those rounds contain reliable team-member ownership data. Proposals from all other rounds are skipped.\n\n### Data source\nNo file upload is required. The algorithm reads proposals, users, and reviews directly from the DeepFunding Portal.\n\n### Output files\n- A per-user CSV with `user_id` and `proposal_engagement`.\n- A JSON details file with per-proposal scoring breakdowns and skip reasons.",
+    "summary": "Scores proposal owners from funding results, community ratings, and optional time decay.",
+    "description": "### What it does\nScores proposal owners based on proposal results and community ratings.\n\n### How it works\n- Funded and completed proposals add points.\n- Unfunded proposals remove points.\n- Better ratings increase rewards and reduce penalties.\n- Each listed owner gets the full proposal score.\n- Older proposals can lose weight over time.\n\n### Limits\nOnly rounds 31, 36, and 107 are included because ownership data is reliable there.\n\n### Data source\nUses proposal, user, and review data from DeepFunding. No file upload is needed.\n\n### Output\n- CSV file with `user_id` and `proposal_engagement`.\n- JSON file with score details for each proposal.",
     "version": "1.0.0",
     "inputs": [
         {
             "key": "funded_concluded_reward_weight",
             "label": "Funded Proposal Reward",
-            "description": "How strongly funded and completed proposals increase the final score. Set to `0` to disable rewards entirely.",
+            "description": "How much a funded and completed proposal increases the score. Use `0` for no reward.",
             "type": "number",
             "min": 0,
             "max": 10,
@@ -21,7 +21,7 @@
         {
             "key": "unfunded_penalty_weight",
             "label": "Unfunded Proposal Penalty",
-            "description": "How strongly unfunded proposals reduce the final score. Set to `0` to disable penalties entirely.",
+            "description": "How much an unfunded proposal reduces the score. Use `0` for no penalty.",
             "type": "number",
             "min": 0,
             "max": 10,
@@ -33,7 +33,7 @@
         {
             "key": "engagement_window_months",
             "label": "Lookback Window (Months)",
-            "description": "Only proposals created within this many months before the snapshot are scored. Proposals older than this window are ignored entirely.",
+            "description": "Only proposals from this number of past months are scored.",
             "type": "integer",
             "min": 1,
             "max": 72,
@@ -44,7 +44,7 @@
         {
             "key": "monthly_decay_rate_percent",
             "label": "Monthly Decay Rate (%)",
-            "description": "Percentage by which a proposal's contribution is reduced for each month of age. Set to `0` to treat all proposals within the window equally.",
+            "description": "Percent removed from a proposal score for each month of age. Use `0` for no decay.",
             "type": "integer",
             "min": 0,
             "max": 100,
@@ -58,7 +58,7 @@
         {
             "key": "proposal_engagement",
             "label": "Proposal Engagement (CSV)",
-            "description": "One row per user with columns: `user_id` and `proposal_engagement`.",
+            "description": "CSV file with one row per user and the final proposal engagement score.",
             "type": "csv",
             "csv": {
                 "hasHeader": true,
@@ -67,12 +67,12 @@
                     {
                         "key": "user_id",
                         "type": "integer",
-                        "description": "DeepFunding user ID"
+                        "description": "DeepFunding user ID."
                     },
                     {
                         "key": "proposal_engagement",
                         "type": "number",
-                        "description": "Aggregated proposal engagement score"
+                        "description": "Final proposal engagement score for the user."
                     }
                 ]
             }
@@ -80,7 +80,7 @@
         {
             "key": "proposal_engagement_details",
             "label": "Proposal Engagement Details (JSON)",
-            "description": "Per-proposal scoring breakdown with intermediate values and skip reasons for each user, useful for auditing results.",
+            "description": "JSON file with score details and skip reasons for each proposal.",
             "type": "json"
         }
     ],
