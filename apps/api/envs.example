@@ -1,12 +1,27 @@
 NODE_ENV=development
 PORT=3000
 LOG_LEVEL=info
+APP_PUBLIC_URL=http://localhost:5173
 
 MONGODB_HOST=localhost
 MONGODB_PORT=27017
 MONGODB_USER=admin
 MONGODB_PASSWORD=password
 MONGODB_DB_NAME=reputo_dev
+
+DEEP_ID_ISSUER_URL=https://identity.deep-id.ai
+DEEP_ID_CLIENT_ID=your-deep-id-client-id
+DEEP_ID_CLIENT_SECRET=your-deep-id-client-secret
+DEEP_ID_REDIRECT_URI=http://localhost:3000/api/v1/auth/deep-id/callback
+DEEP_ID_SCOPES=openid profile email offline_access
+
+AUTH_COOKIE_NAME=reputo_auth_session
+AUTH_COOKIE_DOMAIN=
+AUTH_COOKIE_SECURE=false
+AUTH_COOKIE_SAME_SITE=lax
+AUTH_SESSION_TTL_SECONDS=2592000
+AUTH_REFRESH_LEEWAY_SECONDS=60
+AUTH_TOKEN_ENCRYPTION_KEY=replace-with-a-long-random-secret-at-least-32-characters
 
 AWS_REGION=eu-north-1
 AWS_ACCESS_KEY_ID=your-access-key-id
