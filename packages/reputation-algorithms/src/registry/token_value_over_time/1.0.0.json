@@ -2,14 +2,14 @@
     "key": "token_value_over_time",
     "name": "Token Value Over Time",
     "category": "Activity",
-    "summary": "Scores sub-ids based on the retained value of their linked FET wallets, using FIFO lot accounting to reward long-term retention over recent acquisitions.",
-    "description": "### What it measures\nScores each sub-id based on how much FET its linked wallets still hold and how long those holdings have been retained.\n\n### How scoring works\n- Every incoming transfer creates a separate lot.\n- A lot's value grows linearly from 0% to 100% as it ages toward the maturation threshold.\n- Outgoing transfers consume the oldest lots first (FIFO), so selling recent acquisitions costs less score than selling long-held tokens.\n- Wallets are scored individually, then aggregated by sub-id.\n- The final score is the sum of all remaining normalized lot values across all wallets linked to the sub-id.\n\n### Required input\nUpload one JSON file whose top-level keys are sub-ids. Each sub-id maps to an object containing optional `ethereum` and/or `cardano` wallet arrays.\n\nExample:\n```json\n{\n  \"SubID-1\": {\n    \"ethereum\": [\"0x1234567890abcdef1234567890abcdef12345678\"],\n    \"cardano\": [\"addr1q9exampleexampleexampleexampleexampleexample\"]\n  },\n  \"SubID-2\": {\n    \"ethereum\": [\"0xabcdefabcdefabcdefabcdefabcdefabcdefabcd\"],\n    \"cardano\": []\n  },\n  \"SubID-3\": {}\n}\n```\n\n### Resource selection\nSelect one or more token or staking resources to include. Token resources represent the canonical FET token. Staking-contract resources are stored separately in the preset but resolve to the parent FET token during data sync and scoring.\n\n### Data source\nThe algorithm reads indexed token transfer history from the onchain-data dependency for the uploaded wallets only.\n\n### Output files\n- A per-sub-id CSV with `sub_id` and `token_value`.\n- A JSON details file with per-sub-id, per-wallet, and per-lot calculations for auditing.",
+    "summary": "Scores each sub-id by wallet value kept over time, with more weight for longer-held FET.",
+    "description": "### What it does\nScores each sub-id from the FET still held in its linked wallets.\n\n### How it works\n- Each incoming transfer becomes a separate lot.\n- A lot gains value as it gets older and reaches full value at the maturation period.\n- When tokens leave a wallet, the oldest lots are used first.\n- Wallet scores are added together for each sub-id.\n\n### Input\nUpload one JSON file. Each top-level key is a sub-id, and each value can include `ethereum` and `cardano` wallet address lists.\n\nSimple example:\n```json\n{\n  \"SubID-1\": {\n    \"ethereum\": [\"0x1234567890abcdef1234567890abcdef12345678\"],\n    \"cardano\": [\"addr1w8p79rpkcdz8x9d6tft0x0dx5mwuzac2sa4gm8cvkw5hcnqst2ctf\"]\n  }\n}\n```\n\n### Resource selection\nChoose the FET token or staking resources to include in scoring.\n\n### Data source\nUses indexed token transfer data for the uploaded wallets.\n\n### Output\n- CSV file with `sub_id` and `token_value`.\n- JSON file with score details for each sub-id, wallet, and lot.",
     "version": "1.0.0",
     "inputs": [
         {
             "key": "wallets",
             "label": "Sub-ID Wallet Map (JSON)",
-            "description": "Upload a JSON file where each top-level key is a sub-id and each value contains optional `ethereum` and/or `cardano` wallet address arrays. Only wallets listed here will be scored.",
+            "description": "Upload a JSON file with sub-ids as keys and wallet lists as values. Only listed wallets are scored.",
             "type": "json",
             "required": true,
             "json": {
@@ -21,7 +21,7 @@
         {
             "key": "maturation_threshold_days",
             "label": "Maturation Period (Days)",
-            "description": "How many days a token lot must be held before it reaches full value (100%). Lots held for less than this period are credited proportionally.",
+            "description": "Number of days a token lot must be held to reach full value.",
             "type": "integer",
             "min": 1,
             "max": 3650,
@@ -37,7 +37,7 @@
         {
             "key": "selected_resources",
             "label": "Token Resources to Score",
-            "description": "Select one or more FET token or staking contract resources. Each selected resource is tracked separately and resolved to the FET token during sync and scoring.",
+            "description": "Choose the FET token or staking resources to include.",
             "type": "array",
             "minItems": 1,
             "required": true,
@@ -68,7 +68,7 @@
                                 {
                                     "key": "fet_token",
                                     "label": "FET",
-                                    "description": "Canonical ERC-20 FET token on Ethereum.",
+                                    "description": "Main FET token on Ethereum.",
                                     "kind": "token",
                                     "identifier": "0xaea46A60368A7bD060eec7DF8CBa43b7EF41Ad85",
                                     "tokenIdentifier": "0xaea46A60368A7bD060eec7DF8CBa43b7EF41Ad85",
@@ -80,7 +80,7 @@
                                 {
                                     "key": "fet_staking_1",
                                     "label": "FET Staking",
-                                    "description": "FET staking contract on Ethereum at 0xCB85...3475.",
+                                    "description": "FET staking contract on Ethereum.",
                                     "kind": "contract",
                                     "identifier": "0xCB85b101C4822A4E3ABCa20e57f1DFf0E2673475",
                                     "tokenIdentifier": "0xaea46A60368A7bD060eec7DF8CBa43b7EF41Ad85",
@@ -93,7 +93,7 @@
                                 {
                                     "key": "fet_staking_2",
                                     "label": "FET Staking",
-                                    "description": "FET staking contract on Ethereum at 0x351b...7DE2.",
+                                    "description": "FET staking contract on Ethereum.",
                                     "kind": "contract",
                                     "identifier": "0x351baC612B50e87B46e4b10A282f632D41397DE2",
                                     "tokenIdentifier": "0xaea46A60368A7bD060eec7DF8CBa43b7EF41Ad85",
@@ -112,7 +112,7 @@
                                 {
                                     "key": "fet_token",
                                     "label": "FET",
-                                    "description": "Canonical FET asset on Cardano.",
+                                    "description": "Main FET token on Cardano.",
                                     "kind": "token",
                                     "identifier": "e824c0011176f0926ad51f492bcc63ac6a03a589653520839dc7e3d9464554",
                                     "tokenIdentifier": "e824c0011176f0926ad51f492bcc63ac6a03a589653520839dc7e3d9464554",
@@ -132,7 +132,7 @@
                     {
                         "key": "chain",
                         "label": "Chain",
-                        "description": "Blockchain network for the selected resource.",
+                        "description": "Blockchain for the selected resource.",
                         "type": "string",
                         "enum": ["ethereum", "cardano"],
                         "required": true,
@@ -147,7 +147,7 @@
                     {
                         "key": "resource_key",
                         "label": "Resource",
-                        "description": "Token or staking contract to include from the selected chain.",
+                        "description": "Token or staking contract to score on that chain.",
                         "type": "string",
                         "enum": ["fet_token", "fet_staking_1", "fet_staking_2"],
                         "required": true,
@@ -187,7 +187,7 @@
         {
             "key": "token_value_over_time",
             "label": "Token Value Over Time (CSV)",
-            "description": "One row per sub-id with columns: `sub_id` and `token_value`.",
+            "description": "CSV file with one row per sub-id and the final token value score.",
             "type": "csv",
             "csv": {
                 "hasHeader": true,
@@ -196,12 +196,12 @@
                     {
                         "key": "sub_id",
                         "type": "string",
-                        "description": "Subscriber or aggregation identifier"
+                        "description": "Sub-id or group ID."
                     },
                     {
                         "key": "token_value",
                         "type": "number",
-                        "description": "Aggregated token value-over-time score for all wallets linked to the sub-id"
+                        "description": "Final token value score for the sub-id."
                     }
                 ]
             }
@@ -209,7 +209,7 @@
         {
             "key": "token_value_over_time_details",
             "label": "Token Value Over Time Details (JSON)",
-            "description": "Per-sub-id aggregates with nested per-wallet and per-lot calculations, useful for auditing results.",
+            "description": "JSON file with score details for each sub-id, wallet, and lot.",
             "type": "json"
         }
     ],
