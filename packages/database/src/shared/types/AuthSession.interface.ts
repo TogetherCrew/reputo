@@ -24,8 +24,6 @@ export interface AuthSession {
   refreshTokenExpiresAt: Date;
   /** Granted scopes associated with the session */
   scope: string[];
-  /** OIDC nonce used during the auth flow */
-  nonce: string;
   /** CSRF protection state used during the auth flow */
   state: string;
   /** PKCE verifier used during the auth flow */

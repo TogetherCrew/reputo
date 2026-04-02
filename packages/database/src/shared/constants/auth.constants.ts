@@ -7,7 +7,6 @@ export type AuthProvider = (typeof AUTH_PROVIDERS)[number];
 export const AUTH_SESSION_PRIVATE_FIELDS = [
   'accessTokenCiphertext',
   'refreshTokenCiphertext',
-  'nonce',
   'state',
   'codeVerifier',
 ] as const;

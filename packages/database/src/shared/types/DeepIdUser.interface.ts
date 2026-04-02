@@ -7,28 +7,26 @@ import type { DeepIdProvider } from '../constants/index.js';
 export interface DeepIdUser {
   /** Upstream auth provider identifier */
   provider: DeepIdProvider;
-  /** Stable DID returned by the provider */
-  did: string;
+  /** Stable subject returned by the provider */
+  sub: string;
+  /** Intended audience(s) returned by the provider */
+  aud?: string[];
+  /** Upstream authentication time */
+  auth_time?: number;
   /** Optional primary email address */
   email?: string;
   /** Whether the provider marked the email as verified */
-  emailVerified: boolean;
-  /** Full display name */
-  name?: string;
-  /** Given name from the provider profile */
-  givenName?: string;
-  /** Family name from the provider profile */
-  familyName?: string;
+  email_verified?: boolean;
+  /** Upstream issued-at timestamp */
+  iat?: number;
+  /** Upstream issuer */
+  iss?: string;
   /** Optional profile image URL */
   picture?: string;
-  /** Wallet addresses linked to the identity */
-  walletAddresses: string[];
-  /** Whether the user has completed KYC at the provider */
-  kycVerified: boolean;
-  /** Authentication methods reported by the provider */
-  amr: string[];
-  /** Timestamp of the latest successful login */
-  lastLoginAt?: Date;
+  /** Upstream rat timestamp */
+  rat?: number;
+  /** Provider username */
+  username?: string;
   /** Document creation timestamp */
   createdAt?: Date;
   /** Document last update timestamp */

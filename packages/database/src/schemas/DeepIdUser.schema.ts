@@ -14,30 +14,29 @@ const DeepIdUserSchema = new Schema<DeepIdUser, DeepIdUserModel>(
       default: DeepIdProvider,
       immutable: true,
     },
-    did: {
+    sub: {
       type: String,
       required: true,
       trim: true,
       immutable: true,
     },
+    aud: {
+      type: [{ type: String, trim: true }],
+    },
+    auth_time: {
+      type: Number,
+    },
     email: {
       type: String,
       trim: true,
-      lowercase: true,
     },
-    emailVerified: {
+    email_verified: {
       type: Boolean,
-      default: false,
     },
-    name: {
-      type: String,
-      trim: true,
+    iat: {
+      type: Number,
     },
-    givenName: {
-      type: String,
-      trim: true,
-    },
-    familyName: {
+    iss: {
       type: String,
       trim: true,
     },
@@ -45,20 +44,12 @@ const DeepIdUserSchema = new Schema<DeepIdUser, DeepIdUserModel>(
       type: String,
       trim: true,
     },
-    walletAddresses: {
-      type: [{ type: String, trim: true }],
-      default: [],
+    rat: {
+      type: Number,
     },
-    kycVerified: {
-      type: Boolean,
-      default: false,
-    },
-    amr: {
-      type: [{ type: String, trim: true }],
-      default: [],
-    },
-    lastLoginAt: {
-      type: Date,
+    username: {
+      type: String,
+      trim: true,
     },
   },
   {
@@ -68,15 +59,6 @@ const DeepIdUserSchema = new Schema<DeepIdUser, DeepIdUserModel>(
   },
 );
 
-DeepIdUserSchema.index({ provider: 1, did: 1 }, { unique: true });
-DeepIdUserSchema.index(
-  { email: 1 },
-  {
-    unique: true,
-    partialFilterExpression: {
-      email: { $exists: true, $type: 'string' },
-    },
-  },
-);
+DeepIdUserSchema.index({ provider: 1, sub: 1 }, { unique: true });
 
 export default DeepIdUserSchema as Schema<DeepIdUser, DeepIdUserModel>;

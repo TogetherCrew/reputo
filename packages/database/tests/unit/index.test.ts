@@ -29,11 +29,10 @@ describe('@reputo/database public exports', () => {
     const provider: DeepIdProviderType = DeepIdProvider;
     const user: DeepIdUser = {
       provider,
-      did: 'did:pkh:eip155:1:0x1234567890abcdef1234567890abcdef12345678',
-      emailVerified: true,
-      walletAddresses: [],
-      kycVerified: false,
-      amr: [],
+      sub: 'did:plc:pwtlzekayxk67odbhen6v2bb',
+      email: 'user@example.com',
+      email_verified: true,
+      username: 'user',
     };
     const session: AuthSession = {
       sessionId: 'session-456',
@@ -44,7 +43,6 @@ describe('@reputo/database public exports', () => {
       accessTokenExpiresAt: new Date('2026-04-02T10:00:00.000Z'),
       refreshTokenExpiresAt: new Date('2026-05-02T10:00:00.000Z'),
       scope: ['openid'],
-      nonce: 'nonce-456',
       state: 'state-456',
       codeVerifier: 'code-verifier-456',
       expiresAt: new Date('2026-05-02T10:00:00.000Z'),

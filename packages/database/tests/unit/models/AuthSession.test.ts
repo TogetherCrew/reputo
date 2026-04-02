@@ -18,7 +18,6 @@ describe('AuthSession model', () => {
         accessTokenExpiresAt: new Date('2026-04-02T10:00:00.000Z'),
         refreshTokenExpiresAt: new Date('2026-05-02T10:00:00.000Z'),
         scope: ['openid', 'profile', 'email', 'offline_access'],
-        nonce: 'nonce-123',
         state: 'state-123',
         codeVerifier: 'code-verifier-123',
         expiresAt: new Date('2026-05-02T10:00:00.000Z'),

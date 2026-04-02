@@ -10,17 +10,16 @@ describe('DeepIdUser model', () => {
     beforeEach(() => {
       deepIdUser = {
         provider: DeepIdProvider,
-        did: 'did:pkh:eip155:1:0x1234567890abcdef1234567890abcdef12345678',
+        sub: 'did:plc:pwtlzekayxk67odbhen6v2bb',
+        aud: ['9cad9abe-1dc6-4c66-acac-f747026c3beb'],
+        auth_time: 1775166617,
         email: 'User@Example.com',
-        emailVerified: true,
-        name: 'Ada Lovelace',
-        givenName: 'Ada',
-        familyName: 'Lovelace',
+        email_verified: true,
+        iat: 1775166619,
+        iss: 'https://identity.staging.deep-id.ai',
         picture: 'https://example.com/avatar.png',
-        walletAddresses: ['0x1234567890abcdef1234567890abcdef12345678'],
-        kycVerified: true,
-        amr: ['pwd', 'wallet'],
-        lastLoginAt: new Date('2026-04-02T08:00:00.000Z'),
+        rat: 1775166617,
+        username: 'ada',
       };
     });
 
@@ -28,28 +27,23 @@ describe('DeepIdUser model', () => {
       const doc = new DeepIdUserModel(deepIdUser);
 
       await expect(doc.validate()).resolves.toBeUndefined();
-      expect(doc.email).toBe('user@example.com');
+      expect(doc.email).toBe('User@Example.com');
     });
   });
 
   describe('DeepIdUser indexes', () => {
-    test('should define the provider and did compound unique index', () => {
+    test('should define the provider and sub compound unique index', () => {
       const indexes = DeepIdUserModel.schema.indexes();
-      const providerDidIndex = indexes.find(([fields]) => fields.provider === 1 && fields.did === 1);
+      const providerSubIndex = indexes.find(([fields]) => fields.provider === 1 && fields.sub === 1);
 
-      expect(providerDidIndex?.[1]).toMatchObject({ unique: true });
+      expect(providerSubIndex?.[1]).toMatchObject({ unique: true });
     });
 
-    test('should define the optional unique email index', () => {
+    test('should not define a unique email index', () => {
       const indexes = DeepIdUserModel.schema.indexes();
       const emailIndex = indexes.find(([fields]) => fields.email === 1);
 
-      expect(emailIndex?.[1]).toMatchObject({
-        unique: true,
-        partialFilterExpression: {
-          email: { $exists: true, $type: 'string' },
-        },
-      });
+      expect(emailIndex).toBeUndefined();
     });
   });
 });

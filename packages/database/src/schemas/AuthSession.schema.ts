@@ -57,12 +57,6 @@ const AuthSessionSchema = new Schema<AuthSession, AuthSessionModel>(
       type: [{ type: String, trim: true }],
       default: [],
     },
-    nonce: {
-      type: String,
-      required: true,
-      trim: true,
-      select: false,
-    },
     state: {
       type: String,
       required: true,
