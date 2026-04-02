@@ -1,4 +1,4 @@
-import axios from "axios"
+import axios, { type AxiosError } from "axios"
 import type {
   AlgorithmPresetQueryParams,
   AlgorithmPresetResponseDto,
@@ -13,6 +13,17 @@ import type {
 
 const API_BASE_PATH = "/api/v1"
 
+// ── Centralised auth-failure handling ─────────────────────────────────
+
+let authFailureHandled = false
+
+/** Redirect to /login on session expiry. Guarded so only one redirect fires. */
+export function handleAuthFailure(): void {
+  if (authFailureHandled) return
+  authFailureHandled = true
+  window.location.href = "/login"
+}
+
 // Create axios instance with base configuration.
 // Browser requests should always be same-origin (via Traefik / reverse-proxy).
 const api = axios.create({
@@ -21,6 +32,16 @@ const api = axios.create({
     "Content-Type": "application/json",
   },
 })
+
+/** Axios interceptor — redirect to /login on any 401 response. */
+function redirectToLoginOn401(error: AxiosError): Promise<never> {
+  if (error.response?.status === 401) {
+    handleAuthFailure()
+  }
+  return Promise.reject(error)
+}
+
+api.interceptors.response.use(undefined, redirectToLoginOn401)
 
 // Algorithm Presets API
 export const algorithmPresetsApi = {
@@ -117,9 +138,31 @@ export const storageApi = {
     const response = await api.post("/storage/downloads", data)
     return response.data
   },
-  /** Same-origin stream URL for download (avoids new tab; use for triggerDownload). */
+  /** Same-origin stream URL (use downloadStream for auth-aware downloads). */
   getStreamUrl: (key: string): string => {
     return `${API_BASE_PATH}/storage/stream?key=${encodeURIComponent(key)}`
+  },
+  /** Auth-aware download. Redirects to /login on 401 instead of failing silently. */
+  downloadStream: async (key: string, filename: string): Promise<void> => {
+    const res = await fetch(
+      `${API_BASE_PATH}/storage/stream?key=${encodeURIComponent(key)}`,
+      { credentials: "include" }
+    )
+    if (res.status === 401) {
+      handleAuthFailure()
+      return
+    }
+    if (!res.ok) throw new Error(`Download failed: ${res.status}`)
+    const blob = await res.blob()
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement("a")
+    a.href = url
+    a.download = filename
+    a.style.display = "none"
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    URL.revokeObjectURL(url)
   },
   // Verify upload and get metadata
   verify: async (data: {

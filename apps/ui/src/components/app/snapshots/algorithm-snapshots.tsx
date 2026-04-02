@@ -45,7 +45,7 @@ import type {
   AlgorithmPresetResponseDto,
   SnapshotResponseDto,
 } from "@/lib/api/types"
-import { useSnapshotEvents } from "@/lib/api/use-snapshot-events"
+import { useAuthAwareSnapshotEvents } from "@/lib/api/use-snapshot-events"
 import { SnapshotDeleteDialog } from "./snapshot-delete-dialog"
 import { SnapshotDetailsDialog } from "./snapshot-details-dialog"
 
@@ -95,7 +95,7 @@ export function AlgorithmSnapshots({ algo }: { algo?: Algorithm }) {
   })
 
   // Subscribe to real-time snapshot updates via SSE
-  useSnapshotEvents({
+  useAuthAwareSnapshotEvents({
     algorithmPreset: presetFilter ?? undefined,
     enabled: isMounted, // Only connect after component is mounted (client-side)
   })
