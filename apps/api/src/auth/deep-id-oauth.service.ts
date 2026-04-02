@@ -31,6 +31,7 @@ async function parseJsonResponse<T>(response: Response): Promise<T> {
 
 interface DeepIdTokenErrorResponse {
   error?: string;
+  error_description?: string;
 }
 
 @Injectable()
@@ -158,16 +159,14 @@ export class DeepIdOAuthService {
 
   private async fetchTokenResponse(params: Record<string, string>): Promise<DeepIdTokenResponse> {
     const discovery = await this.getDiscoveryDocument();
-    const body = new URLSearchParams({
-      client_id: this.clientId,
-      client_secret: this.clientSecret,
-      ...params,
-    });
+    const body = new URLSearchParams(params);
+    const basicAuthorization = Buffer.from(`${this.clientId}:${this.clientSecret}`, 'utf8').toString('base64');
 
     const response = await fetch(discovery.token_endpoint, {
       method: 'POST',
       headers: {
         Accept: 'application/json',
+        Authorization: `Basic ${basicAuthorization}`,
         'Content-Type': 'application/x-www-form-urlencoded',
       },
       body,
@@ -177,10 +176,10 @@ export class DeepIdOAuthService {
       const errorPayload = (await response.json().catch(() => null)) as DeepIdTokenErrorResponse | null;
 
       if (errorPayload?.error === 'invalid_grant') {
-        throw new UnauthorizedException('Deep ID rejected the authorization grant.');
+        throw new UnauthorizedException(errorPayload.error_description ?? 'Deep ID rejected the authorization grant.');
       }
 
-      throw new BadGatewayException('Deep ID token exchange failed.');
+      throw new BadGatewayException(errorPayload?.error_description ?? 'Deep ID token exchange failed.');
     }
 
     const tokenResponse = await parseJsonResponse<DeepIdTokenResponse>(response);
