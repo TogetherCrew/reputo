@@ -6,6 +6,11 @@ const { mockApi, mockCreate } = vi.hoisted(() => {
     post: vi.fn(),
     patch: vi.fn(),
     delete: vi.fn(),
+    interceptors: {
+      response: {
+        use: vi.fn(),
+      },
+    },
   }
 
   return {
@@ -33,6 +38,7 @@ describe("ui api services", () => {
     mockApi.post.mockReset()
     mockApi.patch.mockReset()
     mockApi.delete.mockReset()
+    mockApi.interceptors.response.use.mockReset()
 
     ;(globalThis as { window?: unknown }).window = {
       location: { href: "https://reputo.local/dashboard" },

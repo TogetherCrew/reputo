@@ -5,7 +5,7 @@ import { NextResponse } from "next/server"
  * Must match the backend AUTH_COOKIE_NAME value.
  * Read from env so it stays in sync across environments.
  */
-const AUTH_COOKIE_NAME = process.env.AUTH_COOKIE_NAME ?? "reputo_session"
+const AUTH_COOKIE_NAME = process.env.AUTH_COOKIE_NAME ?? "reputo_auth_session"
 
 /** Routes that don't require an auth cookie. */
 const PUBLIC_PATHS = ["/login"]
@@ -21,11 +21,9 @@ export function middleware(request: NextRequest) {
 
   const hasSession = request.cookies.has(AUTH_COOKIE_NAME)
 
-  // Public routes — if already authenticated, send to dashboard.
+  // Public routes stay public. The login page verifies the session with `/me`
+  // before redirecting, which avoids a cookie-only redirect loop.
   if (isPublic(pathname)) {
-    if (hasSession) {
-      return NextResponse.redirect(new URL("/dashboard", request.url))
-    }
     return NextResponse.next()
   }
 
