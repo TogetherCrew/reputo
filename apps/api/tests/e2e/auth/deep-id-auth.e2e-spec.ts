@@ -11,7 +11,6 @@ import supertest from 'supertest';
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { DeepIdAuthModule } from '../../../src/auth';
 import { DeepIdOAuthService } from '../../../src/auth/deep-id-oauth.service';
-import { DeepIdTokenValidationService } from '../../../src/auth/deep-id-token-validation.service';
 import { configModules } from '../../../src/config';
 import { HttpExceptionFilter } from '../../../src/shared/filters/http-exception.filter';
 import { AUTH_TEST_ENV, applyAuthTestEnv } from '../../utils/auth-session';
@@ -33,11 +32,6 @@ describe('Deep ID auth e2e', () => {
     refreshTokens: vi.fn(),
     fetchUserInfo: vi.fn(),
     getDiscoveryDocument: vi.fn(),
-    getJwks: vi.fn(),
-  };
-
-  const mockTokenValidationService = {
-    validateIdToken: vi.fn(),
   };
 
   beforeAll(async () => {
@@ -63,8 +57,6 @@ describe('Deep ID auth e2e', () => {
     })
       .overrideProvider(DeepIdOAuthService)
       .useValue(mockOAuthService)
-      .overrideProvider(DeepIdTokenValidationService)
-      .useValue(mockTokenValidationService)
       .compile();
 
     authSessionModel = moduleRef.get(getModelToken(MODEL_NAMES.AUTH_SESSION));
@@ -108,6 +100,7 @@ describe('Deep ID auth e2e', () => {
     expect(redirectUrl.origin).toBe('https://identity.deep-id.ai');
     expect(redirectUrl.pathname).toBe('/oauth2/auth');
     expect(redirectUrl.searchParams.get('state')).toBeTruthy();
+    expect(redirectUrl.searchParams.get('nonce')).toBeNull();
     expect(response.headers['set-cookie']).toEqual(
       expect.arrayContaining([expect.stringContaining(`${AUTH_TEST_ENV.AUTH_COOKIE_NAME}.flow=`)]),
     );
@@ -129,37 +122,29 @@ describe('Deep ID auth e2e', () => {
     });
   });
 
-  it('completes the callback flow, syncs the user, creates the session, and bootstraps /me', async () => {
+  it('completes the callback flow, syncs the full userinfo payload, creates the session, and bootstraps /me', async () => {
     const agent = supertest.agent(app.getHttpServer());
 
     mockOAuthService.exchangeCodeForTokens.mockResolvedValue({
       access_token: 'provider-access-token',
       refresh_token: 'provider-refresh-token',
-      id_token: 'provider-id-token',
       expires_in: 300,
       refresh_token_expires_in: 1800,
       token_type: 'Bearer',
       scope: 'openid profile email offline_access',
     });
-    mockTokenValidationService.validateIdToken.mockImplementation(async (_token: string, nonce: string) => ({
-      iss: AUTH_TEST_ENV.DEEP_ID_ISSUER_URL,
-      sub: 'did:deep-id:123',
-      aud: AUTH_TEST_ENV.DEEP_ID_CLIENT_ID,
-      exp: Math.floor(Date.now() / 1000) + 300,
-      nonce,
-      amr: ['pwd'],
-    }));
     mockOAuthService.fetchUserInfo.mockResolvedValue({
-      did: 'did:deep-id:123',
-      email: 'jane@example.com',
+      aud: ['9cad9abe-1dc6-4c66-acac-f747026c3beb'],
+      auth_time: 1775166617,
+      email: 'behzad.rabiei.77@gmail.com',
       email_verified: true,
-      name: 'Jane Doe',
-      given_name: 'Jane',
-      family_name: 'Doe',
-      picture: 'https://example.com/avatar.png',
-      wallet_addresses: ['0xabc'],
-      kyc_verified: true,
-      amr: ['pwd'],
+      iat: 1775166619,
+      iss: 'https://identity.staging.deep-id.ai',
+      picture:
+        'https://staging-deep-sso-uploads.s3.eu-west-2.amazonaws.com/profiles/5fc64381-e62a-408a-914b-2bac26983d86/1775155696375-0ke0pgb.behzadrabiei77_avatar',
+      rat: 1775166617,
+      sub: 'did:plc:pwtlzekayxk67odbhen6v2bb',
+      username: 'behzad',
     });
 
     const loginResponse = await agent.get(base('/auth/deep-id/login')).expect(302);
@@ -174,25 +159,33 @@ describe('Deep ID auth e2e', () => {
       expect.arrayContaining([expect.stringContaining(`${AUTH_TEST_ENV.AUTH_COOKIE_NAME}=`)]),
     );
 
-    const storedUser = await deepIdUserModel.findOne({ did: 'did:deep-id:123' }).lean();
+    const storedUser = await deepIdUserModel.findOne({ sub: 'did:plc:pwtlzekayxk67odbhen6v2bb' }).lean();
     const storedSession = await authSessionModel
       .findOne({})
-      .select('+accessTokenCiphertext +refreshTokenCiphertext +nonce +state +codeVerifier')
+      .select('+accessTokenCiphertext +refreshTokenCiphertext +state +codeVerifier')
       .lean();
 
     expect(storedUser).toMatchObject({
-      did: 'did:deep-id:123',
-      email: 'jane@example.com',
-      emailVerified: true,
-      walletAddresses: ['0xabc'],
-      kycVerified: true,
+      provider: 'deep-id',
+      sub: 'did:plc:pwtlzekayxk67odbhen6v2bb',
+      aud: ['9cad9abe-1dc6-4c66-acac-f747026c3beb'],
+      auth_time: 1775166617,
+      email: 'behzad.rabiei.77@gmail.com',
+      email_verified: true,
+      iat: 1775166619,
+      iss: 'https://identity.staging.deep-id.ai',
+      picture:
+        'https://staging-deep-sso-uploads.s3.eu-west-2.amazonaws.com/profiles/5fc64381-e62a-408a-914b-2bac26983d86/1775155696375-0ke0pgb.behzadrabiei77_avatar',
+      rat: 1775166617,
+      username: 'behzad',
     });
+    expect(storedUser).not.toHaveProperty('did');
     expect(storedSession).toBeTruthy();
     expect(storedSession?.accessTokenCiphertext).not.toBe('provider-access-token');
     expect(storedSession?.refreshTokenCiphertext).not.toBe('provider-refresh-token');
     expect(storedSession?.state).toBe(state);
-    expect(storedSession?.nonce).toBeTruthy();
     expect(storedSession?.codeVerifier).toBeTruthy();
+    expect(storedSession).not.toHaveProperty('nonce');
 
     const currentSession = await agent.get(base('/auth/deep-id/me')).expect(200);
 
@@ -201,10 +194,18 @@ describe('Deep ID auth e2e', () => {
       provider: 'deep-id',
       scope: ['openid', 'profile', 'email', 'offline_access'],
       user: {
-        did: 'did:deep-id:123',
-        email: 'jane@example.com',
-        emailVerified: true,
-        walletAddresses: ['0xabc'],
+        provider: 'deep-id',
+        sub: 'did:plc:pwtlzekayxk67odbhen6v2bb',
+        aud: ['9cad9abe-1dc6-4c66-acac-f747026c3beb'],
+        auth_time: 1775166617,
+        email: 'behzad.rabiei.77@gmail.com',
+        email_verified: true,
+        iat: 1775166619,
+        iss: 'https://identity.staging.deep-id.ai',
+        picture:
+          'https://staging-deep-sso-uploads.s3.eu-west-2.amazonaws.com/profiles/5fc64381-e62a-408a-914b-2bac26983d86/1775155696375-0ke0pgb.behzadrabiei77_avatar',
+        rat: 1775166617,
+        username: 'behzad',
       },
     });
   });
@@ -225,27 +226,22 @@ describe('Deep ID auth e2e', () => {
     mockOAuthService.exchangeCodeForTokens.mockResolvedValue({
       access_token: 'stale-access-token',
       refresh_token: 'stale-refresh-token',
-      id_token: 'provider-id-token',
       expires_in: 5,
       refresh_token_expires_in: 1800,
       token_type: 'Bearer',
       scope: 'openid profile email offline_access',
     });
-    mockTokenValidationService.validateIdToken.mockImplementation(async (_token: string, nonce: string) => ({
-      iss: AUTH_TEST_ENV.DEEP_ID_ISSUER_URL,
-      sub: 'did:deep-id:refresh',
-      aud: AUTH_TEST_ENV.DEEP_ID_CLIENT_ID,
-      exp: Math.floor(Date.now() / 1000) + 300,
-      nonce,
-      amr: ['pwd'],
-    }));
     mockOAuthService.fetchUserInfo.mockResolvedValue({
-      did: 'did:deep-id:refresh',
+      aud: ['deep-id-test-client'],
+      auth_time: 1775166617,
       email: 'refresh@example.com',
       email_verified: true,
-      wallet_addresses: ['0xdef'],
-      kyc_verified: false,
-      amr: ['pwd'],
+      iat: 1775166619,
+      iss: 'https://identity.staging.deep-id.ai',
+      picture: 'https://example.com/refresh.png',
+      rat: 1775166617,
+      sub: 'did:deep-id:refresh',
+      username: 'refresh-user',
     });
 
     const loginResponse = await agent.get(base('/auth/deep-id/login')).expect(302);
@@ -279,6 +275,10 @@ describe('Deep ID auth e2e', () => {
       .lean();
 
     expect(response.body.authenticated).toBe(true);
+    expect(response.body.user).toMatchObject({
+      sub: 'did:deep-id:refresh',
+      username: 'refresh-user',
+    });
     expect(mockOAuthService.refreshTokens).toHaveBeenCalledTimes(1);
     expect(refreshedSession?.accessTokenCiphertext).not.toBe('fresh-access-token');
     expect(refreshedSession?.refreshTokenCiphertext).not.toBe('fresh-refresh-token');
@@ -290,27 +290,22 @@ describe('Deep ID auth e2e', () => {
     mockOAuthService.exchangeCodeForTokens.mockResolvedValue({
       access_token: 'provider-access-token',
       refresh_token: 'provider-refresh-token',
-      id_token: 'provider-id-token',
       expires_in: 300,
       refresh_token_expires_in: 1800,
       token_type: 'Bearer',
       scope: 'openid profile email offline_access',
     });
-    mockTokenValidationService.validateIdToken.mockImplementation(async (_token: string, nonce: string) => ({
-      iss: AUTH_TEST_ENV.DEEP_ID_ISSUER_URL,
-      sub: 'did:deep-id:logout',
-      aud: AUTH_TEST_ENV.DEEP_ID_CLIENT_ID,
-      exp: Math.floor(Date.now() / 1000) + 300,
-      nonce,
-      amr: ['pwd'],
-    }));
     mockOAuthService.fetchUserInfo.mockResolvedValue({
-      did: 'did:deep-id:logout',
+      aud: ['deep-id-test-client'],
+      auth_time: 1775166617,
       email: 'logout@example.com',
       email_verified: true,
-      wallet_addresses: [],
-      kyc_verified: false,
-      amr: ['pwd'],
+      iat: 1775166619,
+      iss: 'https://identity.staging.deep-id.ai',
+      picture: 'https://example.com/logout.png',
+      rat: 1775166617,
+      sub: 'did:deep-id:logout',
+      username: 'logout-user',
     });
 
     const loginResponse = await agent.get(base('/auth/deep-id/login')).expect(302);

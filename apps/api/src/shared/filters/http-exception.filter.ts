@@ -18,7 +18,6 @@ const SENSITIVE_FIELD_NAMES = new Set([
   'xapikey',
   'apikey',
   'code',
-  'nonce',
   'state',
   'codeverifier',
 ]);

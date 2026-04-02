@@ -2,7 +2,6 @@ import { BadGatewayException, Injectable, UnauthorizedException } from '@nestjs/
 import { ConfigService } from '@nestjs/config';
 import {
   DEEP_ID_DEFAULT_AUTHORIZATION_PATH,
-  DEEP_ID_DEFAULT_JWKS_PATH,
   DEEP_ID_DEFAULT_TOKEN_PATH,
   DEEP_ID_DEFAULT_USERINFO_PATH,
   DEEP_ID_DISCOVERY_PATH,
@@ -12,7 +11,6 @@ import {
   type DeepIdDiscoveryDocument,
   type DeepIdTokenResponse,
   type DeepIdUserInfo,
-  type JsonWebKeySet,
 } from '../shared/types';
 
 function normalizeUrl(value: string): string {
@@ -42,7 +40,6 @@ export class DeepIdOAuthService {
   private readonly redirectUri: string;
   private readonly scopes: string[];
   private discoveryPromise?: Promise<DeepIdDiscoveryDocument>;
-  private jwksCache?: JsonWebKeySet;
 
   constructor(configService: ConfigService) {
     this.issuerUrl = normalizeUrl(configService.get<string>('auth.deepIdIssuerUrl') as string);
@@ -61,7 +58,6 @@ export class DeepIdOAuthService {
     url.searchParams.set('redirect_uri', this.redirectUri);
     url.searchParams.set('scope', this.scopes.join(' '));
     url.searchParams.set('state', authFlow.state);
-    url.searchParams.set('nonce', authFlow.nonce);
     url.searchParams.set('code_challenge', codeChallenge);
     url.searchParams.set('code_challenge_method', 'S256');
 
@@ -108,25 +104,6 @@ export class DeepIdOAuthService {
     return this.discoveryPromise;
   }
 
-  async getJwks(forceRefresh = false): Promise<JsonWebKeySet> {
-    if (!this.jwksCache || forceRefresh) {
-      const discovery = await this.getDiscoveryDocument();
-      const response = await fetch(discovery.jwks_uri, {
-        headers: {
-          Accept: 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        throw new BadGatewayException('Deep ID JWKS fetch failed.');
-      }
-
-      this.jwksCache = await parseJsonResponse<JsonWebKeySet>(response);
-    }
-
-    return this.jwksCache;
-  }
-
   private async fetchDiscoveryDocument(): Promise<DeepIdDiscoveryDocument> {
     const discoveryUrl = new URL(DEEP_ID_DISCOVERY_PATH, `${this.issuerUrl}/`);
     const response = await fetch(discoveryUrl, {
@@ -152,8 +129,6 @@ export class DeepIdOAuthService {
         discovery.authorization_endpoint ?? new URL(DEEP_ID_DEFAULT_AUTHORIZATION_PATH, `${issuer}/`).toString(),
       token_endpoint: discovery.token_endpoint ?? new URL(DEEP_ID_DEFAULT_TOKEN_PATH, `${issuer}/`).toString(),
       userinfo_endpoint: discovery.userinfo_endpoint ?? new URL(DEEP_ID_DEFAULT_USERINFO_PATH, `${issuer}/`).toString(),
-      jwks_uri: discovery.jwks_uri ?? new URL(DEEP_ID_DEFAULT_JWKS_PATH, `${issuer}/`).toString(),
-      id_token_signing_alg_values_supported: discovery.id_token_signing_alg_values_supported,
     };
   }
 

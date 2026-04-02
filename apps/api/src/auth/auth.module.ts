@@ -9,7 +9,6 @@ import { AuthCookieService } from './auth-cookie.service';
 import { AuthSessionRepository } from './auth-session.repository';
 import { DeepIdAuthService } from './deep-id-auth.service';
 import { DeepIdOAuthService } from './deep-id-oauth.service';
-import { DeepIdTokenValidationService } from './deep-id-token-validation.service';
 import { DeepIdUserRepository } from './deep-id-user.repository';
 
 @Module({
@@ -32,7 +31,6 @@ import { DeepIdUserRepository } from './deep-id-user.repository';
     AuthSessionRepository,
     DeepIdAuthService,
     DeepIdOAuthService,
-    DeepIdTokenValidationService,
     DeepIdUserRepository,
     SessionAuthGuard,
     {

@@ -10,20 +10,24 @@ export class DeepIdUserRepository {
     private readonly model: DeepIdUserModel,
   ) {}
 
-  async upsertByDid(
+  async upsertBySub(
     provider: DeepIdProvider,
-    did: string,
-    update: Omit<DeepIdUser, 'provider' | 'did' | 'createdAt' | 'updatedAt'>,
+    sub: string,
+    update: Omit<DeepIdUser, 'provider' | 'sub' | 'createdAt' | 'updatedAt'>,
   ): Promise<DeepIdUserWithId> {
+    const definedEntries = Object.entries(update).filter(([, value]) => value !== undefined);
+    const unsetEntries = Object.entries(update).filter(([, value]) => value === undefined);
+
     return (await this.model
       .findOneAndUpdate(
-        { provider, did },
+        { provider, sub },
         {
           $set: {
-            ...update,
             provider,
-            did,
+            sub,
+            ...Object.fromEntries(definedEntries),
           },
+          ...(unsetEntries.length > 0 ? { $unset: Object.fromEntries(unsetEntries.map(([key]) => [key, ''])) } : {}),
         },
         {
           upsert: true,

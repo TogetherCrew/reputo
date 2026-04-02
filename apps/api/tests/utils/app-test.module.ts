@@ -6,7 +6,6 @@ import { LoggerModule } from 'nestjs-pino';
 import { AlgorithmPresetModule } from '../../src/algorithm-preset/algorithm-preset.module';
 import { DeepIdAuthModule, DeepIdAuthService } from '../../src/auth';
 import { DeepIdOAuthService } from '../../src/auth/deep-id-oauth.service';
-import { DeepIdTokenValidationService } from '../../src/auth/deep-id-token-validation.service';
 import { configModules } from '../../src/config';
 import { setupSwagger } from '../../src/docs';
 import { HttpExceptionFilter } from '../../src/shared/filters/http-exception.filter';
@@ -64,17 +63,6 @@ export async function createTestApp(options: TestAppOptions) {
       authorization_endpoint: 'https://identity.deep-id.ai/oauth2/auth',
       token_endpoint: 'https://identity.deep-id.ai/oauth2/token',
       userinfo_endpoint: 'https://identity.deep-id.ai/userinfo',
-      jwks_uri: 'https://identity.deep-id.ai/.well-known/jwks.json',
-    }),
-    getJwks: async () => ({ keys: [] }),
-  };
-
-  const mockTokenValidationService = {
-    validateIdToken: async () => ({
-      iss: process.env.DEEP_ID_ISSUER_URL as string,
-      sub: 'did:deep-id:test',
-      aud: process.env.DEEP_ID_CLIENT_ID as string,
-      exp: Math.floor(Date.now() / 1000) + 300,
     }),
   };
 
@@ -98,8 +86,6 @@ export async function createTestApp(options: TestAppOptions) {
   })
     .overrideProvider(DeepIdOAuthService)
     .useValue(mockOAuthService)
-    .overrideProvider(DeepIdTokenValidationService)
-    .useValue(mockTokenValidationService)
     .overrideProvider(StorageService)
     .useValue(mockStorageService)
     .overrideProvider(TemporalService)

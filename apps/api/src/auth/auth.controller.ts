@@ -24,7 +24,7 @@ export class DeepIdAuthController {
   @Public()
   @ApiOperation({
     summary: 'Start the Deep ID OAuth flow',
-    description: 'Creates the transient PKCE/OIDC flow state and redirects the browser to Deep ID.',
+    description: 'Creates the transient PKCE auth flow state and redirects the browser to Deep ID.',
   })
   @ApiFoundResponse({ description: 'Redirects the browser to Deep ID.' })
   async login(@Res() response: Response): Promise<void> {
@@ -37,14 +37,14 @@ export class DeepIdAuthController {
   @ApiOperation({
     summary: 'Handle the Deep ID OAuth callback',
     description:
-      'Exchanges the authorization code, validates the ID token, syncs userinfo, creates the opaque app session, and redirects back to the app.',
+      'Exchanges the authorization code, syncs userinfo, creates the opaque app session, and redirects back to the app.',
   })
   @ApiQuery({ name: 'code', required: false, type: String })
   @ApiQuery({ name: 'state', required: false, type: String })
   @ApiQuery({ name: 'error', required: false, type: String })
   @ApiQuery({ name: 'error_description', required: false, type: String })
   @ApiFoundResponse({ description: 'Redirects the browser back to the public app URL.' })
-  @ApiUnauthorizedResponse({ description: 'State, nonce, authorization code, or token validation failed.' })
+  @ApiUnauthorizedResponse({ description: 'State validation, authorization code exchange, or userinfo sync failed.' })
   async callback(
     @Query() query: DeepIdCallbackQuery,
     @Req() request: Request,

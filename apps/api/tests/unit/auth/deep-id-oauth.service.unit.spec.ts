@@ -39,7 +39,6 @@ describe('DeepIdOAuthService', () => {
             authorization_endpoint: 'https://identity.deep-id.ai/oauth2/auth',
             token_endpoint: 'https://identity.deep-id.ai/oauth2/token',
             userinfo_endpoint: 'https://identity.deep-id.ai/userinfo',
-            jwks_uri: 'https://identity.deep-id.ai/.well-known/jwks.json',
           }),
           {
             status: 200,
@@ -54,7 +53,6 @@ describe('DeepIdOAuthService', () => {
             refresh_token: 'refresh-token',
             expires_in: 300,
             token_type: 'Bearer',
-            id_token: 'id-token',
           }),
           {
             status: 200,
@@ -90,7 +88,6 @@ describe('DeepIdOAuthService', () => {
             authorization_endpoint: 'https://identity.deep-id.ai/oauth2/auth',
             token_endpoint: 'https://identity.deep-id.ai/oauth2/token',
             userinfo_endpoint: 'https://identity.deep-id.ai/userinfo',
-            jwks_uri: 'https://identity.deep-id.ai/.well-known/jwks.json',
           }),
           {
             status: 200,

@@ -5,34 +5,43 @@ export class DeepIdCurrentSessionUserDto {
   id!: string;
 
   @ApiProperty()
-  did!: string;
+  provider!: string;
+
+  @ApiProperty()
+  sub!: string;
+
+  @ApiPropertyOptional({ type: [String] })
+  aud?: string[];
+
+  @ApiPropertyOptional()
+  auth_time?: number;
 
   @ApiPropertyOptional()
   email?: string;
 
-  @ApiProperty()
-  emailVerified!: boolean;
+  @ApiPropertyOptional()
+  email_verified?: boolean;
 
   @ApiPropertyOptional()
-  name?: string;
+  iat?: number;
 
   @ApiPropertyOptional()
-  givenName?: string;
-
-  @ApiPropertyOptional()
-  familyName?: string;
+  iss?: string;
 
   @ApiPropertyOptional()
   picture?: string;
 
-  @ApiProperty({ type: [String] })
-  walletAddresses!: string[];
+  @ApiPropertyOptional()
+  rat?: number;
 
-  @ApiProperty()
-  kycVerified!: boolean;
+  @ApiPropertyOptional()
+  username?: string;
 
-  @ApiProperty({ type: [String] })
-  amr!: string[];
+  @ApiPropertyOptional({ example: '2026-05-02T10:00:00.000Z' })
+  createdAt?: string;
+
+  @ApiPropertyOptional({ example: '2026-05-02T10:00:00.000Z' })
+  updatedAt?: string;
 }
 
 export class DeepIdCurrentSessionDto {

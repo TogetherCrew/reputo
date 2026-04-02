@@ -43,16 +43,14 @@ export async function createAuthenticatedSession(
 ) {
   const authSessionModel = moduleRef.get<Model<AuthSession>>(getModelToken(MODEL_NAMES.AUTH_SESSION));
   const deepIdUserModel = moduleRef.get<Model<DeepIdUser>>(getModelToken(MODEL_NAMES.DEEP_ID_USER));
-  const didSuffix = randomUUID();
+  const subSuffix = randomUUID();
   const now = Date.now();
   const user = await deepIdUserModel.create({
     provider: 'deep-id',
-    did: `did:deep-id:${didSuffix}`,
-    email: options.email ?? `${didSuffix}@example.com`,
-    emailVerified: true,
-    walletAddresses: [],
-    kycVerified: false,
-    amr: ['pwd'],
+    sub: `did:deep-id:${subSuffix}`,
+    email: options.email ?? `${subSuffix}@example.com`,
+    email_verified: true,
+    username: `user-${subSuffix}`,
   });
   const sessionId = randomUUID();
 
@@ -65,9 +63,8 @@ export async function createAuthenticatedSession(
     accessTokenExpiresAt: options.accessTokenExpiresAt ?? new Date(now + 10 * 60 * 1000),
     refreshTokenExpiresAt: options.refreshTokenExpiresAt ?? new Date(now + 30 * 60 * 1000),
     scope: options.scope ?? ['openid', 'profile', 'email', 'offline_access'],
-    nonce: `nonce-${didSuffix}`,
-    state: `state-${didSuffix}`,
-    codeVerifier: `verifier-${didSuffix}`,
+    state: `state-${subSuffix}`,
+    codeVerifier: `verifier-${subSuffix}`,
     expiresAt: options.expiresAt ?? new Date(now + 30 * 60 * 1000),
   });
 

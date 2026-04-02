@@ -19,7 +19,6 @@ import { decryptValue, encryptValue } from '../shared/utils';
 import { AuthCookieService } from './auth-cookie.service';
 import { AuthSessionRepository } from './auth-session.repository';
 import { DeepIdOAuthService } from './deep-id-oauth.service';
-import { DeepIdTokenValidationService } from './deep-id-token-validation.service';
 import { DeepIdUserRepository } from './deep-id-user.repository';
 
 function toBase64Url(buffer: Buffer): string {
@@ -53,6 +52,15 @@ function coerceStringArray(value: unknown): string[] {
   return value.filter((item): item is string => typeof item === 'string' && item.trim().length > 0);
 }
 
+function coerceAudience(value: unknown): string[] | undefined {
+  if (typeof value === 'string' && value.trim().length > 0) {
+    return [value];
+  }
+
+  const values = coerceStringArray(value);
+  return values.length > 0 ? values : undefined;
+}
+
 function toDateFromNow(seconds: number | undefined, fallbackSeconds: number): Date {
   const effectiveSeconds =
     typeof seconds === 'number' && Number.isFinite(seconds) && seconds > 0 ? seconds : fallbackSeconds;
@@ -70,7 +78,6 @@ export class DeepIdAuthService {
 
   constructor(
     private readonly deepIdOAuthService: DeepIdOAuthService,
-    private readonly deepIdTokenValidationService: DeepIdTokenValidationService,
     private readonly authCookieService: AuthCookieService,
     private readonly authSessionRepository: AuthSessionRepository,
     private readonly deepIdUserRepository: DeepIdUserRepository,
@@ -101,7 +108,7 @@ export class DeepIdAuthService {
         throw new UnauthorizedException(query.error_description ?? `Deep ID authorization failed: ${query.error}`);
       }
 
-      if (!authFlow?.state || !authFlow.nonce || !authFlow.codeVerifier) {
+      if (!authFlow?.state || !authFlow.codeVerifier) {
         throw new UnauthorizedException('Deep ID auth flow context is missing.');
       }
 
@@ -114,14 +121,8 @@ export class DeepIdAuthService {
       }
 
       const tokenResponse = await this.deepIdOAuthService.exchangeCodeForTokens(query.code, authFlow.codeVerifier);
-
-      if (!tokenResponse.id_token) {
-        throw new BadGatewayException('Deep ID token response is missing the ID token.');
-      }
-
-      const claims = await this.deepIdTokenValidationService.validateIdToken(tokenResponse.id_token, authFlow.nonce);
       const userInfo = await this.deepIdOAuthService.fetchUserInfo(tokenResponse.access_token);
-      const user = await this.syncUserFromUserInfo(userInfo, claims.sub, claims.amr, true);
+      const user = await this.syncUserFromUserInfo(userInfo);
       const session = await this.createApplicationSession(user, tokenResponse, authFlow);
 
       this.authCookieService.setSessionCookie(response, session.sessionId, session.expiresAt);
@@ -200,63 +201,29 @@ export class DeepIdAuthService {
   private createAuthFlow(): DeepIdAuthFlowState {
     return {
       state: createRandomToken(24),
-      nonce: createRandomToken(24),
       codeVerifier: createRandomToken(32),
     };
   }
 
-  private async syncUserFromUserInfo(
-    userInfo: DeepIdUserInfo,
-    fallbackSubject: string | undefined,
-    fallbackAmr: string[] | undefined,
-    touchLastLogin: boolean,
-  ): Promise<DeepIdUserWithId> {
-    const did = this.resolveUserDid(userInfo, fallbackSubject);
-
-    if (!did) {
+  private async syncUserFromUserInfo(userInfo: DeepIdUserInfo): Promise<DeepIdUserWithId> {
+    if (typeof userInfo.sub !== 'string' || userInfo.sub.trim().length === 0) {
       throw new BadGatewayException('Deep ID userinfo response is missing a stable subject identifier.');
     }
 
-    const update: Omit<DeepIdUser, 'provider' | 'did' | 'createdAt' | 'updatedAt'> = {
-      emailVerified: Boolean(userInfo.email_verified),
-      walletAddresses: coerceStringArray(userInfo.wallet_addresses ?? userInfo.walletAddresses),
-      kycVerified: Boolean(userInfo.kyc_verified ?? userInfo.kycVerified),
-      amr: coerceStringArray(userInfo.amr ?? fallbackAmr),
+    const update: Omit<DeepIdUser, 'provider' | 'sub' | 'createdAt' | 'updatedAt'> = {
+      aud: coerceAudience(userInfo.aud),
+      auth_time:
+        typeof userInfo.auth_time === 'number' && Number.isFinite(userInfo.auth_time) ? userInfo.auth_time : undefined,
+      email: typeof userInfo.email === 'string' ? userInfo.email : undefined,
+      email_verified: typeof userInfo.email_verified === 'boolean' ? userInfo.email_verified : undefined,
+      iat: typeof userInfo.iat === 'number' && Number.isFinite(userInfo.iat) ? userInfo.iat : undefined,
+      iss: typeof userInfo.iss === 'string' ? userInfo.iss : undefined,
+      picture: typeof userInfo.picture === 'string' ? userInfo.picture : undefined,
+      rat: typeof userInfo.rat === 'number' && Number.isFinite(userInfo.rat) ? userInfo.rat : undefined,
+      username: typeof userInfo.username === 'string' ? userInfo.username : undefined,
     };
 
-    if (typeof userInfo.email === 'string') {
-      update.email = userInfo.email;
-    }
-
-    if (typeof userInfo.name === 'string') {
-      update.name = userInfo.name;
-    }
-
-    if (typeof userInfo.given_name === 'string') {
-      update.givenName = userInfo.given_name;
-    }
-
-    if (typeof userInfo.family_name === 'string') {
-      update.familyName = userInfo.family_name;
-    }
-
-    if (typeof userInfo.picture === 'string') {
-      update.picture = userInfo.picture;
-    }
-
-    if (touchLastLogin) {
-      update.lastLoginAt = new Date();
-    }
-
-    return this.deepIdUserRepository.upsertByDid(DeepIdProvider, did, update);
-  }
-
-  private resolveUserDid(userInfo: DeepIdUserInfo, fallbackSubject: string | undefined): string | undefined {
-    const candidates = [userInfo.did, userInfo.sub, fallbackSubject];
-
-    return candidates.find(
-      (candidate): candidate is string => typeof candidate === 'string' && candidate.trim().length > 0,
-    );
+    return this.deepIdUserRepository.upsertBySub(DeepIdProvider, userInfo.sub, update);
   }
 
   private async createApplicationSession(
@@ -284,7 +251,6 @@ export class DeepIdAuthService {
       accessTokenExpiresAt,
       refreshTokenExpiresAt,
       scope: scopeToArray(tokenResponse.scope, this.requestedScopes),
-      nonce: authFlow.nonce,
       state: authFlow.state,
       codeVerifier: authFlow.codeVerifier,
       expiresAt,
@@ -335,11 +301,7 @@ export class DeepIdAuthService {
 
       try {
         const userInfo = await this.deepIdOAuthService.fetchUserInfo(tokenResponse.access_token);
-        const did = this.resolveUserDid(userInfo, undefined);
-
-        if (did) {
-          await this.syncUserFromUserInfo(userInfo, did, undefined, false);
-        }
+        await this.syncUserFromUserInfo(userInfo);
       } catch {
         // Preserve session viability even if profile refresh is temporarily unavailable.
       }
@@ -358,7 +320,6 @@ export class DeepIdAuthService {
     const {
       accessTokenCiphertext: _accessTokenCiphertext,
       refreshTokenCiphertext: _refreshTokenCiphertext,
-      nonce: _nonce,
       state: _state,
       codeVerifier: _codeVerifier,
       ...currentSession
@@ -370,16 +331,19 @@ export class DeepIdAuthService {
   private toSessionUserView(user: DeepIdUserWithId): DeepIdSessionUserView {
     return {
       id: String(user._id),
-      did: user.did,
+      provider: user.provider,
+      sub: user.sub,
+      aud: user.aud,
+      auth_time: user.auth_time,
       email: user.email,
-      emailVerified: user.emailVerified,
-      name: user.name,
-      givenName: user.givenName,
-      familyName: user.familyName,
+      email_verified: user.email_verified,
+      iat: user.iat,
+      iss: user.iss,
       picture: user.picture,
-      walletAddresses: user.walletAddresses,
-      kycVerified: user.kycVerified,
-      amr: user.amr,
+      rat: user.rat,
+      username: user.username,
+      createdAt: user.createdAt?.toISOString(),
+      updatedAt: user.updatedAt?.toISOString(),
     };
   }
 }

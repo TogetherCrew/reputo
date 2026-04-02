@@ -1,12 +1,7 @@
 import type { AuthSessionWithId, DeepIdUserWithId } from '@reputo/database';
 import type { Request } from 'express';
 
-type AuthSessionRequestHiddenFields =
-  | 'accessTokenCiphertext'
-  | 'refreshTokenCiphertext'
-  | 'nonce'
-  | 'state'
-  | 'codeVerifier';
+type AuthSessionRequestHiddenFields = 'accessTokenCiphertext' | 'refreshTokenCiphertext' | 'state' | 'codeVerifier';
 
 export type CurrentAuthSession = Omit<AuthSessionWithId, AuthSessionRequestHiddenFields>;
 
