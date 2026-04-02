@@ -14,33 +14,23 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { useAuthSession } from "@/lib/auth/auth-context"
 
 function getDisplayName(user: {
-  name?: string
-  givenName?: string
-  familyName?: string
+  username?: string
   email?: string
+  sub: string
 }): string {
-  if (user.name) return user.name
-  const full = [user.givenName, user.familyName].filter(Boolean).join(" ")
-  if (full) return full
+  if (user.username) return user.username
   if (user.email) return user.email
-  return "User"
+  return user.sub
 }
 
 function getInitials(user: {
-  name?: string
-  givenName?: string
-  familyName?: string
+  username?: string
   email?: string
+  sub: string
 }): string {
-  if (user.givenName || user.familyName) {
-    return [user.givenName?.[0], user.familyName?.[0]]
-      .filter(Boolean)
-      .join("")
-      .toUpperCase()
-  }
-  if (user.name) return user.name[0].toUpperCase()
+  if (user.username) return user.username[0].toUpperCase()
   if (user.email) return user.email[0].toUpperCase()
-  return "U"
+  return user.sub[0]?.toUpperCase() ?? "U"
 }
 
 export function UserMenu() {

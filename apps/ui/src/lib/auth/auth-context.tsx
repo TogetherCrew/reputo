@@ -14,16 +14,19 @@ import {
 
 export interface AuthSessionUser {
   id: string
-  did: string
+  provider: string
+  sub: string
+  aud?: string[]
+  auth_time?: number
   email?: string
-  emailVerified: boolean
-  name?: string
-  givenName?: string
-  familyName?: string
+  email_verified?: boolean
+  iat?: number
+  iss?: string
   picture?: string
-  walletAddresses: string[]
-  kycVerified: boolean
-  amr: string[]
+  rat?: number
+  username?: string
+  createdAt?: string
+  updatedAt?: string
 }
 
 export interface AuthSession {
