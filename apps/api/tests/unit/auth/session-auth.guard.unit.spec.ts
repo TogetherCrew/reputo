@@ -3,7 +3,7 @@ import { Reflector } from '@nestjs/core';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { SessionAuthGuard } from '../../../src/shared/guards/session-auth.guard';
 
-function createHttpContext(overrides: { isPublic?: boolean } = {}): {
+function createHttpContext(_overrides: { isPublic?: boolean } = {}): {
   context: ExecutionContext;
   request: any;
   response: any;

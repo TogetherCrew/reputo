@@ -47,15 +47,22 @@ describe('docs protection middleware', () => {
     protectedPaths = new Map();
 
     const mockApp = {
-      use: vi.fn().mockImplementation((pathOrMiddleware: string | Function, ...rest: Function[]) => {
-        if (typeof pathOrMiddleware === 'string' && rest.length > 0) {
-          // Only store the first middleware registered per path (the auth guard).
-          // /reference gets two registrations: auth middleware first, then apiReference.
-          if (!protectedPaths.has(pathOrMiddleware)) {
-            protectedPaths.set(pathOrMiddleware, rest[0] as any);
-          }
-        }
-      }),
+      use: vi
+        .fn()
+        .mockImplementation(
+          (
+            pathOrMiddleware: string | ((...args: unknown[]) => unknown),
+            ...rest: ((...args: unknown[]) => unknown)[]
+          ) => {
+            if (typeof pathOrMiddleware === 'string' && rest.length > 0) {
+              // Only store the first middleware registered per path (the auth guard).
+              // /reference gets two registrations: auth middleware first, then apiReference.
+              if (!protectedPaths.has(pathOrMiddleware)) {
+                protectedPaths.set(pathOrMiddleware, rest[0] as any);
+              }
+            }
+          },
+        ),
     };
 
     const mockDocument = { openapi: '3.0.0', info: { title: 'Test', version: '1.0' }, paths: {} };
@@ -92,7 +99,8 @@ describe('docs protection middleware', () => {
   it('calls next() when requireSession resolves successfully', async () => {
     deepIdAuthService.requireSession.mockResolvedValue({ session: {}, user: {} });
 
-    const middleware = protectedPaths.get('/docs')!;
+    const middleware = protectedPaths.get('/docs');
+    if (!middleware) throw new Error('middleware not registered for /docs');
     const req = createMockRequest('/docs');
     const res = createMockResponse();
     const next = vi.fn();
@@ -105,7 +113,8 @@ describe('docs protection middleware', () => {
   it('returns 401 JSON when requireSession throws UnauthorizedException', async () => {
     deepIdAuthService.requireSession.mockRejectedValue(new UnauthorizedException('Authentication required.'));
 
-    const middleware = protectedPaths.get('/docs')!;
+    const middleware = protectedPaths.get('/docs');
+    if (!middleware) throw new Error('middleware not registered for /docs');
     const req = createMockRequest('/docs');
     const res = createMockResponse();
     const next = vi.fn();
@@ -120,7 +129,8 @@ describe('docs protection middleware', () => {
   it('protects the /docs-json path (OpenAPI spec)', async () => {
     deepIdAuthService.requireSession.mockRejectedValue(new UnauthorizedException());
 
-    const middleware = protectedPaths.get('/docs-json')!;
+    const middleware = protectedPaths.get('/docs-json');
+    if (!middleware) throw new Error('middleware not registered for /docs-json');
     const req = createMockRequest('/docs-json');
     const res = createMockResponse();
     const next = vi.fn();
@@ -134,7 +144,8 @@ describe('docs protection middleware', () => {
   it('protects the /reference path (Scalar API reference)', async () => {
     deepIdAuthService.requireSession.mockRejectedValue(new UnauthorizedException());
 
-    const middleware = protectedPaths.get('/reference')!;
+    const middleware = protectedPaths.get('/reference');
+    if (!middleware) throw new Error('middleware not registered for /reference');
     const req = createMockRequest('/reference');
     const res = createMockResponse();
     const next = vi.fn();
