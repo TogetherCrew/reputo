@@ -1,7 +1,7 @@
 import { Types } from 'mongoose';
 import { beforeEach, describe, expect, test } from 'vitest';
 import AuthSessionModel from '../../../src/models/AuthSession.model.js';
-import { AUTH_SESSION_PRIVATE_FIELDS, DeepIdProvider } from '../../../src/shared/constants/index.js';
+import { AUTH_SESSION_PRIVATE_FIELDS, DeepIdProvider, MODEL_NAMES } from '../../../src/shared/constants/index.js';
 import type { AuthSession } from '../../../src/shared/types/index.js';
 
 describe('AuthSession model', () => {
@@ -97,6 +97,33 @@ describe('AuthSession model', () => {
       expect(userIdIndex).toBeDefined();
       expect(expiresAtIndex?.[1]).toMatchObject({ expireAfterSeconds: 0 });
       expect(revokedAtIndex).toBeDefined();
+    });
+  });
+
+  describe('AuthSession exports', () => {
+    test('should be registered with the correct model name', () => {
+      expect(AuthSessionModel.modelName).toBe(MODEL_NAMES.AUTH_SESSION);
+    });
+
+    test('should use the AuthSessionSchema', () => {
+      expect(AuthSessionModel.schema).toBeDefined();
+      expect(AuthSessionModel.schema.path('sessionId')).toBeDefined();
+      expect(AuthSessionModel.schema.path('accessTokenCiphertext')).toBeDefined();
+    });
+
+    test('should re-export through the models barrel', async () => {
+      const models = await import('../../../src/models/index.js');
+      expect(models.AuthSessionModel).toBe(AuthSessionModel);
+    });
+
+    test('should re-export through the package barrel as AuthSessionModelValue', async () => {
+      const pkg = await import('../../../src/index.js');
+      expect(pkg.AuthSessionModelValue).toBe(AuthSessionModel);
+    });
+
+    test('should re-export the AuthSessionSchema through the package barrel', async () => {
+      const pkg = await import('../../../src/index.js');
+      expect(pkg.AuthSessionSchema).toBe(AuthSessionModel.schema);
     });
   });
 });

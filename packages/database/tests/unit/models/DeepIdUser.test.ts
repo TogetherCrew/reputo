@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, test } from 'vitest';
 import DeepIdUserModel from '../../../src/models/DeepIdUser.model.js';
-import { DeepIdProvider } from '../../../src/shared/constants/index.js';
+import { DeepIdProvider, MODEL_NAMES } from '../../../src/shared/constants/index.js';
 import type { DeepIdUser } from '../../../src/shared/types/index.js';
 
 describe('DeepIdUser model', () => {
@@ -44,6 +44,33 @@ describe('DeepIdUser model', () => {
       const emailIndex = indexes.find(([fields]) => fields.email === 1);
 
       expect(emailIndex).toBeUndefined();
+    });
+  });
+
+  describe('DeepIdUser exports', () => {
+    test('should be registered with the correct model name', () => {
+      expect(DeepIdUserModel.modelName).toBe(MODEL_NAMES.DEEP_ID_USER);
+    });
+
+    test('should use the DeepIdUserSchema', () => {
+      expect(DeepIdUserModel.schema).toBeDefined();
+      expect(DeepIdUserModel.schema.path('sub')).toBeDefined();
+      expect(DeepIdUserModel.schema.path('provider')).toBeDefined();
+    });
+
+    test('should re-export through the models barrel', async () => {
+      const models = await import('../../../src/models/index.js');
+      expect(models.DeepIdUserModel).toBe(DeepIdUserModel);
+    });
+
+    test('should re-export through the package barrel as DeepIdUserModelValue', async () => {
+      const pkg = await import('../../../src/index.js');
+      expect(pkg.DeepIdUserModelValue).toBe(DeepIdUserModel);
+    });
+
+    test('should re-export the DeepIdUserSchema through the package barrel', async () => {
+      const pkg = await import('../../../src/index.js');
+      expect(pkg.DeepIdUserSchema).toBe(DeepIdUserModel.schema);
     });
   });
 });
