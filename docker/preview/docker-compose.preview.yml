@@ -65,6 +65,12 @@ services:
     api:
         container_name: api
         image: ghcr.io/reputo-org/reputo/api:${PREVIEW_IMAGE_TAG}
+        command:
+            [
+                '/bin/sh',
+                '-lc',
+                'export AUTH_TOKEN_ENCRYPTION_KEY="$(node -e "process.stdout.write(require(''node:crypto'').randomBytes(32).toString(''hex''))")"; exec pnpm start',
+            ]
         depends_on:
             mongodb:
                 condition: service_healthy
@@ -76,6 +82,15 @@ services:
             - NODE_ENV=development
             - PORT=3000
             - LOG_LEVEL=info
+            - AUTH_MODE=mock
+            - AUTH_COOKIE_NAME=reputo_auth_session
+            - AUTH_COOKIE_SECURE=false
+            - AUTH_COOKIE_SAME_SITE=lax
+            - DEEP_ID_ISSUER_URL=https://mock.invalid
+            - DEEP_ID_CLIENT_ID=mock-client-id
+            - DEEP_ID_CLIENT_SECRET=mock-client-secret
+            - DEEP_ID_REDIRECT_URI=https://mock.invalid/callback
+            - APP_PUBLIC_URL=https://mock.invalid
             - MONGODB_HOST=mongodb
             - MONGODB_PORT=27017
             - MONGODB_DB_NAME=reputo_preview
