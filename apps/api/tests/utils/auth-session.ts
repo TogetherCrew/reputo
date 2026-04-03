@@ -8,6 +8,7 @@ import { encryptValue } from '../../src/shared/utils';
 
 export const AUTH_TEST_ENV = {
   NODE_ENV: 'test',
+  AUTH_MODE: 'deep-id',
   DEEP_ID_ISSUER_URL: 'https://identity.deep-id.ai',
   DEEP_ID_CLIENT_ID: 'deep-id-test-client',
   DEEP_ID_CLIENT_SECRET: 'deep-id-test-secret',
@@ -31,8 +32,8 @@ export interface CreateAuthenticatedSessionOptions {
   scope?: string[];
 }
 
-export function applyAuthTestEnv(): void {
-  for (const [key, value] of Object.entries(AUTH_TEST_ENV)) {
+export function applyAuthTestEnv(overrides: Partial<Record<keyof typeof AUTH_TEST_ENV, string>> = {}): void {
+  for (const [key, value] of Object.entries({ ...AUTH_TEST_ENV, ...overrides })) {
     process.env[key] = value;
   }
 }

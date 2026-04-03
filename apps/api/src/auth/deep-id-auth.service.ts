@@ -3,6 +3,7 @@ import { BadGatewayException, Injectable, UnauthorizedException } from '@nestjs/
 import { ConfigService } from '@nestjs/config';
 import { type AuthSessionWithId, DeepIdProvider, type DeepIdUser, type DeepIdUserWithId } from '@reputo/database';
 import type { Request, Response } from 'express';
+import { AUTH_MODE_DEEP_ID, AUTH_MODE_MOCK } from '../shared/constants';
 import {
   type AuthRequestContext,
   type CurrentAuthSession,
@@ -67,12 +68,30 @@ function toDateFromNow(seconds: number | undefined, fallbackSeconds: number): Da
   return new Date(Date.now() + effectiveSeconds * 1000);
 }
 
+function getHeaderValue(value: string | string[] | undefined): string | undefined {
+  if (Array.isArray(value)) {
+    return getHeaderValue(value[0]);
+  }
+
+  if (typeof value !== 'string') {
+    return undefined;
+  }
+
+  const firstValue = value.split(',')[0]?.trim();
+
+  return firstValue && firstValue.length > 0 ? firstValue : undefined;
+}
+
 @Injectable()
 export class DeepIdAuthService {
   private static readonly UNAUTHORIZED_MESSAGE = 'Authentication required.';
+  private static readonly MOCK_SUB = 'did:deep-id:mock-preview-user';
+  private static readonly MOCK_EMAIL = 'preview@reputo.local';
+  private static readonly MOCK_USERNAME = 'preview-user';
   private readonly tokenEncryptionKey: string;
   private readonly sessionTtlSeconds: number;
   private readonly refreshLeewaySeconds: number;
+  private readonly authMode: string;
   private readonly appPublicUrl: string;
   private readonly requestedScopes: string[];
 
@@ -86,11 +105,16 @@ export class DeepIdAuthService {
     this.tokenEncryptionKey = configService.get<string>('auth.tokenEncryptionKey') as string;
     this.sessionTtlSeconds = configService.get<number>('auth.sessionTtlSeconds') as number;
     this.refreshLeewaySeconds = configService.get<number>('auth.refreshLeewaySeconds') as number;
+    this.authMode = (configService.get<string>('auth.mode') ?? AUTH_MODE_DEEP_ID).toLowerCase();
     this.appPublicUrl = configService.get<string>('auth.appPublicUrl') as string;
     this.requestedScopes = configService.get<string[]>('auth.deepIdScopes') as string[];
   }
 
-  async getLoginRedirectUrl(response: Response): Promise<string> {
+  async getLoginRedirectUrl(request: Request, response: Response): Promise<string> {
+    if (this.authMode === AUTH_MODE_MOCK) {
+      return this.createMockLoginRedirect(request, response);
+    }
+
     const authFlow = this.createAuthFlow();
     const codeChallenge = createPkceChallenge(authFlow.codeVerifier);
     const redirectUrl = await this.deepIdOAuthService.buildAuthorizationUrl(authFlow, codeChallenge);
@@ -101,6 +125,14 @@ export class DeepIdAuthService {
   }
 
   async handleCallback(query: DeepIdCallbackQuery, request: Request, response: Response): Promise<string> {
+    if (this.authMode === AUTH_MODE_MOCK) {
+      try {
+        return await this.createMockLoginRedirect(request, response);
+      } finally {
+        this.authCookieService.clearAuthFlowCookie(response);
+      }
+    }
+
     const authFlow = this.authCookieService.getAuthFlow(request);
 
     try {
@@ -205,6 +237,30 @@ export class DeepIdAuthService {
     };
   }
 
+  private async createMockLoginRedirect(request: Request, response: Response): Promise<string> {
+    const user = await this.deepIdUserRepository.upsertBySub(DeepIdProvider, DeepIdAuthService.MOCK_SUB, {
+      email: DeepIdAuthService.MOCK_EMAIL,
+      email_verified: true,
+      username: DeepIdAuthService.MOCK_USERNAME,
+    });
+    const session = await this.createMockApplicationSession(user);
+
+    this.authCookieService.setSessionCookie(response, session.sessionId, session.expiresAt);
+
+    return this.resolveRequestOrigin(request);
+  }
+
+  private resolveRequestOrigin(request: Request): string {
+    const protocol = getHeaderValue(request.headers['x-forwarded-proto']) ?? (request.secure ? 'https' : 'http');
+    const host = getHeaderValue(request.headers['x-forwarded-host']) ?? getHeaderValue(request.headers.host);
+
+    if (host) {
+      return `${protocol}://${host}`;
+    }
+
+    return new URL(this.appPublicUrl).origin;
+  }
+
   private async syncUserFromUserInfo(userInfo: DeepIdUserInfo): Promise<DeepIdUserWithId> {
     if (typeof userInfo.sub !== 'string' || userInfo.sub.trim().length === 0) {
       throw new BadGatewayException('Deep ID userinfo response is missing a stable subject identifier.');
@@ -253,6 +309,24 @@ export class DeepIdAuthService {
       scope: scopeToArray(tokenResponse.scope, this.requestedScopes),
       state: authFlow.state,
       codeVerifier: authFlow.codeVerifier,
+      expiresAt,
+    });
+  }
+
+  private async createMockApplicationSession(user: DeepIdUserWithId): Promise<AuthSessionWithId> {
+    const expiresAt = new Date(Date.now() + this.sessionTtlSeconds * 1000);
+
+    return this.authSessionRepository.create({
+      sessionId: createRandomToken(32),
+      provider: DeepIdProvider,
+      userId: user._id,
+      accessTokenCiphertext: encryptValue(this.tokenEncryptionKey, 'mock-access-token'),
+      refreshTokenCiphertext: encryptValue(this.tokenEncryptionKey, 'mock-refresh-token'),
+      accessTokenExpiresAt: expiresAt,
+      refreshTokenExpiresAt: expiresAt,
+      scope: this.requestedScopes,
+      state: createRandomToken(24),
+      codeVerifier: createRandomToken(32),
       expiresAt,
     });
   }

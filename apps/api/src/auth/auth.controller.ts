@@ -27,8 +27,8 @@ export class DeepIdAuthController {
     description: 'Creates the transient PKCE auth flow state and redirects the browser to Deep ID.',
   })
   @ApiFoundResponse({ description: 'Redirects the browser to Deep ID.' })
-  async login(@Res() response: Response): Promise<void> {
-    const redirectUrl = await this.deepIdAuthService.getLoginRedirectUrl(response);
+  async login(@Req() request: Request, @Res() response: Response): Promise<void> {
+    const redirectUrl = await this.deepIdAuthService.getLoginRedirectUrl(request, response);
     response.redirect(redirectUrl);
   }
 

@@ -1,5 +1,6 @@
 import { registerAs } from '@nestjs/config';
 import * as Joi from 'joi';
+import { AUTH_MODE_DEEP_ID, AUTH_MODE_MOCK } from '../shared/constants';
 
 function parseBoolean(value: string | undefined, defaultValue: boolean): boolean {
   if (value == null || value === '') {
@@ -17,6 +18,7 @@ function normalizeScopes(value: string | undefined): string[] {
 }
 
 export default registerAs('auth', () => ({
+  mode: (process.env.AUTH_MODE ?? AUTH_MODE_DEEP_ID).toLowerCase(),
   deepIdIssuerUrl: process.env.DEEP_ID_ISSUER_URL,
   deepIdClientId: process.env.DEEP_ID_CLIENT_ID,
   deepIdClientSecret: process.env.DEEP_ID_CLIENT_SECRET,
@@ -33,6 +35,10 @@ export default registerAs('auth', () => ({
 }));
 
 export const authConfigSchema = {
+  AUTH_MODE: Joi.string()
+    .valid(AUTH_MODE_DEEP_ID, AUTH_MODE_MOCK)
+    .default(AUTH_MODE_DEEP_ID)
+    .description('Authentication mode'),
   DEEP_ID_ISSUER_URL: Joi.string().uri().required().description('Deep ID issuer base URL'),
   DEEP_ID_CLIENT_ID: Joi.string().trim().required().description('Deep ID OAuth client identifier'),
   DEEP_ID_CLIENT_SECRET: Joi.string().trim().required().description('Deep ID OAuth client secret'),

@@ -1,6 +1,8 @@
 import { BadGatewayException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
+  AUTH_MODE_DEEP_ID,
+  AUTH_MODE_MOCK,
   DEEP_ID_DEFAULT_AUTHORIZATION_PATH,
   DEEP_ID_DEFAULT_TOKEN_PATH,
   DEEP_ID_DEFAULT_USERINFO_PATH,
@@ -34,6 +36,7 @@ interface DeepIdTokenErrorResponse {
 
 @Injectable()
 export class DeepIdOAuthService {
+  private readonly authMode: string;
   private readonly issuerUrl: string;
   private readonly clientId: string;
   private readonly clientSecret: string;
@@ -42,6 +45,7 @@ export class DeepIdOAuthService {
   private discoveryPromise?: Promise<DeepIdDiscoveryDocument>;
 
   constructor(configService: ConfigService) {
+    this.authMode = (configService.get<string>('auth.mode') ?? AUTH_MODE_DEEP_ID).toLowerCase();
     this.issuerUrl = normalizeUrl(configService.get<string>('auth.deepIdIssuerUrl') as string);
     this.clientId = configService.get<string>('auth.deepIdClientId') as string;
     this.clientSecret = configService.get<string>('auth.deepIdClientSecret') as string;
@@ -50,6 +54,7 @@ export class DeepIdOAuthService {
   }
 
   async buildAuthorizationUrl(authFlow: DeepIdAuthFlowState, codeChallenge: string): Promise<string> {
+    this.ensureDeepIdMode();
     const discovery = await this.getDiscoveryDocument();
     const url = new URL(discovery.authorization_endpoint);
 
@@ -65,6 +70,7 @@ export class DeepIdOAuthService {
   }
 
   async exchangeCodeForTokens(code: string, codeVerifier: string): Promise<DeepIdTokenResponse> {
+    this.ensureDeepIdMode();
     return this.fetchTokenResponse({
       grant_type: 'authorization_code',
       code,
@@ -74,6 +80,7 @@ export class DeepIdOAuthService {
   }
 
   async refreshTokens(refreshToken: string): Promise<DeepIdTokenResponse> {
+    this.ensureDeepIdMode();
     return this.fetchTokenResponse({
       grant_type: 'refresh_token',
       refresh_token: refreshToken,
@@ -81,6 +88,7 @@ export class DeepIdOAuthService {
   }
 
   async fetchUserInfo(accessToken: string): Promise<DeepIdUserInfo> {
+    this.ensureDeepIdMode();
     const discovery = await this.getDiscoveryDocument();
     const response = await fetch(discovery.userinfo_endpoint, {
       headers: {
@@ -97,11 +105,18 @@ export class DeepIdOAuthService {
   }
 
   async getDiscoveryDocument(): Promise<DeepIdDiscoveryDocument> {
+    this.ensureDeepIdMode();
     if (!this.discoveryPromise) {
       this.discoveryPromise = this.fetchDiscoveryDocument();
     }
 
     return this.discoveryPromise;
+  }
+
+  private ensureDeepIdMode(): void {
+    if (this.authMode === AUTH_MODE_MOCK) {
+      throw new BadGatewayException('Deep ID OAuth is disabled when AUTH_MODE=mock.');
+    }
   }
 
   private async fetchDiscoveryDocument(): Promise<DeepIdDiscoveryDocument> {

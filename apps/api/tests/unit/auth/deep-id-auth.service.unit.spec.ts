@@ -6,13 +6,7 @@ import { DeepIdAuthService } from '../../../src/auth/deep-id-auth.service';
 import { encryptValue } from '../../../src/shared/utils';
 
 describe('DeepIdAuthService', () => {
-  const configValues = {
-    'auth.tokenEncryptionKey': '0123456789abcdef0123456789abcdef',
-    'auth.sessionTtlSeconds': 3600,
-    'auth.refreshLeewaySeconds': 60,
-    'auth.appPublicUrl': 'http://localhost:5173',
-    'auth.deepIdScopes': ['openid', 'profile', 'email', 'offline_access'],
-  } as const;
+  let configValues: Record<string, unknown>;
 
   const oauthService = {
     buildAuthorizationUrl: vi.fn(),
@@ -44,28 +38,40 @@ describe('DeepIdAuthService', () => {
 
   let service: DeepIdAuthService;
 
-  beforeEach(() => {
-    vi.clearAllMocks();
-
+  function createService() {
     const configService = {
-      get: vi.fn((key: keyof typeof configValues) => configValues[key]),
+      get: vi.fn((key: string) => configValues[key]),
     } as unknown as ConfigService;
 
-    service = new DeepIdAuthService(
+    return new DeepIdAuthService(
       oauthService as never,
       cookieService as never,
       authSessionRepository as never,
       deepIdUserRepository as never,
       configService,
     );
+  }
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    configValues = {
+      'auth.mode': 'deep-id',
+      'auth.tokenEncryptionKey': '0123456789abcdef0123456789abcdef',
+      'auth.sessionTtlSeconds': 3600,
+      'auth.refreshLeewaySeconds': 60,
+      'auth.appPublicUrl': 'http://localhost:5173',
+      'auth.deepIdScopes': ['openid', 'profile', 'email', 'offline_access'],
+    };
+    service = createService();
   });
 
   it('creates auth flow state and delegates the Deep ID login redirect', async () => {
+    const request = { headers: { host: 'localhost:5173' } } as any;
     const response = {} as any;
 
     oauthService.buildAuthorizationUrl.mockResolvedValue('https://identity.deep-id.ai/oauth2/auth?state=abc');
 
-    const redirectUrl = await service.getLoginRedirectUrl(response);
+    const redirectUrl = await service.getLoginRedirectUrl(request, response);
 
     expect(redirectUrl).toBe('https://identity.deep-id.ai/oauth2/auth?state=abc');
     expect(oauthService.buildAuthorizationUrl).toHaveBeenCalledTimes(1);
@@ -78,6 +84,59 @@ describe('DeepIdAuthService', () => {
       }),
     );
     expect(cookieService.setAuthFlowCookie.mock.calls[0][1]).not.toHaveProperty('nonce');
+  });
+
+  it('creates a mock session during login without calling Deep ID', async () => {
+    configValues['auth.mode'] = 'mock';
+    configValues['auth.appPublicUrl'] = 'https://mock.invalid';
+    service = createService();
+
+    const userId = new Types.ObjectId();
+    const request = {
+      headers: {
+        'x-forwarded-proto': 'https',
+        'x-forwarded-host': 'preview.reputo.dev',
+      },
+      secure: false,
+    } as any;
+    const response = {} as any;
+
+    deepIdUserRepository.upsertBySub.mockResolvedValue({
+      _id: userId,
+      provider: 'deep-id',
+      sub: 'did:deep-id:mock-preview-user',
+      email: 'preview@reputo.local',
+      email_verified: true,
+      username: 'preview-user',
+      createdAt: new Date('2026-04-03T10:00:00.000Z'),
+      updatedAt: new Date('2026-04-03T10:00:00.000Z'),
+    });
+    authSessionRepository.create.mockImplementation(async (payload) => ({
+      _id: new Types.ObjectId(),
+      ...payload,
+    }));
+
+    const redirectUrl = await service.getLoginRedirectUrl(request, response);
+
+    expect(redirectUrl).toBe('https://preview.reputo.dev');
+    expect(oauthService.buildAuthorizationUrl).not.toHaveBeenCalled();
+    expect(deepIdUserRepository.upsertBySub).toHaveBeenCalledWith('deep-id', 'did:deep-id:mock-preview-user', {
+      email: 'preview@reputo.local',
+      email_verified: true,
+      username: 'preview-user',
+    });
+    expect(authSessionRepository.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        provider: 'deep-id',
+        userId,
+        scope: ['openid', 'profile', 'email', 'offline_access'],
+        state: expect.any(String),
+        codeVerifier: expect.any(String),
+      }),
+    );
+    expect(cookieService.setAuthFlowCookie).not.toHaveBeenCalled();
+    expect(cookieService.setSessionCookie).toHaveBeenCalledTimes(1);
+    expect(cookieService.clearAuthFlowCookie).not.toHaveBeenCalled();
   });
 
   it('handles the callback, syncs the user, creates the session, and issues the cookie', async () => {
@@ -171,6 +230,44 @@ describe('DeepIdAuthService', () => {
     expect(cookieService.clearAuthFlowCookie).toHaveBeenCalledWith(response);
   });
 
+  it('creates a mock session during callback without requiring Deep ID state', async () => {
+    configValues['auth.mode'] = 'mock';
+    configValues['auth.appPublicUrl'] = 'https://mock.invalid';
+    service = createService();
+
+    const userId = new Types.ObjectId();
+    const request = {
+      headers: {
+        host: 'preview.local',
+      },
+      secure: false,
+    } as any;
+    const response = {} as any;
+
+    deepIdUserRepository.upsertBySub.mockResolvedValue({
+      _id: userId,
+      provider: 'deep-id',
+      sub: 'did:deep-id:mock-preview-user',
+      email: 'preview@reputo.local',
+      email_verified: true,
+      username: 'preview-user',
+      createdAt: new Date('2026-04-03T10:00:00.000Z'),
+      updatedAt: new Date('2026-04-03T10:00:00.000Z'),
+    });
+    authSessionRepository.create.mockImplementation(async (payload) => ({
+      _id: new Types.ObjectId(),
+      ...payload,
+    }));
+
+    const redirectUrl = await service.handleCallback({}, request, response);
+
+    expect(redirectUrl).toBe('http://preview.local');
+    expect(oauthService.exchangeCodeForTokens).not.toHaveBeenCalled();
+    expect(oauthService.fetchUserInfo).not.toHaveBeenCalled();
+    expect(cookieService.setSessionCookie).toHaveBeenCalledTimes(1);
+    expect(cookieService.clearAuthFlowCookie).toHaveBeenCalledWith(response);
+  });
+
   it('rejects the callback when the state is mismatched and clears the transient flow cookie', async () => {
     const response = {} as any;
     const request = { headers: {} } as any;
@@ -242,11 +339,63 @@ describe('DeepIdAuthService', () => {
     expect(cookieService.clearSessionCookie).toHaveBeenCalledWith(response);
   });
 
+  it('returns the current mock session payload during bootstrap', async () => {
+    configValues['auth.mode'] = 'mock';
+    service = createService();
+
+    const response = {} as any;
+    const request = { headers: {} } as any;
+    const userId = new Types.ObjectId();
+
+    cookieService.getSessionId.mockReturnValue('mock-session');
+    authSessionRepository.findActiveBySessionId.mockResolvedValue({
+      _id: new Types.ObjectId(),
+      sessionId: 'mock-session',
+      provider: 'deep-id',
+      userId,
+      accessTokenCiphertext: encryptValue(configValues['auth.tokenEncryptionKey'] as string, 'mock-access-token'),
+      refreshTokenCiphertext: encryptValue(configValues['auth.tokenEncryptionKey'] as string, 'mock-refresh-token'),
+      accessTokenExpiresAt: new Date(Date.now() + 60 * 60 * 1_000),
+      refreshTokenExpiresAt: new Date(Date.now() + 60 * 60 * 1_000),
+      scope: ['openid', 'profile', 'email', 'offline_access'],
+      state: 'mock-state',
+      codeVerifier: 'mock-verifier',
+      expiresAt: new Date(Date.now() + 60 * 60 * 1_000),
+    });
+    deepIdUserRepository.findById.mockResolvedValue({
+      _id: userId,
+      provider: 'deep-id',
+      sub: 'did:deep-id:mock-preview-user',
+      email: 'preview@reputo.local',
+      email_verified: true,
+      username: 'preview-user',
+      createdAt: new Date('2026-04-03T10:00:00.000Z'),
+      updatedAt: new Date('2026-04-03T10:05:00.000Z'),
+    });
+
+    const currentSession = await service.getCurrentSession(request, response);
+
+    expect(currentSession).toMatchObject({
+      authenticated: true,
+      provider: 'deep-id',
+      scope: ['openid', 'profile', 'email', 'offline_access'],
+      user: {
+        provider: 'deep-id',
+        sub: 'did:deep-id:mock-preview-user',
+        email: 'preview@reputo.local',
+        username: 'preview-user',
+      },
+    });
+  });
+
   it('refreshes near-expiry provider tokens during session bootstrap', async () => {
     const response = {} as any;
     const request = { headers: {} } as any;
     const userId = new Types.ObjectId();
-    const encryptedRefreshToken = encryptValue(configValues['auth.tokenEncryptionKey'], 'provider-refresh-token');
+    const encryptedRefreshToken = encryptValue(
+      configValues['auth.tokenEncryptionKey'] as string,
+      'provider-refresh-token',
+    );
 
     cookieService.getSessionId.mockReturnValue('session-123');
     authSessionRepository.findActiveBySessionId.mockResolvedValue({
@@ -254,7 +403,7 @@ describe('DeepIdAuthService', () => {
       sessionId: 'session-123',
       provider: 'deep-id',
       userId,
-      accessTokenCiphertext: encryptValue(configValues['auth.tokenEncryptionKey'], 'old-access-token'),
+      accessTokenCiphertext: encryptValue(configValues['auth.tokenEncryptionKey'] as string, 'old-access-token'),
       refreshTokenCiphertext: encryptedRefreshToken,
       accessTokenExpiresAt: new Date(Date.now() - 1_000),
       refreshTokenExpiresAt: new Date(Date.now() + 10 * 60 * 1_000),
