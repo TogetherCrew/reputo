@@ -8,6 +8,8 @@ import type {
   PaginatedSnapshotResponseDto,
   SnapshotQueryParams,
   SnapshotResponseDto,
+  StorageDownloadResponseDto,
+  StorageVerifyResponseDto,
   UpdateAlgorithmPresetDto,
 } from "./types"
 
@@ -134,49 +136,12 @@ export const storageApi = {
   },
   createDownload: async (data: {
     key: string
-  }): Promise<{ url: string; expiresIn: number }> => {
+  }): Promise<StorageDownloadResponseDto> => {
     const response = await api.post("/storage/downloads", data)
     return response.data
   },
-  /** Same-origin stream URL (use downloadStream for auth-aware downloads). */
-  getStreamUrl: (key: string): string => {
-    return `${API_BASE_PATH}/storage/stream?key=${encodeURIComponent(key)}`
-  },
-  /** Auth-aware download. Redirects to /login on 401 instead of failing silently. */
-  downloadStream: async (key: string, filename: string): Promise<void> => {
-    const res = await fetch(
-      `${API_BASE_PATH}/storage/stream?key=${encodeURIComponent(key)}`,
-      { credentials: "include" }
-    )
-    if (res.status === 401) {
-      handleAuthFailure()
-      return
-    }
-    if (!res.ok) throw new Error(`Download failed: ${res.status}`)
-    const blob = await res.blob()
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement("a")
-    a.href = url
-    a.download = filename
-    a.style.display = "none"
-    document.body.appendChild(a)
-    a.click()
-    a.remove()
-    URL.revokeObjectURL(url)
-  },
   // Verify upload and get metadata
-  verify: async (data: {
-    key: string
-  }): Promise<{
-    key: string
-    metadata: {
-      filename: string
-      ext: string
-      size: number
-      contentType: string
-      timestamp: number
-    }
-  }> => {
+  verify: async (data: { key: string }): Promise<StorageVerifyResponseDto> => {
     const response = await api.post("/storage/uploads/verify", data)
     return response.data
   },

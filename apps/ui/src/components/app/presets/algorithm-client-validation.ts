@@ -14,9 +14,8 @@ export interface ClientValidationError {
 }
 
 async function readInputContent(value: string): Promise<string> {
-  const response = await fetch(storageApi.getStreamUrl(value), {
-    credentials: "omit",
-  })
+  const { url } = await storageApi.createDownload({ key: value })
+  const response = await fetch(url)
 
   if (!response.ok) {
     throw new Error(`Unable to read uploaded file (${response.status})`)
