@@ -330,6 +330,125 @@ describe('computeCustomAlgorithm', () => {
     });
   });
 
+  it('preserves raw scores when normalization is disabled and applies weighted combination deterministically', async () => {
+    mockGetSubIds.mockReturnValue(['SubID-1', 'SubID-2']);
+    mockStringifyCsvAsync.mockResolvedValue(['sub_id,composite_score', 'SubID-1,1.75', 'SubID-2,3.75'].join('\n'));
+
+    const putObject = vi.fn().mockResolvedValue(undefined);
+    const storage = {
+      getObject: vi.fn().mockImplementation(async ({ key }: { key: string }) => {
+        if (key.includes('__custom_algorithm_child_1_')) {
+          return Buffer.from(['sub_id,voting_engagement', 'SubID-1,1', 'SubID-2,3'].join('\n'));
+        }
+
+        if (key.includes('__custom_algorithm_child_2_')) {
+          return Buffer.from(['sub_id,voting_engagement', 'SubID-1,2', 'SubID-2,4'].join('\n'));
+        }
+
+        throw new Error(`Unexpected key: ${key}`);
+      }),
+      putObject,
+    };
+
+    await computeCustomAlgorithm(
+      {
+        _id: 'snapshot-1',
+        algorithmPresetFrozen: {
+          key: 'custom_algorithm',
+          version: '1.0.0',
+          inputs: [
+            { key: 'sub_ids', value: 'uploads/sub_ids.json' },
+            {
+              key: 'sub_algorithms',
+              value: [
+                {
+                  algorithm_key: 'voting_engagement',
+                  algorithm_version: '1.0.0',
+                  weight: 1,
+                  inputs: [{ key: 'votes', value: 'uploads/votes-a.csv' }],
+                },
+                {
+                  algorithm_key: 'voting_engagement',
+                  algorithm_version: '1.0.0',
+                  weight: 3,
+                  inputs: [{ key: 'votes', value: 'uploads/votes-b.csv' }],
+                },
+              ],
+            },
+            { key: 'normalization_method', value: 'none' },
+            { key: 'missing_score_strategy', value: 'zero' },
+          ],
+        },
+      } as never,
+      storage as never,
+    );
+
+    expect(mockStringifyCsvAsync).toHaveBeenCalledWith(
+      [
+        { sub_id: 'SubID-1', composite_score: 1.75 },
+        { sub_id: 'SubID-2', composite_score: 3.75 },
+      ],
+      {
+        header: true,
+        columns: ['sub_id', 'composite_score'],
+      },
+    );
+
+    const detailsPayload = JSON.parse(putObject.mock.calls[1][0].body);
+    expect(detailsPayload).toEqual({
+      snapshot_id: 'snapshot-1',
+      normalization_method: 'none',
+      missing_score_strategy: 'zero',
+      total_child_weight: 4,
+      sub_ids: [
+        {
+          sub_id: 'SubID-1',
+          final_composite_score: 1.75,
+          child_scores: [
+            {
+              algorithm_key: 'voting_engagement',
+              algorithm_version: '1.0.0',
+              raw_score: 1,
+              normalized_score: 1,
+              child_weight: 1,
+              weighted_contribution: 0.25,
+            },
+            {
+              algorithm_key: 'voting_engagement',
+              algorithm_version: '1.0.0',
+              raw_score: 2,
+              normalized_score: 2,
+              child_weight: 3,
+              weighted_contribution: 1.5,
+            },
+          ],
+        },
+        {
+          sub_id: 'SubID-2',
+          final_composite_score: 3.75,
+          child_scores: [
+            {
+              algorithm_key: 'voting_engagement',
+              algorithm_version: '1.0.0',
+              raw_score: 3,
+              normalized_score: 3,
+              child_weight: 1,
+              weighted_contribution: 0.75,
+            },
+            {
+              algorithm_key: 'voting_engagement',
+              algorithm_version: '1.0.0',
+              raw_score: 4,
+              normalized_score: 4,
+              child_weight: 3,
+              weighted_contribution: 3,
+            },
+          ],
+        },
+      ],
+    });
+  });
+
   it('normalizes zero-variance z-scores to zero deterministically', async () => {
     mockGetSubIds.mockReturnValue(['SubID-1', 'SubID-2']);
     mockStringifyCsvAsync.mockResolvedValue(['sub_id,composite_score', 'SubID-1,0', 'SubID-2,0'].join('\n'));

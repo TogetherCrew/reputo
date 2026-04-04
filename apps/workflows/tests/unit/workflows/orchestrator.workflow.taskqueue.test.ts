@@ -166,6 +166,100 @@ describe('OrchestratorWorkflow task queue routing', () => {
     });
   });
 
+  it('deduplicates dependency keys contributed by both the root combined algorithm and its children', async () => {
+    vi.resetModules();
+
+    const temporalWorkflow = await import('@temporalio/workflow');
+    const proxyActivities = vi.mocked(temporalWorkflow.proxyActivities);
+    const workflowInfo = vi.mocked(temporalWorkflow.workflowInfo);
+
+    workflowInfo.mockReturnValue({
+      workflowId: 'wf-1',
+      runId: 'run-1',
+      taskQueue: 'orchestrator-q',
+    } as never);
+
+    const getSnapshot = vi.fn().mockResolvedValue({
+      snapshot: {
+        status: SnapshotStatus.queued,
+        algorithmPresetFrozen: {
+          key: 'custom_algorithm',
+          version: '1.0.0',
+          inputs: [
+            { key: 'sub_ids', value: 'uploads/sub_ids.json' },
+            {
+              key: 'sub_algorithms',
+              value: [
+                {
+                  algorithm_key: 'proposal_engagement',
+                  algorithm_version: '1.0.0',
+                  weight: 1,
+                  inputs: [],
+                },
+              ],
+            },
+          ],
+        },
+      },
+    });
+    const updateSnapshot = vi.fn().mockResolvedValue(undefined);
+    const getAlgorithmDefinition = vi
+      .fn()
+      .mockResolvedValueOnce({
+        algorithmDefinition: {
+          key: 'custom_algorithm',
+          version: '1.0.0',
+          kind: 'combined',
+          runtime: 'typescript',
+          dependencies: [{ key: 'deepfunding-portal-api' }],
+          inputs: [
+            {
+              key: 'sub_algorithms',
+              type: 'sub_algorithm',
+              sharedInputKeys: ['sub_ids'],
+            },
+          ],
+        },
+      })
+      .mockResolvedValueOnce({
+        algorithmDefinition: {
+          key: 'proposal_engagement',
+          version: '1.0.0',
+          runtime: 'typescript',
+          dependencies: [{ key: 'deepfunding-portal-api' }],
+          inputs: [],
+        },
+      });
+    const resolveDependency = vi.fn().mockResolvedValue(undefined);
+    const runTypescriptAlgorithm = vi.fn().mockResolvedValue({
+      outputs: { composite_score: 'snapshots/snapshot-1/custom_algorithm.csv' },
+    });
+
+    proxyActivities.mockImplementation(
+      () =>
+        ({
+          getSnapshot,
+          updateSnapshot,
+          getAlgorithmDefinition,
+          resolveDependency,
+          runTypescriptAlgorithm,
+        }) as never,
+    );
+
+    const { OrchestratorWorkflow } = await import('../../../src/workflows/orchestrator.workflow.js');
+
+    await OrchestratorWorkflow({
+      snapshotId: 'snapshot-1',
+    });
+
+    expect(resolveDependency).toHaveBeenCalledTimes(1);
+    expect(resolveDependency).toHaveBeenCalledWith({
+      dependencyKey: 'deepfunding-portal-api',
+      snapshotId: 'snapshot-1',
+    });
+    expect(runTypescriptAlgorithm).toHaveBeenCalledTimes(1);
+  });
+
   it('merges combined child dependencies and deduplicates onchain sync targets before root compute', async () => {
     vi.resetModules();
 
