@@ -9,6 +9,7 @@ import config from '../../../../config/index.js';
 import { HEARTBEAT_INTERVAL } from '../../../../shared/constants/index.js';
 import type { AlgorithmResult, Snapshot } from '../../../../shared/types/index.js';
 import { stringifyCsvAsync } from '../../../../shared/utils/index.js';
+import { buildDeepProposalPortalSubIdsIndex, getSubIds, loadSubIdInputMap } from '../shared/sub-id-input.js';
 import { buildCommentBenchmarkRecord, formatBenchmarkOutput } from './benchmark/index.js';
 import {
   aggregateVotesByComment,
@@ -35,6 +36,16 @@ export async function computeContributionScore(snapshot: Snapshot, storage: Stor
   const snapshotId = snapshot._id;
 
   const params = extractInputs(snapshot.algorithmPresetFrozen.inputs);
+  const subIdInputMap = await loadSubIdInputMap({
+    storage,
+    bucket: config.storage.bucket,
+    key: params.subIdsKey,
+  });
+  const subIds = getSubIds(subIdInputMap);
+  const deepProposalPortalSubIdsIndex = buildDeepProposalPortalSubIdsIndex(subIdInputMap);
+  const deepProposalPortalIdBySubId = new Map(
+    subIds.map((subId) => [subId, subIdInputMap.subIds[subId]?.deepProposalPortalId ?? null]),
+  );
   const dbPath = await createDeepFundingDb(snapshotId, storage);
   const db = createDb({ path: dbPath });
   const repos = createRepos(db);
@@ -63,7 +74,8 @@ export async function computeContributionScore(snapshot: Snapshot, storage: Stor
     const userIdSet = new Set(users.map((u) => u.id));
 
     const now = new Date();
-    const userScores = new Map<number, number>();
+    const subIdScores = new Map<string, number>(subIds.map((subId) => [subId, 0]));
+    const matchedSubIds = new Set<string>();
     const benchmarkRecords: CommentBenchmarkRecord[] = [];
     let totalCommentsScored = 0;
 
@@ -111,22 +123,25 @@ export async function computeContributionScore(snapshot: Snapshot, storage: Stor
 
       if (result.scored) {
         totalCommentsScored++;
-        const currentScore = userScores.get(comment.userId) ?? 0;
-        userScores.set(comment.userId, currentScore + result.score);
+
+        for (const subId of deepProposalPortalSubIdsIndex.get(String(comment.userId)) ?? []) {
+          matchedSubIds.add(subId);
+          const currentScore = subIdScores.get(subId) ?? 0;
+          subIdScores.set(subId, currentScore + result.score);
+        }
       }
     }
 
-    // Build results for users with scores
     const results: ContributionScoreResult[] = [];
 
-    for (const [userId, score] of userScores) {
+    for (const subId of subIds) {
       results.push({
-        user_id: userId,
-        contribution_score: roundScore(score),
+        sub_id: subId,
+        contribution_score: roundScore(subIdScores.get(subId) ?? 0),
       });
     }
 
-    results.sort((a, b) => a.user_id - b.user_id);
+    results.sort((a, b) => a.sub_id.localeCompare(b.sub_id));
 
     logger.info('Computed contribution scores', {
       userCount: results.length,
@@ -137,7 +152,7 @@ export async function computeContributionScore(snapshot: Snapshot, storage: Stor
     // Generate and upload CSV output (async to avoid blocking the event loop)
     const csvContent = await stringifyCsvAsync(results, {
       header: true,
-      columns: ['user_id', 'contribution_score'],
+      columns: ['sub_id', 'contribution_score'],
     });
 
     const outputKey = generateKey('snapshot', snapshotId, `${snapshot.algorithmPresetFrozen.key}.csv`);
@@ -151,15 +166,15 @@ export async function computeContributionScore(snapshot: Snapshot, storage: Stor
 
     logger.info('Uploaded contribution score results', { outputKey });
 
-    const userIdsInResult = new Set(results.map((r) => r.user_id));
-    const userScoresForBenchmark = new Map(results.map((r) => [r.user_id, r.contribution_score]));
-    const allUserIds = users.map((u) => u.id);
+    const roundedSubIdScores = new Map(results.map((result) => [result.sub_id, result.contribution_score]));
     const benchmark = formatBenchmarkOutput({
       records: benchmarkRecords,
       snapshotId,
-      userIdsInResult,
-      allUserIds,
-      userScores: userScoresForBenchmark,
+      subIds,
+      subIdScores: roundedSubIdScores,
+      deepProposalPortalIdBySubId,
+      matchedSubIds,
+      deepProposalPortalSubIdsIndex,
       params,
       totalCommentsProcessed: comments.length,
       totalCommentsScored,

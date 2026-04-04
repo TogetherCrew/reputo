@@ -6,6 +6,7 @@
  * Algorithm input parameters for contribution scoring.
  */
 export interface ContributionScoreParams {
+  subIdsKey: string;
   commentBaseScore: number;
   commentUpvoteWeight: number;
   commentDownvoteWeight: number;
@@ -19,7 +20,7 @@ export interface ContributionScoreParams {
  * CSV output row for contribution score.
  */
 export interface ContributionScoreResult {
-  user_id: number;
+  sub_id: string;
   contribution_score: number;
 }
 
@@ -61,8 +62,9 @@ export interface CommentBenchmarkRecord {
 /**
  * Per-user benchmark entry with full comment trace.
  */
-export interface UserBenchmarkRecord {
-  user_id: number;
+export interface SubIdBenchmarkRecord {
+  sub_id: string;
+  deep_proposal_portal_id: string | null;
   contribution_score: number;
   comment_count: number;
   comments: CommentBenchmarkRecord[];
@@ -84,15 +86,15 @@ export function roundScore(score: number): number {
 export interface ContributionScoreBenchmarkMetadata {
   snapshot_id: string;
   computed_at: string;
-  config: ContributionScoreParams;
-  users: {
-    included_ids: number[];
-    excluded_ids: number[];
+  config: Omit<ContributionScoreParams, 'subIdsKey'>;
+  sub_ids: {
+    provided_ids: string[];
+    matched_ids: string[];
+    unmatched_ids: string[];
   };
   metrics: {
-    total_users_in_table: number;
-    users_with_score: number;
-    users_excluded_no_score: number;
+    total_sub_ids_provided: number;
+    sub_ids_with_matching_comments: number;
     total_comments_processed: number;
     total_comments_scored: number;
   };
@@ -102,6 +104,6 @@ export interface ContributionScoreBenchmarkMetadata {
  * Root benchmark output structure.
  */
 export interface ContributionScoreBenchmark {
-  users: UserBenchmarkRecord[];
+  sub_ids: SubIdBenchmarkRecord[];
   metadata: ContributionScoreBenchmarkMetadata;
 }

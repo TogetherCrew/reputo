@@ -5,11 +5,12 @@ import config from '../../../../config/index.js';
 import { HEARTBEAT_INTERVAL } from '../../../../shared/constants/index.js';
 import type { AlgorithmResult, Snapshot } from '../../../../shared/types/index.js';
 import { stringifyCsvAsync } from '../../../../shared/utils/index.js';
+import { buildDeepVotingPortalSubIdsIndex, getSubIds, loadSubIdInputMap } from '../shared/sub-id-input.js';
 import { buildVoterBenchmarkRecord, formatBenchmarkOutput } from './benchmark/index.js';
 import { calculateVotingEngagement, groupVotesByVoter } from './pipeline/index.js';
-import type { VoterBenchmarkRecord, VotingEngagementResult } from './types.js';
+import type { SubIdBenchmarkRecord, VotingEngagementResult } from './types.js';
 import { roundScore } from './types.js';
-import { extractVotesKey, loadVotes } from './utils/index.js';
+import { extractInputKeys, loadVotes } from './utils/index.js';
 
 /**
  * Computes voting engagement scores.
@@ -26,43 +27,62 @@ export async function computeVotingEngagement(snapshot: Snapshot, storage: Stora
   logger.info('Starting voting_engagement algorithm', { snapshotId });
 
   const { bucket } = config.storage;
-  const votesKey = extractVotesKey(snapshot.algorithmPresetFrozen.inputs);
+  const { subIdsKey, votesKey } = extractInputKeys(snapshot.algorithmPresetFrozen.inputs);
+  const subIdInputMap = await loadSubIdInputMap({
+    storage,
+    bucket,
+    key: subIdsKey,
+  });
+  const subIds = getSubIds(subIdInputMap);
+  const deepVotingPortalSubIdsIndex = buildDeepVotingPortalSubIdsIndex(subIdInputMap);
+  const targetedVoterIds = new Set(deepVotingPortalSubIdsIndex.keys());
 
-  logger.debug('Resolved votes input location', { votesKey });
+  logger.debug('Resolved input locations', { subIdsKey, votesKey, subIdCount: subIds.length });
 
   // Load and parse votes
   const votes = await loadVotes(storage, bucket, votesKey);
 
   logger.info('Parsed input votes', { rowCount: votes.length });
 
-  // Group votes by voter
-  const { votesByVoter, stats } = groupVotesByVoter(votes);
+  // Group votes by voter for targeted SubIDs only
+  const { votesByVoter, stats } = groupVotesByVoter(votes, targetedVoterIds);
 
   logger.info('Vote processing summary', stats);
 
-  // Compute engagement for each voter
+  const scoreByVoterId = new Map<string, number>();
+  for (const [voterId, voterVotes] of votesByVoter.entries()) {
+    scoreByVoterId.set(voterId, roundScore(calculateVotingEngagement(voterVotes)));
+  }
+
+  // Compute engagement for each SubID
   const results: VotingEngagementResult[] = [];
-  const benchmarkRecords: VoterBenchmarkRecord[] = [];
+  const benchmarkRecords: SubIdBenchmarkRecord[] = [];
+  const matchedSubIds = new Set<string>();
 
   let processed = 0;
-  for (const [voterId, voterVotes] of votesByVoter.entries()) {
+  for (const subId of subIds) {
     if (processed % HEARTBEAT_INTERVAL === 0) {
-      ctx.heartbeat({ phase: 'scoring', processed, total: votesByVoter.size });
+      ctx.heartbeat({ phase: 'scoring', processed, total: subIds.length });
     }
     processed++;
 
-    const votingEngagement = roundScore(calculateVotingEngagement(voterVotes));
+    const deepVotingPortalId = subIdInputMap.subIds[subId]?.deepVotingPortalId ?? null;
+    const voterVotes = deepVotingPortalId ? (votesByVoter.get(deepVotingPortalId) ?? []) : [];
+    const votingEngagement = deepVotingPortalId ? (scoreByVoterId.get(deepVotingPortalId) ?? 0) : 0;
+
+    if (voterVotes.length > 0) {
+      matchedSubIds.add(subId);
+    }
 
     results.push({
-      collection_id: voterId,
+      sub_id: subId,
       voting_engagement: votingEngagement,
     });
 
-    benchmarkRecords.push(buildVoterBenchmarkRecord(voterId, voterVotes, votingEngagement));
+    benchmarkRecords.push(buildVoterBenchmarkRecord(subId, deepVotingPortalId, voterVotes, votingEngagement));
   }
 
-  // Sort by collection_id for deterministic output
-  results.sort((a, b) => a.collection_id.localeCompare(b.collection_id));
+  results.sort((a, b) => a.sub_id.localeCompare(b.sub_id));
 
   logger.info('Computed voting engagement scores', {
     resultCount: results.length,
@@ -73,7 +93,7 @@ export async function computeVotingEngagement(snapshot: Snapshot, storage: Stora
   // Generate and upload CSV output (async to avoid blocking the event loop)
   const csvContent = await stringifyCsvAsync(results, {
     header: true,
-    columns: ['collection_id', 'voting_engagement'],
+    columns: ['sub_id', 'voting_engagement'],
   });
 
   const outputKey = generateKey('snapshot', snapshotId, `${snapshot.algorithmPresetFrozen.key}.csv`);
@@ -92,6 +112,7 @@ export async function computeVotingEngagement(snapshot: Snapshot, storage: Stora
     records: benchmarkRecords,
     snapshotId,
     stats,
+    matchedSubIds,
   });
 
   const benchmarkKey = generateKey('snapshot', snapshotId, 'voting_engagement_details.json');

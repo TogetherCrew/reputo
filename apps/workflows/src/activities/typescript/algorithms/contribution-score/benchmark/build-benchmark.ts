@@ -8,7 +8,7 @@ import type {
   CommentBenchmarkRecord,
   ContributionScoreBenchmark,
   ContributionScoreParams,
-  UserBenchmarkRecord,
+  SubIdBenchmarkRecord,
 } from '../types.js';
 import { roundScore } from '../types.js';
 
@@ -63,10 +63,11 @@ export function buildCommentBenchmarkRecord(
 export interface FormatBenchmarkInput {
   records: CommentBenchmarkRecord[];
   snapshotId: string;
-  userIdsInResult: Set<number>;
-  allUserIds: number[];
-  /** Final contribution scores (rounded) - source of truth from compute, ensures benchmark matches CSV */
-  userScores: Map<number, number>;
+  subIds: string[];
+  subIdScores: Map<string, number>;
+  deepProposalPortalIdBySubId: Map<string, string | null>;
+  matchedSubIds: Set<string>;
+  deepProposalPortalSubIdsIndex: Map<string, string[]>;
   params: ContributionScoreParams;
   totalCommentsProcessed: number;
   totalCommentsScored: number;
@@ -81,59 +82,66 @@ export function formatBenchmarkOutput(input: FormatBenchmarkInput): Contribution
   const {
     records,
     snapshotId,
-    userIdsInResult,
-    allUserIds,
-    userScores,
+    subIds,
+    subIdScores,
+    deepProposalPortalIdBySubId,
+    matchedSubIds,
+    deepProposalPortalSubIdsIndex,
     params,
     totalCommentsProcessed,
     totalCommentsScored,
   } = input;
 
-  const userMap = new Map<number, CommentBenchmarkRecord[]>();
+  const subIdMap = new Map<string, CommentBenchmarkRecord[]>();
 
   for (const record of records) {
-    const userId = record.user_id;
-    if (!userIdsInResult.has(userId)) continue;
-    const list = userMap.get(userId) ?? [];
-    list.push(record);
-    userMap.set(userId, list);
+    for (const subId of deepProposalPortalSubIdsIndex.get(String(record.user_id)) ?? []) {
+      const list = subIdMap.get(subId) ?? [];
+      list.push(record);
+      subIdMap.set(subId, list);
+    }
   }
 
-  const users: UserBenchmarkRecord[] = [];
+  const subIdRows: SubIdBenchmarkRecord[] = [];
 
-  for (const [userId, comments] of userMap) {
-    const contributionScore = userScores.get(userId) ?? 0;
-    users.push({
-      user_id: userId,
+  for (const subId of subIds) {
+    const comments = subIdMap.get(subId) ?? [];
+    const contributionScore = subIdScores.get(subId) ?? 0;
+    subIdRows.push({
+      sub_id: subId,
+      deep_proposal_portal_id: deepProposalPortalIdBySubId.get(subId) ?? null,
       contribution_score: contributionScore,
       comment_count: comments.length,
       comments,
     });
   }
 
-  users.sort((a, b) => a.user_id - b.user_id);
-
-  const includedIds = Array.from(userIdsInResult).sort((a, b) => a - b);
-  const allUserIdSet = new Set(allUserIds);
-  const excludedIds = allUserIds.filter((id) => !userIdsInResult.has(id)).sort((a, b) => a - b);
-
-  const usersWithScore = includedIds.length;
-  const usersExcludedNoScore = allUserIdSet.size - usersWithScore;
+  subIdRows.sort((a, b) => a.sub_id.localeCompare(b.sub_id));
+  const matchedIds = [...matchedSubIds].sort((a, b) => a.localeCompare(b));
+  const unmatchedIds = subIds.filter((subId) => !matchedSubIds.has(subId));
 
   return {
-    users,
+    sub_ids: subIdRows,
     metadata: {
       snapshot_id: snapshotId,
       computed_at: new Date().toISOString(),
-      config: params,
-      users: {
-        included_ids: includedIds,
-        excluded_ids: excludedIds,
+      config: {
+        commentBaseScore: params.commentBaseScore,
+        commentUpvoteWeight: params.commentUpvoteWeight,
+        commentDownvoteWeight: params.commentDownvoteWeight,
+        selfInteractionPenaltyFactor: params.selfInteractionPenaltyFactor,
+        projectOwnerUpvoteBonusMultiplier: params.projectOwnerUpvoteBonusMultiplier,
+        engagementWindowMonths: params.engagementWindowMonths,
+        monthlyDecayRatePercent: params.monthlyDecayRatePercent,
+      },
+      sub_ids: {
+        provided_ids: subIds,
+        matched_ids: matchedIds,
+        unmatched_ids: unmatchedIds,
       },
       metrics: {
-        total_users_in_table: allUserIdSet.size,
-        users_with_score: usersWithScore,
-        users_excluded_no_score: usersExcludedNoScore,
+        total_sub_ids_provided: subIds.length,
+        sub_ids_with_matching_comments: matchedIds.length,
         total_comments_processed: totalCommentsProcessed,
         total_comments_scored: totalCommentsScored,
       },

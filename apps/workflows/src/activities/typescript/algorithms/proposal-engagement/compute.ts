@@ -9,6 +9,7 @@ import config from '../../../../config/index.js';
 import { HEARTBEAT_INTERVAL } from '../../../../shared/constants/index.js';
 import type { AlgorithmResult, Snapshot } from '../../../../shared/types/index.js';
 import { stringifyCsvAsync } from '../../../../shared/utils/index.js';
+import { buildDeepProposalPortalSubIdsIndex, getSubIds, loadSubIdInputMap } from '../shared/sub-id-input.js';
 import { buildProposalBenchmarkRecord, formatBenchmarkOutput } from './benchmark/index.js';
 import {
   aggregateCommunityRatings,
@@ -33,6 +34,16 @@ export async function computeProposalEngagement(snapshot: Snapshot, storage: Sto
   const now = new Date();
 
   const inputs = extractInputs(snapshot.algorithmPresetFrozen.inputs);
+  const subIdInputMap = await loadSubIdInputMap({
+    storage,
+    bucket: config.storage.bucket,
+    key: inputs.subIdsKey,
+  });
+  const subIds = getSubIds(subIdInputMap);
+  const deepProposalPortalSubIdsIndex = buildDeepProposalPortalSubIdsIndex(subIdInputMap);
+  const deepProposalPortalIdBySubId = new Map(
+    subIds.map((subId) => [subId, subIdInputMap.subIds[subId]?.deepProposalPortalId ?? null]),
+  );
   const dbPath = await createDeepFundingDb(snapshotId, storage);
   const db = createDb({ path: dbPath });
   const repos = createRepos(db);
@@ -53,8 +64,11 @@ export async function computeProposalEngagement(snapshot: Snapshot, storage: Sto
 
     const communityRatings = aggregateCommunityRatings(reviews);
     const userIdSet = new Set(users.map((u) => u.id));
-    const userAccumulators = new Map<number, UserScoreAccumulator>();
+    const subIdAccumulators = new Map<string, UserScoreAccumulator>(
+      subIds.map((subId) => [subId, { positiveSum: 0, negativeSum: 0 }]),
+    );
     const benchmarkRecords: ProposalBenchmarkRecord[] = [];
+    const matchedSubIds = new Set<string>();
     let totalProposalsScored = 0;
     let proposalsSkippedUnsupportedRound = 0;
 
@@ -102,32 +116,43 @@ export async function computeProposalEngagement(snapshot: Snapshot, storage: Sto
       if (!score.scored) continue;
       totalProposalsScored++;
 
-      // Only accumulate scores for owners present in the users table
+      const proposalSubIds = new Set<string>();
+
       for (const userId of owners.ownersArray) {
         if (!userIdSet.has(userId)) continue;
-        const existing = userAccumulators.get(userId);
-        userAccumulators.set(userId, {
-          positiveSum: (existing?.positiveSum ?? 0) + score.proposalReward,
-          negativeSum: (existing?.negativeSum ?? 0) + score.proposalPenalty,
+        for (const subId of deepProposalPortalSubIdsIndex.get(String(userId)) ?? []) {
+          proposalSubIds.add(subId);
+        }
+      }
+
+      for (const subId of proposalSubIds) {
+        matchedSubIds.add(subId);
+        const existing = subIdAccumulators.get(subId) ?? { positiveSum: 0, negativeSum: 0 };
+        subIdAccumulators.set(subId, {
+          positiveSum: existing.positiveSum + score.proposalReward,
+          negativeSum: existing.negativeSum + score.proposalPenalty,
         });
       }
     }
 
-    // Build results from accumulators (all users in accumulators are in the users table)
     const results: ProposalEngagementResult[] = [];
+    const subIdScores = new Map<string, number>();
 
-    for (const [userId, accumulator] of userAccumulators) {
+    for (const subId of subIds) {
+      const accumulator = subIdAccumulators.get(subId) ?? { positiveSum: 0, negativeSum: 0 };
       const engagement =
         inputs.fundedConcludedRewardWeight * accumulator.positiveSum -
         inputs.unfundedPenaltyWeight * accumulator.negativeSum;
+      const roundedEngagement = roundScore(engagement);
 
+      subIdScores.set(subId, roundedEngagement);
       results.push({
-        user_id: userId,
-        proposal_engagement: roundScore(engagement),
+        sub_id: subId,
+        proposal_engagement: roundedEngagement,
       });
     }
 
-    results.sort((a, b) => a.user_id - b.user_id);
+    results.sort((a, b) => a.sub_id.localeCompare(b.sub_id));
 
     logger.info('Computed proposal engagement scores', {
       userCount: results.length,
@@ -138,7 +163,7 @@ export async function computeProposalEngagement(snapshot: Snapshot, storage: Sto
     // Generate and upload CSV output (async to avoid blocking the event loop)
     const csvContent = await stringifyCsvAsync(results, {
       header: true,
-      columns: ['user_id', 'proposal_engagement'],
+      columns: ['sub_id', 'proposal_engagement'],
     });
 
     const outputKey = generateKey('snapshot', snapshotId, `${snapshot.algorithmPresetFrozen.key}.csv`);
@@ -153,17 +178,15 @@ export async function computeProposalEngagement(snapshot: Snapshot, storage: Sto
     logger.info('Uploaded proposal engagement results', { outputKey });
 
     // Generate and upload benchmark details
-    const userIdsInResult = new Set(results.map((r) => r.user_id));
-    const userScoresForBenchmark = new Map(results.map((r) => [r.user_id, r.proposal_engagement]));
-    const allUserIds = users.map((u) => u.id);
-
     const benchmark = formatBenchmarkOutput({
       records: benchmarkRecords,
       snapshotId,
-      userIdsInResult,
-      allUserIds,
-      userScores: userScoresForBenchmark,
-      userAccumulators,
+      subIds,
+      subIdScores,
+      subIdAccumulators,
+      deepProposalPortalIdBySubId,
+      matchedSubIds,
+      deepProposalPortalSubIdsIndex,
       params: inputs,
       totalProposalsProcessed: proposals.length,
       totalProposalsScored,

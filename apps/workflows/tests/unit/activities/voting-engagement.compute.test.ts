@@ -7,8 +7,11 @@ const {
   mockFormatBenchmarkOutput,
   mockCalculateVotingEngagement,
   mockGroupVotesByVoter,
-  mockExtractVotesKey,
+  mockExtractInputKeys,
   mockLoadVotes,
+  mockLoadSubIdInputMap,
+  mockGetSubIds,
+  mockBuildDeepVotingPortalSubIdsIndex,
   mockHeartbeat,
 } = vi.hoisted(() => ({
   mockGenerateKey: vi.fn(),
@@ -17,8 +20,11 @@ const {
   mockFormatBenchmarkOutput: vi.fn(),
   mockCalculateVotingEngagement: vi.fn(),
   mockGroupVotesByVoter: vi.fn(),
-  mockExtractVotesKey: vi.fn(),
+  mockExtractInputKeys: vi.fn(),
   mockLoadVotes: vi.fn(),
+  mockLoadSubIdInputMap: vi.fn(),
+  mockGetSubIds: vi.fn(),
+  mockBuildDeepVotingPortalSubIdsIndex: vi.fn(),
   mockHeartbeat: vi.fn(),
 }));
 
@@ -61,8 +67,14 @@ vi.mock('../../../src/activities/typescript/algorithms/voting-engagement/pipelin
 }));
 
 vi.mock('../../../src/activities/typescript/algorithms/voting-engagement/utils/index.js', () => ({
-  extractVotesKey: mockExtractVotesKey,
+  extractInputKeys: mockExtractInputKeys,
   loadVotes: mockLoadVotes,
+}));
+
+vi.mock('../../../src/activities/typescript/algorithms/shared/sub-id-input.js', () => ({
+  loadSubIdInputMap: mockLoadSubIdInputMap,
+  getSubIds: mockGetSubIds,
+  buildDeepVotingPortalSubIdsIndex: mockBuildDeepVotingPortalSubIdsIndex,
 }));
 
 import { computeVotingEngagement } from '../../../src/activities/typescript/algorithms/voting-engagement/compute.js';
@@ -71,7 +83,23 @@ describe('computeVotingEngagement', () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    mockExtractVotesKey.mockReturnValue('uploads/votes.csv');
+    mockExtractInputKeys.mockReturnValue({
+      subIdsKey: 'uploads/sub_ids.json',
+      votesKey: 'uploads/votes.csv',
+    });
+    mockLoadSubIdInputMap.mockResolvedValue({
+      subIds: {
+        'SubID-B': { deepVotingPortalId: 'voter-b', userWallets: [] },
+        'SubID-A': { deepVotingPortalId: 'voter-a', userWallets: [] },
+      },
+    });
+    mockGetSubIds.mockReturnValue(['SubID-B', 'SubID-A']);
+    mockBuildDeepVotingPortalSubIdsIndex.mockReturnValue(
+      new Map([
+        ['voter-b', ['SubID-B']],
+        ['voter-a', ['SubID-A']],
+      ]),
+    );
     mockLoadVotes.mockResolvedValue([{ voter_id: 'voter-b' }, { voter_id: 'voter-a' }]);
     mockGroupVotesByVoter.mockReturnValue({
       votesByVoter: new Map([
@@ -82,21 +110,24 @@ describe('computeVotingEngagement', () => {
         totalVotes: 3,
         validVotes: 3,
         invalidVotes: 0,
-        uniqueVoters: 2,
+        targetedVoterIds: 2,
       },
     });
     mockCalculateVotingEngagement.mockImplementation((votes: string[]) => votes.length / 10);
-    mockBuildVoterBenchmarkRecord.mockImplementation((voterId: string, votes: string[], engagement: number) => ({
-      collection_id: voterId,
-      total_votes: votes.length,
-      voting_engagement: engagement,
-    }));
-    mockFormatBenchmarkOutput.mockReturnValue({ voters: ['benchmark-output'] });
-    mockStringifyCsvAsync.mockResolvedValue('collection_id,voting_engagement\nvoter-a,0.1');
+    mockBuildVoterBenchmarkRecord.mockImplementation(
+      (subId: string, deepVotingPortalId: string | null, votes: string[], engagement: number) => ({
+        sub_id: subId,
+        deep_voting_portal_id: deepVotingPortalId,
+        total_votes: votes.length,
+        voting_engagement: engagement,
+      }),
+    );
+    mockFormatBenchmarkOutput.mockReturnValue({ sub_ids: ['benchmark-output'] });
+    mockStringifyCsvAsync.mockResolvedValue('sub_id,voting_engagement\nSubID-A,0.1\nSubID-B,0.2');
     mockGenerateKey.mockReturnValueOnce('outputs/voting.csv').mockReturnValueOnce('outputs/voting-details.json');
   });
 
-  it('sorts results, uploads both outputs, and emits progress heartbeats', async () => {
+  it('sorts SubID results, uploads both outputs, and emits progress heartbeats', async () => {
     const storage = {
       putObject: vi.fn().mockResolvedValue(undefined),
     };
@@ -112,28 +143,37 @@ describe('computeVotingEngagement', () => {
       storage as never,
     );
 
-    expect(mockExtractVotesKey).toHaveBeenCalledWith([]);
+    expect(mockExtractInputKeys).toHaveBeenCalledWith([]);
+    expect(mockLoadSubIdInputMap).toHaveBeenCalledWith({
+      storage,
+      bucket: 'test-bucket',
+      key: 'uploads/sub_ids.json',
+    });
     expect(mockLoadVotes).toHaveBeenCalledWith(storage, expect.any(String), 'uploads/votes.csv');
+    expect(mockGroupVotesByVoter).toHaveBeenCalledWith(
+      [{ voter_id: 'voter-b' }, { voter_id: 'voter-a' }],
+      new Set(['voter-b', 'voter-a']),
+    );
     expect(mockStringifyCsvAsync).toHaveBeenCalledWith(
       [
-        { collection_id: 'voter-a', voting_engagement: 0.1 },
-        { collection_id: 'voter-b', voting_engagement: 0.2 },
+        { sub_id: 'SubID-A', voting_engagement: 0.1 },
+        { sub_id: 'SubID-B', voting_engagement: 0.2 },
       ],
       {
         header: true,
-        columns: ['collection_id', 'voting_engagement'],
+        columns: ['sub_id', 'voting_engagement'],
       },
     );
     expect(storage.putObject).toHaveBeenNthCalledWith(1, {
       bucket: 'test-bucket',
       key: 'outputs/voting.csv',
-      body: 'collection_id,voting_engagement\nvoter-a,0.1',
+      body: 'sub_id,voting_engagement\nSubID-A,0.1\nSubID-B,0.2',
       contentType: 'text/csv',
     });
     expect(storage.putObject).toHaveBeenNthCalledWith(2, {
       bucket: 'test-bucket',
       key: 'outputs/voting-details.json',
-      body: JSON.stringify({ voters: ['benchmark-output'] }, null, 2),
+      body: JSON.stringify({ sub_ids: ['benchmark-output'] }, null, 2),
       contentType: 'application/json',
     });
     expect(mockHeartbeat).toHaveBeenCalledWith({
