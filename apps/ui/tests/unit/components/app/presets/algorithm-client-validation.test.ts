@@ -16,10 +16,10 @@ describe("algorithm client validation", () => {
   beforeEach(() => {
     createDownload.mockReset()
     createDownload.mockResolvedValue({
-      url: "https://storage.example/uploads/wallets.json",
+      url: "https://storage.example/uploads/sub_ids.json",
       expiresIn: 300,
       metadata: {
-        filename: "wallets.json",
+        filename: "sub_ids.json",
         ext: "json",
         size: 10,
         contentType: "application/json",
@@ -40,7 +40,12 @@ describe("algorithm client validation", () => {
       text: async () =>
         JSON.stringify({
           "SubID-1": {
-            ethereum: ["0x68ab14C41040BF440A93CA6fb559D6E4AD82c25D"],
+            userWallets: [
+              {
+                address: "0x68ab14C41040BF440A93CA6fb559D6E4AD82c25D",
+                chain: "ethereum",
+              },
+            ],
           },
           "SubID-2": {},
         }),
@@ -52,7 +57,7 @@ describe("algorithm client validation", () => {
         version: "1.0.0",
         inputs: [
           {
-            key: "wallets",
+            key: "sub_ids",
             value: "uploads/acd324f5-9ead-4b04-8ae2-7eeda5a1dea4/index.json",
           },
           {
@@ -79,8 +84,16 @@ describe("algorithm client validation", () => {
       text: async () =>
         JSON.stringify({
           "SubID-1": {
-            ethereum: ["0x68ab14C41040BF440A93CA6fb559D6E4AD82c25D"],
-            cardano: ["addr1q9exampleexampleexampleexampleexampleexample"],
+            userWallets: [
+              {
+                address: "0x68ab14C41040BF440A93CA6fb559D6E4AD82c25D",
+                chain: "ethereum",
+              },
+              {
+                address: "addr1q9exampleexampleexampleexampleexampleexample",
+                chain: "cardano",
+              },
+            ],
           },
         }),
     } as Response)
@@ -91,7 +104,7 @@ describe("algorithm client validation", () => {
         version: "1.0.0",
         inputs: [
           {
-            key: "wallets",
+            key: "sub_ids",
             value: "uploads/acd324f5-9ead-4b04-8ae2-7eeda5a1dea4/index.json",
           },
           {
@@ -133,7 +146,7 @@ describe("algorithm client validation", () => {
         version: "1.0.0",
         inputs: [
           {
-            key: "wallets",
+            key: "sub_ids",
             value: "uploads/acd324f5-9ead-4b04-8ae2-7eeda5a1dea4/index.json",
           },
           {
@@ -153,9 +166,9 @@ describe("algorithm client validation", () => {
       })
     ).resolves.toEqual([
       {
-        field: "wallets",
+        field: "sub_ids",
         message:
-          'JSON must not contain the top-level key "wallets"; provide sub-id keys at the root',
+          'Legacy top-level "wallets" JSON is not supported; provide SubID keys at the root',
       },
     ])
   })
@@ -166,10 +179,20 @@ describe("algorithm client validation", () => {
       text: async () =>
         JSON.stringify({
           "SubID-1": {
-            ethereum: ["0x68ab14C41040BF440A93CA6fb559D6E4AD82c25D"],
+            userWallets: [
+              {
+                address: "0x68ab14C41040BF440A93CA6fb559D6E4AD82c25D",
+                chain: "ethereum",
+              },
+            ],
           },
           "SubID-2": {
-            ethereum: ["0x68ab14c41040bf440a93ca6fb559d6e4ad82c25d"],
+            userWallets: [
+              {
+                address: "0x68ab14c41040bf440a93ca6fb559d6e4ad82c25d",
+                chain: "ethereum",
+              },
+            ],
           },
         }),
     } as Response)
@@ -180,7 +203,7 @@ describe("algorithm client validation", () => {
         version: "1.0.0",
         inputs: [
           {
-            key: "wallets",
+            key: "sub_ids",
             value: "uploads/acd324f5-9ead-4b04-8ae2-7eeda5a1dea4/index.json",
           },
           {
@@ -207,7 +230,12 @@ describe("algorithm client validation", () => {
       text: async () =>
         JSON.stringify({
           "SubID-1": {
-            ethereum: ["0x68ab14C41040BF440A93CA6fb559D6E4AD82c25D"],
+            userWallets: [
+              {
+                address: "0x68ab14C41040BF440A93CA6fb559D6E4AD82c25D",
+                chain: "ethereum",
+              },
+            ],
           },
         }),
     } as Response)
@@ -218,7 +246,7 @@ describe("algorithm client validation", () => {
         version: "1.0.0",
         inputs: [
           {
-            key: "wallets",
+            key: "sub_ids",
             value: "uploads/acd324f5-9ead-4b04-8ae2-7eeda5a1dea4/index.json",
           },
           {
@@ -255,7 +283,12 @@ describe("algorithm client validation", () => {
       text: async () =>
         JSON.stringify({
           "SubID-1": {
-            ethereum: ["0x68ab14C41040BF440A93CA6fb559D6E4AD82c25D"],
+            userWallets: [
+              {
+                address: "0x68ab14C41040BF440A93CA6fb559D6E4AD82c25D",
+                chain: "ethereum",
+              },
+            ],
           },
         }),
     } as Response)
@@ -265,7 +298,7 @@ describe("algorithm client validation", () => {
       version: "1.0.0",
       inputs: [
         {
-          key: "wallets",
+          key: "sub_ids",
           value: "uploads/acd324f5-9ead-4b04-8ae2-7eeda5a1dea4/index.json",
         },
         {
@@ -288,7 +321,7 @@ describe("algorithm client validation", () => {
       key: "uploads/acd324f5-9ead-4b04-8ae2-7eeda5a1dea4/index.json",
     })
     expect(fetch).toHaveBeenCalledWith(
-      "https://storage.example/uploads/wallets.json"
+      "https://storage.example/uploads/sub_ids.json"
     )
   })
 
@@ -304,7 +337,7 @@ describe("algorithm client validation", () => {
         version: "1.0.0",
         inputs: [
           {
-            key: "wallets",
+            key: "sub_ids",
             value: "uploads/acd324f5-9ead-4b04-8ae2-7eeda5a1dea4/index.json",
           },
           {
@@ -324,7 +357,7 @@ describe("algorithm client validation", () => {
       })
     ).resolves.toEqual([
       {
-        field: "wallets",
+        field: "sub_ids",
         message: "Unable to read uploaded file (403)",
       },
     ])
