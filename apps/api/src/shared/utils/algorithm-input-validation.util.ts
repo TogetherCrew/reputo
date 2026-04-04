@@ -8,7 +8,7 @@ import {
 } from '@reputo/reputation-algorithms';
 import type { StorageMetadata } from '@reputo/storage';
 import type { StorageService } from '../../storage/storage.service';
-import { type StorageInputValidationError, StorageInputValidationException } from '../exceptions';
+import { StorageInputValidationException } from '../exceptions';
 
 export interface AlgorithmInputValue {
   key: string;
@@ -107,42 +107,7 @@ export async function validateAlgorithmInputs(params: {
   storageMaxSizeBytes: number;
   storageContentTypeAllowlist: string;
 }): Promise<void> {
-  const metadataErrors: StorageInputValidationError[] = [];
   const fileContentCache = new Map<string, Buffer>();
-
-  for (const definitionInput of params.definition.inputs) {
-    if (definitionInput.type !== 'csv' && definitionInput.type !== 'json') {
-      continue;
-    }
-
-    const presetInput = params.inputs.find((input) => input.key === definitionInput.key);
-    if (!presetInput || typeof presetInput.value !== 'string' || presetInput.value.trim() === '') {
-      continue;
-    }
-
-    const metadata = await params.storageService.getObjectMetadata(presetInput.value);
-    const inputErrors = validateStorageMetadata(
-      metadata,
-      definitionInput,
-      params.storageMaxSizeBytes,
-      params.storageContentTypeAllowlist,
-    );
-
-    if (inputErrors.length === 0) {
-      fileContentCache.set(definitionInput.key, await params.storageService.getObject(presetInput.value));
-    }
-
-    if (inputErrors.length > 0) {
-      metadataErrors.push({
-        inputKey: definitionInput.key,
-        errors: inputErrors,
-      });
-    }
-  }
-
-  if (metadataErrors.length > 0) {
-    throw new StorageInputValidationException(metadataErrors);
-  }
 
   const validationResult = await validateAlgorithmPreset({
     definition: params.definition,
@@ -151,12 +116,30 @@ export async function validateAlgorithmInputs(params: {
       version: params.definition.version,
       inputs: params.inputs,
     },
+    resolveNestedDefinition: async ({ algorithmKey, algorithmVersion }) =>
+      getAlgorithmDefinitionOrThrow(algorithmKey, algorithmVersion),
     resolveInputContent: async ({ input, value }) => {
-      if (typeof value === 'string') {
-        const cached = fileContentCache.get(input.key);
+      if (typeof value === 'string' && value.trim() !== '') {
+        const cached = fileContentCache.get(value);
         if (cached) {
           return cached;
         }
+
+        const metadata = await params.storageService.getObjectMetadata(value);
+        const inputErrors = validateStorageMetadata(
+          metadata,
+          input,
+          params.storageMaxSizeBytes,
+          params.storageContentTypeAllowlist,
+        );
+
+        if (inputErrors.length > 0) {
+          throw new AggregateError(inputErrors.map((message) => new Error(message)));
+        }
+
+        const content = await params.storageService.getObject(value);
+        fileContentCache.set(value, content);
+        return content;
       }
 
       return value;
@@ -167,15 +150,11 @@ export async function validateAlgorithmInputs(params: {
     return;
   }
 
-  const fileInputKeys = new Set(
-    params.definition.inputs.filter((input) => input.type === 'csv' || input.type === 'json').map((input) => input.key),
-  );
-
   const storageValidationErrors = new Map<string, string[]>();
   const requestValidationErrors: Array<{ field: string; message: string; code?: string }> = [];
 
   for (const error of validationResult.errors ?? []) {
-    if ((error.source === 'file' || error.source === 'rule') && fileInputKeys.has(error.field)) {
+    if (error.source === 'file' || error.source === 'rule') {
       const messages = storageValidationErrors.get(error.field) ?? [];
       messages.push(error.message);
       storageValidationErrors.set(error.field, messages);
