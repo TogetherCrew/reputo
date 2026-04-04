@@ -1,4 +1,5 @@
 import type { AlgorithmPresetFrozen } from '@reputo/database';
+import { extractSubIdsKey } from '../../shared/sub-id-input.js';
 
 import type { EffectiveDateRange, SelectedResourceInput, SupportedChain, TokenValueOverTimeParams } from '../types.js';
 
@@ -8,7 +9,6 @@ export function extractInputs(
 ): TokenValueOverTimeParams {
   const maturationThresholdRaw = inputs.find((input) => input.key === 'maturation_threshold_days')?.value;
   const selectedResourcesRaw = inputs.find((input) => input.key === 'selected_resources')?.value;
-  const walletsKey = inputs.find((input) => input.key === 'wallets')?.value;
 
   const selectedResources = (selectedResourcesRaw as Array<{ chain: string; resource_key: string }>).map((item) => ({
     chain: item.chain as SupportedChain,
@@ -24,7 +24,7 @@ export function extractInputs(
   return {
     maturationThresholdDays: maturationThresholdRaw as number,
     selectedResources,
-    walletsKey: walletsKey as string,
+    subIdsKey: extractSubIdsKey(inputs),
     effectiveDateRange,
   };
 }

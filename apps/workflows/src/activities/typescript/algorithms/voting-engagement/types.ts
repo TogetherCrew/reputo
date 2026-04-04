@@ -6,7 +6,7 @@
  * CSV output row for voting engagement score.
  */
 export interface VotingEngagementResult {
-  collection_id: string;
+  sub_id: string;
   voting_engagement: number;
 }
 
@@ -35,10 +35,11 @@ export function roundScore(score: number): number {
 // ── Benchmark types ──
 
 /**
- * Per-voter benchmark record capturing the full scoring breakdown.
+ * Per-sub-id benchmark record capturing the full scoring breakdown.
  */
-export interface VoterBenchmarkRecord {
-  collection_id: string;
+export interface SubIdBenchmarkRecord {
+  sub_id: string;
+  deep_voting_portal_id: string | null;
   total_votes: number;
   vote_distribution: Record<ValidVote, number>;
   entropy: number;
@@ -51,11 +52,17 @@ export interface VoterBenchmarkRecord {
 export interface VotingEngagementBenchmarkMetadata {
   snapshot_id: string;
   computed_at: string;
+  sub_ids: {
+    provided_ids: string[];
+    matched_ids: string[];
+    unmatched_ids: string[];
+  };
   metrics: {
     total_votes_in_file: number;
     valid_votes: number;
     invalid_votes: number;
-    unique_voters: number;
+    targeted_voter_ids: number;
+    sub_ids_with_votes: number;
   };
 }
 
@@ -63,6 +70,6 @@ export interface VotingEngagementBenchmarkMetadata {
  * Root benchmark output structure.
  */
 export interface VotingEngagementBenchmark {
-  voters: VoterBenchmarkRecord[];
+  sub_ids: SubIdBenchmarkRecord[];
   metadata: VotingEngagementBenchmarkMetadata;
 }

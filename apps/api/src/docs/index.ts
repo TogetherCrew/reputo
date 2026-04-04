@@ -1,15 +1,41 @@
-import { INestApplication } from '@nestjs/common';
+import { HttpException, HttpStatus, type INestApplication } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { apiReference } from '@scalar/nestjs-api-reference';
+import type { NextFunction, Request, Response } from 'express';
 
+import type { DeepIdAuthService } from '../auth';
 import {
   SWAGGER_API_CURRENT_VERSION,
   SWAGGER_API_DESCRIPTION,
   SWAGGER_API_NAME,
   SWAGGER_API_ROOT,
 } from '../shared/constants/swagger.constants';
+import { createHttpErrorResponseBody } from '../shared/filters/http-exception.filter';
 
-export const setupSwagger = (app: INestApplication) => {
+function normalizeMountedPath(path: string): string {
+  return `/${path.replace(/^\/+/u, '')}`;
+}
+
+function createProtectedDocsMiddleware(deepIdAuthService: DeepIdAuthService) {
+  return (request: Request, response: Response, next: NextFunction) => {
+    void deepIdAuthService.requireSession(request, response).then(
+      () => next(),
+      (exception: unknown) => {
+        const status = exception instanceof HttpException ? exception.getStatus() : HttpStatus.INTERNAL_SERVER_ERROR;
+        const message =
+          status === HttpStatus.UNAUTHORIZED
+            ? 'Unauthorized'
+            : exception instanceof HttpException
+              ? exception.getResponse()
+              : 'Internal Server Error';
+
+        response.status(status).json(createHttpErrorResponseBody(request.originalUrl || request.url, status, message));
+      },
+    );
+  };
+}
+
+export const setupSwagger = (app: INestApplication, deepIdAuthService: DeepIdAuthService) => {
   const config = new DocumentBuilder()
     .setTitle(SWAGGER_API_NAME)
     .setDescription(SWAGGER_API_DESCRIPTION)
@@ -18,6 +44,12 @@ export const setupSwagger = (app: INestApplication) => {
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
+  const protectedDocsMiddleware = createProtectedDocsMiddleware(deepIdAuthService);
+  const swaggerRoot = normalizeMountedPath(SWAGGER_API_ROOT);
+
+  for (const path of [swaggerRoot, `${swaggerRoot}-json`, `${swaggerRoot}-yaml`, '/reference']) {
+    app.use(path, protectedDocsMiddleware);
+  }
 
   SwaggerModule.setup(SWAGGER_API_ROOT, app, document);
 

@@ -1,9 +1,9 @@
 import type { VoteGroupingStats } from '../pipeline/vote-grouping.js';
 import {
   roundScore,
+  type SubIdBenchmarkRecord,
   VALID_VOTES,
   type ValidVote,
-  type VoterBenchmarkRecord,
   type VotingEngagementBenchmark,
 } from '../types.js';
 
@@ -12,10 +12,11 @@ import {
  * Computes vote distribution and raw entropy for diagnostic visibility.
  */
 export function buildVoterBenchmarkRecord(
-  collectionId: string,
+  subId: string,
+  deepVotingPortalId: string | null,
   voterVotes: ValidVote[],
   votingEngagement: number,
-): VoterBenchmarkRecord {
+): SubIdBenchmarkRecord {
   const totalVotes = voterVotes.length;
 
   // Build vote distribution across 11 categories
@@ -36,7 +37,8 @@ export function buildVoterBenchmarkRecord(
   }
 
   return {
-    collection_id: collectionId,
+    sub_id: subId,
+    deep_voting_portal_id: deepVotingPortalId,
     total_votes: totalVotes,
     vote_distribution: voteDistribution,
     entropy: roundScore(entropy),
@@ -45,29 +47,39 @@ export function buildVoterBenchmarkRecord(
 }
 
 export interface FormatBenchmarkInput {
-  records: VoterBenchmarkRecord[];
+  records: SubIdBenchmarkRecord[];
   snapshotId: string;
   stats: VoteGroupingStats;
+  matchedSubIds: Set<string>;
 }
 
 /**
  * Format benchmark records into the final output structure with metadata.
  */
 export function formatBenchmarkOutput(input: FormatBenchmarkInput): VotingEngagementBenchmark {
-  const { records, snapshotId, stats } = input;
+  const { records, snapshotId, stats, matchedSubIds } = input;
 
-  const sortedRecords = [...records].sort((a, b) => a.collection_id.localeCompare(b.collection_id));
+  const sortedRecords = [...records].sort((a, b) => a.sub_id.localeCompare(b.sub_id));
+  const providedIds = sortedRecords.map((record) => record.sub_id);
+  const matchedIds = [...matchedSubIds].sort((a, b) => a.localeCompare(b));
+  const unmatchedIds = providedIds.filter((subId) => !matchedSubIds.has(subId));
 
   return {
-    voters: sortedRecords,
+    sub_ids: sortedRecords,
     metadata: {
       snapshot_id: snapshotId,
       computed_at: new Date().toISOString(),
+      sub_ids: {
+        provided_ids: providedIds,
+        matched_ids: matchedIds,
+        unmatched_ids: unmatchedIds,
+      },
       metrics: {
         total_votes_in_file: stats.totalVotes,
         valid_votes: stats.validVotes,
         invalid_votes: stats.invalidVotes,
-        unique_voters: stats.uniqueVoters,
+        targeted_voter_ids: stats.targetedVoterIds,
+        sub_ids_with_votes: matchedIds.length,
       },
     },
   };

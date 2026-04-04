@@ -51,7 +51,7 @@ export async function computeTokenValueOverTime(snapshot: Snapshot, storage: Sto
   const walletAddressMap = await loadWalletAddressMap({
     storage,
     bucket: config.storage.bucket,
-    key: params.walletsKey,
+    key: params.subIdsKey,
   });
   const subIds = getSubIds(walletAddressMap);
   const walletSubIdsIndex = buildWalletSubIdsIndex(walletAddressMap);
@@ -62,7 +62,7 @@ export async function computeTokenValueOverTime(snapshot: Snapshot, storage: Sto
     maturationThresholdDays: params.maturationThresholdDays,
     selectedResources: params.selectedResources,
     resolvedResourceCount: resolvedResources.length,
-    walletsKey: params.walletsKey,
+    subIdsKey: params.subIdsKey,
     effectiveDateRange: params.effectiveDateRange,
   });
   logger.info('Target wallets loaded', {

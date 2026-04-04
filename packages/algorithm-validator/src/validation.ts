@@ -11,6 +11,7 @@ import type {
   JsonIoItem,
   ObjectPropertyParam,
   ResourceCatalog,
+  SubAlgorithmIoItem,
   ValidationResult,
 } from './types/index.js';
 
@@ -288,11 +289,61 @@ function buildFieldSchema(input: any, label: string): z.ZodType {
       break;
     }
 
+    case 'sub_algorithm': {
+      const subAlgorithmInput = input as SubAlgorithmIoItem;
+      let arrSchema = z.array(buildSubAlgorithmEntrySchema(label));
+      if (subAlgorithmInput.minItems !== undefined) {
+        arrSchema = arrSchema.min(
+          subAlgorithmInput.minItems,
+          `${label} must have at least ${subAlgorithmInput.minItems} item(s)`,
+        );
+      }
+      if (subAlgorithmInput.maxItems !== undefined) {
+        arrSchema = arrSchema.max(
+          subAlgorithmInput.maxItems,
+          `${label} must have at most ${subAlgorithmInput.maxItems} item(s)`,
+        );
+      }
+      schema = subAlgorithmInput.required === false ? arrSchema.optional() : arrSchema;
+      break;
+    }
+
     default:
       schema = z.string();
   }
 
   return schema;
+}
+
+function buildSubAlgorithmEntrySchema(label: string): z.ZodType {
+  return z.object({
+    algorithm_key: z.string().trim().min(1, `${label} algorithm key is required`),
+    algorithm_version: z.string().trim().min(1, `${label} algorithm version is required`),
+    weight: z.preprocess(
+      (value) => {
+        if (value === '' || value === null || value === undefined) {
+          return undefined;
+        }
+        if (typeof value === 'number') {
+          return value;
+        }
+        if (typeof value === 'string') {
+          const parsed = Number(value);
+          return Number.isNaN(parsed) ? undefined : parsed;
+        }
+        return value;
+      },
+      z.number({ error: `${label} weight must be a valid number` }).gt(0, `${label} weight must be greater than 0`),
+    ),
+    inputs: z.array(
+      z.object({
+        key: z.string().min(1, 'Input key is required'),
+        value: z.unknown().refine((value) => value !== undefined && value !== null, {
+          message: 'Input value is required',
+        }),
+      }),
+    ),
+  });
 }
 
 /**

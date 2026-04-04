@@ -21,9 +21,13 @@
             "minLength": 2
         },
         "name": { "type": "string", "minLength": 1 },
+        "kind": {
+            "type": "string",
+            "enum": ["standalone", "combined"]
+        },
         "category": {
             "type": "string",
-            "enum": ["Engagement", "Activity"]
+            "enum": ["Engagement", "Quality", "Activity", "Custom"]
         },
         "summary": { "type": "string", "minLength": 1 },
         "description": { "type": "string", "minLength": 1 },
@@ -56,7 +60,8 @@
                 { "$ref": "#/$defs/jsonInputItem" },
                 { "$ref": "#/$defs/numericParamItem" },
                 { "$ref": "#/$defs/stringParamItem" },
-                { "$ref": "#/$defs/arrayParamItem" }
+                { "$ref": "#/$defs/arrayParamItem" },
+                { "$ref": "#/$defs/subAlgorithmInputItem" }
             ]
         },
         "outputItem": {
@@ -328,6 +333,43 @@
                             }
                         }
                     ]
+                }
+            }
+        },
+
+        "subAlgorithmInputItem": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "label", "description", "type", "required"],
+            "properties": {
+                "key": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_]*$",
+                    "minLength": 2
+                },
+                "label": { "type": "string", "minLength": 1 },
+                "description": { "type": "string", "minLength": 1 },
+                "type": { "const": "sub_algorithm" },
+                "required": { "type": "boolean" },
+                "minItems": { "type": "integer", "minimum": 0 },
+                "maxItems": { "type": "integer", "minimum": 0 },
+                "sharedInputKeys": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9_]*$",
+                        "minLength": 2
+                    }
+                },
+                "uiHint": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "widget": { "const": "sub_algorithm_composer" },
+                        "addButtonLabel": { "type": "string", "minLength": 1 }
+                    },
+                    "required": ["widget"]
                 }
             }
         },

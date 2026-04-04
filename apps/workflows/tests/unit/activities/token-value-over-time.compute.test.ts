@@ -111,7 +111,7 @@ describe('computeTokenValueOverTime pagination', () => {
     mockExtractInputs.mockReturnValue({
       maturationThresholdDays: 90,
       selectedResources: [{ chain: 'ethereum', resourceKey: 'fet_token' }],
-      walletsKey: 'uploads/wallets.json',
+      subIdsKey: 'uploads/sub_ids.json',
       effectiveDateRange: {
         fromTimestampUnix: undefined,
         toTimestampUnix: Math.floor(new Date('2026-04-01T00:00:00.000Z').getTime() / 1000),
@@ -230,7 +230,7 @@ describe('computeTokenValueOverTime pagination', () => {
     expect(mockLoadWalletAddressMap).toHaveBeenCalledWith({
       storage,
       bucket: 'test-bucket',
-      key: 'uploads/wallets.json',
+      key: 'uploads/sub_ids.json',
     });
     expect(mockGetSubIds).toHaveBeenCalledWith({
       subIds: {

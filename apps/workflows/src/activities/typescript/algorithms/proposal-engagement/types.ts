@@ -1,4 +1,5 @@
 export interface ProposalEngagementParams {
+  subIdsKey: string;
   fundedConcludedRewardWeight: number;
   unfundedPenaltyWeight: number;
   engagementWindowMonths: number;
@@ -6,7 +7,7 @@ export interface ProposalEngagementParams {
 }
 
 export interface ProposalEngagementResult {
-  user_id: number;
+  sub_id: string;
   proposal_engagement: number;
 }
 
@@ -54,8 +55,9 @@ export interface ProposalBenchmarkRecord {
   };
 }
 
-export interface UserProposalBenchmarkRecord {
-  user_id: number;
+export interface SubIdProposalBenchmarkRecord {
+  sub_id: string;
+  deep_proposal_portal_id: string | null;
   proposal_engagement: number;
   positive_sum: number;
   negative_sum: number;
@@ -66,15 +68,15 @@ export interface UserProposalBenchmarkRecord {
 export interface ProposalEngagementBenchmarkMetadata {
   snapshot_id: string;
   computed_at: string;
-  config: ProposalEngagementParams;
-  users: {
-    included_ids: number[];
-    excluded_ids: number[];
+  config: Omit<ProposalEngagementParams, 'subIdsKey'>;
+  sub_ids: {
+    provided_ids: string[];
+    matched_ids: string[];
+    unmatched_ids: string[];
   };
   metrics: {
-    total_users_in_table: number;
-    users_with_score: number;
-    users_excluded_no_score: number;
+    total_sub_ids_provided: number;
+    sub_ids_with_matching_owner: number;
     total_proposals_processed: number;
     total_proposals_scored: number;
     proposals_skipped_unsupported_round: number;
@@ -82,6 +84,6 @@ export interface ProposalEngagementBenchmarkMetadata {
 }
 
 export interface ProposalEngagementBenchmark {
-  users: UserProposalBenchmarkRecord[];
+  sub_ids: SubIdProposalBenchmarkRecord[];
   metadata: ProposalEngagementBenchmarkMetadata;
 }

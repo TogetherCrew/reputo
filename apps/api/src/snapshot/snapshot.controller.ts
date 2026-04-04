@@ -12,6 +12,7 @@ import {
   ApiParam,
   ApiQuery,
   ApiTags,
+  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { map, type Observable } from 'rxjs';
 import { PaginationDto } from '../shared/dto';
@@ -22,6 +23,7 @@ import { SnapshotEventsService } from './snapshot-events.service';
 
 @ApiExtraModels(PaginationDto, SnapshotDto, SnapshotEventDto)
 @ApiTags('Snapshots')
+@ApiUnauthorizedResponse({ description: 'Deep ID-backed session required.' })
 @Controller('snapshots')
 export class SnapshotController {
   constructor(

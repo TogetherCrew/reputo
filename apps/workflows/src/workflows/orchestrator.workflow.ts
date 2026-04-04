@@ -21,7 +21,10 @@ import type {
   SyncTarget,
   TypescriptAlgorithmDispatcherActivities,
 } from '../shared/types/index.js';
-import { getAlgorithmTaskQueueFromRuntime } from '../shared/utils/orchestrator-input.utils.js';
+import {
+  buildCombinedChildAlgorithmPresets,
+  getAlgorithmTaskQueueFromRuntime,
+} from '../shared/utils/orchestrator-input.utils.js';
 import { extractOnchainSyncTargets } from '../shared/utils/sync-targets.utils.js';
 
 const { getSnapshot, updateSnapshot } = workflow.proxyActivities<DbActivities>({
@@ -33,6 +36,83 @@ const { getAlgorithmDefinition } = workflow.proxyActivities<AlgorithmLibraryActi
   startToCloseTimeout: ALGORITHM_LIBRARY_TIMEOUT,
   retry: { maximumAttempts: ACTIVITY_MAX_ATTEMPTS },
 });
+
+interface OrchestratorAlgorithmDefinition {
+  key: string;
+  version: string;
+  runtime: string;
+  kind?: string;
+  inputs?: Array<{
+    key: string;
+    type?: string;
+    sharedInputKeys?: string[];
+    uiHint?: {
+      resourceCatalog?: {
+        chains: Array<{
+          key: string;
+          resources: Array<{
+            key: string;
+            kind: string;
+            identifier: string;
+            tokenIdentifier: string;
+            parentResourceKey?: string;
+          }>;
+        }>;
+      };
+    };
+  }>;
+  dependencies?: Array<{ key: string }>;
+}
+
+interface DependencySource {
+  definition: OrchestratorAlgorithmDefinition;
+  preset: Parameters<typeof buildCombinedChildAlgorithmPresets>[0];
+}
+
+function collectDependencyKeys(sources: DependencySource[]): DependencyKey[] {
+  const dependencyKeys: DependencyKey[] = [];
+  const seen = new Set<DependencyKey>();
+
+  for (const source of sources) {
+    for (const dependency of source.definition.dependencies ?? []) {
+      const dependencyKey = dependency.key as DependencyKey;
+      if (seen.has(dependencyKey)) {
+        continue;
+      }
+
+      seen.add(dependencyKey);
+      dependencyKeys.push(dependencyKey);
+    }
+  }
+
+  return dependencyKeys;
+}
+
+function collectOnchainSyncTargets(sources: DependencySource[]): SyncTarget[] {
+  const syncTargets: SyncTarget[] = [];
+  const seen = new Set<string>();
+
+  for (const source of sources) {
+    const hasOnchainDependency = (source.definition.dependencies ?? []).some(
+      (dependency) => dependency.key === 'onchain-data',
+    );
+    if (!hasOnchainDependency) {
+      continue;
+    }
+
+    for (const target of extractOnchainSyncTargets(source.preset, source.definition)) {
+      const dedupeKey = `${target.chain}:${target.identifier.toLowerCase()}`;
+      if (seen.has(dedupeKey)) {
+        continue;
+      }
+
+      seen.add(dedupeKey);
+      syncTargets.push(target);
+    }
+  }
+
+  return syncTargets;
+}
 
 export async function OrchestratorWorkflow(input: OrchestratorWorkflowInput): Promise<void> {
   const { snapshotId } = input;
@@ -76,10 +156,11 @@ export async function OrchestratorWorkflow(input: OrchestratorWorkflowInput): Pr
   const algorithmKey = snapshot.algorithmPresetFrozen.key;
   const algorithmVersion = snapshot.algorithmPresetFrozen.version;
 
-  const { algorithmDefinition } = await getAlgorithmDefinition({
+  const { algorithmDefinition: rootAlgorithmDefinition } = await getAlgorithmDefinition({
     key: algorithmKey,
     version: algorithmVersion,
   });
+  const algorithmDefinition = rootAlgorithmDefinition as OrchestratorAlgorithmDefinition;
 
   workflow.log.info('Algorithm definition loaded', {
     snapshotId,
@@ -110,7 +191,64 @@ export async function OrchestratorWorkflow(input: OrchestratorWorkflowInput): Pr
     retry: { maximumAttempts: ACTIVITY_MAX_ATTEMPTS },
   });
 
-  if (algorithmDefinition.dependencies && algorithmDefinition.dependencies.length > 0) {
+  if (algorithmDefinition.kind === 'combined') {
+    const childPresets = buildCombinedChildAlgorithmPresets(snapshot.algorithmPresetFrozen, algorithmDefinition);
+    const childDependencySources = await Promise.all(
+      childPresets.map(async (childPreset) => {
+        const { algorithmDefinition: childAlgorithmDefinition } = await getAlgorithmDefinition({
+          key: childPreset.key,
+          version: childPreset.version,
+        });
+
+        return {
+          definition: childAlgorithmDefinition as OrchestratorAlgorithmDefinition,
+          preset: childPreset,
+        };
+      }),
+    );
+
+    const dependencySources: DependencySource[] = [
+      {
+        definition: algorithmDefinition,
+        preset: snapshot.algorithmPresetFrozen,
+      },
+      ...childDependencySources,
+    ];
+    const dependencyKeys = collectDependencyKeys(dependencySources);
+
+    if (dependencyKeys.length > 0) {
+      workflow.log.info('Resolving combined algorithm dependencies', {
+        snapshotId,
+        algorithmKey,
+        dependencies: dependencyKeys,
+        childAlgorithms: childDependencySources.map(({ definition }) => `${definition.key}@${definition.version}`),
+      });
+
+      const syncTargets = collectOnchainSyncTargets(dependencySources);
+
+      await Promise.all(
+        dependencyKeys.map(async (dependencyKey) => {
+          if (dependencyKey === 'onchain-data') {
+            await resolveOnchainDataDependency({
+              dependencyKey,
+              snapshotId,
+              syncTargets,
+            });
+          } else {
+            await resolveOrchestratorDependency({
+              dependencyKey,
+              snapshotId,
+            });
+          }
+        }),
+      );
+
+      workflow.log.info('All combined algorithm dependencies resolved', {
+        snapshotId,
+        algorithmKey,
+      });
+    }
+  } else if (algorithmDefinition.dependencies && algorithmDefinition.dependencies.length > 0) {
     workflow.log.info('Resolving algorithm dependencies', {
       snapshotId,
       dependencies: algorithmDefinition.dependencies.map((d) => d.key),

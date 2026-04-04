@@ -1,25 +1,84 @@
 import { validateCSVContent } from './csv-validation.js';
 import { validateJSONContent } from './json-validation.js';
 import { validateCreateAlgorithmPreset } from './schemas/algorithm-preset.js';
-import type { AlgorithmDefinition, AlgorithmPresetValidationResult, CsvIoItem, JsonIoItem } from './types/index.js';
+import type {
+  AlgorithmDefinition,
+  AlgorithmPresetValidationResult,
+  CsvIoItem,
+  JsonIoItem,
+  SubAlgorithmIoItem,
+} from './types/index.js';
 import { validatePayload } from './validation.js';
 
 type FileBackedInput = CsvIoItem | JsonIoItem;
 type ResolvedInputContent = File | string | Buffer;
+type PresetInput = { key: string; value: unknown };
+type PresetData = {
+  key: string;
+  version: string;
+  inputs: PresetInput[];
+  name?: string;
+  description?: string;
+};
+type SubAlgorithmEntry = {
+  algorithm_key: string;
+  algorithm_version: string;
+  weight: number;
+  inputs: PresetInput[];
+};
 
 export interface ResolveInputContentArgs {
   input: FileBackedInput;
   value: unknown;
 }
 
+export interface ResolveNestedDefinitionArgs {
+  algorithmKey: string;
+  algorithmVersion: string;
+  childIndex: number;
+  parentDefinition: AlgorithmDefinition;
+  parentInput: SubAlgorithmIoItem;
+}
+
 export interface ValidateAlgorithmPresetArgs {
   definition: AlgorithmDefinition;
   preset: unknown;
   resolveInputContent?: (args: ResolveInputContentArgs) => Promise<ResolvedInputContent | unknown>;
+  resolveNestedDefinition?: (args: ResolveNestedDefinitionArgs) => Promise<AlgorithmDefinition | unknown>;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function isPresetInput(value: unknown): value is PresetInput {
+  return isRecord(value) && typeof value.key === 'string' && 'value' in value;
+}
+
+function isSubAlgorithmEntry(value: unknown): value is SubAlgorithmEntry {
+  return (
+    isRecord(value) &&
+    typeof value.algorithm_key === 'string' &&
+    typeof value.algorithm_version === 'string' &&
+    typeof value.weight === 'number' &&
+    Array.isArray(value.inputs) &&
+    value.inputs.every(isPresetInput)
+  );
+}
+
+function isAlgorithmDefinition(value: unknown): value is AlgorithmDefinition {
+  return (
+    isRecord(value) &&
+    typeof value.key === 'string' &&
+    typeof value.name === 'string' &&
+    typeof value.category === 'string' &&
+    typeof value.summary === 'string' &&
+    typeof value.description === 'string' &&
+    typeof value.version === 'string' &&
+    Array.isArray(value.inputs) &&
+    Array.isArray(value.outputs) &&
+    typeof value.runtime === 'string'
+  );
 }
 
 function buildPayload(inputs: Array<{ key: string; value: unknown }>): Record<string, unknown> {
@@ -62,6 +121,10 @@ async function parseResolvedJson(content: ResolvedInputContent): Promise<unknown
 
 function getFileBackedInputs(definition: AlgorithmDefinition): FileBackedInput[] {
   return definition.inputs.filter((input): input is FileBackedInput => input.type === 'csv' || input.type === 'json');
+}
+
+function getSubAlgorithmInputs(definition: AlgorithmDefinition): SubAlgorithmIoItem[] {
+  return definition.inputs.filter((input): input is SubAlgorithmIoItem => input.type === 'sub_algorithm');
 }
 
 function getUnsupportedInputErrors(params: {
@@ -255,10 +318,265 @@ function runDefinitionRules(params: {
   return errors;
 }
 
+function normalizeErrorMessages(error: unknown): string[] {
+  if (error instanceof AggregateError) {
+    return error.errors.flatMap((item) => normalizeErrorMessages(item));
+  }
+
+  if (isRecord(error) && Array.isArray(error.errors)) {
+    const messages = error.errors.filter((value): value is string => typeof value === 'string');
+    if (messages.length > 0) {
+      return messages;
+    }
+  }
+
+  if (error instanceof Error) {
+    return [error.message];
+  }
+
+  return ['Unable to validate file input'];
+}
+
+async function validateFileBackedInputs(params: {
+  definition: AlgorithmDefinition;
+  inputs: PresetInput[];
+  payload: Record<string, unknown>;
+  resolveInputContent?: ValidateAlgorithmPresetArgs['resolveInputContent'];
+}): Promise<{
+  errors: NonNullable<AlgorithmPresetValidationResult['errors']>;
+  parsedJsonInputs: Record<string, unknown>;
+}> {
+  const fileErrors: NonNullable<AlgorithmPresetValidationResult['errors']> = [];
+  const parsedJsonInputs: Record<string, unknown> = {};
+
+  for (const input of getFileBackedInputs(params.definition)) {
+    const presetInput = params.inputs.find((item) => item.key === input.key);
+    const inputValue = presetInput?.value ?? params.payload[input.key];
+    if (inputValue === undefined || inputValue === null || inputValue === '') {
+      continue;
+    }
+
+    try {
+      const content = await resolveInputContent({
+        input,
+        value: inputValue,
+        resolve: params.resolveInputContent,
+      });
+
+      if (input.type === 'csv') {
+        const result = await validateCSVContent(content, input.csv);
+        if (!result.valid) {
+          fileErrors.push(
+            ...result.errors.map((message) => ({
+              field: input.key,
+              message,
+              source: 'file' as const,
+            })),
+          );
+        }
+      }
+
+      if (input.type === 'json') {
+        const result = await validateJSONContent(content, input.json);
+        if (!result.valid) {
+          fileErrors.push(
+            ...result.errors.map((message) => ({
+              field: input.key,
+              message,
+              source: 'file' as const,
+            })),
+          );
+          continue;
+        }
+
+        parsedJsonInputs[input.key] = await parseResolvedJson(content);
+      }
+    } catch (error) {
+      fileErrors.push(
+        ...normalizeErrorMessages(error).map((message) => ({
+          field: input.key,
+          message,
+          source: 'file' as const,
+        })),
+      );
+    }
+  }
+
+  return {
+    errors: fileErrors,
+    parsedJsonInputs,
+  };
+}
+
+function prefixNestedField(params: { parentInputKey: string; childIndex: number; field: string }): string {
+  if (params.field === '' || params.field === '_preset') {
+    return `${params.parentInputKey}.${params.childIndex}`;
+  }
+
+  if (params.field === 'key') {
+    return `${params.parentInputKey}.${params.childIndex}.algorithm_key`;
+  }
+
+  if (params.field === 'version') {
+    return `${params.parentInputKey}.${params.childIndex}.algorithm_version`;
+  }
+
+  return `${params.parentInputKey}.${params.childIndex}.inputs.${params.field}`;
+}
+
+async function resolveNestedDefinition(params: {
+  definition: AlgorithmDefinition;
+  input: SubAlgorithmIoItem;
+  entry: SubAlgorithmEntry;
+  childIndex: number;
+  resolveNestedDefinition?: ValidateAlgorithmPresetArgs['resolveNestedDefinition'];
+}): Promise<{ definition?: AlgorithmDefinition; errors: NonNullable<AlgorithmPresetValidationResult['errors']> }> {
+  if (typeof params.resolveNestedDefinition !== 'function') {
+    return {
+      errors: [
+        {
+          field: `${params.input.key}.${params.childIndex}.algorithm_key`,
+          message: `Unable to resolve nested definition for ${params.entry.algorithm_key}@${params.entry.algorithm_version}`,
+          source: 'definition',
+        },
+      ],
+    };
+  }
+
+  try {
+    const resolved = await params.resolveNestedDefinition({
+      algorithmKey: params.entry.algorithm_key,
+      algorithmVersion: params.entry.algorithm_version,
+      childIndex: params.childIndex,
+      parentDefinition: params.definition,
+      parentInput: params.input,
+    });
+
+    if (!isAlgorithmDefinition(resolved)) {
+      return {
+        errors: [
+          {
+            field: `${params.input.key}.${params.childIndex}.algorithm_key`,
+            message: `Algorithm definition not found: ${params.entry.algorithm_key}@${params.entry.algorithm_version}`,
+            source: 'definition',
+          },
+        ],
+      };
+    }
+
+    return {
+      definition: resolved,
+      errors: [],
+    };
+  } catch (error) {
+    return {
+      errors: [
+        {
+          field: `${params.input.key}.${params.childIndex}.algorithm_key`,
+          message:
+            error instanceof Error
+              ? error.message
+              : `Algorithm definition not found: ${params.entry.algorithm_key}@${params.entry.algorithm_version}`,
+          source: 'definition',
+        },
+      ],
+    };
+  }
+}
+
+async function validateNestedSubAlgorithms(params: {
+  definition: AlgorithmDefinition;
+  preset: PresetData;
+  payload: Record<string, unknown>;
+  resolveInputContent?: ValidateAlgorithmPresetArgs['resolveInputContent'];
+  resolveNestedDefinition?: ValidateAlgorithmPresetArgs['resolveNestedDefinition'];
+}): Promise<NonNullable<AlgorithmPresetValidationResult['errors']>> {
+  const errors: NonNullable<AlgorithmPresetValidationResult['errors']> = [];
+
+  for (const input of getSubAlgorithmInputs(params.definition)) {
+    const rawEntries = params.payload[input.key];
+    if (!Array.isArray(rawEntries)) {
+      continue;
+    }
+
+    const sharedInputKeys = new Set(input.sharedInputKeys ?? []);
+    const sharedInputs = params.preset.inputs.filter((presetInput) => sharedInputKeys.has(presetInput.key));
+
+    for (let childIndex = 0; childIndex < rawEntries.length; childIndex++) {
+      const rawEntry = rawEntries[childIndex];
+      if (!isSubAlgorithmEntry(rawEntry)) {
+        continue;
+      }
+
+      const nestedDefinitionResult = await resolveNestedDefinition({
+        definition: params.definition,
+        input,
+        entry: rawEntry,
+        childIndex,
+        resolveNestedDefinition: params.resolveNestedDefinition,
+      });
+      errors.push(...nestedDefinitionResult.errors);
+
+      const providedSharedKeys = rawEntry.inputs
+        .filter((childInput) => sharedInputKeys.has(childInput.key))
+        .map((childInput) => childInput.key);
+
+      for (const sharedInputKey of providedSharedKeys) {
+        errors.push({
+          field: `${input.key}.${childIndex}.inputs.${sharedInputKey}`,
+          message: `Input "${sharedInputKey}" is inherited from the parent algorithm and must not be provided here`,
+          source: 'definition',
+        });
+      }
+
+      const childDefinition = nestedDefinitionResult.definition;
+      if (!childDefinition) {
+        continue;
+      }
+
+      if (childDefinition.kind === 'combined') {
+        errors.push({
+          field: `${input.key}.${childIndex}.algorithm_key`,
+          message: `Sub-algorithm ${childDefinition.key}@${childDefinition.version} must not be a combined algorithm`,
+          source: 'definition',
+        });
+        continue;
+      }
+
+      const childResult = await validateAlgorithmPreset({
+        definition: childDefinition,
+        preset: {
+          key: rawEntry.algorithm_key,
+          version: rawEntry.algorithm_version,
+          inputs: [...rawEntry.inputs.filter((childInput) => !sharedInputKeys.has(childInput.key)), ...sharedInputs],
+        },
+        resolveInputContent: params.resolveInputContent,
+        resolveNestedDefinition: params.resolveNestedDefinition,
+      });
+
+      if (!childResult.success) {
+        errors.push(
+          ...(childResult.errors ?? []).map((error) => ({
+            ...error,
+            field: prefixNestedField({
+              parentInputKey: input.key,
+              childIndex,
+              field: error.field,
+            }),
+          })),
+        );
+      }
+    }
+  }
+
+  return errors;
+}
+
 export async function validateAlgorithmPreset({
   definition,
   preset,
   resolveInputContent: resolve,
+  resolveNestedDefinition: resolveNested,
 }: ValidateAlgorithmPresetArgs): Promise<AlgorithmPresetValidationResult> {
   const presetResult = validateCreateAlgorithmPreset(preset);
   if (!presetResult.success) {
@@ -302,69 +620,32 @@ export async function validateAlgorithmPreset({
     };
   }
 
-  const fileErrors: NonNullable<AlgorithmPresetValidationResult['errors']> = [];
-  const parsedJsonInputs: Record<string, unknown> = {};
-
-  for (const input of getFileBackedInputs(definition)) {
-    const presetInput = presetResult.data.inputs.find((item) => item.key === input.key);
-    if (!presetInput || presetInput.value === undefined || presetInput.value === null || presetInput.value === '') {
-      continue;
-    }
-
-    try {
-      const content = await resolveInputContent({
-        input,
-        value: presetInput.value,
-        resolve,
-      });
-
-      if (input.type === 'csv') {
-        const result = await validateCSVContent(content, input.csv);
-        if (!result.valid) {
-          fileErrors.push(
-            ...result.errors.map((message) => ({
-              field: input.key,
-              message,
-              source: 'file' as const,
-            })),
-          );
-        }
-      }
-
-      if (input.type === 'json') {
-        const result = await validateJSONContent(content, input.json);
-        if (!result.valid) {
-          fileErrors.push(
-            ...result.errors.map((message) => ({
-              field: input.key,
-              message,
-              source: 'file' as const,
-            })),
-          );
-          continue;
-        }
-
-        parsedJsonInputs[input.key] = await parseResolvedJson(content);
-      }
-    } catch (error) {
-      fileErrors.push({
-        field: input.key,
-        message: error instanceof Error ? error.message : 'Unable to validate file input',
-        source: 'file',
-      });
-    }
-  }
+  const validatedPayload = payloadResult.data as Record<string, unknown>;
+  const fileValidationResult = await validateFileBackedInputs({
+    definition,
+    inputs: presetResult.data.inputs,
+    payload: validatedPayload,
+    resolveInputContent: resolve,
+  });
 
   const ruleErrors = runDefinitionRules({
     definition,
-    payload,
-    parsedJsonInputs,
+    payload: validatedPayload,
+    parsedJsonInputs: fileValidationResult.parsedJsonInputs,
   });
 
-  if (fileErrors.length > 0 || ruleErrors.length > 0) {
+  const nestedErrors = await validateNestedSubAlgorithms({
+    definition,
+    preset: presetResult.data as PresetData,
+    payload: validatedPayload,
+    resolveInputContent: resolve,
+    resolveNestedDefinition: resolveNested,
+  });
+
+  if (fileValidationResult.errors.length > 0 || ruleErrors.length > 0 || nestedErrors.length > 0) {
     return {
       success: false,
-      errors: [...fileErrors, ...ruleErrors],
+      errors: [...fileValidationResult.errors, ...ruleErrors, ...nestedErrors],
     };
   }
 
@@ -372,7 +653,7 @@ export async function validateAlgorithmPreset({
     success: true,
     data: {
       preset: presetResult.data,
-      payload,
+      payload: validatedPayload,
     },
   };
 }

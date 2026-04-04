@@ -17,6 +17,7 @@ import {
   ResourceSelectorField,
   SelectField,
   SliderField,
+  SubAlgorithmComposerField,
   TextField,
 } from "./fields"
 import { FormUploadProvider, useFormUpload } from "./form-context"
@@ -106,6 +107,8 @@ function ReputoFormInner({
           return <ResourceSelectorField key={input.key} {...commonProps} />
         }
         return <RepeaterField key={input.key} {...commonProps} />
+      case "sub_algorithm":
+        return <SubAlgorithmComposerField key={input.key} {...commonProps} />
       default:
         return null
     }
@@ -134,6 +137,21 @@ function ReputoFormInner({
       }
       if (input.type === "array" && Array.isArray(value)) {
         return value.length >= ((input as any).minItems ?? 1)
+      }
+      if (input.type === "sub_algorithm") {
+        if (!Array.isArray(value)) return false
+        const minItems = (input as any).minItems ?? 1
+        if (value.length < minItems) return false
+        // Each entry must at least have an algorithm_key selected and a
+        // positive weight. Deeper checks run through the shared validator.
+        return value.every(
+          (entry: unknown) =>
+            typeof entry === "object" &&
+            entry !== null &&
+            typeof (entry as { algorithm_key?: unknown }).algorithm_key ===
+              "string" &&
+            (entry as { algorithm_key: string }).algorithm_key !== ""
+        )
       }
       return true
     })
@@ -256,6 +274,16 @@ function getDefaultValues(
           const minItems = (input as any).minItems ?? 1
           defaults[input.key] = Array.from({ length: minItems }, () => ({
             ...buildArrayDefaultRow((itemProps as Array<any>) ?? []),
+          }))
+          break
+        }
+        case "sub_algorithm": {
+          const minItems = (input as any).minItems ?? 1
+          defaults[input.key] = Array.from({ length: minItems }, () => ({
+            algorithm_key: "",
+            algorithm_version: "",
+            weight: 1,
+            inputs: [],
           }))
           break
         }

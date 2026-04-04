@@ -62,6 +62,7 @@ describe("ui algorithms", () => {
         duration: "~1-3 min",
         inputSummary: "1 configurable input",
         level: "Beginner",
+        kind: "standalone",
         inputs: [{ key: "votes_csv", type: "csv", label: "Votes CSV" }],
         dependencyLabels: ["DeepFunding Portal API"],
       },
@@ -109,6 +110,7 @@ describe("ui algorithms", () => {
         duration: "~2-4 min",
         inputSummary: "2 configurable inputs",
         level: "Beginner",
+        kind: "standalone",
         inputs: [
           { key: "reviews_csv", type: "csv", label: "Reviews CSV" },
           { key: "threshold", type: "number", label: "Threshold" },
@@ -164,6 +166,7 @@ describe("ui algorithms", () => {
         duration: "~4-8 min",
         inputSummary: "2 configurable inputs",
         level: "Intermediate",
+        kind: "standalone",
         inputs: [
           { key: "wallets", type: "json", label: "Wallet List JSON" },
           {

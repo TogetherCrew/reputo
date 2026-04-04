@@ -5,12 +5,14 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { insertAlgorithmPreset, randomAlgorithmPreset } from '../../factories/algorithmPreset.factory';
 import { insertSnapshot } from '../../factories/snapshot.factory';
 import { createTestApp } from '../../utils/app-test.module';
+import { createAuthenticatedSession } from '../../utils/auth-session';
 import { startMongo, stopMongo } from '../../utils/mongo-memory-server';
 import { assertPaginationStructure } from '../../utils/pagination';
 import { api } from '../../utils/request';
 
 describe('GET /api/v1/snapshots', () => {
   let app: INestApplication;
+  let authCookie: string;
   let algorithmPresetModel: Model<any>;
   let snapshotModel: Model<any>;
 
@@ -18,6 +20,7 @@ describe('GET /api/v1/snapshots', () => {
     const uri = await startMongo();
     const boot = await createTestApp({ mongoUri: uri });
     app = boot.app;
+    authCookie = (await createAuthenticatedSession(boot.moduleRef)).cookie;
     algorithmPresetModel = boot.moduleRef.get(getModelToken('AlgorithmPreset'));
     snapshotModel = boot.moduleRef.get(getModelToken('Snapshot'));
   });
@@ -45,7 +48,7 @@ describe('GET /api/v1/snapshots', () => {
       await insertSnapshot(snapshotModel, preset._id.toString(), presetData);
     }
 
-    const res = await api(app).get('/snapshots').expect(200);
+    const res = await api(app, authCookie).get('/snapshots').expect(200);
 
     assertPaginationStructure(res.body);
     expect(res.body.page).toBe(1);
@@ -74,7 +77,7 @@ describe('GET /api/v1/snapshots', () => {
     const snapshot2 = await insertSnapshot(snapshotModel, preset._id.toString(), presetData);
     await snapshotModel.updateOne({ _id: snapshot2._id }, { status: 'running' });
 
-    const res = await api(app).get('/snapshots?status=queued').expect(200);
+    const res = await api(app, authCookie).get('/snapshots?status=queued').expect(200);
 
     expect(res.body.totalResults).toBe(1);
     expect(res.body.results[0].status).toBe('queued');
@@ -88,7 +91,7 @@ describe('GET /api/v1/snapshots', () => {
     const snapshot2 = await insertSnapshot(snapshotModel, preset._id.toString(), presetData);
     await snapshotModel.updateOne({ _id: snapshot2._id }, { status: 'running' });
 
-    const res = await api(app).get('/snapshots?status=running').expect(200);
+    const res = await api(app, authCookie).get('/snapshots?status=running').expect(200);
 
     expect(res.body.totalResults).toBe(1);
     expect(res.body.results[0].status).toBe('running');
@@ -102,7 +105,7 @@ describe('GET /api/v1/snapshots', () => {
     const snapshot2 = await insertSnapshot(snapshotModel, preset._id.toString(), presetData);
     await snapshotModel.updateOne({ _id: snapshot2._id }, { status: 'completed' });
 
-    const res = await api(app).get('/snapshots?status=completed').expect(200);
+    const res = await api(app, authCookie).get('/snapshots?status=completed').expect(200);
 
     expect(res.body.totalResults).toBe(1);
     expect(res.body.results[0].status).toBe('completed');
@@ -116,7 +119,7 @@ describe('GET /api/v1/snapshots', () => {
     const snapshot2 = await insertSnapshot(snapshotModel, preset._id.toString(), presetData);
     await snapshotModel.updateOne({ _id: snapshot2._id }, { status: 'failed' });
 
-    const res = await api(app).get('/snapshots?status=failed').expect(200);
+    const res = await api(app, authCookie).get('/snapshots?status=failed').expect(200);
 
     expect(res.body.totalResults).toBe(1);
     expect(res.body.results[0].status).toBe('failed');
@@ -130,7 +133,7 @@ describe('GET /api/v1/snapshots', () => {
     const snapshot2 = await insertSnapshot(snapshotModel, preset._id.toString(), presetData);
     await snapshotModel.updateOne({ _id: snapshot2._id }, { status: 'cancelled' });
 
-    const res = await api(app).get('/snapshots?status=cancelled').expect(200);
+    const res = await api(app, authCookie).get('/snapshots?status=cancelled').expect(200);
 
     expect(res.body.totalResults).toBe(1);
     expect(res.body.results[0].status).toBe('cancelled');
@@ -150,7 +153,7 @@ describe('GET /api/v1/snapshots', () => {
     await insertSnapshot(snapshotModel, preset1._id.toString(), preset1Data);
     await insertSnapshot(snapshotModel, preset2._id.toString(), preset2Data);
 
-    const res = await api(app).get('/snapshots?key=target_key').expect(200);
+    const res = await api(app, authCookie).get('/snapshots?key=target_key').expect(200);
 
     expect(res.body.totalResults).toBe(1);
     expect(res.body.results[0].algorithmPresetFrozen.key).toBe('target_key');
@@ -170,7 +173,7 @@ describe('GET /api/v1/snapshots', () => {
     await insertSnapshot(snapshotModel, preset1._id.toString(), preset1Data);
     await insertSnapshot(snapshotModel, preset2._id.toString(), preset2Data);
 
-    const res = await api(app).get('/snapshots?version=2.0.0').expect(200);
+    const res = await api(app, authCookie).get('/snapshots?version=2.0.0').expect(200);
 
     expect(res.body.totalResults).toBe(1);
     expect(res.body.results[0].algorithmPresetFrozen.version).toBe('2.0.0');
@@ -186,7 +189,7 @@ describe('GET /api/v1/snapshots', () => {
     await insertSnapshot(snapshotModel, preset1._id.toString(), preset1Data);
     await insertSnapshot(snapshotModel, preset2._id.toString(), preset2Data);
 
-    const res = await api(app).get(`/snapshots?algorithmPreset=${preset1._id.toString()}`).expect(200);
+    const res = await api(app, authCookie).get(`/snapshots?algorithmPreset=${preset1._id.toString()}`).expect(200);
 
     expect(res.body.totalResults).toBe(1);
     expect(res.body.results[0].algorithmPreset).toBe(preset1._id.toString());
@@ -204,7 +207,9 @@ describe('GET /api/v1/snapshots', () => {
     await insertSnapshot(snapshotModel, preset1._id.toString(), preset1Data);
     await insertSnapshot(snapshotModel, preset2._id.toString(), preset2Data);
 
-    const res = await api(app).get(`/snapshots?algorithmPreset=${preset1._id.toString()}&status=completed`).expect(200);
+    const res = await api(app, authCookie)
+      .get(`/snapshots?algorithmPreset=${preset1._id.toString()}&status=completed`)
+      .expect(200);
 
     expect(res.body.totalResults).toBe(1);
     expect(res.body.results[0].algorithmPreset).toBe(preset1._id.toString());
@@ -212,7 +217,7 @@ describe('GET /api/v1/snapshots', () => {
   });
 
   it('should return 400 for invalid algorithmPreset ID format', async () => {
-    await api(app).get('/snapshots?algorithmPreset=invalid-id').expect(400);
+    await api(app, authCookie).get('/snapshots?algorithmPreset=invalid-id').expect(400);
   });
 
   it('should sort by createdAt:desc (200)', async () => {
@@ -223,7 +228,7 @@ describe('GET /api/v1/snapshots', () => {
     await new Promise((resolve) => setTimeout(resolve, 10));
     const snapshot2 = await insertSnapshot(snapshotModel, preset._id.toString(), presetData);
 
-    const res = await api(app).get('/snapshots').expect(200);
+    const res = await api(app, authCookie).get('/snapshots').expect(200);
 
     expect(res.body.results[0]._id).toBe(snapshot2._id.toString());
     expect(res.body.results[1]._id).toBe(snapshot1._id.toString());
@@ -235,7 +240,7 @@ describe('GET /api/v1/snapshots', () => {
 
     await insertSnapshot(snapshotModel, preset._id.toString(), presetData);
 
-    const res = await api(app).get('/snapshots?status=completed').expect(200);
+    const res = await api(app, authCookie).get('/snapshots?status=completed').expect(200);
 
     assertPaginationStructure(res.body);
     expect(res.body.results).toEqual([]);
@@ -251,7 +256,7 @@ describe('GET /api/v1/snapshots', () => {
 
     await insertSnapshot(snapshotModel, preset._id.toString(), presetData);
 
-    const res = await api(app).get('/snapshots').expect(200);
+    const res = await api(app, authCookie).get('/snapshots').expect(200);
 
     expect(res.body.results[0].algorithmPresetFrozen).toBeInstanceOf(Object);
     expect(res.body.results[0].algorithmPresetFrozen.key).toBe('test_key');

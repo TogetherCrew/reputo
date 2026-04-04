@@ -8,6 +8,13 @@ export type AlgorithmCategory =
   | 'Custom'; // Custom or specialized algorithms
 
 /**
+ * Supported algorithm definition kinds.
+ */
+export type AlgorithmKind =
+  | 'standalone' // A single algorithm with its own direct inputs
+  | 'combined'; // A composed algorithm built from sub-algorithms
+
+/**
  * Supported input/output types for algorithm definitions.
  */
 export type IoType =
@@ -18,6 +25,7 @@ export type IoType =
   | 'array' // Array of values
   | 'score_map' // Mapping of scores to entities
   | 'string' // Text values
+  | 'sub_algorithm' // Nested algorithm definitions selected at runtime
   | 'object' // Complex object structures
   | (string & {}); // Allow additional string literals
 
@@ -271,9 +279,31 @@ export interface ArrayIoItem extends BaseIoItem {
 }
 
 /**
+ * Sub-algorithm composer input for combined algorithm definitions.
+ */
+export interface SubAlgorithmIoItem extends BaseIoItem {
+  type: 'sub_algorithm';
+  required: boolean;
+  minItems?: number;
+  maxItems?: number;
+  sharedInputKeys?: string[];
+  uiHint?: {
+    widget: 'sub_algorithm_composer';
+    addButtonLabel?: string;
+  };
+}
+
+/**
  * Union type for all supported input/output item types.
  */
-export type IoItem = CsvIoItem | JsonIoItem | NumericIoItem | BooleanIoItem | StringIoItem | ArrayIoItem;
+export type IoItem =
+  | CsvIoItem
+  | JsonIoItem
+  | NumericIoItem
+  | BooleanIoItem
+  | StringIoItem
+  | ArrayIoItem
+  | SubAlgorithmIoItem;
 
 /**
  * Root-level validation rule that uses a wallet JSON input to validate
@@ -323,6 +353,8 @@ export interface AlgorithmDefinition {
   key: string;
   /** Human-readable name of the algorithm */
   name: string;
+  /** Optional algorithm composition kind */
+  kind?: AlgorithmKind;
   /** Category classification for organizing algorithms */
   category: AlgorithmCategory;
   /** Short summary of the algorithm for card displays */

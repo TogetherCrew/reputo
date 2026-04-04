@@ -123,3 +123,22 @@ export interface SnapshotQueryParams {
   key?: string
   version?: string
 }
+
+export interface StorageMetadataDto {
+  filename: string
+  ext: string
+  size: number
+  contentType: string
+  timestamp: number
+}
+
+export interface StorageDownloadResponseDto {
+  url: string
+  expiresIn: number
+  metadata: StorageMetadataDto
+}
+
+export interface StorageVerifyResponseDto {
+  key: string
+  metadata: StorageMetadataDto
+}
