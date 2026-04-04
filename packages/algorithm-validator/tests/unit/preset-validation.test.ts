@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { validateAlgorithmPreset } from '../../src/preset-validation.js';
 import type { AlgorithmDefinition } from '../../src/types/index.js';
 
@@ -492,6 +492,118 @@ describe('validateAlgorithmPreset', () => {
     });
 
     expect(result.success).toBe(true);
+  });
+
+  it('injects shared parent inputs into children that only rely on inherited files', async () => {
+    const resolveNestedDefinition = vi.fn(async () => childSharedOnlyDefinition);
+    const resolveInputContent = vi.fn(async ({ value }: { value: unknown }) => {
+      if (value === 'uploads/sub_ids.json') {
+        return JSON.stringify({
+          'SubID-1': {
+            userWallets: [
+              {
+                address: '0x1234567890abcdef1234567890abcdef12345678',
+                chain: 'ethereum',
+              },
+            ],
+          },
+        });
+      }
+
+      return value;
+    });
+
+    const result = await validateAlgorithmPreset({
+      definition: combinedDefinition,
+      preset: {
+        key: 'custom_algorithm',
+        version: '1.0.0',
+        inputs: [
+          {
+            key: 'sub_ids',
+            value: 'uploads/sub_ids.json',
+          },
+          {
+            key: 'sub_algorithms',
+            value: [
+              {
+                algorithm_key: 'proposal_engagement',
+                algorithm_version: '1.0.0',
+                weight: 1,
+                inputs: [],
+              },
+            ],
+          },
+        ],
+      },
+      resolveNestedDefinition,
+      resolveInputContent,
+    });
+
+    expect(result.success).toBe(true);
+    expect(resolveNestedDefinition).toHaveBeenCalledWith({
+      algorithmKey: 'proposal_engagement',
+      algorithmVersion: '1.0.0',
+      childIndex: 0,
+      parentDefinition: combinedDefinition,
+      parentInput: expect.objectContaining({
+        key: 'sub_algorithms',
+      }),
+    });
+  });
+
+  it('prefixes nested child validation errors under the parent sub_algorithm input', async () => {
+    const result = await validateAlgorithmPreset({
+      definition: combinedDefinition,
+      preset: {
+        key: 'custom_algorithm',
+        version: '1.0.0',
+        inputs: [
+          {
+            key: 'sub_ids',
+            value: 'uploads/sub_ids.json',
+          },
+          {
+            key: 'sub_algorithms',
+            value: [
+              {
+                algorithm_key: 'voting_engagement',
+                algorithm_version: '1.0.0',
+                weight: 1,
+                inputs: [],
+              },
+            ],
+          },
+        ],
+      },
+      resolveNestedDefinition: async () => childVotesDefinition,
+      resolveInputContent: async ({ value }) => {
+        if (value === 'uploads/sub_ids.json') {
+          return JSON.stringify({
+            'SubID-1': {
+              userWallets: [
+                {
+                  address: '0x1234567890abcdef1234567890abcdef12345678',
+                  chain: 'ethereum',
+                },
+              ],
+            },
+          });
+        }
+
+        return value;
+      },
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.errors).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          field: 'sub_algorithms.0.inputs.votes',
+          source: 'payload',
+        }),
+      ]),
+    );
   });
 
   it('rejects sub-algorithm entries with non-positive weights', async () => {
