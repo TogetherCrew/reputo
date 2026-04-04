@@ -20,6 +20,10 @@ import type {
 import { cn } from "@/lib/utils"
 import { validateAlgorithmPresetClient } from "./algorithm-client-validation"
 import { extractApiFieldErrors } from "./error-utils"
+import {
+  buildPresetInputsFromForm,
+  normalizeNumericPresetValue,
+} from "./preset-payload"
 
 interface EditPresetDialogProps {
   isOpen: boolean
@@ -28,55 +32,6 @@ interface EditPresetDialogProps {
   onUpdatePreset: (data: UpdateAlgorithmPresetDto) => Promise<void>
   isLoading: boolean
   error?: unknown
-}
-
-/** Normalize numeric value: accept "1,2" (locale) and return number 1.2 so UI and API use dot. */
-function normalizeNumericPresetValue(value: unknown): unknown {
-  if (typeof value === "number" && Number.isFinite(value)) return value
-  if (typeof value !== "string") return value
-  const trimmed = value.trim()
-  if (trimmed === "") return value
-  const normalized = trimmed.replace(/,/g, ".")
-  const n = Number(normalized)
-  return Number.isFinite(n) ? n : value
-}
-
-const NUMERIC_INPUT_TYPES = new Set(["number", "integer", "slider"])
-
-/**
- * Normalize a sub_algorithm entry into the API payload shape:
- * `{ algorithm_key, algorithm_version, weight, inputs: [{ key, value }] }`.
- * File values from pending uploads are coerced to empty strings.
- */
-function normalizeSubAlgorithmEntries(value: unknown): unknown {
-  if (!Array.isArray(value)) return value
-  return value.map((entry) => {
-    if (typeof entry !== "object" || entry === null) return entry
-    const row = entry as Record<string, unknown>
-    const rawInputs = Array.isArray(row.inputs) ? row.inputs : []
-    const inputs = rawInputs.map((item) => {
-      if (typeof item !== "object" || item === null) return item
-      const record = item as Record<string, unknown>
-      const inputValue = record.value
-      let serialized: unknown
-      if (inputValue instanceof File) {
-        serialized = ""
-      } else {
-        serialized = inputValue ?? ""
-      }
-      return { key: record.key, value: serialized }
-    })
-    const weight =
-      typeof row.weight === "number"
-        ? row.weight
-        : Number(normalizeNumericPresetValue(row.weight))
-    return {
-      algorithm_key: row.algorithm_key ?? "",
-      algorithm_version: row.algorithm_version ?? "",
-      weight: Number.isFinite(weight) ? weight : row.weight,
-      inputs,
-    }
-  })
 }
 
 export function EditPresetDialog({
@@ -140,7 +95,8 @@ export function EditPresetDialog({
       } else if (algoInput?.type === "sub_algorithm" && Array.isArray(raw)) {
         defaults[presetInput.key] = raw
       } else {
-        const isNumeric = algoInput && NUMERIC_INPUT_TYPES.has(algoInput.type)
+        const isNumeric =
+          algoInput && ["number", "integer", "slider"].includes(algoInput.type)
         defaults[presetInput.key] = isNumeric
           ? normalizeNumericPresetValue(raw)
           : raw
@@ -178,30 +134,10 @@ export function EditPresetDialog({
 
       // Inputs: use algorithm input keys; send form value or fall back to existing preset value.
       // Normalize numeric values so "1,2" (locale) is sent as number 1.2 for API validity.
-      const inputs = algorithm.inputs.map((input) => {
-        const value = data[input.key]
-        let inputValue: unknown
-        if (value instanceof File) {
-          inputValue = ""
-        } else if (input.type === "array" && Array.isArray(value)) {
-          inputValue = value
-        } else if (input.type === "sub_algorithm") {
-          const source = Array.isArray(value)
-            ? value
-            : preset.inputs.find((i) => i.key === input.key)?.value
-          inputValue = normalizeSubAlgorithmEntries(source)
-        } else if (value !== undefined && value !== null && value !== "") {
-          inputValue = NUMERIC_INPUT_TYPES.has(input.type)
-            ? normalizeNumericPresetValue(value)
-            : value
-        } else {
-          const existing = preset.inputs.find((i) => i.key === input.key)
-          const raw = existing?.value ?? ""
-          inputValue = NUMERIC_INPUT_TYPES.has(input.type)
-            ? normalizeNumericPresetValue(raw)
-            : raw
-        }
-        return { key: input.key, value: inputValue }
+      const inputs = buildPresetInputsFromForm({
+        algorithmInputs: algorithm.inputs,
+        data,
+        existingInputs: preset.inputs,
       })
       updateData.inputs = inputs
 

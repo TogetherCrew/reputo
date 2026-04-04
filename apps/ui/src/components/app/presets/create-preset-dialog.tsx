@@ -19,60 +19,12 @@ import type { CreateAlgorithmPresetDto } from "@/lib/api/types"
 import { cn } from "@/lib/utils"
 import { validateAlgorithmPresetClient } from "./algorithm-client-validation"
 import { extractApiErrorMessages } from "./error-utils"
+import { buildPresetInputsFromForm } from "./preset-payload"
 
 interface CreatePresetDialogProps {
   algo?: Algorithm
   onCreatePreset: (data: CreateAlgorithmPresetDto) => Promise<void>
   isLoading: boolean
-}
-
-/** Normalize numeric value: "1,2" (locale) → number 1.2 for API validity. */
-function normalizeNumericPresetValue(value: unknown): unknown {
-  if (typeof value === "number" && Number.isFinite(value)) return value
-  if (typeof value !== "string") return value
-  const trimmed = value.trim()
-  if (trimmed === "") return value
-  const n = Number(trimmed.replace(/,/g, "."))
-  return Number.isFinite(n) ? n : value
-}
-
-const NUMERIC_INPUT_TYPES = new Set(["number", "integer", "slider"])
-
-/**
- * Normalize a sub_algorithm entry into the API payload shape:
- * `{ algorithm_key, algorithm_version, weight, inputs: [{ key, value }] }`.
- * File values from pending uploads are coerced to empty strings (matching
- * the behaviour for top-level file inputs).
- */
-function normalizeSubAlgorithmEntries(value: unknown): unknown {
-  if (!Array.isArray(value)) return value
-  return value.map((entry) => {
-    if (typeof entry !== "object" || entry === null) return entry
-    const row = entry as Record<string, unknown>
-    const rawInputs = Array.isArray(row.inputs) ? row.inputs : []
-    const inputs = rawInputs.map((item) => {
-      if (typeof item !== "object" || item === null) return item
-      const record = item as Record<string, unknown>
-      const inputValue = record.value
-      let serialized: unknown
-      if (inputValue instanceof File) {
-        serialized = ""
-      } else {
-        serialized = inputValue ?? ""
-      }
-      return { key: record.key, value: serialized }
-    })
-    const weight =
-      typeof row.weight === "number"
-        ? row.weight
-        : Number(normalizeNumericPresetValue(row.weight))
-    return {
-      algorithm_key: row.algorithm_key ?? "",
-      algorithm_version: row.algorithm_version ?? "",
-      weight: Number.isFinite(weight) ? weight : row.weight,
-      inputs,
-    }
-  })
 }
 
 export function CreatePresetDialog({
@@ -116,25 +68,9 @@ export function CreatePresetDialog({
         version: (data.version as string) || "1.0.0",
         name: data.name as string | undefined,
         description: data.description as string | undefined,
-        inputs: algo.inputs.map((input) => {
-          const value = data[input.key]
-
-          let inputValue: unknown
-          if (value instanceof File) {
-            inputValue = ""
-          } else if (input.type === "array" && Array.isArray(value)) {
-            inputValue = value
-          } else if (input.type === "sub_algorithm") {
-            inputValue = normalizeSubAlgorithmEntries(value)
-          } else {
-            const raw = value !== undefined && value !== null ? value : ""
-            inputValue =
-              NUMERIC_INPUT_TYPES.has(input.type) && raw !== ""
-                ? normalizeNumericPresetValue(raw)
-                : raw
-          }
-
-          return { key: input.key, value: inputValue }
+        inputs: buildPresetInputsFromForm({
+          algorithmInputs: algo.inputs,
+          data,
         }),
       }
 
