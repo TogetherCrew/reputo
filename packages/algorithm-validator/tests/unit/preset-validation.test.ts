@@ -11,13 +11,13 @@ const definition: AlgorithmDefinition = {
   version: '1.0.0',
   inputs: [
     {
-      key: 'wallets',
-      label: 'Sub-ID Wallet Map JSON',
+      key: 'sub_ids',
+      label: 'SubID Input JSON',
       type: 'json',
       required: true,
       json: {
         maxBytes: 5242880,
-        schema: 'sub_id_wallet_address_map',
+        schema: 'sub_id_input_map',
         allowedChains: ['ethereum', 'cardano'],
       },
     },
@@ -120,8 +120,8 @@ describe('validateAlgorithmPreset', () => {
         version: '1.0.0',
         inputs: [
           {
-            key: 'wallets',
-            value: 'uploads/wallets.json',
+            key: 'sub_ids',
+            value: 'uploads/sub_ids.json',
           },
           {
             key: 'selected_resources',
@@ -135,10 +135,15 @@ describe('validateAlgorithmPreset', () => {
         ],
       },
       resolveInputContent: async ({ input, value }) => {
-        if (input.key === 'wallets' && typeof value === 'string') {
+        if (input.key === 'sub_ids' && typeof value === 'string') {
           return JSON.stringify({
             'SubID-1': {
-              ethereum: ['0x1234567890abcdef1234567890abcdef12345678'],
+              userWallets: [
+                {
+                  address: '0x1234567890abcdef1234567890abcdef12345678',
+                  chain: 'ethereum',
+                },
+              ],
             },
           });
         }
@@ -158,8 +163,8 @@ describe('validateAlgorithmPreset', () => {
         version: '1.0.0',
         inputs: [
           {
-            key: 'wallets',
-            value: 'uploads/wallets.json',
+            key: 'sub_ids',
+            value: 'uploads/sub_ids.json',
           },
           {
             key: 'selected_resources',
@@ -173,10 +178,15 @@ describe('validateAlgorithmPreset', () => {
         ],
       },
       resolveInputContent: async ({ input, value }) => {
-        if (input.key === 'wallets' && typeof value === 'string') {
+        if (input.key === 'sub_ids' && typeof value === 'string') {
           return JSON.stringify({
             'SubID-1': {
-              ethereum: ['0x1234567890abcdef1234567890abcdef12345678'],
+              userWallets: [
+                {
+                  address: '0x1234567890abcdef1234567890abcdef12345678',
+                  chain: 'ethereum',
+                },
+              ],
             },
             'SubID-2': {},
           });
@@ -225,7 +235,7 @@ describe('validateAlgorithmPreset', () => {
     );
   });
 
-  it('rejects old-format wallet files that still use the top-level wallets key', async () => {
+  it('rejects old-format wallet files that still use the legacy top-level wallets key', async () => {
     const result = await validateAlgorithmPreset({
       definition,
       preset: {
@@ -233,8 +243,8 @@ describe('validateAlgorithmPreset', () => {
         version: '1.0.0',
         inputs: [
           {
-            key: 'wallets',
-            value: 'uploads/wallets.json',
+            key: 'sub_ids',
+            value: 'uploads/sub_ids.json',
           },
           {
             key: 'selected_resources',
@@ -248,7 +258,7 @@ describe('validateAlgorithmPreset', () => {
         ],
       },
       resolveInputContent: async ({ input, value }) => {
-        if (input.key === 'wallets' && typeof value === 'string') {
+        if (input.key === 'sub_ids' && typeof value === 'string') {
           return JSON.stringify({
             wallets: {
               ethereum: ['0x1234567890abcdef1234567890abcdef12345678'],
@@ -264,9 +274,9 @@ describe('validateAlgorithmPreset', () => {
     expect(result.errors).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          field: 'wallets',
+          field: 'sub_ids',
           source: 'file',
-          message: 'JSON must not contain the top-level key "wallets"; provide sub-id keys at the root',
+          message: 'Legacy top-level "wallets" JSON is not supported; provide SubID keys at the root',
         }),
       ]),
     );
@@ -280,8 +290,8 @@ describe('validateAlgorithmPreset', () => {
         version: '1.0.0',
         inputs: [
           {
-            key: 'wallets',
-            value: 'uploads/wallets.json',
+            key: 'sub_ids',
+            value: 'uploads/sub_ids.json',
           },
           {
             key: 'selected_resources',
@@ -295,10 +305,15 @@ describe('validateAlgorithmPreset', () => {
         ],
       },
       resolveInputContent: async ({ input, value }) => {
-        if (input.key === 'wallets' && typeof value === 'string') {
+        if (input.key === 'sub_ids' && typeof value === 'string') {
           return JSON.stringify({
             'SubID-1': {
-              cardano: ['addr1q9exampleexampleexampleexampleexampleexample'],
+              userWallets: [
+                {
+                  address: 'addr1q9exampleexampleexampleexampleexampleexample',
+                  chain: 'cardano',
+                },
+              ],
             },
           });
         }
