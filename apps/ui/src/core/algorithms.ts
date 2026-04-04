@@ -1,5 +1,6 @@
 import {
   type AlgorithmDefinition,
+  type AlgorithmKind,
   getAlgorithmDefinition,
   getAlgorithmDefinitionKeys,
   searchAlgorithmDefinitions,
@@ -32,6 +33,7 @@ export interface Algorithm {
   duration: string
   inputSummary: string
   level: string
+  kind: AlgorithmKind
   inputs: Array<{
     key: string
     type: string
@@ -63,6 +65,7 @@ function transformAlgorithm(definition: AlgorithmDefinition): Algorithm {
     duration: meta.duration,
     inputSummary: formatInputSummary(definition.inputs.length),
     level: meta.level,
+    kind: definition.kind ?? "standalone",
     inputs: definition.inputs.map((input) => ({
       key: input.key,
       type: input.type,

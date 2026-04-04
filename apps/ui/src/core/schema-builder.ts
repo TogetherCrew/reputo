@@ -8,6 +8,7 @@ import {
   getAlgorithmDefinition,
   type JsonIoItem,
   type ResourceCatalog,
+  type SubAlgorithmIoItem,
 } from "@reputo/reputation-algorithms"
 import type { Algorithm } from "./algorithms"
 
@@ -85,6 +86,10 @@ export interface FormInput {
   options?: SelectOption[]
   /** Key of sibling field this depends on */
   dependsOn?: string | string[]
+  /** Max items for sub_algorithm composer */
+  maxItems?: number
+  /** Parent input keys that child algorithms inherit and must not redefine */
+  sharedInputKeys?: string[]
   [key: string]: any
 }
 
@@ -179,6 +184,29 @@ export function buildSchemaFromAlgorithm(
     ],
     outputs,
   }
+}
+
+/**
+ * Builds the algorithm input form fields for a given definition.
+ * Excludes metadata fields (name, description, key, version) and any keys
+ * listed in `excludeKeys`.
+ */
+export function buildAlgorithmInputFormFields(
+  definition: AlgorithmDefinition,
+  excludeKeys: ReadonlyArray<string> = []
+): FormInput[] {
+  return definition.inputs
+    .filter((input) => !excludeKeys.includes(input.key))
+    .map((input) =>
+      transformInputToFormInput(
+        {
+          key: input.key,
+          type: input.type,
+          label: input.label ?? input.key,
+        },
+        definition
+      )
+    )
 }
 
 /**
@@ -370,6 +398,22 @@ function transformInputToFormInput(
           fullInput && "required" in fullInput
             ? fullInput.required !== false
             : true,
+      }
+    }
+
+    case "sub_algorithm": {
+      const subInput = fullInput as SubAlgorithmIoItem | null
+      return {
+        key: inputKey,
+        label: algoInput.label,
+        type: "sub_algorithm",
+        widget: subInput?.uiHint?.widget ?? "sub_algorithm_composer",
+        description: subInput?.description,
+        required: subInput?.required !== false,
+        minItems: subInput?.minItems,
+        maxItems: subInput?.maxItems,
+        sharedInputKeys: subInput?.sharedInputKeys,
+        addButtonLabel: subInput?.uiHint?.addButtonLabel ?? "Add sub-algorithm",
       }
     }
 

@@ -1,7 +1,10 @@
 import type { AlgorithmDefinition } from "@reputo/reputation-algorithms"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import type { Algorithm } from "../../../src/core/algorithms"
-import { buildSchemaFromAlgorithm } from "../../../src/core/schema-builder"
+import {
+  buildAlgorithmInputFormFields,
+  buildSchemaFromAlgorithm,
+} from "../../../src/core/schema-builder"
 
 const { mockGetAlgorithmDefinition } = vi.hoisted(() => ({
   mockGetAlgorithmDefinition: vi.fn(),
@@ -20,6 +23,7 @@ const algorithm: Algorithm = {
   duration: "~2-5 min",
   inputSummary: "2 configurable inputs",
   level: "Intermediate",
+  kind: "standalone",
   inputs: [
     { key: "wallets", type: "json", label: "Wallet Addresses JSON" },
     { key: "votes_csv", type: "csv", label: "Votes CSV" },
@@ -226,6 +230,7 @@ describe("buildSchemaFromAlgorithm", () => {
       duration: "~2-5 min",
       inputSummary: "2 configurable inputs",
       level: "Intermediate",
+      kind: "standalone",
       inputs: [
         {
           key: "selected_resources",
@@ -396,5 +401,120 @@ describe("buildSchemaFromAlgorithm", () => {
         }),
       ])
     )
+  })
+
+  it("maps sub_algorithm inputs into composer form fields", () => {
+    const customAlgorithm: Algorithm = {
+      id: "custom_algorithm",
+      title: "Custom Algorithm",
+      category: "Custom",
+      summary: "Combines sub-algorithms.",
+      description: "Combines sub-algorithms into a composite score.",
+      duration: "~2-5 min",
+      inputSummary: "2 configurable inputs",
+      level: "Intermediate",
+      kind: "combined",
+      inputs: [
+        { key: "sub_ids", type: "json", label: "SubID Input (JSON)" },
+        {
+          key: "sub_algorithms",
+          type: "sub_algorithm",
+          label: "Sub-Algorithms",
+        },
+      ],
+      dependencyLabels: [],
+    }
+
+    mockGetAlgorithmDefinition.mockReturnValue(
+      JSON.stringify({
+        key: "custom_algorithm",
+        name: "Custom Algorithm",
+        kind: "combined",
+        category: "Custom",
+        summary: "Combines sub-algorithms.",
+        description: "Combines sub-algorithms into a composite score.",
+        version: "1.0.0",
+        inputs: [
+          {
+            key: "sub_ids",
+            label: "SubID Input (JSON)",
+            type: "json",
+            required: true,
+          },
+          {
+            key: "sub_algorithms",
+            label: "Sub-Algorithms",
+            description: "Pick child algorithms that share the SubID input.",
+            type: "sub_algorithm",
+            required: true,
+            minItems: 1,
+            sharedInputKeys: ["sub_ids"],
+            uiHint: {
+              widget: "sub_algorithm_composer",
+              addButtonLabel: "Add sub-algorithm",
+            },
+          },
+        ],
+        outputs: [],
+        runtime: "typescript",
+      } satisfies AlgorithmDefinition)
+    )
+
+    const result = buildSchemaFromAlgorithm(customAlgorithm, "1.0.0")
+    const subAlgorithms = result.inputs.find(
+      (input) => input.key === "sub_algorithms"
+    )
+
+    expect(subAlgorithms).toMatchObject({
+      key: "sub_algorithms",
+      type: "sub_algorithm",
+      widget: "sub_algorithm_composer",
+      required: true,
+      minItems: 1,
+      sharedInputKeys: ["sub_ids"],
+      addButtonLabel: "Add sub-algorithm",
+    })
+  })
+})
+
+describe("buildAlgorithmInputFormFields", () => {
+  it("builds form fields from a definition and excludes shared keys", () => {
+    const def: AlgorithmDefinition = {
+      key: "voting_engagement",
+      name: "Voting Engagement",
+      category: "Engagement",
+      summary: "Scores voting diversity.",
+      description: "Calculates voting engagement from a vote file.",
+      version: "1.0.0",
+      inputs: [
+        {
+          key: "sub_ids",
+          label: "SubID Input (JSON)",
+          type: "json",
+          required: true,
+        },
+        {
+          key: "votes",
+          label: "Votes CSV",
+          type: "csv",
+          csv: {
+            hasHeader: true,
+            delimiter: ",",
+            columns: [{ key: "id", type: "string", required: true }],
+          },
+        },
+      ],
+      outputs: [],
+      runtime: "typescript",
+    }
+
+    const fields = buildAlgorithmInputFormFields(def, ["sub_ids"])
+
+    expect(fields).toHaveLength(1)
+    expect(fields[0]).toMatchObject({
+      key: "votes",
+      type: "csv",
+      label: "Votes CSV",
+    })
   })
 })

@@ -38,6 +38,43 @@ function normalizeNumericPresetValue(value: unknown): unknown {
 
 const NUMERIC_INPUT_TYPES = new Set(["number", "integer", "slider"])
 
+/**
+ * Normalize a sub_algorithm entry into the API payload shape:
+ * `{ algorithm_key, algorithm_version, weight, inputs: [{ key, value }] }`.
+ * File values from pending uploads are coerced to empty strings (matching
+ * the behaviour for top-level file inputs).
+ */
+function normalizeSubAlgorithmEntries(value: unknown): unknown {
+  if (!Array.isArray(value)) return value
+  return value.map((entry) => {
+    if (typeof entry !== "object" || entry === null) return entry
+    const row = entry as Record<string, unknown>
+    const rawInputs = Array.isArray(row.inputs) ? row.inputs : []
+    const inputs = rawInputs.map((item) => {
+      if (typeof item !== "object" || item === null) return item
+      const record = item as Record<string, unknown>
+      const inputValue = record.value
+      let serialized: unknown
+      if (inputValue instanceof File) {
+        serialized = ""
+      } else {
+        serialized = inputValue ?? ""
+      }
+      return { key: record.key, value: serialized }
+    })
+    const weight =
+      typeof row.weight === "number"
+        ? row.weight
+        : Number(normalizeNumericPresetValue(row.weight))
+    return {
+      algorithm_key: row.algorithm_key ?? "",
+      algorithm_version: row.algorithm_version ?? "",
+      weight: Number.isFinite(weight) ? weight : row.weight,
+      inputs,
+    }
+  })
+}
+
 export function CreatePresetDialog({
   algo,
   onCreatePreset,
@@ -60,6 +97,14 @@ export function CreatePresetDialog({
     [schema]
   )
 
+  const hasSubAlgorithm = useMemo(
+    () =>
+      schema?.inputs.some((input) => input.type === "sub_algorithm") ?? false,
+    [schema]
+  )
+
+  const needsWideDialog = hasResourceSelector || hasSubAlgorithm
+
   const handleSubmit = async (data: Record<string, unknown>) => {
     if (!algo) return
 
@@ -79,6 +124,8 @@ export function CreatePresetDialog({
             inputValue = ""
           } else if (input.type === "array" && Array.isArray(value)) {
             inputValue = value
+          } else if (input.type === "sub_algorithm") {
+            inputValue = normalizeSubAlgorithmEntries(value)
           } else {
             const raw = value !== undefined && value !== null ? value : ""
             inputValue =
@@ -138,7 +185,7 @@ export function CreatePresetDialog({
       <DialogContent
         className={cn(
           "max-h-[90vh] flex flex-col p-0",
-          hasResourceSelector ? "sm:max-w-5xl" : "sm:max-w-lg"
+          needsWideDialog ? "sm:max-w-5xl" : "sm:max-w-lg"
         )}
       >
         <DialogHeader className="flex-shrink-0 px-6 pt-6 pb-4 border-b">
