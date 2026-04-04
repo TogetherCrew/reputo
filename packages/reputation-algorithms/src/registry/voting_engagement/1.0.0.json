@@ -1,6 +1,7 @@
 {
     "key": "voting_engagement",
     "name": "Voting Engagement",
+    "kind": "standalone",
     "category": "Engagement",
     "summary": "Scores each SubID by how widely its linked voting identity uses the full rating scale.",
     "description": "### What it does\nScores how varied each SubID's linked voting history is.\n\n### How it works\n- Each SubID can point to a `deepVotingPortalId` from the votes CSV.\n- Using many different ratings increases the score.\n- Repeating the same rating lowers the score.\n- Scores are shown on a 0 to 1 scale.\n- Only the SubIDs provided in the uploaded JSON are scored.\n\n### Input\nUpload one SubID JSON file and one votes CSV file. The JSON uses SubIDs as top-level keys. For this algorithm, only `deepVotingPortalId` is used. All JSON fields are optional and may be empty.\n\n### Output\n- CSV file with `sub_id` and `voting_engagement`.\n- JSON file with vote distribution details for each scored SubID.",

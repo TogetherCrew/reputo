@@ -1,6 +1,7 @@
 {
     "key": "proposal_engagement",
     "name": "Proposal Engagement",
+    "kind": "standalone",
     "category": "Engagement",
     "summary": "Scores each SubID from proposal outcomes and ratings linked through Deep Funding Portal user IDs.",
     "description": "### What it does\nScores proposal owners based on proposal results and community ratings.\n\n### How it works\n- Each SubID can point to a `deepProposalPortalId` from Deep Funding Portal data.\n- Funded and completed proposals add points.\n- Unfunded proposals remove points.\n- Better ratings increase rewards and reduce penalties.\n- Older proposals can lose weight over time.\n- Only the SubIDs provided in the uploaded JSON are scored.\n\n### Limits\nOnly rounds 31, 36, and 107 are included because ownership data is reliable there.\n\n### Data source\nUses proposal, user, and review data from DeepFunding together with the uploaded SubID JSON. For this algorithm, only `deepProposalPortalId` is used. All JSON fields are optional and may be empty.\n\n### Output\n- CSV file with `sub_id` and `proposal_engagement`.\n- JSON file with score details for each scored SubID and proposal.",
