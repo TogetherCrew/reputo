@@ -13,7 +13,10 @@ export function makeAlgorithmPreset(overrides: AlgorithmPresetCreate = {}) {
   return {
     key: overrides.key ?? 'voting_engagement',
     version: overrides.version ?? '1.0.0',
-    inputs: overrides.inputs ?? [{ key: 'votes', value: 's3://tc/votes.csv' }],
+    inputs: overrides.inputs ?? [
+      { key: 'sub_ids', value: 'uploads/sub_ids.json' },
+      { key: 'votes', value: 'uploads/votes.csv' },
+    ],
     name: overrides.name,
     description: overrides.description,
   };

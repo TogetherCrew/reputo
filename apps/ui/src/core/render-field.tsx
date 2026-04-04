@@ -29,7 +29,6 @@ import type { FormInput } from "./schema-builder"
  */
 export function renderScalarField(
   input: FormInput,
-  // biome-ignore lint/suspicious/noExplicitAny: react-hook-form control has dynamic value shape
   control: Control<any>
 ): ReactElement | null {
   const commonProps = { input, control }

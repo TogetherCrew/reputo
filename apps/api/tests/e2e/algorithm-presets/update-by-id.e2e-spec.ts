@@ -45,14 +45,18 @@ describe('PATCH /api/v1/algorithm-presets/:id', () => {
       .send({
         name: 'Updated Name',
         description: 'Updated description text',
-        inputs: [{ key: 'votes', value: 's3://tc/updated-votes.csv' }],
+        inputs: [
+          { key: 'sub_ids', value: 'uploads/updated-sub_ids.json' },
+          { key: 'votes', value: 'uploads/updated-votes.csv' },
+        ],
       })
       .expect(200);
 
     expect(res.body.name).toBe('Updated Name');
     expect(res.body.description).toBe('Updated description text');
-    expect(res.body.inputs).toHaveLength(1);
-    expect(res.body.inputs[0].key).toBe('votes');
+    expect(res.body.inputs).toHaveLength(2);
+    expect(res.body.inputs[0].key).toBe('sub_ids');
+    expect(res.body.inputs[1].key).toBe('votes');
 
     // updatedAt should be bumped
     const newUpdatedAt = new Date(res.body.updatedAt).getTime();

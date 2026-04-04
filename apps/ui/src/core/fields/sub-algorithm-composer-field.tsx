@@ -48,7 +48,6 @@ import {
 
 interface SubAlgorithmComposerFieldProps {
   input: FormInput
-  // biome-ignore lint/suspicious/noExplicitAny: react-hook-form control has dynamic value shape
   control: Control<any>
 }
 
@@ -203,7 +202,6 @@ export function SubAlgorithmComposerField({
 interface SubAlgorithmRowProps {
   index: number
   rowPrefix: string
-  // biome-ignore lint/suspicious/noExplicitAny: react-hook-form control has dynamic value shape
   control: Control<any>
   childOptions: ChildAlgorithmOption[]
   sharedInputKeys: ReadonlyArray<string>
