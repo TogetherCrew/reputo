@@ -2,6 +2,7 @@
 
 import {
   Clock,
+  Combine,
   Database,
   FolderOpen,
   LayoutGrid,
@@ -62,6 +63,13 @@ const categories: {
     title: "Activity",
     description: "Algorithms tracking user contribution patterns and behavior",
     icon: <Users className="size-4 text-primary" />,
+  },
+  {
+    key: "Custom",
+    title: "Custom",
+    description:
+      "Composite algorithms combining multiple sub-algorithms into one score",
+    icon: <Combine className="size-4 text-primary" />,
   },
 ]
 
