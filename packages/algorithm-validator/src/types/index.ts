@@ -6,6 +6,7 @@
 export type {
   AlgorithmCategory,
   AlgorithmDefinition,
+  AlgorithmKind,
   AlgorithmRuntime,
   AlgorithmValidationConfig,
   AlgorithmValidationRule,
@@ -21,6 +22,7 @@ export type {
   ResourceCatalogChain,
   ResourceCatalogResource,
   ScalarObjectPropertyParam,
+  SubAlgorithmIoItem,
 } from './algorithm.js';
 
 /**

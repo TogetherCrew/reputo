@@ -111,6 +111,108 @@ const definition: AlgorithmDefinition = {
   runtime: 'typescript',
 };
 
+const combinedDefinition: AlgorithmDefinition = {
+  key: 'custom_algorithm',
+  name: 'Custom Algorithm',
+  kind: 'combined',
+  category: 'Custom',
+  summary: 'Combines standalone algorithms.',
+  description: 'Combined algorithm test definition.',
+  version: '1.0.0',
+  inputs: [
+    {
+      key: 'sub_ids',
+      label: 'SubID Input JSON',
+      type: 'json',
+      required: true,
+      json: {
+        maxBytes: 5242880,
+        schema: 'sub_id_input_map',
+        allowedChains: ['ethereum', 'cardano'],
+      },
+    },
+    {
+      key: 'sub_algorithms',
+      label: 'Sub-Algorithms',
+      type: 'sub_algorithm',
+      required: true,
+      minItems: 1,
+      sharedInputKeys: ['sub_ids'],
+      uiHint: {
+        widget: 'sub_algorithm_composer',
+      },
+    },
+  ],
+  outputs: [],
+  runtime: 'typescript',
+};
+
+const childVotesDefinition: AlgorithmDefinition = {
+  key: 'voting_engagement',
+  name: 'Voting Engagement',
+  kind: 'standalone',
+  category: 'Engagement',
+  summary: 'Validates a child CSV input.',
+  description: 'Standalone child definition for combined validation tests.',
+  version: '1.0.0',
+  inputs: [
+    {
+      key: 'sub_ids',
+      label: 'SubID Input JSON',
+      type: 'json',
+      required: true,
+      json: {
+        maxBytes: 5242880,
+        schema: 'sub_id_input_map',
+        allowedChains: ['ethereum', 'cardano'],
+      },
+    },
+    {
+      key: 'votes',
+      label: 'Votes CSV',
+      type: 'csv',
+      csv: {
+        hasHeader: true,
+        delimiter: ',',
+        columns: [
+          {
+            key: 'id',
+            type: 'number',
+            required: true,
+          },
+        ],
+      },
+    },
+  ],
+  outputs: [],
+  runtime: 'typescript',
+};
+
+const childSharedOnlyDefinition: AlgorithmDefinition = {
+  key: 'proposal_engagement',
+  name: 'Proposal Engagement',
+  kind: 'standalone',
+  category: 'Engagement',
+  summary: 'Uses only the shared parent input.',
+  description: 'Standalone child definition for shared input tests.',
+  version: '1.0.0',
+  inputs: [
+    {
+      key: 'sub_ids',
+      label: 'SubID Input JSON',
+      type: 'json',
+      required: true,
+      json: {
+        maxBytes: 5242880,
+        schema: 'sub_id_input_map',
+        allowedChains: ['ethereum', 'cardano'],
+      },
+    },
+  ],
+  outputs: [],
+  runtime: 'typescript',
+};
+
 describe('validateAlgorithmPreset', () => {
   it('validates supported grouped resources and file-backed rules through the shared validator', async () => {
     const result = await validateAlgorithmPreset({
@@ -329,6 +431,202 @@ describe('validateAlgorithmPreset', () => {
           field: 'selected_resources.0.resource_key',
           source: 'payload',
           message: 'Resource must match the selected chain',
+        }),
+      ]),
+    );
+  });
+
+  it('resolves child definitions, injects shared parent inputs, and validates nested file-backed inputs', async () => {
+    const resolveNestedDefinition = async () => childVotesDefinition;
+    const resolveInputContent = async ({ value }: { value: unknown }) => {
+      if (value === 'uploads/sub_ids.json') {
+        return JSON.stringify({
+          'SubID-1': {
+            userWallets: [
+              {
+                address: '0x1234567890abcdef1234567890abcdef12345678',
+                chain: 'ethereum',
+              },
+            ],
+          },
+        });
+      }
+
+      if (value === 'uploads/votes.csv') {
+        return 'id\n1\n';
+      }
+
+      return value;
+    };
+
+    const result = await validateAlgorithmPreset({
+      definition: combinedDefinition,
+      preset: {
+        key: 'custom_algorithm',
+        version: '1.0.0',
+        inputs: [
+          {
+            key: 'sub_ids',
+            value: 'uploads/sub_ids.json',
+          },
+          {
+            key: 'sub_algorithms',
+            value: [
+              {
+                algorithm_key: 'voting_engagement',
+                algorithm_version: '1.0.0',
+                weight: 1,
+                inputs: [
+                  {
+                    key: 'votes',
+                    value: 'uploads/votes.csv',
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+      resolveNestedDefinition,
+      resolveInputContent,
+    });
+
+    expect(result.success).toBe(true);
+  });
+
+  it('rejects sub-algorithm entries with non-positive weights', async () => {
+    const result = await validateAlgorithmPreset({
+      definition: combinedDefinition,
+      preset: {
+        key: 'custom_algorithm',
+        version: '1.0.0',
+        inputs: [
+          {
+            key: 'sub_ids',
+            value: 'uploads/sub_ids.json',
+          },
+          {
+            key: 'sub_algorithms',
+            value: [
+              {
+                algorithm_key: 'voting_engagement',
+                algorithm_version: '1.0.0',
+                weight: 0,
+                inputs: [],
+              },
+            ],
+          },
+        ],
+      },
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.errors).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          field: 'sub_algorithms.0.weight',
+          source: 'payload',
+          message: expect.stringContaining('greater than 0'),
+        }),
+      ]),
+    );
+  });
+
+  it('rejects child entries that duplicate shared parent inputs', async () => {
+    const result = await validateAlgorithmPreset({
+      definition: combinedDefinition,
+      preset: {
+        key: 'custom_algorithm',
+        version: '1.0.0',
+        inputs: [
+          {
+            key: 'sub_ids',
+            value: 'uploads/sub_ids.json',
+          },
+          {
+            key: 'sub_algorithms',
+            value: [
+              {
+                algorithm_key: 'proposal_engagement',
+                algorithm_version: '1.0.0',
+                weight: 1,
+                inputs: [
+                  {
+                    key: 'sub_ids',
+                    value: 'uploads/child-sub-ids.json',
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+      resolveNestedDefinition: async () => childSharedOnlyDefinition,
+      resolveInputContent: async ({ value }) => {
+        if (typeof value === 'string') {
+          return JSON.stringify({});
+        }
+
+        return value;
+      },
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.errors).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          field: 'sub_algorithms.0.inputs.sub_ids',
+          source: 'definition',
+          message: expect.stringContaining('inherited from the parent algorithm'),
+        }),
+      ]),
+    );
+  });
+
+  it('rejects combined algorithms as nested sub-algorithm definitions', async () => {
+    const result = await validateAlgorithmPreset({
+      definition: combinedDefinition,
+      preset: {
+        key: 'custom_algorithm',
+        version: '1.0.0',
+        inputs: [
+          {
+            key: 'sub_ids',
+            value: 'uploads/sub_ids.json',
+          },
+          {
+            key: 'sub_algorithms',
+            value: [
+              {
+                algorithm_key: 'nested_custom',
+                algorithm_version: '1.0.0',
+                weight: 1,
+                inputs: [],
+              },
+            ],
+          },
+        ],
+      },
+      resolveNestedDefinition: async () => ({
+        ...combinedDefinition,
+        key: 'nested_custom',
+      }),
+      resolveInputContent: async ({ value }) => {
+        if (typeof value === 'string') {
+          return JSON.stringify({});
+        }
+
+        return value;
+      },
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.errors).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          field: 'sub_algorithms.0.algorithm_key',
+          source: 'definition',
+          message: expect.stringContaining('must not be a combined algorithm'),
         }),
       ]),
     );
