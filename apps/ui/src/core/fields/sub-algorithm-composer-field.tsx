@@ -1,15 +1,21 @@
 "use client"
 
 import type { AlgorithmDefinition } from "@reputo/reputation-algorithms"
-import { Plus, Trash2 } from "lucide-react"
-import { useEffect, useMemo } from "react"
+import { ChevronDown, GripVertical, Plus, Trash2 } from "lucide-react"
+import { useEffect, useMemo, useState } from "react"
 import {
   type Control,
   useFieldArray,
   useFormContext,
   useWatch,
 } from "react-hook-form"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible"
 import {
   FormControl,
   FormDescription,
@@ -26,6 +32,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { cn } from "@/lib/utils"
 import { renderScalarField } from "../render-field"
 import {
   buildAlgorithmInputFormFields,
@@ -49,6 +56,12 @@ interface CachedDefinition {
   definition: AlgorithmDefinition
 }
 
+interface RowValue {
+  algorithm_key?: string
+  algorithm_version?: string
+  weight?: number | string
+}
+
 export function SubAlgorithmComposerField({
   input,
   control,
@@ -63,6 +76,25 @@ export function SubAlgorithmComposerField({
   )
   const minItems = input.minItems ?? 1
 
+  const rowValues =
+    (useWatch({ control, name: fieldName }) as RowValue[] | undefined) ?? []
+
+  // Track which rows are expanded. Newly appended rows open automatically; on
+  // mount rows start collapsed so the user sees a compact summary first.
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(() => new Set())
+
+  const toggleExpanded = (id: string) => {
+    setExpandedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) {
+        next.delete(id)
+      } else {
+        next.add(id)
+      }
+      return next
+    })
+  }
+
   const handleAddRow = () => {
     append({
       algorithm_key: "",
@@ -70,7 +102,31 @@ export function SubAlgorithmComposerField({
       weight: 1,
       inputs: [],
     })
+    // The new row is the last one — its id is assigned by RHF after append, so
+    // we flip a flag and let the effect below open whatever just got added.
+    setPendingExpand(true)
   }
+
+  const [pendingExpand, setPendingExpand] = useState(false)
+  useEffect(() => {
+    if (!pendingExpand) return
+    const last = fields[fields.length - 1]
+    if (!last) {
+      setPendingExpand(false)
+      return
+    }
+    setExpandedIds((prev) => {
+      if (prev.has(last.id)) return prev
+      const next = new Set(prev)
+      next.add(last.id)
+      return next
+    })
+    setPendingExpand(false)
+  }, [fields, pendingExpand])
+
+  // Collect algorithm keys picked in other rows so each row can filter out
+  // duplicates in its own <Select>.
+  const selectedKeysByIndex = rowValues.map((row) => row?.algorithm_key ?? "")
 
   return (
     <FormItem>
@@ -85,27 +141,51 @@ export function SubAlgorithmComposerField({
         <FormDescription>{input.description}</FormDescription>
       )}
 
-      <div className="space-y-3">
-        {fields.map((field, index) => (
-          <SubAlgorithmRow
-            key={field.id}
-            index={index}
-            rowPrefix={`${fieldName}.${index}`}
-            control={control}
-            childOptions={childOptions}
-            sharedInputKeys={sharedInputKeys}
-            canRemove={fields.length > minItems}
-            onRemove={() => remove(index)}
-          />
-        ))}
+      <div className="space-y-2">
+        {fields.map((field, index) => {
+          const row = rowValues[index]
+          const takenByOthers = selectedKeysByIndex
+            .filter((key, keyIndex) => keyIndex !== index && key)
+            .filter((key): key is string => Boolean(key))
+
+          return (
+            <SubAlgorithmRow
+              key={field.id}
+              index={index}
+              rowPrefix={`${fieldName}.${index}`}
+              control={control}
+              childOptions={childOptions}
+              sharedInputKeys={sharedInputKeys}
+              canRemove={fields.length > minItems}
+              onRemove={() => {
+                remove(index)
+                setExpandedIds((prev) => {
+                  if (!prev.has(field.id)) return prev
+                  const next = new Set(prev)
+                  next.delete(field.id)
+                  return next
+                })
+              }}
+              expanded={expandedIds.has(field.id)}
+              onToggle={() => toggleExpanded(field.id)}
+              takenByOthers={takenByOthers}
+              rowSummary={row}
+            />
+          )
+        })}
       </div>
 
       <Button
         type="button"
         variant="outline"
         size="sm"
-        className="mt-2"
+        className="mt-3"
         onClick={handleAddRow}
+        disabled={
+          childOptions.length > 0 &&
+          rowValues.filter((r) => r?.algorithm_key).length >=
+            childOptions.length
+        }
       >
         <Plus className="mr-2 size-4" />
         {input.addButtonLabel ?? "Add sub-algorithm"}
@@ -129,6 +209,10 @@ interface SubAlgorithmRowProps {
   sharedInputKeys: ReadonlyArray<string>
   canRemove: boolean
   onRemove: () => void
+  expanded: boolean
+  onToggle: () => void
+  takenByOthers: string[]
+  rowSummary: RowValue | undefined
 }
 
 function SubAlgorithmRow({
@@ -139,16 +223,14 @@ function SubAlgorithmRow({
   sharedInputKeys,
   canRemove,
   onRemove,
+  expanded,
+  onToggle,
+  takenByOthers,
+  rowSummary,
 }: SubAlgorithmRowProps) {
   const { setValue } = useFormContext()
-  const selectedKey = useWatch({
-    control,
-    name: `${rowPrefix}.algorithm_key`,
-  }) as string | undefined
-  const selectedVersion = useWatch({
-    control,
-    name: `${rowPrefix}.algorithm_version`,
-  }) as string | undefined
+  const selectedKey = rowSummary?.algorithm_key ?? ""
+  const selectedVersion = rowSummary?.algorithm_version ?? ""
 
   const availableVersions = useMemo(() => {
     if (!selectedKey) return []
@@ -220,108 +302,86 @@ function SubAlgorithmRow({
     )
   }, [childDefinition, sharedInputKeys])
 
+  const selectedLabel = useMemo(() => {
+    if (!selectedKey) return null
+    return (
+      childOptions.find((option) => option.key === selectedKey)?.label ??
+      selectedKey
+    )
+  }, [childOptions, selectedKey])
+
+  const takenByOthersSet = useMemo(
+    () => new Set(takenByOthers),
+    [takenByOthers]
+  )
+
+  const weightValue = rowSummary?.weight
+  const weightDisplay =
+    typeof weightValue === "number" && Number.isFinite(weightValue)
+      ? weightValue
+      : typeof weightValue === "string" && weightValue !== ""
+        ? weightValue
+        : null
+
   return (
-    <div className="flex flex-col gap-3 p-3 rounded-lg border bg-muted/30">
-      <div className="flex items-start gap-3">
-        <div className="flex-1 grid gap-3 sm:grid-cols-3">
-          <FormField
-            control={control}
-            name={`${rowPrefix}.algorithm_key`}
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-xs">Algorithm</FormLabel>
-                <Select
-                  onValueChange={(value) => {
-                    field.onChange(value)
-                    // Reset version so the effect above picks the latest one.
-                    setValue(`${rowPrefix}.algorithm_version`, "", {
-                      shouldDirty: true,
-                      shouldValidate: true,
-                    })
-                  }}
-                  value={field.value ?? ""}
-                >
-                  <FormControl>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select algorithm" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {childOptions.map((option) => (
-                      <SelectItem key={option.key} value={option.key}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={control}
-            name={`${rowPrefix}.algorithm_version`}
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-xs">Version</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  value={field.value ?? ""}
-                  disabled={!selectedKey || availableVersions.length === 0}
-                >
-                  <FormControl>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select version" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {availableVersions.map((version) => (
-                      <SelectItem key={version} value={version}>
-                        {version}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={control}
-            name={`${rowPrefix}.weight`}
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-xs">Weight</FormLabel>
-                <FormControl>
-                  <Input
-                    type="number"
-                    step="any"
-                    min="0"
-                    value={field.value ?? ""}
-                    onChange={(event) => {
-                      const raw = event.target.value
-                      if (raw === "") {
-                        field.onChange("")
-                        return
-                      }
-                      const parsed = Number(raw.replace(",", "."))
-                      field.onChange(Number.isFinite(parsed) ? parsed : raw)
-                    }}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
+    <Collapsible
+      open={expanded}
+      onOpenChange={onToggle}
+      className={cn(
+        "rounded-lg border bg-card transition-colors",
+        expanded && "border-primary/40 shadow-sm"
+      )}
+    >
+      <div className="flex items-center gap-2 px-3 py-2">
+        <CollapsibleTrigger asChild>
+          <button
+            type="button"
+            className="flex flex-1 items-center gap-2 text-left hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
+            aria-label={`${expanded ? "Collapse" : "Expand"} sub-algorithm ${index + 1}`}
+            aria-expanded={expanded}
+          >
+            <GripVertical
+              className="size-4 text-muted-foreground shrink-0"
+              aria-hidden="true"
+            />
+            <span className="inline-flex size-6 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-medium text-muted-foreground">
+              {index + 1}
+            </span>
+            <span className="flex min-w-0 flex-1 items-center gap-2">
+              <span
+                className={cn(
+                  "truncate text-sm",
+                  selectedLabel ? "font-medium" : "text-muted-foreground italic"
+                )}
+              >
+                {selectedLabel ?? "Unassigned sub-algorithm"}
+              </span>
+              {selectedVersion && (
+                <Badge variant="secondary" className="shrink-0 text-[10px]">
+                  v{selectedVersion}
+                </Badge>
+              )}
+              {weightDisplay !== null && (
+                <Badge variant="outline" className="shrink-0 text-[10px]">
+                  × {weightDisplay}
+                </Badge>
+              )}
+            </span>
+            <ChevronDown
+              className={cn(
+                "size-4 text-muted-foreground transition-transform shrink-0",
+                expanded && "rotate-180"
+              )}
+              aria-hidden="true"
+            />
+          </button>
+        </CollapsibleTrigger>
 
         <Button
           type="button"
           variant="ghost"
           size="icon"
-          className="shrink-0 text-muted-foreground hover:text-destructive"
+          className="size-8 shrink-0 text-muted-foreground hover:text-destructive"
           disabled={!canRemove}
           onClick={onRemove}
           aria-label={`Remove sub-algorithm ${index + 1}`}
@@ -330,23 +390,135 @@ function SubAlgorithmRow({
         </Button>
       </div>
 
-      {childDefinition && childFormFields.length > 0 && (
-        <div className="flex flex-col gap-3 pl-3 border-l-2 border-border">
-          {childFormFields.map((childField, childIndex) =>
-            renderScalarField(
-              {
-                ...childField,
-                // Rebind the form path to the composer array slot. The
-                // internal `.value` is what the API payload stores; we keep
-                // the original `key` on the sibling `.key` field (set by the
-                // parent's buildChildInputsArray helper).
-                key: `${rowPrefix}.inputs.${childIndex}.value`,
-              },
-              control
-            )
+      <CollapsibleContent>
+        <div className="border-t px-3 py-3 space-y-4">
+          <div className="grid gap-3 sm:grid-cols-3">
+            <FormField
+              control={control}
+              name={`${rowPrefix}.algorithm_key`}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-xs">Algorithm</FormLabel>
+                  <Select
+                    onValueChange={(value) => {
+                      field.onChange(value)
+                      // Reset version so the effect above picks the latest one.
+                      setValue(`${rowPrefix}.algorithm_version`, "", {
+                        shouldDirty: true,
+                        shouldValidate: true,
+                      })
+                    }}
+                    value={field.value ?? ""}
+                  >
+                    <FormControl>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select algorithm" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {childOptions.map((option) => {
+                        const takenElsewhere = takenByOthersSet.has(option.key)
+                        return (
+                          <SelectItem
+                            key={option.key}
+                            value={option.key}
+                            disabled={takenElsewhere}
+                          >
+                            <span className="flex items-center gap-2">
+                              <span>{option.label}</span>
+                              {takenElsewhere && (
+                                <span className="text-[10px] text-muted-foreground">
+                                  (already added)
+                                </span>
+                              )}
+                            </span>
+                          </SelectItem>
+                        )
+                      })}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={control}
+              name={`${rowPrefix}.algorithm_version`}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-xs">Version</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    value={field.value ?? ""}
+                    disabled={!selectedKey || availableVersions.length === 0}
+                  >
+                    <FormControl>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select version" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {availableVersions.map((version) => (
+                        <SelectItem key={version} value={version}>
+                          {version}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={control}
+              name={`${rowPrefix}.weight`}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-xs">Weight</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      step="any"
+                      min="0"
+                      value={field.value ?? ""}
+                      onChange={(event) => {
+                        const raw = event.target.value
+                        if (raw === "") {
+                          field.onChange("")
+                          return
+                        }
+                        const parsed = Number(raw.replace(",", "."))
+                        field.onChange(Number.isFinite(parsed) ? parsed : raw)
+                      }}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
+          {childDefinition && childFormFields.length > 0 && (
+            <div className="flex flex-col gap-3 pl-3 border-l-2 border-border">
+              {childFormFields.map((childField, childIndex) =>
+                renderScalarField(
+                  {
+                    ...childField,
+                    // Rebind the form path to the composer array slot. The
+                    // internal `.value` is what the API payload stores; we keep
+                    // the original `key` on the sibling `.key` field (set by the
+                    // parent's buildChildInputsArray helper).
+                    key: `${rowPrefix}.inputs.${childIndex}.value`,
+                  },
+                  control
+                )
+              )}
+            </div>
           )}
         </div>
-      )}
-    </div>
+      </CollapsibleContent>
+    </Collapsible>
   )
 }
