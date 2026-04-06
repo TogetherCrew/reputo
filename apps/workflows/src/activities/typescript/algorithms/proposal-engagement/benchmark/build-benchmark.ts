@@ -8,7 +8,7 @@ import type {
   ProposalBenchmarkRecord,
   ProposalEngagementBenchmark,
   ProposalEngagementParams,
-  UserProposalBenchmarkRecord,
+  SubIdProposalBenchmarkRecord,
 } from '../types.js';
 
 export function buildProposalBenchmarkRecord(
@@ -57,10 +57,12 @@ export function buildProposalBenchmarkRecord(
 export interface FormatBenchmarkInput {
   records: ProposalBenchmarkRecord[];
   snapshotId: string;
-  userIdsInResult: Set<number>;
-  allUserIds: number[];
-  userScores: Map<number, number>;
-  userAccumulators: Map<number, { positiveSum: number; negativeSum: number }>;
+  subIds: string[];
+  subIdScores: Map<string, number>;
+  subIdAccumulators: Map<string, { positiveSum: number; negativeSum: number }>;
+  deepProposalPortalIdBySubId: Map<string, string | null>;
+  matchedSubIds: Set<string>;
+  deepProposalPortalSubIdsIndex: Map<string, string[]>;
   params: ProposalEngagementParams;
   totalProposalsProcessed: number;
   totalProposalsScored: number;
@@ -71,35 +73,41 @@ export function formatBenchmarkOutput(input: FormatBenchmarkInput): ProposalEnga
   const {
     records,
     snapshotId,
-    userIdsInResult,
-    allUserIds,
-    userScores,
-    userAccumulators,
+    subIds,
+    subIdScores,
+    subIdAccumulators,
+    deepProposalPortalIdBySubId,
+    matchedSubIds,
+    deepProposalPortalSubIdsIndex,
     params,
     totalProposalsProcessed,
     totalProposalsScored,
     proposalsSkippedUnsupportedRound,
   } = input;
 
-  // Group proposal records by user (only for users in result set)
-  const userProposalMap = new Map<number, ProposalBenchmarkRecord[]>();
+  const subIdProposalMap = new Map<string, ProposalBenchmarkRecord[]>();
 
   for (const record of records) {
     for (const ownerId of record.owners.all_owner_ids) {
-      if (!userIdsInResult.has(ownerId)) continue;
-      const list = userProposalMap.get(ownerId) ?? [];
-      list.push(record);
-      userProposalMap.set(ownerId, list);
+      const targetSubIds = deepProposalPortalSubIdsIndex.get(String(ownerId)) ?? [];
+
+      for (const subId of targetSubIds) {
+        const list = subIdProposalMap.get(subId) ?? [];
+        list.push(record);
+        subIdProposalMap.set(subId, list);
+      }
     }
   }
 
-  const users: UserProposalBenchmarkRecord[] = [];
+  const subIdRows: SubIdProposalBenchmarkRecord[] = [];
 
-  for (const [userId, proposals] of userProposalMap) {
-    const engagement = userScores.get(userId) ?? 0;
-    const acc = userAccumulators.get(userId);
-    users.push({
-      user_id: userId,
+  for (const subId of subIds) {
+    const proposals = subIdProposalMap.get(subId) ?? [];
+    const engagement = subIdScores.get(subId) ?? 0;
+    const acc = subIdAccumulators.get(subId);
+    subIdRows.push({
+      sub_id: subId,
+      deep_proposal_portal_id: deepProposalPortalIdBySubId.get(subId) ?? null,
       proposal_engagement: engagement,
       positive_sum: acc?.positiveSum ?? 0,
       negative_sum: acc?.negativeSum ?? 0,
@@ -108,29 +116,29 @@ export function formatBenchmarkOutput(input: FormatBenchmarkInput): ProposalEnga
     });
   }
 
-  users.sort((a, b) => a.user_id - b.user_id);
-
-  const includedIds = Array.from(userIdsInResult).sort((a, b) => a - b);
-  const allUserIdSet = new Set(allUserIds);
-  const excludedIds = allUserIds.filter((id) => !userIdsInResult.has(id)).sort((a, b) => a - b);
-
-  const usersWithScore = includedIds.length;
-  const usersExcludedNoScore = allUserIdSet.size - usersWithScore;
+  subIdRows.sort((a, b) => a.sub_id.localeCompare(b.sub_id));
+  const matchedIds = [...matchedSubIds].sort((a, b) => a.localeCompare(b));
+  const unmatchedIds = subIds.filter((subId) => !matchedSubIds.has(subId));
 
   return {
-    users,
+    sub_ids: subIdRows,
     metadata: {
       snapshot_id: snapshotId,
       computed_at: new Date().toISOString(),
-      config: params,
-      users: {
-        included_ids: includedIds,
-        excluded_ids: excludedIds,
+      config: {
+        fundedConcludedRewardWeight: params.fundedConcludedRewardWeight,
+        unfundedPenaltyWeight: params.unfundedPenaltyWeight,
+        engagementWindowMonths: params.engagementWindowMonths,
+        monthlyDecayRatePercent: params.monthlyDecayRatePercent,
+      },
+      sub_ids: {
+        provided_ids: subIds,
+        matched_ids: matchedIds,
+        unmatched_ids: unmatchedIds,
       },
       metrics: {
-        total_users_in_table: allUserIdSet.size,
-        users_with_score: usersWithScore,
-        users_excluded_no_score: usersExcludedNoScore,
+        total_sub_ids_provided: subIds.length,
+        sub_ids_with_matching_owner: matchedIds.length,
         total_proposals_processed: totalProposalsProcessed,
         total_proposals_scored: totalProposalsScored,
         proposals_skipped_unsupported_round: proposalsSkippedUnsupportedRound,

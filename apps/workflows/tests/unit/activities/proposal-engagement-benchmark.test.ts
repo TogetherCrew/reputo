@@ -146,7 +146,7 @@ describe('proposal-engagement benchmark', () => {
       score: { proposal_reward: 0, proposal_penalty: 0, scored: false, skip_reason: null },
     };
 
-    it('includes metadata with included/excluded ids, config, and metrics', () => {
+    it('includes metadata with matched and unmatched SubIDs, config, and metrics', () => {
       const records: ProposalBenchmarkRecord[] = [
         {
           ...baseRecord,
@@ -165,36 +165,48 @@ describe('proposal-engagement benchmark', () => {
       const result = formatBenchmarkOutput({
         records,
         snapshotId: 'snap-123',
-        userIdsInResult: new Set([10, 35]),
-        allUserIds: [10, 35, 100],
-        userScores: new Map([
-          [10, 0.5],
-          [35, -0.15],
+        subIds: ['SubID-10', 'SubID-35', 'SubID-100'],
+        subIdScores: new Map([
+          ['SubID-10', 0.5],
+          ['SubID-35', -0.15],
+          ['SubID-100', 0],
         ]),
-        userAccumulators: new Map([
-          [10, { positiveSum: 0.5, negativeSum: 0 }],
-          [35, { positiveSum: 0, negativeSum: 0.3 }],
+        subIdAccumulators: new Map([
+          ['SubID-10', { positiveSum: 0.5, negativeSum: 0 }],
+          ['SubID-35', { positiveSum: 0, negativeSum: 0.3 }],
+          ['SubID-100', { positiveSum: 0, negativeSum: 0 }],
         ]),
-        params: mockParams,
+        deepProposalPortalIdBySubId: new Map([
+          ['SubID-10', '10'],
+          ['SubID-35', '35'],
+          ['SubID-100', '100'],
+        ]),
+        matchedSubIds: new Set(['SubID-10', 'SubID-35']),
+        deepProposalPortalSubIdsIndex: new Map([
+          ['10', ['SubID-10']],
+          ['35', ['SubID-35']],
+          ['100', ['SubID-100']],
+        ]),
+        params: { ...mockParams, subIdsKey: 'uploads/sub_ids.json' },
         totalProposalsProcessed: 2,
         totalProposalsScored: 2,
         proposalsSkippedUnsupportedRound: 0,
       });
 
-      expect(result.users).toHaveLength(2);
+      expect(result.sub_ids).toHaveLength(3);
       expect(result.metadata.snapshot_id).toBe('snap-123');
       expect(result.metadata.config).toEqual(mockParams);
-      expect(result.metadata.users.included_ids).toEqual([10, 35]);
-      expect(result.metadata.users.excluded_ids).toEqual([100]);
-      expect(result.metadata.metrics.total_users_in_table).toBe(3);
-      expect(result.metadata.metrics.users_with_score).toBe(2);
-      expect(result.metadata.metrics.users_excluded_no_score).toBe(1);
+      expect(result.metadata.sub_ids.provided_ids).toEqual(['SubID-10', 'SubID-35', 'SubID-100']);
+      expect(result.metadata.sub_ids.matched_ids).toEqual(['SubID-10', 'SubID-35']);
+      expect(result.metadata.sub_ids.unmatched_ids).toEqual(['SubID-100']);
+      expect(result.metadata.metrics.total_sub_ids_provided).toBe(3);
+      expect(result.metadata.metrics.sub_ids_with_matching_owner).toBe(2);
       expect(result.metadata.metrics.total_proposals_processed).toBe(2);
       expect(result.metadata.metrics.total_proposals_scored).toBe(2);
       expect(result.metadata.metrics.proposals_skipped_unsupported_round).toBe(0);
     });
 
-    it('excludes users not in userIdsInResult from benchmark output', () => {
+    it('includes only the provided SubIDs in benchmark output', () => {
       const records: ProposalBenchmarkRecord[] = [
         {
           ...baseRecord,
@@ -207,26 +219,28 @@ describe('proposal-engagement benchmark', () => {
       const result = formatBenchmarkOutput({
         records,
         snapshotId: 'snap-789',
-        userIdsInResult: new Set([35]),
-        allUserIds: [35],
-        userScores: new Map([[35, 0.8]]),
-        userAccumulators: new Map([[35, { positiveSum: 0.8, negativeSum: 0 }]]),
-        params: mockParams,
+        subIds: ['SubID-35'],
+        subIdScores: new Map([['SubID-35', 0.8]]),
+        subIdAccumulators: new Map([['SubID-35', { positiveSum: 0.8, negativeSum: 0 }]]),
+        deepProposalPortalIdBySubId: new Map([['SubID-35', '35']]),
+        matchedSubIds: new Set(['SubID-35']),
+        deepProposalPortalSubIdsIndex: new Map([['35', ['SubID-35']]]),
+        params: { ...mockParams, subIdsKey: 'uploads/sub_ids.json' },
         totalProposalsProcessed: 1,
         totalProposalsScored: 1,
         proposalsSkippedUnsupportedRound: 0,
       });
 
-      expect(result.users).toHaveLength(1);
-      const user = result.users[0];
-      expect(user).toBeDefined();
-      if (user) {
-        expect(user.user_id).toBe(35);
-        expect(user.proposal_engagement).toBe(0.8);
+      expect(result.sub_ids).toHaveLength(1);
+      const subId = result.sub_ids[0];
+      expect(subId).toBeDefined();
+      if (subId) {
+        expect(subId.sub_id).toBe('SubID-35');
+        expect(subId.proposal_engagement).toBe(0.8);
       }
     });
 
-    it('populates per-user accumulator sums and proposal count', () => {
+    it('populates per-SubID accumulator sums and proposal count', () => {
       const records: ProposalBenchmarkRecord[] = [
         {
           ...baseRecord,
@@ -245,23 +259,25 @@ describe('proposal-engagement benchmark', () => {
       const result = formatBenchmarkOutput({
         records,
         snapshotId: 'snap-acc',
-        userIdsInResult: new Set([10]),
-        allUserIds: [10],
-        userScores: new Map([[10, 0.4]]),
-        userAccumulators: new Map([[10, { positiveSum: 0.5, negativeSum: 0.2 }]]),
-        params: mockParams,
+        subIds: ['SubID-10'],
+        subIdScores: new Map([['SubID-10', 0.4]]),
+        subIdAccumulators: new Map([['SubID-10', { positiveSum: 0.5, negativeSum: 0.2 }]]),
+        deepProposalPortalIdBySubId: new Map([['SubID-10', '10']]),
+        matchedSubIds: new Set(['SubID-10']),
+        deepProposalPortalSubIdsIndex: new Map([['10', ['SubID-10']]]),
+        params: { ...mockParams, subIdsKey: 'uploads/sub_ids.json' },
         totalProposalsProcessed: 2,
         totalProposalsScored: 2,
         proposalsSkippedUnsupportedRound: 0,
       });
 
-      expect(result.users).toHaveLength(1);
-      const user = result.users[0];
-      expect(user).toBeDefined();
-      if (user) {
-        expect(user.positive_sum).toBe(0.5);
-        expect(user.negative_sum).toBe(0.2);
-        expect(user.proposal_count).toBe(2);
+      expect(result.sub_ids).toHaveLength(1);
+      const subId = result.sub_ids[0];
+      expect(subId).toBeDefined();
+      if (subId) {
+        expect(subId.positive_sum).toBe(0.5);
+        expect(subId.negative_sum).toBe(0.2);
+        expect(subId.proposal_count).toBe(2);
       }
     });
 
@@ -286,11 +302,13 @@ describe('proposal-engagement benchmark', () => {
       const result = formatBenchmarkOutput({
         records,
         snapshotId: 'snap-round',
-        userIdsInResult: new Set([10]),
-        allUserIds: [10],
-        userScores: new Map([[10, 0.5]]),
-        userAccumulators: new Map([[10, { positiveSum: 0.5, negativeSum: 0 }]]),
-        params: mockParams,
+        subIds: ['SubID-10'],
+        subIdScores: new Map([['SubID-10', 0.5]]),
+        subIdAccumulators: new Map([['SubID-10', { positiveSum: 0.5, negativeSum: 0 }]]),
+        deepProposalPortalIdBySubId: new Map([['SubID-10', '10']]),
+        matchedSubIds: new Set(['SubID-10']),
+        deepProposalPortalSubIdsIndex: new Map([['10', ['SubID-10']]]),
+        params: { ...mockParams, subIdsKey: 'uploads/sub_ids.json' },
         totalProposalsProcessed: 2,
         totalProposalsScored: 1,
         proposalsSkippedUnsupportedRound: 1,

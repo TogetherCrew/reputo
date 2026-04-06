@@ -18,6 +18,7 @@ export { validateCSVContent } from './csv-validation.js';
 export { validateJSONContent } from './json-validation.js';
 export {
   type ResolveInputContentArgs,
+  type ResolveNestedDefinitionArgs,
   type ValidateAlgorithmPresetArgs,
   validateAlgorithmPreset,
 } from './preset-validation.js';
@@ -34,6 +35,7 @@ export {
 export type {
   AlgorithmCategory,
   AlgorithmDefinition,
+  AlgorithmKind,
   AlgorithmPresetValidationResult,
   AlgorithmRuntime,
   AlgorithmValidationConfig,
@@ -50,6 +52,7 @@ export type {
   ResourceCatalogChain,
   ResourceCatalogResource,
   ScalarObjectPropertyParam,
+  SubAlgorithmIoItem,
   ValidationResult,
 } from './types/index.js';
 

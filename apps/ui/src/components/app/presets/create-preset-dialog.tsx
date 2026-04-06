@@ -19,24 +19,13 @@ import type { CreateAlgorithmPresetDto } from "@/lib/api/types"
 import { cn } from "@/lib/utils"
 import { validateAlgorithmPresetClient } from "./algorithm-client-validation"
 import { extractApiErrorMessages } from "./error-utils"
+import { buildPresetInputsFromForm } from "./preset-payload"
 
 interface CreatePresetDialogProps {
   algo?: Algorithm
   onCreatePreset: (data: CreateAlgorithmPresetDto) => Promise<void>
   isLoading: boolean
 }
-
-/** Normalize numeric value: "1,2" (locale) → number 1.2 for API validity. */
-function normalizeNumericPresetValue(value: unknown): unknown {
-  if (typeof value === "number" && Number.isFinite(value)) return value
-  if (typeof value !== "string") return value
-  const trimmed = value.trim()
-  if (trimmed === "") return value
-  const n = Number(trimmed.replace(/,/g, "."))
-  return Number.isFinite(n) ? n : value
-}
-
-const NUMERIC_INPUT_TYPES = new Set(["number", "integer", "slider"])
 
 export function CreatePresetDialog({
   algo,
@@ -60,6 +49,14 @@ export function CreatePresetDialog({
     [schema]
   )
 
+  const hasSubAlgorithm = useMemo(
+    () =>
+      schema?.inputs.some((input) => input.type === "sub_algorithm") ?? false,
+    [schema]
+  )
+
+  const needsWideDialog = hasResourceSelector || hasSubAlgorithm
+
   const handleSubmit = async (data: Record<string, unknown>) => {
     if (!algo) return
 
@@ -71,23 +68,9 @@ export function CreatePresetDialog({
         version: (data.version as string) || "1.0.0",
         name: data.name as string | undefined,
         description: data.description as string | undefined,
-        inputs: algo.inputs.map((input) => {
-          const value = data[input.key]
-
-          let inputValue: unknown
-          if (value instanceof File) {
-            inputValue = ""
-          } else if (input.type === "array" && Array.isArray(value)) {
-            inputValue = value
-          } else {
-            const raw = value !== undefined && value !== null ? value : ""
-            inputValue =
-              NUMERIC_INPUT_TYPES.has(input.type) && raw !== ""
-                ? normalizeNumericPresetValue(raw)
-                : raw
-          }
-
-          return { key: input.key, value: inputValue }
+        inputs: buildPresetInputsFromForm({
+          algorithmInputs: algo.inputs,
+          data,
         }),
       }
 
@@ -138,7 +121,7 @@ export function CreatePresetDialog({
       <DialogContent
         className={cn(
           "max-h-[90vh] flex flex-col p-0",
-          hasResourceSelector ? "sm:max-w-5xl" : "sm:max-w-lg"
+          needsWideDialog ? "sm:max-w-5xl" : "sm:max-w-lg"
         )}
       >
         <DialogHeader className="flex-shrink-0 px-6 pt-6 pb-4 border-b">

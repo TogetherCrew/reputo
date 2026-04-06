@@ -42,6 +42,15 @@ describe('Build: Schema Validation', () => {
       expect(result.errors).toEqual([]);
     });
 
+    it('should validate custom_algorithm from registry', () => {
+      const algorithmPath = join(__dirname, '../../../../src/registry/custom_algorithm/1.0.0.json');
+      const algorithm = JSON.parse(readFileSync(algorithmPath, 'utf-8'));
+
+      const result = validator.validate(algorithm);
+      expect(result.isValid).toBe(true);
+      expect(result.errors).toEqual([]);
+    });
+
     it('should validate resource selector inputs and root validation rules', () => {
       const resourceSelectorDefinition = {
         key: 'chain_resource_selector',
@@ -163,6 +172,57 @@ describe('Build: Schema Validation', () => {
       };
 
       const result = validator.validate(resourceSelectorDefinition);
+      expect(result.isValid).toBe(true);
+      expect(result.errors).toEqual([]);
+    });
+
+    it('should validate combined algorithms with sub-algorithm inputs', () => {
+      const combinedDefinition = {
+        key: 'combined_algorithm',
+        name: 'Combined Algorithm',
+        kind: 'combined',
+        category: 'Custom',
+        summary: 'Combines multiple sub-algorithms.',
+        description: 'Uses the sub-algorithm composer input.',
+        version: '1.0.0',
+        inputs: [
+          {
+            key: 'sub_ids',
+            label: 'Sub IDs',
+            description: 'Shared SubID input.',
+            type: 'json',
+            required: true,
+            json: {
+              maxBytes: 1024,
+              schema: 'sub_id_input_map',
+              allowedChains: ['ethereum', 'cardano'],
+            },
+          },
+          {
+            key: 'sub_algorithms',
+            label: 'Sub-Algorithms',
+            description: 'Nested algorithms composed into this definition.',
+            type: 'sub_algorithm',
+            required: true,
+            minItems: 1,
+            maxItems: 5,
+            sharedInputKeys: ['sub_ids'],
+            uiHint: {
+              widget: 'sub_algorithm_composer',
+              addButtonLabel: 'Add sub-algorithm',
+            },
+          },
+        ],
+        outputs: [
+          {
+            key: 'result',
+            type: 'json',
+          },
+        ],
+        runtime: 'typescript',
+      };
+
+      const result = validator.validate(combinedDefinition);
       expect(result.isValid).toBe(true);
       expect(result.errors).toEqual([]);
     });

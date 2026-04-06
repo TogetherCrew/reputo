@@ -5,16 +5,13 @@ export interface VoteGroupingStats {
   totalVotes: number;
   validVotes: number;
   invalidVotes: number;
-  uniqueVoters: number;
+  targetedVoterIds: number;
 }
 
-/**
- * Group votes by voter ID, filtering invalid votes.
- *
- * @param votes - Raw vote records
- * @returns Map of voter ID to their valid votes and processing stats
- */
-export function groupVotesByVoter(votes: VoteRecord[]): {
+export function groupVotesByVoter(
+  votes: VoteRecord[],
+  allowedVoterIds?: Set<string>,
+): {
   votesByVoter: Map<string, ValidVote[]>;
   stats: VoteGroupingStats;
 } {
@@ -29,6 +26,10 @@ export function groupVotesByVoter(votes: VoteRecord[]): {
 
     if (!voterId || !questionId || !rawVote) {
       invalidVotesCount++;
+      continue;
+    }
+
+    if (allowedVoterIds && !allowedVoterIds.has(voterId)) {
       continue;
     }
 
@@ -52,7 +53,7 @@ export function groupVotesByVoter(votes: VoteRecord[]): {
       totalVotes: votes.length,
       validVotes: validVotesCount,
       invalidVotes: invalidVotesCount,
-      uniqueVoters: votesByVoter.size,
+      targetedVoterIds: allowedVoterIds?.size ?? votesByVoter.size,
     },
   };
 }

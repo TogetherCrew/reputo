@@ -143,12 +143,45 @@ describe('AlgorithmPresetService', () => {
 
     vi.mocked(getAlgorithmDefinition).mockReturnValue(JSON.stringify(mockAlgorithmDefinition));
 
-    vi.mocked(validateAlgorithmPreset).mockResolvedValue({
-      success: true,
-      data: {
-        preset: {},
-        payload: {},
-      },
+    vi.mocked(validateAlgorithmPreset).mockImplementation(async (args: any) => {
+      const errors: Array<{ field: string; message: string; source: 'file' }> = [];
+
+      for (const input of args.definition.inputs) {
+        if (input.type !== 'csv' && input.type !== 'json') {
+          continue;
+        }
+
+        const presetInput = args.preset.inputs.find((candidate: any) => candidate.key === input.key);
+        if (!presetInput || typeof presetInput.value !== 'string' || presetInput.value.trim() === '') {
+          continue;
+        }
+
+        try {
+          await args.resolveInputContent({ input, value: presetInput.value });
+        } catch (error) {
+          const messages =
+            error instanceof AggregateError
+              ? error.errors.map((item) => (item instanceof Error ? item.message : String(item)))
+              : [error instanceof Error ? error.message : String(error)];
+
+          errors.push(...messages.map((message) => ({ field: input.key, message, source: 'file' as const })));
+        }
+      }
+
+      if (errors.length > 0) {
+        return {
+          success: false,
+          errors,
+        };
+      }
+
+      return {
+        success: true,
+        data: {
+          preset: {},
+          payload: {},
+        },
+      };
     });
 
     service = new AlgorithmPresetService(
@@ -207,6 +240,141 @@ describe('AlgorithmPresetService', () => {
           }),
         }),
       );
+    });
+
+    it('should provide nested definition and file resolvers for combined algorithms', async () => {
+      const combinedDefinition = {
+        key: 'custom_algorithm',
+        name: 'Custom Algorithm',
+        kind: 'combined',
+        category: 'Custom',
+        summary: 'Combined algorithm',
+        description: 'Combined algorithm definition',
+        version: '1.0.0',
+        inputs: [
+          {
+            key: 'sub_ids',
+            label: 'Sub IDs',
+            type: 'json',
+            required: true,
+            json: {
+              schema: 'sub_id_input_map',
+            },
+          },
+          {
+            key: 'sub_algorithms',
+            label: 'Sub Algorithms',
+            type: 'sub_algorithm',
+            required: true,
+            minItems: 1,
+            sharedInputKeys: ['sub_ids'],
+            uiHint: {
+              widget: 'sub_algorithm_composer',
+            },
+          },
+        ],
+        outputs: [],
+        runtime: 'typescript',
+      };
+
+      const childDefinition = {
+        key: 'voting_engagement',
+        name: 'Voting Engagement',
+        kind: 'standalone',
+        category: 'Engagement',
+        summary: 'Child algorithm',
+        description: 'Child algorithm definition',
+        version: '1.0.0',
+        inputs: [
+          {
+            key: 'sub_ids',
+            label: 'Sub IDs',
+            type: 'json',
+            required: true,
+            json: {
+              schema: 'sub_id_input_map',
+            },
+          },
+          {
+            key: 'votes',
+            label: 'Votes CSV',
+            type: 'csv',
+            csv: {
+              hasHeader: true,
+              delimiter: ',',
+              columns: [{ key: 'column1', type: 'string', required: true }],
+            },
+          },
+        ],
+        outputs: [],
+        runtime: 'typescript',
+      };
+
+      vi.mocked(getAlgorithmDefinition).mockImplementation(({ key }) => {
+        if (key === 'custom_algorithm') {
+          return JSON.stringify(combinedDefinition);
+        }
+
+        if (key === 'voting_engagement') {
+          return JSON.stringify(childDefinition);
+        }
+
+        throw new Error(`Unexpected algorithm lookup: ${key}`);
+      });
+
+      mockStorageService.getObjectMetadata = vi.fn().mockResolvedValue(validMetadata);
+      mockStorageService.getObject = vi.fn().mockResolvedValue(validCsvBuffer);
+
+      vi.mocked(validateAlgorithmPreset).mockImplementation(async (args: any) => {
+        await expect(
+          args.resolveNestedDefinition({
+            algorithmKey: 'voting_engagement',
+            algorithmVersion: '1.0.0',
+          }),
+        ).resolves.toEqual(childDefinition);
+
+        await expect(
+          args.resolveInputContent({
+            input: childDefinition.inputs[1],
+            value: 'uploads/votes.csv',
+          }),
+        ).resolves.toEqual(validCsvBuffer);
+
+        return {
+          success: true,
+          data: {
+            preset: {},
+            payload: {},
+          },
+        };
+      });
+
+      const createDto: CreateAlgorithmPresetDto = {
+        key: 'custom_algorithm',
+        version: '1.0.0',
+        inputs: [
+          { key: 'sub_ids', value: 'uploads/sub_ids.json' },
+          {
+            key: 'sub_algorithms',
+            value: [
+              {
+                algorithm_key: 'voting_engagement',
+                algorithm_version: '1.0.0',
+                weight: 1,
+                inputs: [{ key: 'votes', value: 'uploads/votes.csv' }],
+              },
+            ],
+          },
+        ],
+      };
+
+      const mockPreset = { _id: '507f1f77bcf86cd799439011', ...createDto };
+      mockRepository.create = vi.fn().mockResolvedValue(mockPreset);
+
+      await service.create(createDto);
+
+      expect(mockStorageService.getObjectMetadata).toHaveBeenCalledWith('uploads/votes.csv');
+      expect(mockStorageService.getObject).toHaveBeenCalledWith('uploads/votes.csv');
     });
   });
 
@@ -396,7 +564,7 @@ describe('AlgorithmPresetService', () => {
         expect(response.errors[0].errors).toContainEqual(expect.stringContaining('Invalid content type'));
       }
 
-      expect(validateAlgorithmPreset).not.toHaveBeenCalled();
+      expect(validateAlgorithmPreset).toHaveBeenCalledOnce();
     });
 
     it('should collect errors from multiple CSV inputs', async () => {

@@ -2,11 +2,13 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const {
   mockComputeContributionScore,
+  mockComputeCustomAlgorithm,
   mockComputeProposalEngagement,
   mockComputeVotingEngagement,
   mockComputeTokenValueOverTime,
 } = vi.hoisted(() => ({
   mockComputeContributionScore: vi.fn(),
+  mockComputeCustomAlgorithm: vi.fn(),
   mockComputeProposalEngagement: vi.fn(),
   mockComputeVotingEngagement: vi.fn(),
   mockComputeTokenValueOverTime: vi.fn(),
@@ -14,6 +16,10 @@ const {
 
 vi.mock('../../../src/activities/typescript/algorithms/contribution-score/compute.js', () => ({
   computeContributionScore: mockComputeContributionScore,
+}));
+
+vi.mock('../../../src/activities/typescript/algorithms/custom-algorithm/compute.js', () => ({
+  computeCustomAlgorithm: mockComputeCustomAlgorithm,
 }));
 
 vi.mock('../../../src/activities/typescript/algorithms/proposal-engagement/compute.js', () => ({
@@ -33,6 +39,12 @@ import { dispatchAlgorithm } from '../../../src/activities/typescript/dispatchAl
 describe('dispatchAlgorithm mapping', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockComputeCustomAlgorithm.mockResolvedValue({
+      outputs: {
+        composite_score: 'outputs/composite-score.csv',
+        composite_score_details: 'outputs/composite-score-details.json',
+      },
+    });
     mockComputeTokenValueOverTime.mockResolvedValue({
       outputs: {
         token_value_over_time: 'outputs/token.csv',
@@ -60,6 +72,29 @@ describe('dispatchAlgorithm mapping', () => {
       outputs: {
         token_value_over_time: 'outputs/token.csv',
         token_value_over_time_details: 'outputs/token-details.json',
+      },
+    });
+  });
+
+  it('routes custom_algorithm snapshots to computeCustomAlgorithm', async () => {
+    const run = dispatchAlgorithm({} as never);
+
+    const snapshot = {
+      _id: 'snapshot-2',
+      algorithmPresetFrozen: {
+        key: 'custom_algorithm',
+        version: '1.0.0',
+        inputs: [],
+      },
+    };
+
+    const result = await run(snapshot as never);
+
+    expect(mockComputeCustomAlgorithm).toHaveBeenCalledOnce();
+    expect(result).toEqual({
+      outputs: {
+        composite_score: 'outputs/composite-score.csv',
+        composite_score_details: 'outputs/composite-score-details.json',
       },
     });
   });

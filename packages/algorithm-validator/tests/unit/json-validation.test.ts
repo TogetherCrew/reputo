@@ -4,20 +4,31 @@ import type { JsonIoItem } from '../../src/types/index.js';
 
 const jsonConfig: NonNullable<JsonIoItem['json']> = {
   maxBytes: 1024,
-  schema: 'sub_id_wallet_address_map',
+  schema: 'sub_id_input_map',
   allowedChains: ['ethereum', 'cardano'],
 };
 
 describe('validateJSONContent', () => {
-  it('accepts a valid sub-id wallet-address map', async () => {
+  it('accepts a valid SubID input map', async () => {
     const result = await validateJSONContent(
       JSON.stringify({
         'SubID-1': {
-          ethereum: ['0x1234567890abcdef1234567890abcdef12345678'],
-          cardano: ['addr1q9exampleexampleexampleexampleexampleexample'],
+          deepVotingPortalId: 'collection-1',
+          deepProposalPortalId: 42,
+          userWallets: [
+            {
+              address: '0x1234567890abcdef1234567890abcdef12345678',
+              chain: 'ethereum',
+            },
+          ],
         },
         'SubID-2': {
-          ethereum: ['0x1234567890abcdef1234567890abcdef12345678'],
+          userWallets: [
+            {
+              address: 'addr1q9exampleexampleexampleexampleexampleexample',
+              chain: 'cardano',
+            },
+          ],
         },
         'SubID-3': {},
       }),
@@ -37,29 +48,36 @@ describe('validateJSONContent', () => {
     expect(result.errors[0]).toContain('Failed to parse JSON');
   });
 
-  it('rejects old top-level wallets wrappers', async () => {
+  it('rejects legacy top-level wallets wrappers', async () => {
     const result = await validateJSONContent(
       JSON.stringify({
         wallets: {
-          ethereum: ['0x1234567890abcdef1234567890abcdef12345678', '0x1234567890ABCDEF1234567890abcdef12345678'],
+          ethereum: ['0x1234567890abcdef1234567890abcdef12345678'],
         },
       }),
       jsonConfig,
     );
 
     expect(result.valid).toBe(false);
-    expect(result.errors).toContain(
-      'JSON must not contain the top-level key "wallets"; provide sub-id keys at the root',
-    );
+    expect(result.errors).toContain('Legacy top-level "wallets" JSON is not supported; provide SubID keys at the root');
   });
 
-  it('rejects unsupported chains, invalid addresses, and duplicates within a sub-id chain', async () => {
+  it('rejects unsupported keys, invalid wallet objects, and invalid addresses', async () => {
     const result = await validateJSONContent(
       JSON.stringify({
         'SubID-1': {
-          ethereum: ['0x1234567890abcdef1234567890abcdef12345678', '0x1234567890ABCDEF1234567890abcdef12345678'],
-          cardano: ['ADDR1INVALID'],
-          cosmos: ['cosmos1invalid'],
+          extraKey: true,
+          userWallets: [
+            {
+              address: '0xnot-an-address',
+              chain: 'ethereum',
+              note: 'duplicate metadata is not allowed',
+            },
+            {
+              address: 'addr1q9exampleexampleexampleexampleexampleexample',
+              chain: 'cosmos',
+            },
+          ],
         },
       }),
       jsonConfig,
@@ -68,24 +86,43 @@ describe('validateJSONContent', () => {
     expect(result.valid).toBe(false);
     expect(result.errors).toEqual(
       expect.arrayContaining([
-        'Unsupported wallet chain key(s): cosmos. Allowed chains: ethereum, cardano',
-        '"SubID-1.ethereum" contains a duplicate address: 0x1234567890ABCDEF1234567890abcdef12345678',
-        '"SubID-1.cardano[0]" must be a valid Cardano payment address',
+        '"SubID-1" contains unsupported key(s): extraKey',
+        '"SubID-1.userWallets[0]" contains unsupported key(s): note',
+        '"SubID-1.userWallets[0].address" must be a valid Ethereum address',
+        '"SubID-1.userWallets[1].chain" must be one of: ethereum, cardano',
       ]),
     );
   });
 
-  it('allows empty coverage and duplicate wallets across different sub-ids', async () => {
+  it('allows empty optional fields and duplicate wallets across different SubIDs', async () => {
     const result = await validateJSONContent(
       JSON.stringify({
         'SubID-1': {
-          ethereum: ['0x1234567890abcdef1234567890abcdef12345678'],
+          deepVotingPortalId: '',
+          userWallets: [
+            {
+              address: '0x1234567890abcdef1234567890abcdef12345678',
+              chain: 'ethereum',
+            },
+          ],
         },
         'SubID-2': {
-          ethereum: ['0x1234567890abcdef1234567890abcdef12345678'],
-          cardano: [],
+          deepProposalPortalId: '',
+          userWallets: [
+            {
+              address: '0x1234567890ABCDEF1234567890abcdef12345678',
+              chain: 'ethereum',
+            },
+          ],
         },
-        'SubID-3': {},
+        'SubID-3': {
+          userWallets: [
+            {
+              address: '',
+              chain: '',
+            },
+          ],
+        },
       }),
       jsonConfig,
     );

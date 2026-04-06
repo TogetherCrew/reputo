@@ -98,7 +98,7 @@ describe('contribution-score benchmark', () => {
       scored: false,
     };
 
-    it('includes metadata with included/excluded ids, config, and metrics', () => {
+    it('includes metadata with matched and unmatched SubIDs, config, and metrics', () => {
       const records: CommentBenchmarkRecord[] = [
         {
           ...baseRecord,
@@ -121,31 +121,41 @@ describe('contribution-score benchmark', () => {
       const result = formatBenchmarkOutput({
         records,
         snapshotId: 'snap-123',
-        userIdsInResult: new Set([10, 35]),
-        allUserIds: [10, 35, 100],
-        userScores: new Map([
-          [10, 12],
-          [35, 5],
+        subIds: ['SubID-10', 'SubID-35', 'SubID-100'],
+        subIdScores: new Map([
+          ['SubID-10', 12],
+          ['SubID-35', 5],
+          ['SubID-100', 0],
         ]),
-        params: mockParams,
+        deepProposalPortalIdBySubId: new Map([
+          ['SubID-10', '10'],
+          ['SubID-35', '35'],
+          ['SubID-100', '100'],
+        ]),
+        matchedSubIds: new Set(['SubID-10', 'SubID-35']),
+        deepProposalPortalSubIdsIndex: new Map([
+          ['10', ['SubID-10']],
+          ['35', ['SubID-35']],
+          ['100', ['SubID-100']],
+        ]),
+        params: { ...mockParams, subIdsKey: 'uploads/sub_ids.json' },
         totalCommentsProcessed: 2,
         totalCommentsScored: 2,
       });
 
-      expect(result.users).toHaveLength(2);
+      expect(result.sub_ids).toHaveLength(3);
       expect(result.metadata.snapshot_id).toBe('snap-123');
       expect(result.metadata.config).toEqual(mockParams);
-      expect(result.metadata.users.included_ids).toEqual([10, 35]);
-      expect(result.metadata.users.excluded_ids).toEqual([100]);
-      expect(result.metadata.metrics.total_users_in_table).toBe(3);
-      expect(result.metadata.metrics.users_with_score).toBe(2);
-      expect(result.metadata.metrics.users_excluded_no_score).toBe(1);
+      expect(result.metadata.sub_ids.provided_ids).toEqual(['SubID-10', 'SubID-35', 'SubID-100']);
+      expect(result.metadata.sub_ids.matched_ids).toEqual(['SubID-10', 'SubID-35']);
+      expect(result.metadata.sub_ids.unmatched_ids).toEqual(['SubID-100']);
+      expect(result.metadata.metrics.total_sub_ids_provided).toBe(3);
+      expect(result.metadata.metrics.sub_ids_with_matching_comments).toBe(2);
       expect(result.metadata.metrics.total_comments_processed).toBe(2);
       expect(result.metadata.metrics.total_comments_scored).toBe(2);
-      expect(result.metadata.metrics).not.toHaveProperty('comment_authors_excluded_not_in_table');
     });
 
-    it('excludes users not in userIdsInResult', () => {
+    it('includes only the provided SubIDs', () => {
       const records: CommentBenchmarkRecord[] = [
         { ...baseRecord, comment_id: 1, user_id: 4, comment_score: 24.5, scored: true },
         { ...baseRecord, comment_id: 2, user_id: 35, comment_score: 5, scored: true },
@@ -154,19 +164,21 @@ describe('contribution-score benchmark', () => {
       const result = formatBenchmarkOutput({
         records,
         snapshotId: 'snap-789',
-        userIdsInResult: new Set([35]),
-        allUserIds: [35],
-        userScores: new Map([[35, 5]]),
-        params: mockParams,
+        subIds: ['SubID-35'],
+        subIdScores: new Map([['SubID-35', 5]]),
+        deepProposalPortalIdBySubId: new Map([['SubID-35', '35']]),
+        matchedSubIds: new Set(['SubID-35']),
+        deepProposalPortalSubIdsIndex: new Map([['35', ['SubID-35']]]),
+        params: { ...mockParams, subIdsKey: 'uploads/sub_ids.json' },
         totalCommentsProcessed: 2,
         totalCommentsScored: 2,
       });
 
-      expect(result.users).toHaveLength(1);
-      const [user] = result.users;
-      expect(user).toBeDefined();
-      expect(user?.user_id).toBe(35);
-      expect(user?.contribution_score).toBe(5);
+      expect(result.sub_ids).toHaveLength(1);
+      const [subId] = result.sub_ids;
+      expect(subId).toBeDefined();
+      expect(subId?.sub_id).toBe('SubID-35');
+      expect(subId?.contribution_score).toBe(5);
     });
   });
 });

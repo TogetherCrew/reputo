@@ -22,16 +22,48 @@ export interface TestAppOptions {
 export async function createTestApp(options: TestAppOptions) {
   applyAuthTestEnv();
 
+  const getFilename = (key: string) => key.split('/').pop() ?? key;
+  const getExtension = (key: string) => {
+    const filename = getFilename(key);
+    const dotIndex = filename.lastIndexOf('.');
+    return dotIndex >= 0 ? filename.slice(dotIndex + 1).toLowerCase() : '';
+  };
+
   const mockStorageService = {
-    getObjectMetadata: async () => ({
-      filename: 'votes.csv',
-      ext: 'csv',
-      size: 128,
-      contentType: 'text/csv',
-      timestamp: Date.now(),
-    }),
-    getObject: async () =>
-      Buffer.from('answer,question_id,collection_id\n10,question-1,user-1\nskip,question-2,user-2\n'),
+    getObjectMetadata: async (key: string) => {
+      const ext = getExtension(key);
+
+      if (ext === 'json') {
+        return {
+          filename: getFilename(key),
+          ext: 'json',
+          size: 64,
+          contentType: 'application/json',
+          timestamp: Date.now(),
+        };
+      }
+
+      return {
+        filename: getFilename(key),
+        ext: 'csv',
+        size: 128,
+        contentType: 'text/csv',
+        timestamp: Date.now(),
+      };
+    },
+    getObject: async (key: string) => {
+      if (getExtension(key) === 'json') {
+        return Buffer.from(
+          JSON.stringify({
+            'SubID-1': {
+              deepVotingPortalId: 'user-1',
+            },
+          }),
+        );
+      }
+
+      return Buffer.from('answer,question_id,collection_id\n10,question-1,user-1\nskip,question-2,user-2\n');
+    },
     listObjectsByPrefix: async () => [],
     deleteObjects: async () => ({
       deleted: [],

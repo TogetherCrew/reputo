@@ -31,6 +31,7 @@ export async function validateAlgorithmPresetClient(args: {
   name?: string
   description?: string
 }): Promise<ClientValidationError[]> {
+  const fileContentCache = new Map<string, string>()
   const definition = JSON.parse(
     getAlgorithmDefinition({ key: args.key, version: args.version })
   ) as AlgorithmDefinition
@@ -44,9 +45,20 @@ export async function validateAlgorithmPresetClient(args: {
       name: args.name,
       description: args.description,
     },
+    resolveNestedDefinition: async ({ algorithmKey, algorithmVersion }) =>
+      JSON.parse(
+        getAlgorithmDefinition({ key: algorithmKey, version: algorithmVersion })
+      ) as AlgorithmDefinition,
     resolveInputContent: async ({ value }) => {
-      if (typeof value === "string") {
-        return readInputContent(value)
+      if (typeof value === "string" && value.trim() !== "") {
+        const cached = fileContentCache.get(value)
+        if (cached !== undefined) {
+          return cached
+        }
+
+        const content = await readInputContent(value)
+        fileContentCache.set(value, content)
+        return content
       }
 
       return value

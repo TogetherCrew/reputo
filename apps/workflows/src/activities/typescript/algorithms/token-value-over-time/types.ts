@@ -43,7 +43,7 @@ export interface EffectiveDateRange {
 export interface TokenValueOverTimeParams {
   maturationThresholdDays: number;
   selectedResources: SelectedResourceInput[];
-  walletsKey: string;
+  subIdsKey: string;
   effectiveDateRange: EffectiveDateRange;
 }
 

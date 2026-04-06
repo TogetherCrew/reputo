@@ -20,6 +20,10 @@ import type {
 import { cn } from "@/lib/utils"
 import { validateAlgorithmPresetClient } from "./algorithm-client-validation"
 import { extractApiFieldErrors } from "./error-utils"
+import {
+  buildPresetInputsFromForm,
+  normalizeNumericPresetValue,
+} from "./preset-payload"
 
 interface EditPresetDialogProps {
   isOpen: boolean
@@ -29,19 +33,6 @@ interface EditPresetDialogProps {
   isLoading: boolean
   error?: unknown
 }
-
-/** Normalize numeric value: accept "1,2" (locale) and return number 1.2 so UI and API use dot. */
-function normalizeNumericPresetValue(value: unknown): unknown {
-  if (typeof value === "number" && Number.isFinite(value)) return value
-  if (typeof value !== "string") return value
-  const trimmed = value.trim()
-  if (trimmed === "") return value
-  const normalized = trimmed.replace(/,/g, ".")
-  const n = Number(normalized)
-  return Number.isFinite(n) ? n : value
-}
-
-const NUMERIC_INPUT_TYPES = new Set(["number", "integer", "slider"])
 
 export function EditPresetDialog({
   isOpen,
@@ -77,6 +68,14 @@ export function EditPresetDialog({
     [schema]
   )
 
+  const hasSubAlgorithm = useMemo(
+    () =>
+      schema?.inputs.some((input) => input.type === "sub_algorithm") ?? false,
+    [schema]
+  )
+
+  const needsWideDialog = hasResourceSelector || hasSubAlgorithm
+
   // Build default values from preset (preset.inputs use algorithm input keys)
   const defaultValues = useMemo(() => {
     if (!preset || !algorithm) return {}
@@ -93,8 +92,11 @@ export function EditPresetDialog({
       const algoInput = algorithm.inputs.find((i) => i.key === presetInput.key)
       if (algoInput?.type === "array" && Array.isArray(raw)) {
         defaults[presetInput.key] = raw
+      } else if (algoInput?.type === "sub_algorithm" && Array.isArray(raw)) {
+        defaults[presetInput.key] = raw
       } else {
-        const isNumeric = algoInput && NUMERIC_INPUT_TYPES.has(algoInput.type)
+        const isNumeric =
+          algoInput && ["number", "integer", "slider"].includes(algoInput.type)
         defaults[presetInput.key] = isNumeric
           ? normalizeNumericPresetValue(raw)
           : raw
@@ -132,25 +134,10 @@ export function EditPresetDialog({
 
       // Inputs: use algorithm input keys; send form value or fall back to existing preset value.
       // Normalize numeric values so "1,2" (locale) is sent as number 1.2 for API validity.
-      const inputs = algorithm.inputs.map((input) => {
-        const value = data[input.key]
-        let inputValue: unknown
-        if (value instanceof File) {
-          inputValue = ""
-        } else if (input.type === "array" && Array.isArray(value)) {
-          inputValue = value
-        } else if (value !== undefined && value !== null && value !== "") {
-          inputValue = NUMERIC_INPUT_TYPES.has(input.type)
-            ? normalizeNumericPresetValue(value)
-            : value
-        } else {
-          const existing = preset.inputs.find((i) => i.key === input.key)
-          const raw = existing?.value ?? ""
-          inputValue = NUMERIC_INPUT_TYPES.has(input.type)
-            ? normalizeNumericPresetValue(raw)
-            : raw
-        }
-        return { key: input.key, value: inputValue }
+      const inputs = buildPresetInputsFromForm({
+        algorithmInputs: algorithm.inputs,
+        data,
+        existingInputs: preset.inputs,
       })
       updateData.inputs = inputs
 
@@ -199,7 +186,7 @@ export function EditPresetDialog({
       <DialogContent
         className={cn(
           "max-h-[90vh] overflow-y-auto",
-          hasResourceSelector ? "sm:max-w-5xl" : "sm:max-w-2xl"
+          needsWideDialog ? "sm:max-w-5xl" : "sm:max-w-2xl"
         )}
       >
         <DialogHeader>
