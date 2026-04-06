@@ -5,12 +5,12 @@ import helmet from 'helmet';
 import { Logger, LoggerErrorInterceptor } from 'nestjs-pino';
 
 import { AppModule } from './app.module';
+import { DeepIdAuthService } from './auth';
 import { setupSwagger } from './docs';
 import { HttpExceptionFilter } from './shared/filters/http-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
-  setupSwagger(app);
   app.useLogger(app.get(Logger));
   app.useGlobalInterceptors(new LoggerErrorInterceptor());
   app.useGlobalFilters(new HttpExceptionFilter());
@@ -26,6 +26,7 @@ async function bootstrap() {
     origin: true, // Allow all origins in development
     credentials: true,
   });
+  setupSwagger(app, app.get(DeepIdAuthService));
 
   const configService = app.get(ConfigService);
   const port = configService.get('app.port');

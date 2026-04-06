@@ -9,6 +9,7 @@ import {
   ApiOperation,
   ApiQuery,
   ApiTags,
+  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import type { Response } from 'express';
 import {
@@ -43,6 +44,7 @@ function sanitizeFilename(filename: string): string {
 }
 
 @ApiTags('Storage')
+@ApiUnauthorizedResponse({ description: 'Deep ID-backed session required.' })
 @Controller('storage')
 export class StorageController {
   constructor(private readonly storageService: StorageService) {}

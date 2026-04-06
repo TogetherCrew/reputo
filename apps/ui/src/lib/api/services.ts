@@ -1,4 +1,4 @@
-import axios from "axios"
+import axios, { type AxiosError } from "axios"
 import type {
   AlgorithmPresetQueryParams,
   AlgorithmPresetResponseDto,
@@ -8,10 +8,23 @@ import type {
   PaginatedSnapshotResponseDto,
   SnapshotQueryParams,
   SnapshotResponseDto,
+  StorageDownloadResponseDto,
+  StorageVerifyResponseDto,
   UpdateAlgorithmPresetDto,
 } from "./types"
 
 const API_BASE_PATH = "/api/v1"
+
+// ── Centralised auth-failure handling ─────────────────────────────────
+
+let authFailureHandled = false
+
+/** Redirect to /login on session expiry. Guarded so only one redirect fires. */
+export function handleAuthFailure(): void {
+  if (authFailureHandled) return
+  authFailureHandled = true
+  window.location.href = "/login"
+}
 
 // Create axios instance with base configuration.
 // Browser requests should always be same-origin (via Traefik / reverse-proxy).
@@ -21,6 +34,16 @@ const api = axios.create({
     "Content-Type": "application/json",
   },
 })
+
+/** Axios interceptor — redirect to /login on any 401 response. */
+function redirectToLoginOn401(error: AxiosError): Promise<never> {
+  if (error.response?.status === 401) {
+    handleAuthFailure()
+  }
+  return Promise.reject(error)
+}
+
+api.interceptors.response.use(undefined, redirectToLoginOn401)
 
 // Algorithm Presets API
 export const algorithmPresetsApi = {
@@ -113,27 +136,12 @@ export const storageApi = {
   },
   createDownload: async (data: {
     key: string
-  }): Promise<{ url: string; expiresIn: number }> => {
+  }): Promise<StorageDownloadResponseDto> => {
     const response = await api.post("/storage/downloads", data)
     return response.data
   },
-  /** Same-origin stream URL for download (avoids new tab; use for triggerDownload). */
-  getStreamUrl: (key: string): string => {
-    return `${API_BASE_PATH}/storage/stream?key=${encodeURIComponent(key)}`
-  },
   // Verify upload and get metadata
-  verify: async (data: {
-    key: string
-  }): Promise<{
-    key: string
-    metadata: {
-      filename: string
-      ext: string
-      size: number
-      contentType: string
-      timestamp: number
-    }
-  }> => {
+  verify: async (data: { key: string }): Promise<StorageVerifyResponseDto> => {
     const response = await api.post("/storage/uploads/verify", data)
     return response.data
   },

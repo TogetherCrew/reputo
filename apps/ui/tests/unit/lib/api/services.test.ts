@@ -6,6 +6,11 @@ const { mockApi, mockCreate } = vi.hoisted(() => {
     post: vi.fn(),
     patch: vi.fn(),
     delete: vi.fn(),
+    interceptors: {
+      response: {
+        use: vi.fn(),
+      },
+    },
   }
 
   return {
@@ -33,6 +38,7 @@ describe("ui api services", () => {
     mockApi.post.mockReset()
     mockApi.patch.mockReset()
     mockApi.delete.mockReset()
+    mockApi.interceptors.response.use.mockReset()
 
     ;(globalThis as { window?: unknown }).window = {
       location: { href: "https://reputo.local/dashboard" },
@@ -139,12 +145,24 @@ describe("ui api services", () => {
     expect(mockApi.delete).toHaveBeenCalledWith("/snapshots/snapshot-2")
   })
 
-  it("wraps storage endpoints and builds encoded stream URLs", async () => {
+  it("wraps storage endpoints and returns presigned download metadata", async () => {
     mockApi.post
       .mockResolvedValueOnce({
         data: { key: "uploads/a.csv", url: "upload-url", expiresIn: 60 },
       })
-      .mockResolvedValueOnce({ data: { url: "download-url", expiresIn: 60 } })
+      .mockResolvedValueOnce({
+        data: {
+          url: "download-url",
+          expiresIn: 60,
+          metadata: {
+            filename: "a.csv",
+            ext: "csv",
+            size: 10,
+            contentType: "text/csv",
+            timestamp: 1,
+          },
+        },
+      })
       .mockResolvedValueOnce({
         data: {
           key: "uploads/a.csv",
@@ -170,10 +188,14 @@ describe("ui api services", () => {
     ).resolves.toEqual({
       url: "download-url",
       expiresIn: 60,
+      metadata: {
+        filename: "a.csv",
+        ext: "csv",
+        size: 10,
+        contentType: "text/csv",
+        timestamp: 1,
+      },
     })
-    expect(storageApi.getStreamUrl("uploads/space file.csv")).toBe(
-      "/api/v1/storage/stream?key=uploads%2Fspace%20file.csv"
-    )
     await expect(storageApi.verify({ key: "uploads/a.csv" })).resolves.toEqual({
       key: "uploads/a.csv",
       metadata: {

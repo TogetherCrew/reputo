@@ -5,11 +5,13 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { insertAlgorithmPreset } from '../../factories/algorithmPreset.factory';
 import { insertSnapshot } from '../../factories/snapshot.factory';
 import { createTestApp } from '../../utils/app-test.module';
+import { createAuthenticatedSession } from '../../utils/auth-session';
 import { startMongo, stopMongo } from '../../utils/mongo-memory-server';
 import { api } from '../../utils/request';
 
 describe('DELETE /api/v1/snapshots/:id', () => {
   let app: INestApplication;
+  let authCookie: string;
   let algorithmPresetModel: Model<any>;
   let snapshotModel: Model<any>;
 
@@ -17,6 +19,7 @@ describe('DELETE /api/v1/snapshots/:id', () => {
     const uri = await startMongo();
     const boot = await createTestApp({ mongoUri: uri });
     app = boot.app;
+    authCookie = (await createAuthenticatedSession(boot.moduleRef)).cookie;
     algorithmPresetModel = boot.moduleRef.get(getModelToken('AlgorithmPreset'));
     snapshotModel = boot.moduleRef.get(getModelToken('Snapshot'));
   });
@@ -40,7 +43,7 @@ describe('DELETE /api/v1/snapshots/:id', () => {
     const { createdAt: _createdAt, updatedAt: _updatedAt, ...presetData } = preset.toObject();
     const snapshot = await insertSnapshot(snapshotModel, preset._id.toString(), presetData);
 
-    const res = await api(app).delete(`/snapshots/${snapshot._id}`).expect(204);
+    const res = await api(app, authCookie).delete(`/snapshots/${snapshot._id}`).expect(204);
 
     expect(res.body).toEqual({});
     expect(res.text).toBe('');
@@ -52,13 +55,13 @@ describe('DELETE /api/v1/snapshots/:id', () => {
   });
 
   it('should return 400 for invalid id format', async () => {
-    await api(app).delete('/snapshots/invalid-id').expect(400);
+    await api(app, authCookie).delete('/snapshots/invalid-id').expect(400);
   });
 
   it('should return 404 when snapshot does not exist', async () => {
     const fakeId = '507f1f77bcf86cd799439011';
 
-    await api(app).delete(`/snapshots/${fakeId}`).expect(404);
+    await api(app, authCookie).delete(`/snapshots/${fakeId}`).expect(404);
   });
 
   it('should make subsequent GET by id return 404 after deletion', async () => {
@@ -70,8 +73,8 @@ describe('DELETE /api/v1/snapshots/:id', () => {
     const { createdAt: _createdAt, updatedAt: _updatedAt, ...presetData } = preset.toObject();
     const snapshot = await insertSnapshot(snapshotModel, preset._id.toString(), presetData);
 
-    await api(app).delete(`/snapshots/${snapshot._id}`).expect(204);
+    await api(app, authCookie).delete(`/snapshots/${snapshot._id}`).expect(204);
 
-    await api(app).get(`/snapshots/${snapshot._id}`).expect(404);
+    await api(app, authCookie).get(`/snapshots/${snapshot._id}`).expect(404);
   });
 });
