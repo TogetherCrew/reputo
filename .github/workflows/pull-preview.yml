@@ -3,7 +3,7 @@ run-name: Pull Preview 👀
 on:
     pull_request:
         branches: [main]
-        types: [labeled, unlabeled, synchronize, closed, reopened]
+        types: [labeled, unlabeled, synchronize, reopened, opened, closed]
 
 concurrency: ${{ github.ref }}
 
@@ -11,7 +11,8 @@ jobs:
     build:
         if: |
             github.event.action != 'closed' &&
-            (github.event.label.name == 'pullpreview' || contains(github.event.pull_request.labels.*.name, 'pullpreview'))
+            github.event.action != 'unlabeled' &&
+            contains(github.event.pull_request.labels.*.name, 'pullpreview')
         uses: ./.github/workflows/_build-and-push.yml
         with:
             ref: ${{ github.event.pull_request.head.sha }}
@@ -26,8 +27,10 @@ jobs:
         name: deploy
         needs: build
         if: |
+            github.event.action != 'closed' &&
+            github.event.action != 'unlabeled' &&
             !failure() && !cancelled() &&
-            (github.event.label.name == 'pullpreview' || contains(github.event.pull_request.labels.*.name, 'pullpreview'))
+            contains(github.event.pull_request.labels.*.name, 'pullpreview')
         runs-on: ubuntu-22.04
         timeout-minutes: 30
         permissions:

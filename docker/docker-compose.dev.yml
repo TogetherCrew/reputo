@@ -1,8 +1,62 @@
+x-dev-environment: &dev-environment
+    NODE_ENV: development
+    CHOKIDAR_USEPOLLING: 'true'
+    WATCHPACK_POLLING: 'true'
+    TSC_WATCHFILE: UsePolling
+    TSC_WATCHDIRECTORY: UsePolling
+    NEXT_TELEMETRY_DISABLED: '1'
+
+x-dev-volumes: &dev-volumes
+    - ..:/workspace
+    - repo_node_modules:/workspace/node_modules
+    - repo_pnpm_store:/pnpm/store
+    - apps_api_node_modules:/workspace/apps/api/node_modules
+    - apps_ui_node_modules:/workspace/apps/ui/node_modules
+    - apps_workflows_node_modules:/workspace/apps/workflows/node_modules
+    - packages_algorithm_validator_node_modules:/workspace/packages/algorithm-validator/node_modules
+    - packages_database_node_modules:/workspace/packages/database/node_modules
+    - packages_deepfunding_portal_api_node_modules:/workspace/packages/deepfunding-portal-api/node_modules
+    - packages_onchain_data_node_modules:/workspace/packages/onchain-data/node_modules
+    - packages_reputation_algorithms_node_modules:/workspace/packages/reputation-algorithms/node_modules
+    - packages_storage_node_modules:/workspace/packages/storage/node_modules
+
+x-dev-service: &dev-service
+    build:
+        context: ..
+        dockerfile: docker/Dockerfile.dev
+    working_dir: /workspace
+    init: true
+    restart: unless-stopped
+    environment: *dev-environment
+    volumes: *dev-volumes
+
 networks:
     dev:
         driver: bridge
 
 volumes:
+    repo_node_modules:
+        driver: local
+    repo_pnpm_store:
+        driver: local
+    apps_api_node_modules:
+        driver: local
+    apps_ui_node_modules:
+        driver: local
+    apps_workflows_node_modules:
+        driver: local
+    packages_algorithm_validator_node_modules:
+        driver: local
+    packages_database_node_modules:
+        driver: local
+    packages_deepfunding_portal_api_node_modules:
+        driver: local
+    packages_onchain_data_node_modules:
+        driver: local
+    packages_reputation_algorithms_node_modules:
+        driver: local
+    packages_storage_node_modules:
+        driver: local
     mongodb_data:
         driver: local
     temporal_elasticsearch_data:
@@ -75,16 +129,10 @@ services:
             - --entrypoints.traefik.address=:8081
 
     api:
+        <<: *dev-service
         container_name: api
-        build:
-            context: ..
-            dockerfile: apps/api/Dockerfile
-            args:
-                APP_NAME: api
-        restart: unless-stopped
+        command: pnpm --filter @reputo/api dev
         networks: [dev]
-        volumes:
-            - ../apps/api/src:/prod/app/src:ro
         depends_on:
             mongodb:
                 condition: service_healthy
@@ -100,13 +148,9 @@ services:
             - traefik.http.services.api.loadbalancer.server.port=3000
 
     ui:
+        <<: *dev-service
         container_name: ui
-        build:
-            context: ..
-            dockerfile: apps/ui/Dockerfile
-            args:
-                APP_NAME: ui
-        restart: unless-stopped
+        command: pnpm --filter @reputo/ui dev
         networks: [dev]
         env_file:
             - ./env/ui.env
@@ -115,7 +159,7 @@ services:
             - traefik.http.routers.ui.rule=Host(`localhost`)
             - traefik.http.routers.ui.priority=1
             - traefik.http.routers.ui.entrypoints=web,web8080
-            - traefik.http.services.ui.loadbalancer.server.port=8080
+            - traefik.http.services.ui.loadbalancer.server.port=4000
 
     temporal:
         container_name: temporal
@@ -172,7 +216,6 @@ services:
         restart: unless-stopped
         env_file: ./env/temporal-postgresql.env
         networks: [dev]
-
         volumes:
             - temporal_postgresql_data:/var/lib/postgresql/data
 
@@ -195,17 +238,10 @@ services:
             start_period: 20s
 
     orchestrator-worker:
+        <<: *dev-service
         container_name: orchestrator-worker
-        build:
-            context: ..
-            dockerfile: apps/workflows/Dockerfile
-            args:
-                APP_NAME: workflows
-        command: ['pnpm', 'start:orchestrator']
-        restart: unless-stopped
+        command: pnpm --filter @reputo/workflows dev:orchestrator
         networks: [dev]
-        volumes:
-            - ../apps/workflows/src:/prod/app/src:ro
         depends_on:
             mongodb:
                 condition: service_healthy
@@ -215,17 +251,10 @@ services:
             - ./env/workflows.env
 
     onchain-data-worker:
+        <<: *dev-service
         container_name: onchain-data-worker
-        build:
-            context: ..
-            dockerfile: apps/workflows/Dockerfile
-            args:
-                APP_NAME: workflows
-        command: ['pnpm', 'start:onchain-data']
-        restart: unless-stopped
+        command: pnpm --filter @reputo/workflows dev:onchain-data
         networks: [dev]
-        volumes:
-            - ../apps/workflows/src:/prod/app/src:ro
         depends_on:
             temporal:
                 condition: service_healthy
@@ -235,17 +264,10 @@ services:
             - ./env/workflows.env
 
     typescript-worker:
+        <<: *dev-service
         container_name: typescript-worker
-        build:
-            context: ..
-            dockerfile: apps/workflows/Dockerfile
-            args:
-                APP_NAME: workflows
-        command: ['pnpm', 'start:algorithm-typescript']
-        restart: unless-stopped
+        command: pnpm --filter @reputo/workflows dev:algorithm-typescript
         networks: [dev]
-        volumes:
-            - ../apps/workflows/src:/prod/app/src:ro
         depends_on:
             temporal:
                 condition: service_healthy

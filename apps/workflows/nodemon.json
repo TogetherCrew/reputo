@@ -3,9 +3,9 @@
   "ext": "ts,json",
   "ignore": ["src/**/*.test.ts", "src/**/*.spec.ts", "node_modules", "dist", "coverage"],
   "exec": "tsx",
+  "legacyWatch": true,
   "env": {
     "NODE_ENV": "development"
   },
   "delay": "1000"
 }
-

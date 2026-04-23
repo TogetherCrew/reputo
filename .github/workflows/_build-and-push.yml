@@ -9,6 +9,10 @@ on:
             base-ref:   { type: string,  required: false, default: 'origin/main' }
             affected:   { type: boolean, required: false, default: true }
             tags:       { type: string,  required: false, default: '' }
+        outputs:
+            affected-count:
+                description: Number of apps selected for the build matrix
+                value: ${{ jobs.affected-apps.outputs.count }}
 
 env:
     IMAGE_PREFIX: ghcr.io/reputo-org/reputo
@@ -114,8 +118,6 @@ jobs:
                   images: ${{ env.IMAGE_PREFIX }}/${{ matrix.app }}
                   tags: |
                       type=raw,value=sha-${{ inputs.ref }}
-                      type=raw,value=main-${{ inputs.ref }}
-                      type=raw,value=staging,enable={{is_default_branch}}
                       ${{ inputs.tags }}
 
             - name: Build and Push ${{ matrix.app }} image
