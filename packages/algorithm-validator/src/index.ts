@@ -7,9 +7,6 @@
  * that runs identically on both client and server, ensuring consistent
  * validation across the entire application.
  *
- * This package is self-contained and has no dependencies on other Reputo
- * packages. Algorithm definition types are included for validation purposes.
- *
  * @packageDocumentation
  */
 
