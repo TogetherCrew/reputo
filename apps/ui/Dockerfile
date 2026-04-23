@@ -1,35 +1,63 @@
 # syntax=docker/dockerfile:1
+#
+# Reusable per-app image. Builds are minimised via `turbo prune --docker`,
+# which produces an isolated build context containing only the target app
+# and its workspace dependencies. UI uses Next.js standalone output rather
+# than `pnpm deploy` for the runtime layer.
+#
+# Usage:
+#   docker buildx build --build-arg APP_NAME=ui -f apps/ui/Dockerfile .
+#
+ARG APP_NAME=ui
+ARG NODE_VERSION=22.20.0
+ARG TURBO_VERSION=2.9.6
 
-FROM node:22.20.0-slim AS base
+# ---------- base ------------------------------------------------------------
+FROM node:${NODE_VERSION}-slim AS base
 ENV PNPM_HOME="/pnpm"
 ENV PATH="${PNPM_HOME}:${PATH}"
 RUN corepack enable
-WORKDIR /usr/src/app
+WORKDIR /repo
 
-FROM base AS deps
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-COPY apps/ui/package.json apps/ui/package.json
-COPY packages/algorithm-validator/package.json packages/algorithm-validator/package.json
-COPY packages/reputation-algorithms/package.json packages/reputation-algorithms/package.json
+# ---------- pruner: produce isolated workspace for APP_NAME -----------------
+FROM base AS pruner
+ARG APP_NAME
+ARG TURBO_VERSION
+COPY . .
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store \
-    pnpm install --filter @reputo/ui... --frozen-lockfile
+    pnpm dlx turbo@${TURBO_VERSION} prune "@reputo/${APP_NAME}" --docker
 
-FROM deps AS build
-COPY vitest.base.ts vitest.base.ts
-COPY apps/ui apps/ui
-COPY packages/algorithm-validator packages/algorithm-validator
-COPY packages/reputation-algorithms packages/reputation-algorithms
+# ---------- installer: install pruned deps ----------------------------------
+# turbo prune rewrites pnpm-lock.yaml and drops the `settings` block, which
+# clashes with `injectWorkspacePackages: true` in pnpm-workspace.yaml. Copy
+# the original lockfile back over the pruned one — pnpm ignores entries that
+# aren't referenced from the pruned package.json files.
+FROM base AS installer
+COPY --from=pruner /repo/out/json/ ./
+COPY --from=pruner /repo/pnpm-lock.yaml ./pnpm-lock.yaml
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store \
-    pnpm --filter @reputo/ui... build
+    pnpm install --frozen-lockfile
 
-FROM node:22.20.0-slim AS runtime
+# ---------- builder: build APP_NAME and its deps ----------------------------
+FROM installer AS builder
+ARG APP_NAME
+COPY --from=pruner /repo/out/full/ ./
+# Next.js type-check pulls in apps/ui/vitest.config.ts which imports
+# ../../vitest.base. turbo prune only captures workspace files, so this
+# root-level file has to be copied in explicitly.
+COPY --from=pruner /repo/vitest.base.ts ./vitest.base.ts
+RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store \
+    pnpm exec turbo run build --filter="@reputo/${APP_NAME}..."
+
+# ---------- runtime: Next.js standalone -------------------------------------
+FROM node:${NODE_VERSION}-slim AS runtime
 WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=8080
 
-COPY --from=build /usr/src/app/apps/ui/.next/standalone ./
-COPY --from=build /usr/src/app/apps/ui/.next/static ./apps/ui/.next/static
-COPY --from=build /usr/src/app/apps/ui/public ./apps/ui/public
+COPY --from=builder /repo/apps/ui/.next/standalone ./
+COPY --from=builder /repo/apps/ui/.next/static ./apps/ui/.next/static
+COPY --from=builder /repo/apps/ui/public ./apps/ui/public
 
 EXPOSE 8080
 CMD ["node", "apps/ui/server.js"]

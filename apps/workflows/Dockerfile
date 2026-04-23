@@ -1,35 +1,53 @@
 # syntax=docker/dockerfile:1
+#
+# Reusable per-app image. Builds are minimised via `turbo prune --docker`,
+# which produces an isolated build context containing only the target app
+# and its workspace dependencies.
+#
+# Usage:
+#   docker buildx build --build-arg APP_NAME=workflows -f apps/workflows/Dockerfile .
+#
+ARG APP_NAME=workflows
+ARG NODE_VERSION=22.20.0
+ARG TURBO_VERSION=2.9.6
 
-FROM node:22.20.0-slim AS base
+# ---------- base ------------------------------------------------------------
+FROM node:${NODE_VERSION}-slim AS base
 ENV PNPM_HOME="/pnpm"
 ENV PATH="${PNPM_HOME}:${PATH}"
 RUN corepack enable
-WORKDIR /usr/src/app
+WORKDIR /repo
 
-FROM base AS deps
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-COPY apps/workflows/package.json apps/workflows/package.json
-COPY packages/database/package.json packages/database/package.json
-COPY packages/deepfunding-portal-api/package.json packages/deepfunding-portal-api/package.json
-COPY packages/onchain-data/package.json packages/onchain-data/package.json
-COPY packages/reputation-algorithms/package.json packages/reputation-algorithms/package.json
-COPY packages/storage/package.json packages/storage/package.json
+# ---------- pruner: produce isolated workspace for APP_NAME -----------------
+FROM base AS pruner
+ARG APP_NAME
+ARG TURBO_VERSION
+COPY . .
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store \
-    pnpm install --filter @reputo/workflows... --frozen-lockfile
+    pnpm dlx turbo@${TURBO_VERSION} prune "@reputo/${APP_NAME}" --docker
 
-FROM deps AS build
-COPY apps/workflows apps/workflows
-COPY packages/database packages/database
-COPY packages/deepfunding-portal-api packages/deepfunding-portal-api
-COPY packages/onchain-data packages/onchain-data
-COPY packages/reputation-algorithms packages/reputation-algorithms
-COPY packages/storage packages/storage
+# ---------- installer: install pruned deps ----------------------------------
+# turbo prune rewrites pnpm-lock.yaml and drops the `settings` block, which
+# clashes with `injectWorkspacePackages: true` in pnpm-workspace.yaml. Copy
+# the original lockfile back over the pruned one — pnpm ignores entries that
+# aren't referenced from the pruned package.json files.
+FROM base AS installer
+COPY --from=pruner /repo/out/json/ ./
+COPY --from=pruner /repo/pnpm-lock.yaml ./pnpm-lock.yaml
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store \
-    pnpm --filter @reputo/workflows... build
-RUN pnpm deploy --filter @reputo/workflows --prod /prod/workflows
+    pnpm install --frozen-lockfile
 
+# ---------- builder: build APP_NAME and its deps ----------------------------
+FROM installer AS builder
+ARG APP_NAME
+COPY --from=pruner /repo/out/full/ ./
+RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store \
+    pnpm exec turbo run build --filter="@reputo/${APP_NAME}..."
+RUN pnpm deploy --filter="@reputo/${APP_NAME}" --prod /prod/app
+
+# ---------- runtime ---------------------------------------------------------
 FROM base AS runtime
 ENV NODE_ENV=production
-WORKDIR /prod/workflows
-COPY --from=build /prod/workflows ./
+WORKDIR /prod/app
+COPY --from=builder /prod/app ./
 CMD ["pnpm", "start:orchestrator"]
