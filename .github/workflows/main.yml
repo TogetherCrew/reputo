@@ -22,6 +22,8 @@ jobs:
             push: true
             affected: true
             base-ref: ${{ github.event.before }}
+            tags: |
+                type=raw,value=staging
 
     release:
         needs: build-and-push
@@ -31,6 +33,7 @@ jobs:
     wait-for-watchtower:
         name: wait-for-watchtower
         needs: build-and-push
+        if: ${{ needs.build-and-push.outputs.affected-count != '0' }}
         runs-on: ubuntu-22.04
         environment:
             name: staging

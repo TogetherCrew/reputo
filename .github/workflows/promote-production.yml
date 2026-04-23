@@ -5,7 +5,7 @@ on:
     workflow_dispatch:
         inputs:
             commit:
-                description: 'Commit SHA of the staging image to promote'
+                description: 'Commit SHA whose immutable sha-<commit> images should be promoted'
                 required: true
                 type: string
 
@@ -22,11 +22,11 @@ env:
     IMAGE_PREFIX: ghcr.io/reputo-org/reputo
 
 jobs:
-    promote:
+    resolve-images:
         runs-on: ubuntu-22.04
-        strategy:
-            matrix:
-                image: [api, ui, workflows]
+        outputs:
+            matrix: ${{ steps.resolve.outputs.matrix }}
+            count: ${{ steps.resolve.outputs.count }}
         steps:
             - name: Login to GitHub Container Registry
               uses: docker/login-action@v3
@@ -35,29 +35,69 @@ jobs:
                   username: ${{ github.actor }}
                   password: ${{ secrets.GITHUB_TOKEN }}
 
+            - id: resolve
+              name: Resolve promotable images
+              run: |
+                  set -euo pipefail
+
+                  apps_json='[]'
+                  for app in api ui workflows; do
+                      if docker buildx imagetools inspect "${IMAGE_PREFIX}/${app}:sha-${{ inputs.commit }}" >/dev/null 2>&1; then
+                          apps_json="$(jq --arg app "$app" '. + [$app]' <<<"$apps_json")"
+                      fi
+                  done
+
+                  matrix="$(jq -c '{ include: map({ image: . }) }' <<<"$apps_json")"
+                  count="$(jq 'length' <<<"$apps_json")"
+
+                  echo "Promotable apps: $apps_json"
+                  echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
+                  echo "count=$count" >> "$GITHUB_OUTPUT"
+
+    promote:
+        needs: resolve-images
+        if: ${{ needs.resolve-images.outputs.count != '0' }}
+        runs-on: ubuntu-22.04
+        strategy:
+            matrix: ${{ fromJSON(needs.resolve-images.outputs.matrix) }}
+        steps:
+            - name: Login to GitHub Container Registry
+              uses: docker/login-action@v3
+              with:
+                  registry: ghcr.io
+                  username: ${{ github.actor }}
+                  password: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Set up Docker Buildx
+              uses: docker/setup-buildx-action@v3
+
             - name: Promote ${{ matrix.image }} to production
               run: |
-                  SOURCE_TAG="main-${{ inputs.commit }}"
+                  SOURCE_TAG="sha-${{ inputs.commit }}"
                   PROD_TAG="prod-${{ inputs.commit }}"
+                  SOURCE_REF="${{ env.IMAGE_PREFIX }}/${{ matrix.image }}:${SOURCE_TAG}"
 
-                  echo "Promoting ${{ matrix.image }} from $SOURCE_TAG to $PROD_TAG"
+                  echo "Resolving digest for $SOURCE_REF"
+                  SOURCE_DIGEST="$(docker buildx imagetools inspect "$SOURCE_REF" | awk '/^Digest:/{print $2; exit}')"
 
-                  # Pull the staging image
-                  docker pull ${{ env.IMAGE_PREFIX }}/${{ matrix.image }}:$SOURCE_TAG
+                  if [ -z "$SOURCE_DIGEST" ]; then
+                      echo "Unable to resolve digest for $SOURCE_REF" >&2
+                      exit 1
+                  fi
 
-                  # Tag for production
-                  docker tag ${{ env.IMAGE_PREFIX }}/${{ matrix.image }}:$SOURCE_TAG ${{ env.IMAGE_PREFIX }}/${{ matrix.image }}:$PROD_TAG
-                  docker tag ${{ env.IMAGE_PREFIX }}/${{ matrix.image }}:$SOURCE_TAG ${{ env.IMAGE_PREFIX }}/${{ matrix.image }}:production
+                  echo "Promoting ${{ matrix.image }}@$SOURCE_DIGEST to tags production and $PROD_TAG"
 
-                  # Push production tags
-                  docker push ${{ env.IMAGE_PREFIX }}/${{ matrix.image }}:$PROD_TAG
-                  docker push ${{ env.IMAGE_PREFIX }}/${{ matrix.image }}:production
+                  docker buildx imagetools create \
+                      --tag "${{ env.IMAGE_PREFIX }}/${{ matrix.image }}:$PROD_TAG" \
+                      --tag "${{ env.IMAGE_PREFIX }}/${{ matrix.image }}:production" \
+                      "${{ env.IMAGE_PREFIX }}/${{ matrix.image }}@$SOURCE_DIGEST"
 
                   echo "Successfully promoted ${{ matrix.image }} to production"
 
     wait-for-watchtower:
         name: wait-for-watchtower
-        needs: promote
+        needs: [resolve-images, promote]
+        if: ${{ needs.resolve-images.outputs.count != '0' }}
         runs-on: ubuntu-22.04
         environment:
             name: production
