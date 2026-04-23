@@ -79,10 +79,12 @@ services:
         build:
             context: ..
             dockerfile: apps/api/Dockerfile
+            args:
+                APP_NAME: api
         restart: unless-stopped
         networks: [dev]
         volumes:
-            - ../apps/api/src:/prod/api/src:ro
+            - ../apps/api/src:/prod/app/src:ro
         depends_on:
             mongodb:
                 condition: service_healthy
@@ -102,6 +104,8 @@ services:
         build:
             context: ..
             dockerfile: apps/ui/Dockerfile
+            args:
+                APP_NAME: ui
         restart: unless-stopped
         networks: [dev]
         env_file:
@@ -195,11 +199,13 @@ services:
         build:
             context: ..
             dockerfile: apps/workflows/Dockerfile
+            args:
+                APP_NAME: workflows
         command: ['pnpm', 'start:orchestrator']
         restart: unless-stopped
         networks: [dev]
         volumes:
-            - ../apps/workflows/src:/prod/workflows/src:ro
+            - ../apps/workflows/src:/prod/app/src:ro
         depends_on:
             mongodb:
                 condition: service_healthy
@@ -213,11 +219,13 @@ services:
         build:
             context: ..
             dockerfile: apps/workflows/Dockerfile
+            args:
+                APP_NAME: workflows
         command: ['pnpm', 'start:onchain-data']
         restart: unless-stopped
         networks: [dev]
         volumes:
-            - ../apps/workflows/src:/prod/workflows/src:ro
+            - ../apps/workflows/src:/prod/app/src:ro
         depends_on:
             temporal:
                 condition: service_healthy
@@ -231,11 +239,13 @@ services:
         build:
             context: ..
             dockerfile: apps/workflows/Dockerfile
+            args:
+                APP_NAME: workflows
         command: ['pnpm', 'start:algorithm-typescript']
-        restart: unless-stopped 
+        restart: unless-stopped
         networks: [dev]
         volumes:
-            - ../apps/workflows/src:/prod/workflows/src:ro
+            - ../apps/workflows/src:/prod/app/src:ro
         depends_on:
             temporal:
                 condition: service_healthy
