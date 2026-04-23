@@ -4,30 +4,91 @@ run-name: Docker Build & Push 🐳
 on:
     workflow_call:
         inputs:
-            ref: { type: string, required: true }
-            push: { type: boolean, required: true }
-            tags: { type: string, required: false, default: '' }
+            ref:        { type: string,  required: true }
+            push:       { type: boolean, required: true }
+            base-ref:   { type: string,  required: false, default: 'origin/main' }
+            affected:   { type: boolean, required: false, default: true }
+            tags:       { type: string,  required: false, default: '' }
 
 env:
     IMAGE_PREFIX: ghcr.io/reputo-org/reputo
 
 jobs:
+    affected-apps:
+        name: Compute affected apps 📊
+        runs-on: ubuntu-22.04
+        outputs:
+            matrix: ${{ steps.compute.outputs.matrix }}
+            count:  ${{ steps.compute.outputs.count }}
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+              with:
+                  ref: ${{ inputs.ref }}
+                  fetch-depth: 0
+
+            - name: Setup pnpm
+              uses: pnpm/action-setup@v4
+              with:
+                  version: '10.30.3'
+                  run_install: false
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: '24.14.0'
+                  cache: pnpm
+                  cache-dependency-path: pnpm-lock.yaml
+
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
+
+            - id: compute
+              name: Resolve affected apps
+              env:
+                  AFFECTED: ${{ inputs.affected }}
+                  BASE_REF: ${{ inputs.base-ref }}
+              run: |
+                  set -euo pipefail
+
+                  if [ "$AFFECTED" = "true" ]; then
+                      echo "Computing affected apps relative to '$BASE_REF'"
+                      # Make sure the base ref is reachable for turbo's git diff.
+                      git fetch --no-tags --depth=100 origin "${BASE_REF#origin/}" || true
+
+                      dry="$(pnpm exec turbo run build --filter="...[$BASE_REF]" --dry=json)"
+                      apps_array="$(jq -c '
+                          [ .packages[]?
+                            | select(startswith("@reputo/"))
+                            | sub("^@reputo/"; "")
+                          ]
+                          | unique
+                          | map(select(. == "api" or . == "ui" or . == "workflows"))
+                      ' <<<"$dry")"
+                  else
+                      echo "Affected mode disabled — building all apps"
+                      apps_array='["api","ui","workflows"]'
+                  fi
+
+                  matrix="$(jq -c '{ include: map({ app: . }) }' <<<"$apps_array")"
+                  count="$(jq 'length' <<<"$apps_array")"
+
+                  echo "Affected apps: $apps_array"
+                  echo "Matrix: $matrix"
+                  echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
+                  echo "count=$count"   >> "$GITHUB_OUTPUT"
+
     docker-images:
+        name: build (${{ matrix.app }}) 🐳
+        needs: affected-apps
+        if: ${{ needs.affected-apps.outputs.count != '0' }}
         runs-on: ubuntu-latest
         permissions:
             contents: read
             packages: write
         strategy:
-            matrix:
-                include:
-                    - image: api
-                      dockerfile: apps/api/Dockerfile
-                    - image: ui
-                      dockerfile: apps/ui/Dockerfile
-                    - image: workflows
-                      dockerfile: apps/workflows/Dockerfile
-        outputs:
-            image-tag: ${{ steps.meta.outputs.tags }}
+            fail-fast: false
+            matrix: ${{ fromJSON(needs.affected-apps.outputs.matrix) }}
 
         steps:
             - name: Checkout
@@ -50,19 +111,22 @@ jobs:
               id: meta
               uses: docker/metadata-action@v5
               with:
-                  images: ${{ env.IMAGE_PREFIX }}/${{ matrix.image }}
+                  images: ${{ env.IMAGE_PREFIX }}/${{ matrix.app }}
                   tags: |
+                      type=raw,value=sha-${{ inputs.ref }}
                       type=raw,value=main-${{ inputs.ref }}
                       type=raw,value=staging,enable={{is_default_branch}}
                       ${{ inputs.tags }}
 
-            - name: Build and Push ${{ matrix.image }} image
+            - name: Build and Push ${{ matrix.app }} image
               uses: docker/build-push-action@v6
               with:
                   context: .
-                  file: ${{ matrix.dockerfile }}
+                  file: apps/${{ matrix.app }}/Dockerfile
                   push: ${{ inputs.push }}
+                  build-args: |
+                      APP_NAME=${{ matrix.app }}
                   tags: ${{ steps.meta.outputs.tags }}
                   labels: ${{ steps.meta.outputs.labels }}
-                  cache-from: type=gha,scope=${{ matrix.image }}
-                  cache-to: type=gha,scope=${{ matrix.image }},mode=max
+                  cache-from: type=gha,scope=${{ matrix.app }}
+                  cache-to: type=gha,scope=${{ matrix.app }},mode=max

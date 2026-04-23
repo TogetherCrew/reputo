@@ -20,6 +20,8 @@ jobs:
         with:
             ref: ${{ github.sha }}
             push: true
+            affected: true
+            base-ref: ${{ github.event.before }}
 
     release:
         needs: build-and-push

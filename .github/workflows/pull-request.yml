@@ -21,3 +21,5 @@ jobs:
         with:
             ref: ${{ github.sha }}
             push: false
+            affected: true
+            base-ref: origin/${{ github.base_ref }}
