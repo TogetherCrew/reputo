@@ -78,12 +78,13 @@ services:
         container_name: api
         build:
             context: ..
-            dockerfile: docker/Dockerfile
-            target: api
+            dockerfile: apps/api/Dockerfile
+            args:
+                APP_NAME: api
         restart: unless-stopped
         networks: [dev]
         volumes:
-            - ../apps/api/src:/prod/api/src:ro
+            - ../apps/api/src:/prod/app/src:ro
         depends_on:
             mongodb:
                 condition: service_healthy
@@ -102,8 +103,9 @@ services:
         container_name: ui
         build:
             context: ..
-            dockerfile: docker/Dockerfile
-            target: ui
+            dockerfile: apps/ui/Dockerfile
+            args:
+                APP_NAME: ui
         restart: unless-stopped
         networks: [dev]
         env_file:
@@ -196,13 +198,14 @@ services:
         container_name: orchestrator-worker
         build:
             context: ..
-            dockerfile: docker/Dockerfile
-            target: workflows
+            dockerfile: apps/workflows/Dockerfile
+            args:
+                APP_NAME: workflows
         command: ['pnpm', 'start:orchestrator']
         restart: unless-stopped
         networks: [dev]
         volumes:
-            - ../apps/workflows/src:/prod/workflows/src:ro
+            - ../apps/workflows/src:/prod/app/src:ro
         depends_on:
             mongodb:
                 condition: service_healthy
@@ -215,13 +218,14 @@ services:
         container_name: onchain-data-worker
         build:
             context: ..
-            dockerfile: docker/Dockerfile
-            target: workflows
+            dockerfile: apps/workflows/Dockerfile
+            args:
+                APP_NAME: workflows
         command: ['pnpm', 'start:onchain-data']
         restart: unless-stopped
         networks: [dev]
         volumes:
-            - ../apps/workflows/src:/prod/workflows/src:ro
+            - ../apps/workflows/src:/prod/app/src:ro
         depends_on:
             temporal:
                 condition: service_healthy
@@ -234,13 +238,14 @@ services:
         container_name: typescript-worker
         build:
             context: ..
-            dockerfile: docker/Dockerfile
-            target: workflows
+            dockerfile: apps/workflows/Dockerfile
+            args:
+                APP_NAME: workflows
         command: ['pnpm', 'start:algorithm-typescript']
-        restart: unless-stopped 
+        restart: unless-stopped
         networks: [dev]
         volumes:
-            - ../apps/workflows/src:/prod/workflows/src:ro
+            - ../apps/workflows/src:/prod/app/src:ro
         depends_on:
             temporal:
                 condition: service_healthy

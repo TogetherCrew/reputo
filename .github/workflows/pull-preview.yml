@@ -16,6 +16,9 @@ jobs:
         with:
             ref: ${{ github.event.pull_request.head.sha }}
             push: true
+            # Preview compose references every image by tag, so always build
+            # all apps here regardless of which were affected.
+            affected: false
             tags: |
                 type=raw,value=preview-${{ github.event.pull_request.head.sha }}
 

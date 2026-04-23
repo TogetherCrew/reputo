@@ -5,6 +5,10 @@ node_modules/
 dist/
 **/dist/
 
+# Turborepo local cache
+.turbo/
+**/.turbo/
+
 # Logs
 npm-debug.log*
 pnpm-debug.log*
