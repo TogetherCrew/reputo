@@ -29,6 +29,9 @@ docker-compose.override.yml
 **/.env*
 **/*.env
 
+# Canonical Docker envs live under docker/env/examples/*.env.example only.
+docker/preview/.env
+
 #
 # Docker environment files (except local dev files)
 docker/shared.env

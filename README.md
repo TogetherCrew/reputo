@@ -37,7 +37,9 @@ pnpm dev
 docker compose -f docker/docker-compose.dev.yml up --build
 ```
 
- See [docker/README.md](docker/README.md).
+This is the hot-reload local testing stack. The UI is routed at `http://localhost`, the API at `http://localhost/api`, Temporal UI at `http://localhost:8088`, and Grafana at `http://localhost:3001`.
+
+See [docker/README.md](docker/README.md).
 
 ### Checks
 
@@ -70,9 +72,13 @@ pnpm test
 
 ## Environments
 
-- Preview deployments are created for pull requests that carry the `pullpreview` label.
-- Staging is updated from `main`.
-- Production is promoted manually from a chosen commit.
+- Preview deployments are created for pull requests that carry the `pullpreview` label. They publish only `preview-<commit>` image tags.
+- Main branch builds publish immutable `sha-<commit>` images for affected apps and update the mutable `staging` tag for those same apps.
+- Production promotion is manual and digest-based: it resolves the digest behind `sha-<commit>` and updates only the affected apps to the `production` channel tag.
+
+### Environment Files
+
+Tracked files under `docker/env/examples/*.env.example` are the only canonical environment templates. Copy them into `docker/env/*.env` locally before using the Docker stacks.
 
 For operational details, image flow, and local infrastructure setup, see [docker/README.md](docker/README.md).
 
