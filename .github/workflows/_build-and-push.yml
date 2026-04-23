@@ -19,8 +19,13 @@ jobs:
             packages: write
         strategy:
             matrix:
-                os: [ubuntu-latest]
-                image: [api, ui, workflows]
+                include:
+                    - image: api
+                      dockerfile: apps/api/Dockerfile
+                    - image: ui
+                      dockerfile: apps/ui/Dockerfile
+                    - image: workflows
+                      dockerfile: apps/workflows/Dockerfile
         outputs:
             image-tag: ${{ steps.meta.outputs.tags }}
 
@@ -55,8 +60,7 @@ jobs:
               uses: docker/build-push-action@v6
               with:
                   context: .
-                  file: docker/Dockerfile
-                  target: ${{ matrix.image }}
+                  file: ${{ matrix.dockerfile }}
                   push: ${{ inputs.push }}
                   tags: ${{ steps.meta.outputs.tags }}
                   labels: ${{ steps.meta.outputs.labels }}

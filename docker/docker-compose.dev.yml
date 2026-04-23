@@ -78,8 +78,7 @@ services:
         container_name: api
         build:
             context: ..
-            dockerfile: docker/Dockerfile
-            target: api
+            dockerfile: apps/api/Dockerfile
         restart: unless-stopped
         networks: [dev]
         volumes:
@@ -102,8 +101,7 @@ services:
         container_name: ui
         build:
             context: ..
-            dockerfile: docker/Dockerfile
-            target: ui
+            dockerfile: apps/ui/Dockerfile
         restart: unless-stopped
         networks: [dev]
         env_file:
@@ -196,8 +194,7 @@ services:
         container_name: orchestrator-worker
         build:
             context: ..
-            dockerfile: docker/Dockerfile
-            target: workflows
+            dockerfile: apps/workflows/Dockerfile
         command: ['pnpm', 'start:orchestrator']
         restart: unless-stopped
         networks: [dev]
@@ -215,8 +212,7 @@ services:
         container_name: onchain-data-worker
         build:
             context: ..
-            dockerfile: docker/Dockerfile
-            target: workflows
+            dockerfile: apps/workflows/Dockerfile
         command: ['pnpm', 'start:onchain-data']
         restart: unless-stopped
         networks: [dev]
@@ -234,8 +230,7 @@ services:
         container_name: typescript-worker
         build:
             context: ..
-            dockerfile: docker/Dockerfile
-            target: workflows
+            dockerfile: apps/workflows/Dockerfile
         command: ['pnpm', 'start:algorithm-typescript']
         restart: unless-stopped 
         networks: [dev]

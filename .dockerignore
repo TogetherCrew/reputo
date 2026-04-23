@@ -1,5 +1,37 @@
+# Dependencies
 node_modules
+**/node_modules
+
+# VCS and editor metadata
 .git
 .gitignore
+.github
+.vscode
+.idea
+.DS_Store
+**/.DS_Store
+
+# Docs and local artifacts
 *.md
+*.log
+**/*.log
+.turbo
+**/.turbo
+*.tsbuildinfo
+**/*.tsbuildinfo
+
+# Build outputs
 dist
+**/dist
+coverage
+**/coverage
+.next
+**/.next
+
+# Environment files and secrets
+**/.env
+**/.env.*
+**/*.env
+!**/.env.example
+!docker/env/examples/*.env.example
+docker/mongo/keyfile.txt
