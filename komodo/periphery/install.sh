@@ -258,7 +258,7 @@ services:
         volumes:
             - keys:/config/keys
             - /var/run/docker.sock:/var/run/docker.sock
-            - /proc:/proc:ro
+            - /proc:/proc
             - ${PERIPHERY_ROOT_DIRECTORY:-/etc/komodo}:${PERIPHERY_ROOT_DIRECTORY:-/etc/komodo}
         networks:
             - production
