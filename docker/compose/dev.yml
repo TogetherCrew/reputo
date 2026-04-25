@@ -7,7 +7,7 @@ x-dev-environment: &dev-environment
     NEXT_TELEMETRY_DISABLED: '1'
 
 x-dev-volumes: &dev-volumes
-    - ..:/workspace
+    - ../..:/workspace
     - repo_node_modules:/workspace/node_modules
     - repo_pnpm_store:/pnpm/store
     - apps_api_node_modules:/workspace/apps/api/node_modules
@@ -22,8 +22,8 @@ x-dev-volumes: &dev-volumes
 
 x-dev-service: &dev-service
     build:
-        context: ..
-        dockerfile: docker/Dockerfile.dev
+        context: ../..
+        dockerfile: docker/images/Dockerfile.dev
     working_dir: /workspace
     init: true
     restart: unless-stopped
@@ -82,11 +82,11 @@ services:
         ports:
             - 27017:27017
         env_file:
-            - ./env/mongodb.env
+            - ../env/mongodb.env
         volumes:
-            - ./mongo/init.js:/docker-entrypoint-initdb.d/init.js:ro
-            - ./mongo/healthcheck.js:/etc/mongo/healthcheck.js:ro
-            - ./mongo/keyfile.txt:/etc/mongo/keyfile.txt:ro
+            - ../config/mongo/init.js:/docker-entrypoint-initdb.d/init.js:ro
+            - ../config/mongo/healthcheck.js:/etc/mongo/healthcheck.js:ro
+            - ../config/mongo/keyfile.txt:/etc/mongo/keyfile.txt:ro
             - mongodb_data:/data/db
         healthcheck:
             test: test $(echo $(mongosh -u $$MONGO_INITDB_ROOT_USERNAME -p $$MONGO_INITDB_ROOT_PASSWORD --quiet /etc/mongo/healthcheck.js)) -eq 1
@@ -139,7 +139,7 @@ services:
             temporal:
                 condition: service_healthy
         env_file:
-            - ./env/api.env
+            - ../env/api.env
         labels:
             - traefik.enable=true
             - traefik.http.routers.api.rule=Host(`localhost`) && PathPrefix(`/api`)
@@ -153,7 +153,7 @@ services:
         command: pnpm --filter @reputo/ui dev
         networks: [dev]
         env_file:
-            - ./env/ui.env
+            - ../env/ui.env
         labels:
             - traefik.enable=true
             - traefik.http.routers.ui.rule=Host(`localhost`)
@@ -170,7 +170,7 @@ services:
             - temporal-elasticsearch
         ports:
             - '7233:7233'
-        env_file: ./env/temporal.env
+        env_file: ../env/temporal.env
         networks: [dev]
         healthcheck:
             test:
@@ -187,7 +187,7 @@ services:
         container_name: temporal-ui
         image: temporalio/ui:2.32.0
         restart: unless-stopped
-        env_file: ./env/temporal-ui.env
+        env_file: ../env/temporal-ui.env
         depends_on:
             - temporal
         ports:
@@ -214,7 +214,7 @@ services:
         container_name: temporal-postgresql
         image: postgres:12.22
         restart: unless-stopped
-        env_file: ./env/temporal-postgresql.env
+        env_file: ../env/temporal-postgresql.env
         networks: [dev]
         volumes:
             - temporal_postgresql_data:/var/lib/postgresql/data
@@ -223,7 +223,7 @@ services:
         container_name: onchain-data-postgresql
         image: postgres:16
         restart: unless-stopped
-        env_file: ./env/onchain-data-postgresql.env
+        env_file: ../env/onchain-data-postgresql.env
         networks: [dev]
         ports:
             - 5433:5432
@@ -248,7 +248,7 @@ services:
             temporal:
                 condition: service_healthy
         env_file:
-            - ./env/workflows.env
+            - ../env/workflows.env
 
     onchain-data-worker:
         <<: *dev-service
@@ -261,7 +261,7 @@ services:
             onchain-data-postgresql:
                 condition: service_healthy
         env_file:
-            - ./env/workflows.env
+            - ../env/workflows.env
 
     typescript-worker:
         <<: *dev-service
@@ -274,7 +274,7 @@ services:
             onchain-data-postgresql:
                 condition: service_healthy
         env_file:
-            - ./env/workflows.env
+            - ../env/workflows.env
 
     loki:
         container_name: loki
@@ -283,7 +283,7 @@ services:
         networks: [dev]
         command: -config.file=/etc/loki/loki-config.yml
         volumes:
-            - ./observability/loki/loki-config.yml:/etc/loki/loki-config.yml:ro
+            - ../config/observability/loki/loki-config.yml:/etc/loki/loki-config.yml:ro
             - loki_data:/loki
         healthcheck:
             test: ['CMD', '/usr/bin/loki', '-health']
@@ -301,7 +301,7 @@ services:
         environment:
             - OBSERVABILITY_ENV=development
         volumes:
-            - ./observability/promtail/promtail-config.yml:/etc/promtail/promtail-config.yml:ro
+            - ../config/observability/promtail/promtail-config.yml:/etc/promtail/promtail-config.yml:ro
             - /var/run/docker.sock:/var/run/docker.sock:ro
             - /var/lib/docker/containers:/var/lib/docker/containers:ro
         depends_on:
@@ -320,7 +320,7 @@ services:
             - --storage.tsdb.retention.time=7d
             - --storage.tsdb.path=/prometheus
         volumes:
-            - ./observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+            - ../config/observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
             - prometheus_data:/prometheus
         depends_on:
             - cadvisor
@@ -362,7 +362,7 @@ services:
             - GF_LOG_LEVEL=warn
         volumes:
             - grafana_data:/var/lib/grafana
-            - ./observability/grafana/provisioning:/etc/grafana/provisioning:ro
+            - ../config/observability/grafana/provisioning:/etc/grafana/provisioning:ro
         depends_on:
             loki:
                 condition: service_healthy

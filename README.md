@@ -34,7 +34,7 @@ pnpm dev
 ### Docker
 
 ```bash
-docker compose -f docker/docker-compose.dev.yml up --build
+docker compose -f docker/compose/dev.yml up --build
 ```
 
 This is the hot-reload local testing stack. The UI is routed at `http://localhost`, the API at `http://localhost/api`, Temporal UI at `http://localhost:8088`, and Grafana at `http://localhost:3001`.

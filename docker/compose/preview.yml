@@ -19,7 +19,7 @@ services:
         ports:
             - '80:80'
         volumes:
-            - ./Caddyfile:/etc/caddy/Caddyfile:ro
+            - ../config/preview/Caddyfile:/etc/caddy/Caddyfile:ro
         depends_on:
             - ui
             - api
@@ -43,9 +43,9 @@ services:
             - MONGO_INITDB_DATABASE=reputo_preview
 
         volumes:
-            - ../mongo/init.js:/docker-entrypoint-initdb.d/init.js:ro
-            - ../mongo/healthcheck.js:/etc/mongo/healthcheck.js:ro
-            - ../mongo/keyfile.txt:/etc/mongo/keyfile.txt
+            - ../config/mongo/init.js:/docker-entrypoint-initdb.d/init.js:ro
+            - ../config/mongo/healthcheck.js:/etc/mongo/healthcheck.js:ro
+            - ../config/mongo/keyfile.txt:/etc/mongo/keyfile.txt
             - mongodb_data:/data/db
 
         healthcheck:
