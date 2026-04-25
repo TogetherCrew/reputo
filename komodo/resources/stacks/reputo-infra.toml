@@ -1,0 +1,83 @@
+[[stack]]
+name = "reputo-infra-staging"
+description = "Staging infrastructure stack: MongoDB, Traefik, Watchtower, Temporal, Postgres, and observability."
+tags = ["reputo", "staging", "infra"]
+deploy = false
+
+[stack.config]
+server_id = "staging"
+project_name = "reputo"
+files_on_host = true
+run_directory = "/opt/reputo"
+file_paths = [
+  "docker/compose/infra.yml",
+  "docker/compose/observability.yml",
+]
+env_file_path = "docker/env/shared.env"
+environment = """
+IMAGE_TAG=staging
+TRAEFIK_DOMAIN=[[STAGING_TRAEFIK_DOMAIN]]
+UI_DOMAIN=[[STAGING_UI_DOMAIN]]
+API_DOMAIN=[[STAGING_API_DOMAIN]]
+TEMPORAL_UI_DOMAIN=[[STAGING_TEMPORAL_UI_DOMAIN]]
+TRAEFIK_AUTH=[[STAGING_TRAEFIK_AUTH]]
+CF_DNS_API_TOKEN=[[STAGING_CF_DNS_API_TOKEN]]
+GRAFANA_DOMAIN=[[STAGING_GRAFANA_DOMAIN]]
+GRAFANA_AUTH=[[STAGING_GRAFANA_AUTH]]
+OBSERVABILITY_ENV=staging
+ALLOWED_ORIGINS=[[STAGING_ALLOWED_ORIGINS]]
+NODE_ENV=production
+LOG_LEVEL=info
+"""
+auto_pull = false
+run_build = false
+poll_for_updates = false
+auto_update = false
+auto_update_all_services = false
+destroy_before_deploy = false
+send_alerts = true
+webhook_enabled = false
+webhook_force_deploy = false
+webhook_secret = "[[KOMODO_WEBHOOK_SECRET]]"
+
+[[stack]]
+name = "reputo-infra-production"
+description = "Production infrastructure stack: MongoDB, Traefik, Watchtower, Temporal, Postgres, and observability."
+tags = ["reputo", "production", "infra"]
+deploy = false
+
+[stack.config]
+server_id = "production"
+project_name = "reputo"
+files_on_host = true
+run_directory = "/opt/reputo"
+file_paths = [
+  "docker/compose/infra.yml",
+  "docker/compose/observability.yml",
+]
+env_file_path = "docker/env/shared.env"
+environment = """
+IMAGE_TAG=production
+TRAEFIK_DOMAIN=[[PRODUCTION_TRAEFIK_DOMAIN]]
+UI_DOMAIN=[[PRODUCTION_UI_DOMAIN]]
+API_DOMAIN=[[PRODUCTION_API_DOMAIN]]
+TEMPORAL_UI_DOMAIN=[[PRODUCTION_TEMPORAL_UI_DOMAIN]]
+TRAEFIK_AUTH=[[PRODUCTION_TRAEFIK_AUTH]]
+CF_DNS_API_TOKEN=[[PRODUCTION_CF_DNS_API_TOKEN]]
+GRAFANA_DOMAIN=[[PRODUCTION_GRAFANA_DOMAIN]]
+GRAFANA_AUTH=[[PRODUCTION_GRAFANA_AUTH]]
+OBSERVABILITY_ENV=production
+ALLOWED_ORIGINS=[[PRODUCTION_ALLOWED_ORIGINS]]
+NODE_ENV=production
+LOG_LEVEL=info
+"""
+auto_pull = false
+run_build = false
+poll_for_updates = false
+auto_update = false
+auto_update_all_services = false
+destroy_before_deploy = false
+send_alerts = true
+webhook_enabled = false
+webhook_force_deploy = false
+webhook_secret = "[[KOMODO_WEBHOOK_SECRET]]"
