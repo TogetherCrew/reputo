@@ -1,0 +1,102 @@
+networks:
+    production:
+        external: true
+
+services:
+    ui:
+        container_name: ui
+        image: ghcr.io/reputo-org/reputo/ui:${IMAGE_TAG}
+        restart: unless-stopped
+        networks: [production]
+        env_file:
+            - ../env/ui.env
+        labels:
+            - traefik.enable=true
+            - traefik.http.routers.ui.rule=Host(`${UI_DOMAIN}`)
+            - traefik.http.routers.ui.priority=1
+            - traefik.http.routers.ui.tls=true
+            - traefik.http.routers.ui.tls.certresolver=cloudflare
+            - traefik.http.routers.ui.entrypoints=websecure
+            - traefik.http.services.ui.loadbalancer.server.port=8080
+            - com.centurylinklabs.watchtower.enable=true
+
+    api:
+        container_name: api
+        image: ghcr.io/reputo-org/reputo/api:${IMAGE_TAG}
+        restart: unless-stopped
+        networks: [production]
+        depends_on:
+            mongodb:
+                condition: service_healthy
+            temporal:
+                condition: service_healthy
+        labels:
+            - traefik.enable=true
+            - traefik.http.routers.api.rule=Host(`${API_DOMAIN}`)
+            - traefik.http.routers.api.tls=true
+            - traefik.http.routers.api.tls.certresolver=cloudflare
+            - traefik.http.routers.api.entrypoints=websecure
+            - traefik.http.routers.api.middlewares=api-cors
+            - traefik.http.routers.api-ui.rule=Host(`${UI_DOMAIN}`) && PathPrefix(`/api`)
+            - traefik.http.routers.api-ui.priority=100
+            - traefik.http.routers.api-ui.tls=true
+            - traefik.http.routers.api-ui.tls.certresolver=cloudflare
+            - traefik.http.routers.api-ui.entrypoints=websecure
+            - traefik.http.routers.api-ui.middlewares=api-cors
+            - traefik.http.routers.api-ui.service=api
+            - traefik.http.services.api.loadbalancer.server.port=3000
+            - traefik.http.middlewares.api-cors.headers.accessControlAllowMethods=GET,OPTIONS,PUT,POST,DELETE,PATCH
+            - traefik.http.middlewares.api-cors.headers.accessControlAllowOriginList=${ALLOWED_ORIGINS:-*}
+            - traefik.http.middlewares.api-cors.headers.accessControlAllowHeaders=Content-Type,Authorization,Accept,Origin,X-Requested-With
+            - traefik.http.middlewares.api-cors.headers.accessControlMaxAge=3600
+            - com.centurylinklabs.watchtower.enable=true
+        env_file:
+            - ../env/api.env
+
+    orchestrator-worker:
+        container_name: orchestrator-worker
+        image: ghcr.io/reputo-org/reputo/workflows:${IMAGE_TAG}
+        command: ['pnpm', 'start:orchestrator']
+        restart: unless-stopped
+        networks: [production]
+        depends_on:
+            mongodb:
+                condition: service_healthy
+            temporal:
+                condition: service_healthy
+        env_file:
+            - ../env/workflows.env
+        labels:
+            - com.centurylinklabs.watchtower.enable=true
+
+    onchain-data-worker:
+        container_name: onchain-data-worker
+        image: ghcr.io/reputo-org/reputo/workflows:${IMAGE_TAG}
+        command: ['pnpm', 'start:onchain-data']
+        restart: unless-stopped
+        networks: [production]
+        depends_on:
+            temporal:
+                condition: service_healthy
+            onchain-data-postgresql:
+                condition: service_healthy
+        env_file:
+            - ../env/workflows.env
+        labels:
+            - com.centurylinklabs.watchtower.enable=true
+
+    typescript-worker:
+        container_name: typescript-worker
+        image: ghcr.io/reputo-org/reputo/workflows:${IMAGE_TAG}
+        command: ['pnpm', 'start:algorithm-typescript']
+        restart: unless-stopped
+        networks: [production]
+        depends_on:
+            temporal:
+                condition: service_healthy
+            onchain-data-postgresql:
+                condition: service_healthy
+        env_file:
+            - ../env/workflows.env
+        labels:
+            - com.centurylinklabs.watchtower.enable=true

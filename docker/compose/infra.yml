@@ -1,0 +1,173 @@
+networks:
+    production:
+        external: true
+
+volumes:
+    mongodb_data:
+        driver: local
+    temporal_elasticsearch_data:
+        driver: local
+    temporal_postgresql_data:
+        driver: local
+    onchain_data_postgresql_data:
+        driver: local
+
+services:
+    mongodb:
+        container_name: mongodb
+        image: mongo:7.0.5
+        restart: unless-stopped
+        networks: [production]
+        command: ['--replSet', 'rs0', '--keyFile', '/etc/mongo/keyfile.txt']
+        ports:
+            - 27017:27017
+        env_file:
+            - ../env/mongodb.env
+        volumes:
+            - ../config/mongo/init.js:/docker-entrypoint-initdb.d/init.js:ro
+            - ../config/mongo/healthcheck.js:/etc/mongo/healthcheck.js:ro
+            - ../config/mongo/keyfile.txt:/etc/mongo/keyfile.txt:ro
+            - mongodb_data:/data/db
+        healthcheck:
+            test: test $(echo $(mongosh -u $$MONGO_INITDB_ROOT_USERNAME -p $$MONGO_INITDB_ROOT_PASSWORD --quiet /etc/mongo/healthcheck.js)) -eq 1
+            interval: 60s
+            timeout: 60s
+            retries: 5
+            start_period: 40s
+
+    traefik:
+        image: traefik:v3.6
+        container_name: traefik
+        restart: unless-stopped
+        ports:
+            - '80:80'
+            - '443:443'
+        env_file: ../env/shared.env
+        environment:
+            - CF_DNS_API_TOKEN=${CF_DNS_API_TOKEN}
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock:ro
+            - ../config/traefik/traefik.yml:/etc/traefik/traefik.yml:ro
+            - ../certs/:/var/traefik/certs/:rw
+        networks: [production]
+        healthcheck:
+            test:
+                [
+                    'CMD',
+                    'traefik',
+                    'healthcheck',
+                    '--ping=true',
+                    '--ping.entrypoint=web',
+                    '--entrypoints.web.address=:80',
+                ]
+            interval: 30s
+            timeout: 10s
+            retries: 3
+            start_period: 30s
+        labels:
+            - traefik.enable=true
+            - traefik.http.routers.traefik.rule=Host(`${TRAEFIK_DOMAIN}`) && (PathPrefix(`/api`) || PathPrefix(`/dashboard`))
+            - traefik.http.routers.traefik.service=api@internal
+            - traefik.http.routers.traefik.middlewares=auth
+            - traefik.http.middlewares.auth.basicauth.users=${TRAEFIK_AUTH}
+            - traefik.http.middlewares.grafana-auth.basicauth.users=${GRAFANA_AUTH}
+            - traefik.http.routers.traefik.entrypoints=websecure
+            - traefik.http.routers.traefik.tls=true
+            - traefik.http.routers.traefik.tls.certresolver=cloudflare
+
+    watchtower:
+        image: containrrr/watchtower:latest
+        container_name: watchtower
+        restart: unless-stopped
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock
+        environment:
+            - WATCHTOWER_POLL_INTERVAL=60
+            - WATCHTOWER_CLEANUP=true
+            - WATCHTOWER_INCLUDE_RESTARTING=true
+            - WATCHTOWER_LABEL_ENABLE=true
+            - WATCHTOWER_ROLLING_RESTART=true
+        command: --interval 60 --cleanup
+        labels:
+            - com.centurylinklabs.watchtower.enable=false
+        networks: [production]
+
+    temporal:
+        container_name: temporal
+        image: temporalio/auto-setup:1.26.3.0
+        restart: unless-stopped
+        depends_on:
+            - temporal-postgresql
+            - temporal-elasticsearch
+        env_file: ../env/temporal.env
+        networks: [production]
+        healthcheck:
+            test:
+                [
+                    'CMD-SHELL',
+                    'temporal operator cluster health --address $(hostname -i):7233',
+                ]
+            interval: 10s
+            timeout: 5s
+            retries: 12
+            start_period: 120s
+
+    temporal-ui:
+        container_name: temporal-ui
+        image: temporalio/ui:2.32.0
+        restart: unless-stopped
+        env_file: ../env/temporal-ui.env
+        depends_on:
+            - temporal
+        networks: [production]
+        labels:
+            - traefik.enable=true
+            - traefik.http.routers.temporal-ui.rule=Host(`${TEMPORAL_UI_DOMAIN}`)
+            - traefik.http.routers.temporal-ui.tls=true
+            - traefik.http.routers.temporal-ui.tls.certresolver=cloudflare
+            - traefik.http.routers.temporal-ui.entrypoints=websecure
+            - traefik.http.routers.temporal-ui.middlewares=auth
+            - traefik.http.services.temporal-ui.loadbalancer.server.port=8080
+
+    temporal-elasticsearch:
+        container_name: temporal-elasticsearch
+        restart: unless-stopped
+        image: elasticsearch:7.17.23
+        environment:
+            - cluster.routing.allocation.disk.threshold_enabled=true
+            - cluster.routing.allocation.disk.watermark.low=512mb
+            - cluster.routing.allocation.disk.watermark.high=256mb
+            - cluster.routing.allocation.disk.watermark.flood_stage=128mb
+            - discovery.type=single-node
+            - ES_JAVA_OPTS=-Xms256m -Xmx256m
+            - xpack.security.enabled=false
+        volumes:
+            - temporal_elasticsearch_data:/var/lib/elasticsearch/data
+        networks: [production]
+
+    temporal-postgresql:
+        container_name: temporal-postgresql
+        image: postgres:12.22
+        restart: unless-stopped
+        env_file: ../env/temporal-postgresql.env
+        networks: [production]
+        volumes:
+            - temporal_postgresql_data:/var/lib/postgresql/data
+
+    onchain-data-postgresql:
+        container_name: onchain-data-postgresql
+        image: postgres:16
+        restart: unless-stopped
+        env_file: ../env/onchain-data-postgresql.env
+        networks: [production]
+        ports:
+            - 5433:5432
+        volumes:
+            - onchain_data_postgresql_data:/var/lib/postgresql/data
+        healthcheck:
+            test:
+                ['CMD-SHELL', 'pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB']
+            interval: 10s
+            timeout: 5s
+            retries: 12
+            start_period: 20s

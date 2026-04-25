@@ -1,10 +1,28 @@
 # Docker
 
-Docker assets are split into three paths:
+Layout:
 
-- `docker/docker-compose.dev.yml`: local hot-reload stack for testing the monorepo behind Traefik.
-- `docker/docker-compose.yml`: staging or production deployment using prebuilt GHCR images and Watchtower.
-- `docker/preview/docker-compose.preview.yml`: PullPreview deployment using prebuilt preview images.
+```text
+docker/
+├── compose/                      # all docker-compose files
+│   ├── dev.yml                   # local hot-reload stack
+│   ├── apps.yml                  # api, ui, workflows (rotates on deploy)
+│   ├── infra.yml                 # mongo, traefik, watchtower, temporal*, postgres
+│   ├── observability.yml         # loki, promtail, prometheus, grafana, ...
+│   └── preview.yml               # PullPreview deployment
+├── images/
+│   └── Dockerfile.dev            # used by compose/dev.yml
+├── env/
+│   ├── examples/*.env.example    # tracked, source of truth
+│   └── *.env                     # runtime, gitignored
+└── config/                       # files mounted into containers
+    ├── mongo/                    # init.js, healthcheck.js, keyfile.txt
+    ├── traefik/                  # traefik.yml
+    ├── observability/            # grafana/, loki/, prometheus/, promtail/
+    └── preview/                  # Caddyfile
+```
+
+App `Dockerfile`s for `api`, `ui`, and `workflows` live next to each app at `apps/<app>/Dockerfile` and are built by GitHub Actions, not by these compose files.
 
 ## Environment Files
 
@@ -29,10 +47,10 @@ For htpasswd-style values such as `TRAEFIK_AUTH` and `GRAFANA_AUTH`, keep the do
 ## Local Hot Reload
 
 ```bash
-docker compose -f docker/docker-compose.dev.yml up --build
+docker compose -f docker/compose/dev.yml up --build
 ```
 
-The dev stack builds `docker/Dockerfile.dev`, mounts the repo into `/workspace`, and runs watch-mode commands for the API, UI, and workers. Useful local endpoints:
+The dev stack builds `docker/images/Dockerfile.dev`, mounts the repo into `/workspace`, and runs watch-mode commands for the API, UI, and workers. Useful local endpoints:
 
 - UI: `http://localhost`
 - API via Traefik: `http://localhost/api`
@@ -42,7 +60,13 @@ The dev stack builds `docker/Dockerfile.dev`, mounts the repo into `/workspace`,
 
 ## Staging And Production
 
-`docker/docker-compose.yml` deploys mutable channel tags. Set `IMAGE_TAG=staging` on the staging host and `IMAGE_TAG=production` on the production host.
+The staging/production stack is split across three compose files by deploy cadence:
+
+- `compose/apps.yml` — application services that rotate on every deploy (have `com.centurylinklabs.watchtower.enable=true`)
+- `compose/infra.yml` — stateful services and the platform (`mongo`, `traefik`, `watchtower`, Temporal cluster, Postgres)
+- `compose/observability.yml` — Loki / Promtail / Prometheus / cAdvisor / node-exporter / Grafana
+
+Set `IMAGE_TAG=staging` on the staging host and `IMAGE_TAG=production` on the production host.
 
 Main branch builds publish:
 
@@ -54,10 +78,21 @@ Production promotion resolves the digest behind `sha-<commit>` and retags only t
 - `production`
 - `prod-<commit>`
 
-Deploy with:
+Deploy with all three files:
 
 ```bash
-docker compose --env-file docker/env/shared.env -f docker/docker-compose.yml up -d
+export COMPOSE_FILE=docker/compose/infra.yml:docker/compose/apps.yml:docker/compose/observability.yml
+docker compose --env-file docker/env/shared.env up -d
+```
+
+Or pass them explicitly:
+
+```bash
+docker compose \
+  -f docker/compose/infra.yml \
+  -f docker/compose/apps.yml \
+  -f docker/compose/observability.yml \
+  --env-file docker/env/shared.env up -d
 ```
 
 ## Preview
@@ -68,5 +103,5 @@ Pull request preview builds publish only `preview-<commit>` tags. Preview compos
 PREVIEW_IMAGE_TAG=preview-<commit> \
 AWS_ACCESS_KEY_ID=<key> \
 AWS_SECRET_ACCESS_KEY=<secret> \
-docker compose -f docker/preview/docker-compose.preview.yml up -d
+docker compose -f docker/compose/preview.yml up -d
 ```

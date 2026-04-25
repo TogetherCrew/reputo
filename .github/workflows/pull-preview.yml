@@ -51,7 +51,7 @@ jobs:
                   DEEPFUNDING_API_KEY: ${{ secrets.DEEPFUNDING_API_KEY }}
                   ALCHEMY_API_KEY: ${{ secrets.ALCHEMY_API_KEY }}
               run: |
-                  cat > docker/preview/.env <<EOF
+                  cat > docker/compose/.env <<EOF
                   AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
                   AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
                   DEEPFUNDING_API_KEY=$DEEPFUNDING_API_KEY
@@ -61,8 +61,8 @@ jobs:
 
             - name: Generate MongoDB keyfile
               run: |
-                  openssl rand -base64 768 > docker/mongo/keyfile.txt
-                  chmod 400 docker/mongo/keyfile.txt
+                  openssl rand -base64 768 > docker/config/mongo/keyfile.txt
+                  chmod 400 docker/config/mongo/keyfile.txt
 
             - id: pullpreview_primary
               name: Deploy preview
@@ -72,7 +72,7 @@ jobs:
                   label: pullpreview
                   provider: lightsail
                   instance_type: large
-                  compose_files: docker/preview/docker-compose.preview.yml
+                  compose_files: docker/compose/preview.yml
                   compose_options: ''
                   ttl: 24h
               env:
@@ -88,7 +88,7 @@ jobs:
                   label: pullpreview
                   provider: lightsail
                   instance_type: large
-                  compose_files: docker/preview/docker-compose.preview.yml
+                  compose_files: docker/compose/preview.yml
                   compose_options: ''
                   ttl: 24h
               env:
