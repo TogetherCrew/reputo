@@ -1,0 +1,197 @@
+name: komodo
+
+networks:
+    proxy:
+        name: komodo_proxy
+    internal:
+        name: komodo_internal
+        internal: true
+
+services:
+    traefik:
+        image: traefik:v3.6
+        container_name: komodo-traefik
+        restart: unless-stopped
+        environment:
+            CF_DNS_API_TOKEN: ${CF_DNS_API_TOKEN}
+        command:
+            - --global.checknewversion=false
+            - --global.sendanonymoususage=false
+            - --log.level=${TRAEFIK_LOG_LEVEL:-INFO}
+            - --accesslog=true
+            - --api.dashboard=false
+            - --ping=true
+            - --ping.entrypoint=web
+            - --entrypoints.web.address=:80
+            - --entrypoints.web.http.redirections.entrypoint.to=websecure
+            - --entrypoints.web.http.redirections.entrypoint.scheme=https
+            - --entrypoints.websecure.address=:443
+            - --providers.docker=true
+            - --providers.docker.exposedbydefault=false
+            - --providers.docker.network=komodo_proxy
+            - --certificatesresolvers.cloudflare.acme.email=${TRAEFIK_ACME_EMAIL}
+            - --certificatesresolvers.cloudflare.acme.storage=/var/traefik/certs/cloudflare-acme.json
+            - --certificatesresolvers.cloudflare.acme.dnschallenge.provider=cloudflare
+            - --certificatesresolvers.cloudflare.acme.dnschallenge.resolvers=1.1.1.1:53
+            - --certificatesresolvers.cloudflare.acme.dnschallenge.resolvers=8.8.8.8:53
+        ports:
+            - '80:80'
+            - '443:443'
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock:ro
+            - ${TRAEFIK_CERTS_PATH:-/etc/komodo/traefik/certs}:/var/traefik/certs
+        networks:
+            - proxy
+        healthcheck:
+            test:
+                [
+                    'CMD',
+                    'traefik',
+                    'healthcheck',
+                    '--ping=true',
+                    '--ping.entrypoint=web',
+                    '--entrypoints.web.address=:80',
+                ]
+            interval: 30s
+            timeout: 10s
+            retries: 3
+            start_period: 30s
+
+    postgres:
+        image: ghcr.io/ferretdb/postgres-documentdb:${FERRETDB_POSTGRES_IMAGE_TAG:-17-0.107.0-ferretdb-2.7.0}
+        container_name: komodo-postgres
+        restart: unless-stopped
+        labels:
+            komodo.skip: 'true'
+        environment:
+            POSTGRES_USER: ${KOMODO_DATABASE_USERNAME}
+            POSTGRES_PASSWORD: ${KOMODO_DATABASE_PASSWORD}
+            POSTGRES_DB: postgres
+        volumes:
+            - ${COMPOSE_KOMODO_DATA_PATH:-/etc/komodo/core/data}/postgres:/var/lib/postgresql/data
+        networks:
+            - internal
+        healthcheck:
+            test:
+                [
+                    'CMD-SHELL',
+                    'pg_isready -U $${POSTGRES_USER} -d postgres',
+                ]
+            interval: 10s
+            timeout: 5s
+            retries: 12
+            start_period: 30s
+
+    ferretdb:
+        image: ghcr.io/ferretdb/ferretdb:${FERRETDB_IMAGE_TAG:-2.7.0}
+        container_name: komodo-ferretdb
+        restart: unless-stopped
+        labels:
+            komodo.skip: 'true'
+        depends_on:
+            postgres:
+                condition: service_healthy
+        environment:
+            FERRETDB_POSTGRESQL_URL: postgres://${KOMODO_DATABASE_USERNAME}:${KOMODO_DATABASE_PASSWORD}@postgres:5432/postgres
+        volumes:
+            - ${COMPOSE_KOMODO_DATA_PATH:-/etc/komodo/core/data}/ferretdb-state:/state
+        networks:
+            - internal
+
+    core:
+        image: ghcr.io/moghtech/komodo-core:${COMPOSE_KOMODO_IMAGE_TAG:-2}
+        container_name: komodo-core
+        init: true
+        restart: unless-stopped
+        depends_on:
+            ferretdb:
+                condition: service_started
+        environment:
+            TZ: ${TZ:-Etc/UTC}
+            KOMODO_DATABASE_ADDRESS: ferretdb:27017
+            KOMODO_DATABASE_USERNAME: ${KOMODO_DATABASE_USERNAME}
+            KOMODO_DATABASE_PASSWORD: ${KOMODO_DATABASE_PASSWORD}
+            KOMODO_HOST: ${KOMODO_HOST}
+            KOMODO_TITLE: ${KOMODO_TITLE:-Komodo}
+            KOMODO_PERIPHERY_PUBLIC_KEY: file:/config/keys/periphery.pub
+            KOMODO_PASSKEY: ${KOMODO_PASSKEY}
+            KOMODO_LOCAL_AUTH: ${KOMODO_LOCAL_AUTH:-false}
+            KOMODO_FIRST_SERVER_NAME: ${KOMODO_FIRST_SERVER_NAME:-komodo-core}
+            KOMODO_DISABLE_CONFIRM_DIALOG: ${KOMODO_DISABLE_CONFIRM_DIALOG:-false}
+            KOMODO_DISABLE_INIT_RESOURCES: ${KOMODO_DISABLE_INIT_RESOURCES:-false}
+            KOMODO_WEBHOOK_SECRET: ${KOMODO_WEBHOOK_SECRET}
+            KOMODO_JWT_SECRET: ${KOMODO_JWT_SECRET}
+            KOMODO_JWT_TTL: ${KOMODO_JWT_TTL:-1-day}
+            KOMODO_CLI_MAX_BACKUPS: ${KOMODO_CLI_MAX_BACKUPS:-30}
+            KOMODO_MONITORING_INTERVAL: ${KOMODO_MONITORING_INTERVAL:-15-sec}
+            KOMODO_RESOURCE_POLL_INTERVAL: ${KOMODO_RESOURCE_POLL_INTERVAL:-1-hr}
+            KOMODO_DISABLE_USER_REGISTRATION: ${KOMODO_DISABLE_USER_REGISTRATION:-false}
+            KOMODO_ENABLE_NEW_USERS: ${KOMODO_ENABLE_NEW_USERS:-false}
+            KOMODO_DISABLE_NON_ADMIN_CREATE: ${KOMODO_DISABLE_NON_ADMIN_CREATE:-true}
+            KOMODO_TRANSPARENT_MODE: ${KOMODO_TRANSPARENT_MODE:-false}
+            KOMODO_GITHUB_OAUTH_ENABLED: ${KOMODO_GITHUB_OAUTH_ENABLED:-true}
+            KOMODO_GITHUB_OAUTH_ID: ${KOMODO_GITHUB_OAUTH_ID}
+            KOMODO_GITHUB_OAUTH_SECRET: ${KOMODO_GITHUB_OAUTH_SECRET}
+            KOMODO_OIDC_ENABLED: ${KOMODO_OIDC_ENABLED:-false}
+        volumes:
+            - ${COMPOSE_KOMODO_DATA_PATH:-/etc/komodo/core/data}/keys:/config/keys
+            - ${COMPOSE_KOMODO_BACKUPS_PATH:-/etc/komodo/core/backups}:/backups
+            - ${COMPOSE_KOMODO_DATA_PATH:-/etc/komodo/core/data}/syncs:/syncs
+            - ${COMPOSE_KOMODO_DATA_PATH:-/etc/komodo/core/data}/repo-cache:/repo-cache
+        networks:
+            - proxy
+            - internal
+        labels:
+            - traefik.enable=true
+            - traefik.docker.network=komodo_proxy
+            - traefik.http.routers.komodo-core.rule=Host(`${KOMODO_DOMAIN}`)
+            - traefik.http.routers.komodo-core.tls=true
+            - traefik.http.routers.komodo-core.tls.certresolver=cloudflare
+            - traefik.http.routers.komodo-core.entrypoints=websecure
+            - traefik.http.services.komodo-core.loadbalancer.server.port=9120
+
+    periphery:
+        image: ghcr.io/moghtech/komodo-periphery:${COMPOSE_KOMODO_IMAGE_TAG:-2}
+        container_name: komodo-periphery
+        init: true
+        restart: unless-stopped
+        depends_on:
+            core:
+                condition: service_started
+        environment:
+            TZ: ${TZ:-Etc/UTC}
+            PERIPHERY_CORE_ADDRESS: ${PERIPHERY_CORE_ADDRESS:-ws://core:9120}
+            PERIPHERY_CONNECT_AS: ${PERIPHERY_CONNECT_AS:-komodo-core}
+            PERIPHERY_CORE_PUBLIC_KEYS: file:/config/keys/core.pub
+            PERIPHERY_PASSKEYS: ${KOMODO_PASSKEY}
+            PERIPHERY_ROOT_DIRECTORY: ${PERIPHERY_ROOT_DIRECTORY:-/etc/komodo}
+            PERIPHERY_DISABLE_TERMINALS: ${PERIPHERY_DISABLE_TERMINALS:-false}
+            PERIPHERY_DISABLE_CONTAINER_TERMINALS: ${PERIPHERY_DISABLE_CONTAINER_TERMINALS:-false}
+            PERIPHERY_INCLUDE_DISK_MOUNTS: ${PERIPHERY_INCLUDE_DISK_MOUNTS:-/etc/hostname}
+        volumes:
+            - ${COMPOSE_KOMODO_DATA_PATH:-/etc/komodo/core/data}/keys:/config/keys
+            - /var/run/docker.sock:/var/run/docker.sock
+            - /proc:/proc:ro
+            - ${PERIPHERY_ROOT_DIRECTORY:-/etc/komodo}:${PERIPHERY_ROOT_DIRECTORY:-/etc/komodo}
+        networks:
+            - internal
+
+    postgres-backup:
+        image: postgres:17-alpine
+        container_name: komodo-postgres-backup
+        profiles:
+            - backup
+        depends_on:
+            postgres:
+                condition: service_healthy
+        environment:
+            PGHOST: postgres
+            PGUSER: ${KOMODO_DATABASE_USERNAME}
+            PGPASSWORD: ${KOMODO_DATABASE_PASSWORD}
+        command: >
+            sh -ec 'mkdir -p /backups/postgres &&
+            pg_dumpall | gzip > "/backups/postgres/postgres-$$(date -u +%Y%m%dT%H%M%SZ).sql.gz"'
+        volumes:
+            - ${COMPOSE_KOMODO_BACKUPS_PATH:-/etc/komodo/core/backups}:/backups
+        networks:
+            - internal
