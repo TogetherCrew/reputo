@@ -1,0 +1,13 @@
+[[alerter]]
+name = "slack"
+description = "Slack alerts for Reputo Komodo resources."
+tags = ["reputo", "alerts"]
+
+[alerter.config]
+enabled = true
+
+[alerter.config.endpoint]
+type = "Slack"
+
+[alerter.config.endpoint.params]
+url = "[[KOMODO_SLACK_WEBHOOK_URL]]"
