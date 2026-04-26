@@ -17,6 +17,8 @@ the tree from the `main` branch through the `reputo-main` ResourceSync in
   procedure used after GitHub Actions promotes image tags.
 - `user-groups.toml` defines the `admins`, `engineers`, and
   `release-managers` RBAC groups.
+- `variables.toml` declares every Komodo variable and secret name used by the
+  stacks. Values stay in the Komodo UI; this file only provisions the shells.
 - `alerters/discord.toml` defines the Discord alerter.
 - `schedules/prune-images.toml` defines a scheduled Procedure. Komodo schedules
   are stored on Procedures or Actions, not as standalone `[[schedule]]`
@@ -85,7 +87,11 @@ still granted by a super admin in the UI.
 
 ## Required Komodo Variables And Secrets
 
-Create these in Komodo before deploying or testing the resources.
+The names below are provisioned automatically through `variables.toml` when the
+sync runs with `include_variables = true`. After the first sync creates the
+shells, fill the values in the Komodo UI under `Settings > Variables`, then
+flip `include_variables` back to `false` in `_sync.toml` so subsequent syncs
+do not flag value diffs as pending.
 
 - `KOMODO_PASSKEY`
 - `KOMODO_WEBHOOK_SECRET`
@@ -152,7 +158,9 @@ Recommended tags:
 
 Cutover order for secrets and RBAC:
 
-1. Add the variables and secrets in Komodo first.
+1. With `include_variables = true`, run the sync once to create variable and
+   secret shells, then fill values in the Komodo UI and flip
+   `include_variables` back to `false`.
 2. Sync resources and UserGroups.
 3. Add users to the appropriate UserGroups in the UI.
 4. Deploy through Komodo and confirm all services start.
