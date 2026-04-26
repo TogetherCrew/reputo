@@ -116,6 +116,9 @@ services:
         networks: [production]
         env_file:
             - ../env/grafana.env
+        environment:
+            GF_SECURITY_ADMIN_USER: "${GRAFANA_ADMIN_USER:?missing GRAFANA_ADMIN_USER}"
+            GF_SECURITY_ADMIN_PASSWORD: "${GRAFANA_ADMIN_PASSWORD:?missing GRAFANA_ADMIN_PASSWORD}"
         volumes:
             - grafana_data:/var/lib/grafana
             - ../config/observability/grafana/provisioning:/etc/grafana/provisioning:ro
@@ -137,7 +140,7 @@ services:
         labels:
             - com.centurylinklabs.watchtower.enable=false
             - traefik.enable=true
-            - traefik.http.routers.grafana.rule=Host(`${GRAFANA_DOMAIN}`)
+            - traefik.http.routers.grafana.rule=Host(`${GRAFANA_DOMAIN:?missing GRAFANA_DOMAIN}`)
             - traefik.http.routers.grafana.tls=true
             - traefik.http.routers.grafana.tls.certresolver=cloudflare
             - traefik.http.routers.grafana.entrypoints=websecure
