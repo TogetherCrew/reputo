@@ -1,7 +1,7 @@
 [[stack]]
 name = "reputo-apps-staging"
 description = "Staging application stack: API, UI, and workflow workers."
-tags = ["reputo", "staging", "apps"]
+tags = ["reputo", "env:staging", "apps"]
 deploy = false
 
 [stack.config]
@@ -51,7 +51,7 @@ webhook_secret = "[[KOMODO_WEBHOOK_SECRET]]"
 [[stack]]
 name = "reputo-apps-production"
 description = "Production application stack: API, UI, and workflow workers."
-tags = ["reputo", "production", "apps"]
+tags = ["reputo", "env:production", "apps"]
 deploy = false
 
 [stack.config]

@@ -1,7 +1,7 @@
 [[stack]]
 name = "reputo-infra-staging"
-description = "Staging infrastructure stack: MongoDB, Traefik, Watchtower, Temporal, Postgres, and observability."
-tags = ["reputo", "staging", "infra"]
+description = "Staging infrastructure stack: MongoDB, Traefik, Temporal, Postgres, and observability."
+tags = ["reputo", "env:staging", "infra"]
 deploy = false
 
 [stack.config]
@@ -50,8 +50,8 @@ webhook_secret = "[[KOMODO_WEBHOOK_SECRET]]"
 
 [[stack]]
 name = "reputo-infra-production"
-description = "Production infrastructure stack: MongoDB, Traefik, Watchtower, Temporal, Postgres, and observability."
-tags = ["reputo", "production", "infra"]
+description = "Production infrastructure stack: MongoDB, Traefik, Temporal, Postgres, and observability."
+tags = ["reputo", "env:production", "infra"]
 deploy = false
 
 [stack.config]

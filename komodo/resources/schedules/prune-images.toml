@@ -1,7 +1,7 @@
 [[procedure]]
 name = "prune-images"
 description = "Prune unused Docker images on staging and production."
-tags = ["reputo", "maintenance", "schedule"]
+tags = ["reputo", "env:staging", "env:production", "maintenance", "schedule"]
 
 [procedure.config]
 schedule_format = "English"

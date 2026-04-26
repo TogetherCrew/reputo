@@ -1,7 +1,7 @@
 [[server]]
 name = "staging"
 description = "Reputo staging host running the Komodo Periphery agent."
-tags = ["reputo", "staging"]
+tags = ["reputo", "env:staging"]
 
 [server.config]
 address = "[[STAGING_PERIPHERY_ADDRESS]]"
@@ -25,7 +25,7 @@ disk_critical = 90.0
 [[server]]
 name = "production"
 description = "Reputo production host running the Komodo Periphery agent."
-tags = ["reputo", "production"]
+tags = ["reputo", "env:production"]
 
 [server.config]
 address = "[[PRODUCTION_PERIPHERY_ADDRESS]]"
