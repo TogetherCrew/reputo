@@ -1,0 +1,19 @@
+[[resource_sync]]
+name = "reputo-main"
+description = "Manually reviewed ResourceSync for Reputo Komodo resources from the main branch."
+tags = ["reputo", "gitops"]
+
+[resource_sync.config]
+git_provider = "github.com"
+git_https = true
+repo = "reputo-org/reputo"
+branch = "main"
+resource_path = ["komodo/resources"]
+managed = false
+delete = false
+include_resources = true
+include_variables = true
+include_user_groups = true
+pending_alert = true
+webhook_enabled = false
+webhook_secret = "[[KOMODO_WEBHOOK_SECRET]]"

@@ -1,0 +1,400 @@
+# Variable shells for Reputo Komodo resources.
+#
+# These entries provision the variable and secret NAMES only. Values are
+# populated manually in the Komodo UI under Settings > Variables.
+#
+# Bootstrap workflow:
+#   1. _sync.toml has include_variables = true.
+#   2. Run the reputo-main sync once to create every entry below.
+#   3. Fill values in the UI.
+#   4. Flip _sync.toml back to include_variables = false so future syncs do
+#      not flag value diffs as pending.
+#
+# Adding a new variable later:
+#   - Append the entry here, flip include_variables back to true, sync, then
+#     flip it back to false.
+
+# ---------------------------------------------------------------------------
+# Global
+# ---------------------------------------------------------------------------
+
+[[variable]]
+name = "KOMODO_PASSKEY"
+description = "Shared passkey between Komodo Core and every Periphery agent."
+is_secret = true
+
+[[variable]]
+name = "KOMODO_WEBHOOK_SECRET"
+description = "HMAC secret for GitHub webhooks into Komodo Core."
+is_secret = true
+
+[[variable]]
+name = "KOMODO_DISCORD_WEBHOOK_URL"
+description = "Discord webhook URL for the reputo alerter."
+is_secret = true
+
+[[variable]]
+name = "STAGING_PERIPHERY_ADDRESS"
+description = "URL of the staging Periphery agent (e.g. http://10.0.0.5:8120)."
+is_secret = false
+
+[[variable]]
+name = "PRODUCTION_PERIPHERY_ADDRESS"
+description = "URL of the production Periphery agent (e.g. http://10.0.0.6:8120)."
+is_secret = false
+
+# ---------------------------------------------------------------------------
+# Staging variables
+# ---------------------------------------------------------------------------
+
+[[variable]]
+name = "STAGING_TRAEFIK_DOMAIN"
+description = "Staging Traefik dashboard host."
+is_secret = false
+
+[[variable]]
+name = "STAGING_UI_DOMAIN"
+description = "Staging UI host."
+is_secret = false
+
+[[variable]]
+name = "STAGING_API_DOMAIN"
+description = "Staging API host."
+is_secret = false
+
+[[variable]]
+name = "STAGING_TEMPORAL_UI_DOMAIN"
+description = "Staging Temporal UI host."
+is_secret = false
+
+[[variable]]
+name = "STAGING_GRAFANA_DOMAIN"
+description = "Staging Grafana host."
+is_secret = false
+
+[[variable]]
+name = "STAGING_ALLOWED_ORIGINS"
+description = "Staging CORS allowlist for the API and Temporal UI."
+is_secret = false
+
+[[variable]]
+name = "STAGING_GRAFANA_ADMIN_USER"
+description = "Staging Grafana admin username."
+is_secret = false
+
+[[variable]]
+name = "STAGING_APP_PUBLIC_URL"
+description = "Public app URL the staging API advertises to clients."
+is_secret = false
+
+[[variable]]
+name = "STAGING_MONGODB_DB_NAME"
+description = "Staging app Mongo database name."
+is_secret = false
+
+[[variable]]
+name = "STAGING_DEEP_ID_ISSUER_URL"
+description = "Staging Deep ID OIDC issuer URL."
+is_secret = false
+
+[[variable]]
+name = "STAGING_DEEP_ID_CLIENT_ID"
+description = "Staging Deep ID OAuth client ID."
+is_secret = false
+
+[[variable]]
+name = "STAGING_DEEP_ID_REDIRECT_URI"
+description = "Staging Deep ID OAuth redirect URI."
+is_secret = false
+
+[[variable]]
+name = "STAGING_AUTH_COOKIE_DOMAIN"
+description = "Staging auth session cookie domain."
+is_secret = false
+
+[[variable]]
+name = "STAGING_AWS_REGION"
+description = "Staging AWS region for object storage."
+is_secret = false
+
+[[variable]]
+name = "STAGING_STORAGE_BUCKET"
+description = "Staging S3 bucket name for app and workflow storage."
+is_secret = false
+
+[[variable]]
+name = "STAGING_DEEPFUNDING_API_BASE_URL"
+description = "Staging DeepFunding API base URL."
+is_secret = false
+
+[[variable]]
+name = "STAGING_ONCHAIN_DATA_POSTGRES_DB_NAME"
+description = "Staging onchain-data Postgres database name."
+is_secret = false
+
+# ---------------------------------------------------------------------------
+# Staging secrets
+# ---------------------------------------------------------------------------
+
+[[variable]]
+name = "STAGING_TRAEFIK_AUTH"
+description = "Staging Traefik dashboard htpasswd. Preserve doubled $$ escaping."
+is_secret = true
+
+[[variable]]
+name = "STAGING_CF_DNS_API_TOKEN"
+description = "Staging Cloudflare DNS API token used by Traefik for ACME."
+is_secret = true
+
+[[variable]]
+name = "STAGING_GRAFANA_AUTH"
+description = "Staging Grafana basic-auth htpasswd. Preserve doubled $$ escaping."
+is_secret = true
+
+[[variable]]
+name = "STAGING_MONGODB_USER"
+description = "Staging app Mongo user."
+is_secret = true
+
+[[variable]]
+name = "STAGING_MONGODB_PASSWORD"
+description = "Staging app Mongo password."
+is_secret = true
+
+[[variable]]
+name = "STAGING_TEMPORAL_POSTGRES_USER"
+description = "Staging Temporal Postgres user."
+is_secret = true
+
+[[variable]]
+name = "STAGING_TEMPORAL_POSTGRES_PASSWORD"
+description = "Staging Temporal Postgres password."
+is_secret = true
+
+[[variable]]
+name = "STAGING_ONCHAIN_DATA_POSTGRES_USER"
+description = "Staging onchain-data Postgres user."
+is_secret = true
+
+[[variable]]
+name = "STAGING_ONCHAIN_DATA_POSTGRES_PASSWORD"
+description = "Staging onchain-data Postgres password."
+is_secret = true
+
+[[variable]]
+name = "STAGING_GRAFANA_ADMIN_PASSWORD"
+description = "Staging Grafana admin password."
+is_secret = true
+
+[[variable]]
+name = "STAGING_AWS_ACCESS_KEY_ID"
+description = "Staging AWS access key ID."
+is_secret = true
+
+[[variable]]
+name = "STAGING_AWS_SECRET_ACCESS_KEY"
+description = "Staging AWS secret access key."
+is_secret = true
+
+[[variable]]
+name = "STAGING_DEEP_ID_CLIENT_SECRET"
+description = "Staging Deep ID OAuth client secret."
+is_secret = true
+
+[[variable]]
+name = "STAGING_AUTH_TOKEN_ENCRYPTION_KEY"
+description = "Staging auth token encryption key."
+is_secret = true
+
+[[variable]]
+name = "STAGING_DEEPFUNDING_API_KEY"
+description = "Staging DeepFunding API key."
+is_secret = true
+
+[[variable]]
+name = "STAGING_ALCHEMY_API_KEY"
+description = "Staging Alchemy API key."
+is_secret = true
+
+[[variable]]
+name = "STAGING_BLOCKFROST_API_KEY"
+description = "Staging Blockfrost API key."
+is_secret = true
+
+# ---------------------------------------------------------------------------
+# Production variables
+# ---------------------------------------------------------------------------
+
+[[variable]]
+name = "PRODUCTION_TRAEFIK_DOMAIN"
+description = "Production Traefik dashboard host."
+is_secret = false
+
+[[variable]]
+name = "PRODUCTION_UI_DOMAIN"
+description = "Production UI host."
+is_secret = false
+
+[[variable]]
+name = "PRODUCTION_API_DOMAIN"
+description = "Production API host."
+is_secret = false
+
+[[variable]]
+name = "PRODUCTION_TEMPORAL_UI_DOMAIN"
+description = "Production Temporal UI host."
+is_secret = false
+
+[[variable]]
+name = "PRODUCTION_GRAFANA_DOMAIN"
+description = "Production Grafana host."
+is_secret = false
+
+[[variable]]
+name = "PRODUCTION_ALLOWED_ORIGINS"
+description = "Production CORS allowlist for the API and Temporal UI."
+is_secret = false
+
+[[variable]]
+name = "PRODUCTION_GRAFANA_ADMIN_USER"
+description = "Production Grafana admin username."
+is_secret = false
+
+[[variable]]
+name = "PRODUCTION_APP_PUBLIC_URL"
+description = "Public app URL the production API advertises to clients."
+is_secret = false
+
+[[variable]]
+name = "PRODUCTION_MONGODB_DB_NAME"
+description = "Production app Mongo database name."
+is_secret = false
+
+[[variable]]
+name = "PRODUCTION_DEEP_ID_ISSUER_URL"
+description = "Production Deep ID OIDC issuer URL."
+is_secret = false
+
+[[variable]]
+name = "PRODUCTION_DEEP_ID_CLIENT_ID"
+description = "Production Deep ID OAuth client ID."
+is_secret = false
+
+[[variable]]
+name = "PRODUCTION_DEEP_ID_REDIRECT_URI"
+description = "Production Deep ID OAuth redirect URI."
+is_secret = false
+
+[[variable]]
+name = "PRODUCTION_AUTH_COOKIE_DOMAIN"
+description = "Production auth session cookie domain."
+is_secret = false
+
+[[variable]]
+name = "PRODUCTION_AWS_REGION"
+description = "Production AWS region for object storage."
+is_secret = false
+
+[[variable]]
+name = "PRODUCTION_STORAGE_BUCKET"
+description = "Production S3 bucket name for app and workflow storage."
+is_secret = false
+
+[[variable]]
+name = "PRODUCTION_DEEPFUNDING_API_BASE_URL"
+description = "Production DeepFunding API base URL."
+is_secret = false
+
+[[variable]]
+name = "PRODUCTION_ONCHAIN_DATA_POSTGRES_DB_NAME"
+description = "Production onchain-data Postgres database name."
+is_secret = false
+
+# ---------------------------------------------------------------------------
+# Production secrets
+# ---------------------------------------------------------------------------
+
+[[variable]]
+name = "PRODUCTION_TRAEFIK_AUTH"
+description = "Production Traefik dashboard htpasswd. Preserve doubled $$ escaping."
+is_secret = true
+
+[[variable]]
+name = "PRODUCTION_CF_DNS_API_TOKEN"
+description = "Production Cloudflare DNS API token used by Traefik for ACME."
+is_secret = true
+
+[[variable]]
+name = "PRODUCTION_GRAFANA_AUTH"
+description = "Production Grafana basic-auth htpasswd. Preserve doubled $$ escaping."
+is_secret = true
+
+[[variable]]
+name = "PRODUCTION_MONGODB_USER"
+description = "Production app Mongo user."
+is_secret = true
+
+[[variable]]
+name = "PRODUCTION_MONGODB_PASSWORD"
+description = "Production app Mongo password."
+is_secret = true
+
+[[variable]]
+name = "PRODUCTION_TEMPORAL_POSTGRES_USER"
+description = "Production Temporal Postgres user."
+is_secret = true
+
+[[variable]]
+name = "PRODUCTION_TEMPORAL_POSTGRES_PASSWORD"
+description = "Production Temporal Postgres password."
+is_secret = true
+
+[[variable]]
+name = "PRODUCTION_ONCHAIN_DATA_POSTGRES_USER"
+description = "Production onchain-data Postgres user."
+is_secret = true
+
+[[variable]]
+name = "PRODUCTION_ONCHAIN_DATA_POSTGRES_PASSWORD"
+description = "Production onchain-data Postgres password."
+is_secret = true
+
+[[variable]]
+name = "PRODUCTION_GRAFANA_ADMIN_PASSWORD"
+description = "Production Grafana admin password."
+is_secret = true
+
+[[variable]]
+name = "PRODUCTION_AWS_ACCESS_KEY_ID"
+description = "Production AWS access key ID."
+is_secret = true
+
+[[variable]]
+name = "PRODUCTION_AWS_SECRET_ACCESS_KEY"
+description = "Production AWS secret access key."
+is_secret = true
+
+[[variable]]
+name = "PRODUCTION_DEEP_ID_CLIENT_SECRET"
+description = "Production Deep ID OAuth client secret."
+is_secret = true
+
+[[variable]]
+name = "PRODUCTION_AUTH_TOKEN_ENCRYPTION_KEY"
+description = "Production auth token encryption key."
+is_secret = true
+
+[[variable]]
+name = "PRODUCTION_DEEPFUNDING_API_KEY"
+description = "Production DeepFunding API key."
+is_secret = true
+
+[[variable]]
+name = "PRODUCTION_ALCHEMY_API_KEY"
+description = "Production Alchemy API key."
+is_secret = true
+
+[[variable]]
+name = "PRODUCTION_BLOCKFROST_API_KEY"
+description = "Production Blockfrost API key."
+is_secret = true

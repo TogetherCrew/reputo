@@ -21,11 +21,10 @@ services:
         command: ['--replSet', 'rs0', '--keyFile', '/etc/mongo/keyfile.txt']
         ports:
             - 27017:27017
-        env_file:
-            - ../env/mongodb.env
         environment:
             MONGO_INITDB_ROOT_USERNAME: "${MONGO_INITDB_ROOT_USERNAME:?missing MONGO_INITDB_ROOT_USERNAME}"
             MONGO_INITDB_ROOT_PASSWORD: "${MONGO_INITDB_ROOT_PASSWORD:?missing MONGO_INITDB_ROOT_PASSWORD}"
+            MONGO_INITDB_DATABASE: "${MONGODB_DB_NAME:?missing MONGODB_DB_NAME}"
         volumes:
             - ../config/mongo/init.js:/docker-entrypoint-initdb.d/init.js:ro
             - ../config/mongo/healthcheck.js:/etc/mongo/healthcheck.js:ro
@@ -84,10 +83,16 @@ services:
         depends_on:
             - temporal-postgresql
             - temporal-elasticsearch
-        env_file: ../env/temporal.env
         environment:
+            DB: postgres12
+            DB_PORT: "5432"
             POSTGRES_USER: "${TEMPORAL_POSTGRES_USER:?missing TEMPORAL_POSTGRES_USER}"
             POSTGRES_PWD: "${TEMPORAL_POSTGRES_PASSWORD:?missing TEMPORAL_POSTGRES_PASSWORD}"
+            POSTGRES_SEEDS: temporal-postgresql
+            ENABLE_ES: "false"
+            ES_SEEDS: temporal-elasticsearch
+            ES_VERSION: v7
+            DYNAMIC_CONFIG_FILE_PATH: config/dynamicconfig/development-sql.yaml
         networks: [production]
         healthcheck:
             test:
@@ -104,7 +109,9 @@ services:
         container_name: temporal-ui
         image: temporalio/ui:2.32.0
         restart: unless-stopped
-        env_file: ../env/temporal-ui.env
+        environment:
+            TEMPORAL_ADDRESS: temporal:7233
+            TEMPORAL_CORS_ORIGINS: "${ALLOWED_ORIGINS:-*}"
         depends_on:
             - temporal
         networks: [production]
@@ -137,7 +144,6 @@ services:
         container_name: temporal-postgresql
         image: postgres:12.22
         restart: unless-stopped
-        env_file: ../env/temporal-postgresql.env
         environment:
             POSTGRES_USER: "${TEMPORAL_POSTGRES_USER:?missing TEMPORAL_POSTGRES_USER}"
             POSTGRES_PASSWORD: "${TEMPORAL_POSTGRES_PASSWORD:?missing TEMPORAL_POSTGRES_PASSWORD}"
@@ -149,10 +155,10 @@ services:
         container_name: onchain-data-postgresql
         image: postgres:16
         restart: unless-stopped
-        env_file: ../env/onchain-data-postgresql.env
         environment:
             POSTGRES_USER: "${ONCHAIN_DATA_POSTGRES_USER:?missing ONCHAIN_DATA_POSTGRES_USER}"
             POSTGRES_PASSWORD: "${ONCHAIN_DATA_POSTGRES_PASSWORD:?missing ONCHAIN_DATA_POSTGRES_PASSWORD}"
+            POSTGRES_DB: "${ONCHAIN_DATA_POSTGRES_DB_NAME:?missing ONCHAIN_DATA_POSTGRES_DB_NAME}"
         networks: [production]
         ports:
             - 5433:5432

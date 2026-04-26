@@ -68,13 +68,15 @@ Komodo stacks rather than running host-local update automation.
 - `compose/infra.yml` — stateful services and platform services (`mongo`, `traefik`, Temporal cluster, Postgres).
 - `compose/observability.yml` — Loki / Promtail / Prometheus / cAdvisor / node-exporter / Grafana
 
-Set `IMAGE_TAG=staging` on the staging host and `IMAGE_TAG=production` on the production host.
+Set `IMAGE_TAG=staging` for staging app deploys and `IMAGE_TAG=production` for
+production app deploys.
 
-Komodo injects the staging and production secret environment through the stack
-env files declared under `komodo/resources/stacks/*.toml`. If you run these
-Compose files directly for emergency recovery, provide the same secret keys
-that Komodo writes to the generated `.komodo-reputo-*.env` files. Per-service
-env files under `docker/env/*.env` are intended to hold only non-secret config.
+Komodo injects staging and production runtime configuration through the stack
+env files declared under `komodo/resources/stacks/*.toml`. The prod/staging
+Compose files do not load per-service `docker/env/*.env` files because Komodo
+clones this repo and those runtime files are gitignored. If you run these
+Compose files directly for emergency recovery, provide an env file with the
+same keys that Komodo writes to the generated `.komodo-reputo-*.env` files.
 
 Main branch builds publish:
 
@@ -96,21 +98,32 @@ Normal deploy flow:
    staging or production Periphery agent.
 
 Manual recovery from a host shell should use the same Compose file set and env
-shape that Komodo uses:
+shape that Komodo uses. On a host previously deployed by Komodo, use the
+generated env files:
 
 ```bash
-export COMPOSE_FILE=docker/compose/infra.yml:docker/compose/apps.yml:docker/compose/observability.yml
-docker compose --env-file docker/env/shared.env up -d
+docker compose \
+  -f docker/compose/infra.yml \
+  -f docker/compose/observability.yml \
+  --env-file .komodo-reputo-infra-production.env up -d
+
+docker compose \
+  -f docker/compose/apps.yml \
+  --env-file .komodo-reputo-apps-production.env up -d
 ```
 
-Or pass them explicitly:
+For staging, use the matching `.komodo-reputo-*-staging.env` files.
+
+If the generated files are unavailable, create an equivalent recovery env file
+from the variables and secrets listed in `komodo/resources/README.md`, then
+pass it explicitly:
 
 ```bash
 docker compose \
   -f docker/compose/infra.yml \
   -f docker/compose/apps.yml \
   -f docker/compose/observability.yml \
-  --env-file docker/env/shared.env up -d
+  --env-file recovery.env up -d
 ```
 
 For operational procedures, see [komodo/README.md](../komodo/README.md).
