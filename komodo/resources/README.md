@@ -17,25 +17,26 @@ the tree from the `main` branch through the `reputo-main` ResourceSync in
   procedure used after GitHub Actions promotes image tags.
 - `user-groups.toml` defines the `admins`, `engineers`, and
   `release-managers` RBAC groups.
-- `alerters/slack.toml` defines the Slack alerter.
+- `alerters/discord.toml` defines the Discord alerter.
 - `schedules/prune-images.toml` defines a scheduled Procedure. Komodo schedules
   are stored on Procedures or Actions, not as standalone `[[schedule]]`
   resources.
 
 ## Stack Posture
 
-The Stack resources point at the existing host checkout in `/opt/reputo` and
-reuse the split Compose files instead of duplicating Compose YAML into Komodo.
+The Stack resources clone `reputo-org/reputo` from the `main` branch and reuse
+the split Compose files instead of duplicating Compose YAML into Komodo. The
+target hosts no longer need an `/opt/reputo` checkout for normal deploys.
 
 The staging app stack is authoritative for staging deploys:
-`poll_for_updates = true`, `webhook_enabled = true`,
+`poll_for_updates = false`, `webhook_enabled = true`,
 `webhook_force_deploy = true`, and `deploy = false`. GitHub Actions POSTs to
 the staging Stack webhook after a successful image build so mutable `staging`
 tags are deployed with `compose pull && up -d`.
 
-The production app stack uses the same Komodo posture. GitHub Actions performs
-the digest-based production retag, then calls the `promote-production`
-Procedure webhook so Komodo runs `DeployStack` for
+The production app stack has direct stack webhooks disabled. GitHub Actions
+performs the digest-based production retag, then calls the
+`promote-production` Procedure webhook so Komodo runs `DeployStack` for
 `reputo-apps-production`. Infra stacks keep polling and webhooks disabled.
 
 Each stack writes a Komodo-managed env file at deploy time from the TOML
@@ -50,16 +51,15 @@ Those files are generated on the target host and are passed to Docker Compose
 with `--env-file`. The checked-in TOML references Komodo variables and secrets
 only by `[[NAME]]`; resolved values must not be committed.
 
-The environment deliberately keeps the existing channel tags:
+The app stack environments deliberately keep the existing channel tags:
 
-- staging stacks set `IMAGE_TAG=staging`
-- production stacks set `IMAGE_TAG=production`
+- staging app stack sets `IMAGE_TAG=staging`
+- production app stack sets `IMAGE_TAG=production`
 
-Per-service env files such as `docker/env/api.env` and
-`docker/env/workflows.env` remain host-local runtime files and are not committed
-or synced here. Those files should contain only non-secret config; secrets are
-provided by Komodo through the stack environment and wired into the Compose
-services with explicit `environment` entries.
+Production and staging Compose files do not load `docker/env/*.env`. Runtime
+configuration is provided by the Komodo-generated stack env file and wired into
+services with explicit `environment` entries. `docker/env/examples/*.env.example`
+remain local/emergency references only.
 
 Deploy the infra stack before the apps stack. The apps Compose file is valid as
 a standalone Komodo stack and therefore does not declare `depends_on`
@@ -89,7 +89,7 @@ Create these in Komodo before deploying or testing the resources.
 
 - `KOMODO_PASSKEY`
 - `KOMODO_WEBHOOK_SECRET`
-- `KOMODO_SLACK_WEBHOOK_URL`
+- `KOMODO_DISCORD_WEBHOOK_URL`
 - `STAGING_PERIPHERY_ADDRESS`
 - `PRODUCTION_PERIPHERY_ADDRESS`
 
@@ -103,6 +103,16 @@ non-secret variables:
 - `<ENV>_GRAFANA_DOMAIN`
 - `<ENV>_ALLOWED_ORIGINS`
 - `<ENV>_GRAFANA_ADMIN_USER`
+- `<ENV>_APP_PUBLIC_URL`
+- `<ENV>_MONGODB_DB_NAME`
+- `<ENV>_DEEP_ID_ISSUER_URL`
+- `<ENV>_DEEP_ID_CLIENT_ID`
+- `<ENV>_DEEP_ID_REDIRECT_URI`
+- `<ENV>_AUTH_COOKIE_DOMAIN`
+- `<ENV>_AWS_REGION`
+- `<ENV>_STORAGE_BUCKET`
+- `<ENV>_DEEPFUNDING_API_BASE_URL`
+- `<ENV>_ONCHAIN_DATA_POSTGRES_DB_NAME`
 
 For each environment prefix, `STAGING` and `PRODUCTION`, create these secrets:
 
@@ -148,8 +158,10 @@ Cutover order for secrets and RBAC:
 4. Deploy through Komodo and confirm all services start.
 5. Compare selected container env values before and after migration without
    printing secrets to logs.
-6. Remove secret keys from host `docker/env/*.env` files.
-7. Leave `docker/env/examples/*.env.example` unchanged.
+6. Manually delete or disable the old `slack` Alerter in Komodo if it already
+   exists; ResourceSync has `delete = false`.
+7. Remove any prod/staging dependence on host `docker/env/*.env` files.
+8. Leave `docker/env/examples/*.env.example` unchanged.
 
 Keep secrets in Komodo or the password manager only. Do not commit resolved
 values.
@@ -183,6 +195,8 @@ with the same value as Komodo Core.
 - As an `engineers` member, execute `reputo-apps-staging`.
 - As an `engineers` member, confirm `promote-production` cannot be executed.
 - As a `release-managers` member, execute `promote-production`.
+- Confirm `reputo-apps-production` has direct stack webhooks disabled.
+- Trigger a Discord test alert from Komodo.
 - Promote a known `sha-<commit>` with
   `.github/workflows/promote-production.yml` and confirm Komodo deploys
   `reputo-apps-production`.

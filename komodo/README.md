@@ -123,6 +123,10 @@ The sync includes UserGroups. Apply the RBAC resources after cutover, then add
 or remove individual users from groups in Komodo. User identities are not
 hard-coded in this repository.
 
+Application and infra Stacks also source their Compose files from the public
+`reputo-org/reputo` GitHub repo on `main`; target hosts do not need a managed
+`/opt/reputo` checkout for normal staging or production deploys.
+
 ## RBAC
 
 Configured UserGroups:
@@ -152,8 +156,8 @@ Normal path:
 3. The build publishes immutable `sha-<commit>` tags and updates the mutable
    `staging` tag for affected apps.
 4. The `main` workflow calls the `reputo-apps-staging` Stack webhook.
-5. Komodo pulls the changed images and deploys `docker/compose/apps.yml` on the
-   staging host.
+5. Komodo updates its Git checkout, pulls the changed images, and deploys
+   `docker/compose/apps.yml` on the staging host.
 
 Manual path:
 
@@ -173,6 +177,9 @@ Normal path:
    Procedure webhook.
 4. Komodo deploys `reputo-apps-production` with `IMAGE_TAG=production`.
 5. Verify the Komodo Procedure run, stack events, and `https://logid.xyz`.
+
+Direct production Stack webhooks are disabled; production deploys go through
+the `promote-production` Procedure.
 
 Manual path for release managers:
 
@@ -219,6 +226,11 @@ Production rollback:
 4. Wire it into the Compose service with an explicit `environment` entry.
 5. Merge, sync `reputo-main`, deploy the affected stack, and verify without
    printing the secret value in logs.
+
+For non-secret runtime values, use the same environment prefix convention and
+create visible Komodo variables. Do not reintroduce prod/staging dependencies
+on host-local `docker/env/*.env` files; the Git-sourced stack clone does not
+contain those gitignored files.
 
 ## Backup
 
