@@ -43,6 +43,11 @@ name = "PRODUCTION_PERIPHERY_ADDRESS"
 description = "URL of the production Periphery agent (e.g. http://10.0.0.6:8120)."
 is_secret = false
 
+[[variable]]
+name = "CORE_PERIPHERY_ADDRESS"
+description = "URL of the self-Periphery on the Komodo Core VM. Use the in-network service name (e.g. http://periphery:8120) when reachable from Core's docker network, otherwise the private/VPN host IP."
+is_secret = false
+
 # ---------------------------------------------------------------------------
 # Staging variables
 # ---------------------------------------------------------------------------
