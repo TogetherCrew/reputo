@@ -77,23 +77,6 @@ services:
             - traefik.http.routers.traefik.tls=true
             - traefik.http.routers.traefik.tls.certresolver=cloudflare
 
-    watchtower:
-        image: containrrr/watchtower:latest
-        container_name: watchtower
-        restart: unless-stopped
-        volumes:
-            - /var/run/docker.sock:/var/run/docker.sock
-        environment:
-            - WATCHTOWER_POLL_INTERVAL=60
-            - WATCHTOWER_CLEANUP=true
-            - WATCHTOWER_INCLUDE_RESTARTING=true
-            - WATCHTOWER_LABEL_ENABLE=true
-            - WATCHTOWER_ROLLING_RESTART=true
-        command: --interval 60 --cleanup
-        labels:
-            - com.centurylinklabs.watchtower.enable=false
-        networks: [production]
-
     temporal:
         container_name: temporal
         image: temporalio/auto-setup:1.26.3.0

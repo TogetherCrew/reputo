@@ -29,7 +29,6 @@ services:
             - traefik.http.routers.ui.tls.certresolver=cloudflare
             - traefik.http.routers.ui.entrypoints=websecure
             - traefik.http.services.ui.loadbalancer.server.port=8080
-            - com.centurylinklabs.watchtower.enable=true
 
     api:
         container_name: api
@@ -55,7 +54,6 @@ services:
             - traefik.http.middlewares.api-cors.headers.accessControlAllowOriginList=${ALLOWED_ORIGINS:-*}
             - traefik.http.middlewares.api-cors.headers.accessControlAllowHeaders=Content-Type,Authorization,Accept,Origin,X-Requested-With
             - traefik.http.middlewares.api-cors.headers.accessControlMaxAge=3600
-            - com.centurylinklabs.watchtower.enable=true
         env_file:
             - ../env/api.env
         environment:
@@ -75,8 +73,6 @@ services:
         env_file:
             - ../env/workflows.env
         environment: *workflows-secret-environment
-        labels:
-            - com.centurylinklabs.watchtower.enable=true
 
     onchain-data-worker:
         container_name: onchain-data-worker
@@ -87,8 +83,6 @@ services:
         env_file:
             - ../env/workflows.env
         environment: *workflows-secret-environment
-        labels:
-            - com.centurylinklabs.watchtower.enable=true
 
     typescript-worker:
         container_name: typescript-worker
@@ -99,5 +93,3 @@ services:
         env_file:
             - ../env/workflows.env
         environment: *workflows-secret-environment
-        labels:
-            - com.centurylinklabs.watchtower.enable=true

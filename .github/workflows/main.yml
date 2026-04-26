@@ -30,8 +30,8 @@ jobs:
         uses: ./.github/workflows/release.yml
         secrets: inherit
 
-    wait-for-watchtower:
-        name: wait-for-watchtower
+    deploy-staging:
+        name: deploy-staging
         needs: build-and-push
         if: ${{ needs.build-and-push.outputs.affected-count != '0' }}
         runs-on: ubuntu-22.04
