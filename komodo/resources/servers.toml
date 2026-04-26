@@ -46,26 +46,6 @@ mem_critical = 95.0
 disk_warning = 80.0
 disk_critical = 90.0
 
-[[server]]
-name = "core"
-description = "Komodo Core VM. Managed out-of-band by docker compose; registered here for observability only."
-tags = ["reputo", "env:core"]
-
-[server.config]
-address = "[[CORE_PERIPHERY_ADDRESS]]"
-region = "core"
-enabled = true
-passkey = "[[KOMODO_PASSKEY]]"
-stats_monitoring = true
-auto_prune = false
-send_unreachable_alerts = true
-send_cpu_alerts = true
-send_mem_alerts = true
-send_disk_alerts = true
-send_version_mismatch_alerts = true
-cpu_warning = 80.0
-cpu_critical = 95.0
-mem_warning = 80.0
-mem_critical = 95.0
-disk_warning = 80.0
-disk_critical = 90.0
+# The Komodo Core VM's self-Periphery runs in passive WebSocket mode and is
+# auto-registered by Core as the server named "komodo-core" via
+# KOMODO_FIRST_SERVER_NAME in core.env. Do not declare it here.
