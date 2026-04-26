@@ -74,13 +74,28 @@ pnpm test
 
 - Preview deployments are created for pull requests that carry the `pullpreview` label. They publish only `preview-<commit>` image tags.
 - Main branch builds publish immutable `sha-<commit>` images for affected apps and update the mutable `staging` tag for those same apps.
-- Production promotion is manual and digest-based: it resolves the digest behind `sha-<commit>` and updates only the affected apps to the `production` channel tag.
+- Komodo is the staging and production deploy mechanism. Main branch CI calls the `reputo-apps-staging` Stack webhook after publishing affected images.
+- Production promotion is manual and digest-based: GitHub Actions resolves the digest behind `sha-<commit>`, updates only the affected apps to the `production` channel tag, and calls the Komodo `promote-production` Procedure.
+
+```mermaid
+flowchart LR
+    main[main branch] --> ci[GitHub Actions]
+    ci --> ghcr[GHCR images]
+    ci --> staging[Komodo staging Stack]
+    ghcr --> staging
+    ci --> promotion[Production promotion workflow]
+    promotion --> procedure[Komodo promote-production Procedure]
+    ghcr --> procedure
+    staging --> compose[Docker Compose hosts]
+    procedure --> compose
+```
 
 ### Environment Files
 
 Tracked files under `docker/env/examples/*.env.example` are the only canonical environment templates. Copy them into `docker/env/*.env` locally before using the Docker stacks.
 
-For operational details, image flow, and local infrastructure setup, see [docker/README.md](docker/README.md).
+For operational details, image flow, and local infrastructure setup, see
+[docker/README.md](docker/README.md) and [komodo/README.md](komodo/README.md).
 
 ## Algorithm Development
 
