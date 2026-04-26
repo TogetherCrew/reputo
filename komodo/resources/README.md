@@ -24,8 +24,13 @@ the tree from the `main` branch through the `reputo-main` ResourceSync in
 
 The Stack resources point at the existing host checkout in `/opt/reputo` and
 reuse the split Compose files instead of duplicating Compose YAML into Komodo.
-Both app stacks keep `poll_for_updates = false`, `webhook_enabled = false`, and
-`deploy = false` until Phase 5. Infra stacks also keep polling disabled.
+The staging app stack is authoritative for staging deploys in Phase 5:
+`poll_for_updates = true`, `webhook_enabled = true`,
+`webhook_force_deploy = true`, and `deploy = false`. This lets GitHub Actions
+POST to the staging Stack webhook after a successful image build while keeping
+mutable `staging` tags reliable with `compose pull && up -d`. The production app
+stack keeps polling and webhooks disabled until Phase 6. Infra stacks also keep
+polling and webhooks disabled.
 
 Each stack writes a Komodo-managed env file at deploy time from the TOML
 `environment` block:
@@ -122,3 +127,25 @@ Cutover order:
 
 Keep secrets in Komodo or the password manager only. Do not commit resolved
 values.
+
+## Phase 5 Staging Cutover
+
+GitHub Actions calls the staging Stack webhook at
+`https://komodo.logid.xyz/listener/github/stack/reputo-apps-staging/deploy`.
+Configure the GitHub `staging` environment secret `KOMODO_WEBHOOK_SECRET` with
+the same value as Komodo Core before merging the workflow change.
+The workflow remains gated on `affected-count != '0'`; use a no-op change in a
+deployable app workspace for validation rather than an empty commit.
+
+After the resource sync applies the staging Stack change, stop Watchtower only
+on the staging host:
+
+```sh
+docker stop watchtower
+docker rm watchtower
+```
+
+Leave production Watchtower and the `reputo-infra` stacks unchanged. Observe at
+least one full week of staging deploys before Phase 6. Roll back by disabling
+staging Komodo polling/webhook deploys and starting Watchtower from the infra
+Compose stack again.

@@ -39,13 +39,13 @@ ONCHAIN_DATA_POSTGRES_PASSWORD=[[STAGING_ONCHAIN_DATA_POSTGRES_PASSWORD]]
 """
 auto_pull = true
 run_build = false
-poll_for_updates = false
+poll_for_updates = true
 auto_update = false
 auto_update_all_services = false
 destroy_before_deploy = false
 send_alerts = true
-webhook_enabled = false
-webhook_force_deploy = false
+webhook_enabled = true
+webhook_force_deploy = true
 webhook_secret = "[[KOMODO_WEBHOOK_SECRET]]"
 
 [[stack]]
