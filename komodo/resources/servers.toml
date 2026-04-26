@@ -4,10 +4,9 @@ description = "Reputo staging host running the Komodo Periphery agent."
 tags = ["reputo", "env:staging"]
 
 [server.config]
-address = "[[STAGING_PERIPHERY_ADDRESS]]"
+address = ""
 region = "staging"
 enabled = true
-passkey = "[[KOMODO_PASSKEY]]"
 stats_monitoring = true
 auto_prune = false
 send_unreachable_alerts = true
@@ -28,10 +27,9 @@ description = "Reputo production host running the Komodo Periphery agent."
 tags = ["reputo", "env:production"]
 
 [server.config]
-address = "[[PRODUCTION_PERIPHERY_ADDRESS]]"
+address = ""
 region = "production"
 enabled = true
-passkey = "[[KOMODO_PASSKEY]]"
 stats_monitoring = true
 auto_prune = false
 send_unreachable_alerts = true
