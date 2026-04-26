@@ -23,6 +23,9 @@ services:
             - 27017:27017
         env_file:
             - ../env/mongodb.env
+        environment:
+            MONGO_INITDB_ROOT_USERNAME: "${MONGO_INITDB_ROOT_USERNAME:?missing MONGO_INITDB_ROOT_USERNAME}"
+            MONGO_INITDB_ROOT_PASSWORD: "${MONGO_INITDB_ROOT_PASSWORD:?missing MONGO_INITDB_ROOT_PASSWORD}"
         volumes:
             - ../config/mongo/init.js:/docker-entrypoint-initdb.d/init.js:ro
             - ../config/mongo/healthcheck.js:/etc/mongo/healthcheck.js:ro
@@ -42,9 +45,8 @@ services:
         ports:
             - '80:80'
             - '443:443'
-        env_file: ../env/shared.env
         environment:
-            - CF_DNS_API_TOKEN=${CF_DNS_API_TOKEN}
+            - CF_DNS_API_TOKEN=${CF_DNS_API_TOKEN:?missing CF_DNS_API_TOKEN}
         volumes:
             - /var/run/docker.sock:/var/run/docker.sock:ro
             - ../config/traefik/traefik.yml:/etc/traefik/traefik.yml:ro
@@ -69,28 +71,11 @@ services:
             - traefik.http.routers.traefik.rule=Host(`${TRAEFIK_DOMAIN}`) && (PathPrefix(`/api`) || PathPrefix(`/dashboard`))
             - traefik.http.routers.traefik.service=api@internal
             - traefik.http.routers.traefik.middlewares=auth
-            - traefik.http.middlewares.auth.basicauth.users=${TRAEFIK_AUTH}
-            - traefik.http.middlewares.grafana-auth.basicauth.users=${GRAFANA_AUTH}
+            - traefik.http.middlewares.auth.basicauth.users=${TRAEFIK_AUTH:?missing TRAEFIK_AUTH}
+            - traefik.http.middlewares.grafana-auth.basicauth.users=${GRAFANA_AUTH:?missing GRAFANA_AUTH}
             - traefik.http.routers.traefik.entrypoints=websecure
             - traefik.http.routers.traefik.tls=true
             - traefik.http.routers.traefik.tls.certresolver=cloudflare
-
-    watchtower:
-        image: containrrr/watchtower:latest
-        container_name: watchtower
-        restart: unless-stopped
-        volumes:
-            - /var/run/docker.sock:/var/run/docker.sock
-        environment:
-            - WATCHTOWER_POLL_INTERVAL=60
-            - WATCHTOWER_CLEANUP=true
-            - WATCHTOWER_INCLUDE_RESTARTING=true
-            - WATCHTOWER_LABEL_ENABLE=true
-            - WATCHTOWER_ROLLING_RESTART=true
-        command: --interval 60 --cleanup
-        labels:
-            - com.centurylinklabs.watchtower.enable=false
-        networks: [production]
 
     temporal:
         container_name: temporal
@@ -100,6 +85,9 @@ services:
             - temporal-postgresql
             - temporal-elasticsearch
         env_file: ../env/temporal.env
+        environment:
+            POSTGRES_USER: "${TEMPORAL_POSTGRES_USER:?missing TEMPORAL_POSTGRES_USER}"
+            POSTGRES_PWD: "${TEMPORAL_POSTGRES_PASSWORD:?missing TEMPORAL_POSTGRES_PASSWORD}"
         networks: [production]
         healthcheck:
             test:
@@ -150,6 +138,9 @@ services:
         image: postgres:12.22
         restart: unless-stopped
         env_file: ../env/temporal-postgresql.env
+        environment:
+            POSTGRES_USER: "${TEMPORAL_POSTGRES_USER:?missing TEMPORAL_POSTGRES_USER}"
+            POSTGRES_PASSWORD: "${TEMPORAL_POSTGRES_PASSWORD:?missing TEMPORAL_POSTGRES_PASSWORD}"
         networks: [production]
         volumes:
             - temporal_postgresql_data:/var/lib/postgresql/data
@@ -159,6 +150,9 @@ services:
         image: postgres:16
         restart: unless-stopped
         env_file: ../env/onchain-data-postgresql.env
+        environment:
+            POSTGRES_USER: "${ONCHAIN_DATA_POSTGRES_USER:?missing ONCHAIN_DATA_POSTGRES_USER}"
+            POSTGRES_PASSWORD: "${ONCHAIN_DATA_POSTGRES_PASSWORD:?missing ONCHAIN_DATA_POSTGRES_PASSWORD}"
         networks: [production]
         ports:
             - 5433:5432

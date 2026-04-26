@@ -7,7 +7,7 @@ docker/
 ├── compose/                      # all docker-compose files
 │   ├── dev.yml                   # local hot-reload stack
 │   ├── apps.yml                  # api, ui, workflows (rotates on deploy)
-│   ├── infra.yml                 # mongo, traefik, watchtower, temporal*, postgres
+│   ├── infra.yml                 # mongo, traefik, temporal*, postgres
 │   ├── observability.yml         # loki, promtail, prometheus, grafana, ...
 │   └── preview.yml               # PullPreview deployment
 ├── images/
@@ -60,13 +60,21 @@ The dev stack builds `docker/images/Dockerfile.dev`, mounts the repo into `/work
 
 ## Staging And Production
 
-The staging/production stack is split across three compose files by deploy cadence:
+Komodo is the deployment authority for staging and production. These Compose
+files are still the runtime source of truth, but operators deploy them through
+Komodo stacks rather than running host-local update automation.
 
-- `compose/apps.yml` — application services that rotate on every deploy (have `com.centurylinklabs.watchtower.enable=true`)
-- `compose/infra.yml` — stateful services and the platform (`mongo`, `traefik`, `watchtower`, Temporal cluster, Postgres)
+- `compose/apps.yml` — application services that rotate on every deploy.
+- `compose/infra.yml` — stateful services and platform services (`mongo`, `traefik`, Temporal cluster, Postgres).
 - `compose/observability.yml` — Loki / Promtail / Prometheus / cAdvisor / node-exporter / Grafana
 
 Set `IMAGE_TAG=staging` on the staging host and `IMAGE_TAG=production` on the production host.
+
+Komodo injects the staging and production secret environment through the stack
+env files declared under `komodo/resources/stacks/*.toml`. If you run these
+Compose files directly for emergency recovery, provide the same secret keys
+that Komodo writes to the generated `.komodo-reputo-*.env` files. Per-service
+env files under `docker/env/*.env` are intended to hold only non-secret config.
 
 Main branch builds publish:
 
@@ -78,7 +86,17 @@ Production promotion resolves the digest behind `sha-<commit>` and retags only t
 - `production`
 - `prod-<commit>`
 
-Deploy with all three files:
+Normal deploy flow:
+
+1. Main branch CI builds affected app images and updates the `staging` tag.
+2. CI calls the `reputo-apps-staging` Komodo Stack webhook.
+3. Production promotion retags a selected `sha-<commit>` digest to
+   `production` and calls the `promote-production` Komodo Procedure webhook.
+4. Komodo runs `docker compose pull && docker compose up -d` through the
+   staging or production Periphery agent.
+
+Manual recovery from a host shell should use the same Compose file set and env
+shape that Komodo uses:
 
 ```bash
 export COMPOSE_FILE=docker/compose/infra.yml:docker/compose/apps.yml:docker/compose/observability.yml
@@ -94,6 +112,8 @@ docker compose \
   -f docker/compose/observability.yml \
   --env-file docker/env/shared.env up -d
 ```
+
+For operational procedures, see [komodo/README.md](../komodo/README.md).
 
 ## Preview
 

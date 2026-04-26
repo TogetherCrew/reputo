@@ -30,8 +30,8 @@ jobs:
         uses: ./.github/workflows/release.yml
         secrets: inherit
 
-    wait-for-watchtower:
-        name: wait-for-watchtower
+    deploy-staging:
+        name: deploy-staging
         needs: build-and-push
         if: ${{ needs.build-and-push.outputs.affected-count != '0' }}
         runs-on: ubuntu-22.04
@@ -39,8 +39,47 @@ jobs:
             name: staging
             url: https://staging.logid.xyz
         steps:
-            - name: Wait for Watchtower to pull the new image
-              run: sleep 90
+            - name: Trigger Komodo staging deploy
+              env:
+                  KOMODO_WEBHOOK_SECRET: ${{ secrets.KOMODO_WEBHOOK_SECRET }}
+                  KOMODO_WEBHOOK_URL: https://komodo.logid.xyz/listener/github/stack/reputo-apps-staging/deploy
+              run: |
+                  set -euo pipefail
+
+                  if [ -z "$KOMODO_WEBHOOK_SECRET" ]; then
+                      echo "KOMODO_WEBHOOK_SECRET is required for the Komodo staging webhook" >&2
+                      exit 1
+                  fi
+
+                  payload="$(
+                      jq -cn \
+                          --arg ref "refs/heads/${GITHUB_REF_NAME}" \
+                          --arg after "${GITHUB_SHA}" \
+                          --arg repository "${GITHUB_REPOSITORY}" \
+                          --arg actor "${GITHUB_ACTOR}" \
+                          '{
+                              ref: $ref,
+                              after: $after,
+                              repository: { full_name: $repository },
+                              pusher: { name: $actor },
+                              head_commit: { id: $after }
+                          }'
+                  )"
+                  signature="$(
+                      printf '%s' "$payload" \
+                          | openssl dgst -sha256 -hmac "$KOMODO_WEBHOOK_SECRET" -hex \
+                          | awk '{ print "sha256="$2 }'
+                  )"
+
+                  curl --fail-with-body --show-error --silent \
+                      --request POST "$KOMODO_WEBHOOK_URL" \
+                      --header "Content-Type: application/json" \
+                      --header "X-GitHub-Event: push" \
+                      --header "X-GitHub-Delivery: ${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" \
+                      --header "X-Hub-Signature-256: $signature" \
+                      --data "$payload"
+            - name: Wait for Komodo to deploy the staging stack
+              run: sleep 60
             - name: '✅ Deployment should now be live'
               run: |
                   echo "✅ Your app should be up at ${{ job.environment.url }}"

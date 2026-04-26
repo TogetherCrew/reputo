@@ -1,14 +1,14 @@
 [[procedure]]
 name = "promote-production"
-description = "Deploy the production application stack after GitHub Actions promotes image tags to production."
-tags = ["reputo", "production", "promotion"]
+description = "Deploy the production application stack after GitHub Actions promotes immutable image tags to production."
+tags = ["reputo", "env:production", "promotion"]
 
 [procedure.config]
 schedule = ""
 schedule_enabled = false
 schedule_alert = false
 failure_alert = true
-webhook_enabled = false
+webhook_enabled = true
 webhook_secret = "[[KOMODO_WEBHOOK_SECRET]]"
 
 [[procedure.config.stage]]

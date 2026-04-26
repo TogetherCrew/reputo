@@ -2,6 +2,17 @@ networks:
     production:
         external: true
 
+x-workflows-secret-environment: &workflows-secret-environment
+    MONGODB_USER: "${MONGODB_USER:?missing MONGODB_USER}"
+    MONGODB_PASSWORD: "${MONGODB_PASSWORD:?missing MONGODB_PASSWORD}"
+    AWS_ACCESS_KEY_ID: "${AWS_ACCESS_KEY_ID:?missing AWS_ACCESS_KEY_ID}"
+    AWS_SECRET_ACCESS_KEY: "${AWS_SECRET_ACCESS_KEY:?missing AWS_SECRET_ACCESS_KEY}"
+    DEEPFUNDING_API_KEY: "${DEEPFUNDING_API_KEY:?missing DEEPFUNDING_API_KEY}"
+    ALCHEMY_API_KEY: "${ALCHEMY_API_KEY:?missing ALCHEMY_API_KEY}"
+    BLOCKFROST_API_KEY: "${BLOCKFROST_API_KEY:?missing BLOCKFROST_API_KEY}"
+    ONCHAIN_DATA_POSTGRES_USER: "${ONCHAIN_DATA_POSTGRES_USER:?missing ONCHAIN_DATA_POSTGRES_USER}"
+    ONCHAIN_DATA_POSTGRES_PASSWORD: "${ONCHAIN_DATA_POSTGRES_PASSWORD:?missing ONCHAIN_DATA_POSTGRES_PASSWORD}"
+
 services:
     ui:
         container_name: ui
@@ -18,18 +29,12 @@ services:
             - traefik.http.routers.ui.tls.certresolver=cloudflare
             - traefik.http.routers.ui.entrypoints=websecure
             - traefik.http.services.ui.loadbalancer.server.port=8080
-            - com.centurylinklabs.watchtower.enable=true
 
     api:
         container_name: api
         image: ghcr.io/reputo-org/reputo/api:${IMAGE_TAG}
         restart: unless-stopped
         networks: [production]
-        depends_on:
-            mongodb:
-                condition: service_healthy
-            temporal:
-                condition: service_healthy
         labels:
             - traefik.enable=true
             - traefik.http.routers.api.rule=Host(`${API_DOMAIN}`)
@@ -49,9 +54,15 @@ services:
             - traefik.http.middlewares.api-cors.headers.accessControlAllowOriginList=${ALLOWED_ORIGINS:-*}
             - traefik.http.middlewares.api-cors.headers.accessControlAllowHeaders=Content-Type,Authorization,Accept,Origin,X-Requested-With
             - traefik.http.middlewares.api-cors.headers.accessControlMaxAge=3600
-            - com.centurylinklabs.watchtower.enable=true
         env_file:
             - ../env/api.env
+        environment:
+            MONGODB_USER: "${MONGODB_USER:?missing MONGODB_USER}"
+            MONGODB_PASSWORD: "${MONGODB_PASSWORD:?missing MONGODB_PASSWORD}"
+            AWS_ACCESS_KEY_ID: "${AWS_ACCESS_KEY_ID:?missing AWS_ACCESS_KEY_ID}"
+            AWS_SECRET_ACCESS_KEY: "${AWS_SECRET_ACCESS_KEY:?missing AWS_SECRET_ACCESS_KEY}"
+            DEEP_ID_CLIENT_SECRET: "${DEEP_ID_CLIENT_SECRET:?missing DEEP_ID_CLIENT_SECRET}"
+            AUTH_TOKEN_ENCRYPTION_KEY: "${AUTH_TOKEN_ENCRYPTION_KEY:?missing AUTH_TOKEN_ENCRYPTION_KEY}"
 
     orchestrator-worker:
         container_name: orchestrator-worker
@@ -59,15 +70,9 @@ services:
         command: ['pnpm', 'start:orchestrator']
         restart: unless-stopped
         networks: [production]
-        depends_on:
-            mongodb:
-                condition: service_healthy
-            temporal:
-                condition: service_healthy
         env_file:
             - ../env/workflows.env
-        labels:
-            - com.centurylinklabs.watchtower.enable=true
+        environment: *workflows-secret-environment
 
     onchain-data-worker:
         container_name: onchain-data-worker
@@ -75,15 +80,9 @@ services:
         command: ['pnpm', 'start:onchain-data']
         restart: unless-stopped
         networks: [production]
-        depends_on:
-            temporal:
-                condition: service_healthy
-            onchain-data-postgresql:
-                condition: service_healthy
         env_file:
             - ../env/workflows.env
-        labels:
-            - com.centurylinklabs.watchtower.enable=true
+        environment: *workflows-secret-environment
 
     typescript-worker:
         container_name: typescript-worker
@@ -91,12 +90,6 @@ services:
         command: ['pnpm', 'start:algorithm-typescript']
         restart: unless-stopped
         networks: [production]
-        depends_on:
-            temporal:
-                condition: service_healthy
-            onchain-data-postgresql:
-                condition: service_healthy
         env_file:
             - ../env/workflows.env
-        labels:
-            - com.centurylinklabs.watchtower.enable=true
+        environment: *workflows-secret-environment

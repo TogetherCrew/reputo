@@ -1,7 +1,7 @@
 [[stack]]
 name = "reputo-apps-staging"
 description = "Staging application stack: API, UI, and workflow workers."
-tags = ["reputo", "staging", "apps"]
+tags = ["reputo", "env:staging", "apps"]
 deploy = false
 
 [stack.config]
@@ -10,7 +10,7 @@ project_name = "reputo"
 files_on_host = true
 run_directory = "/opt/reputo"
 file_paths = ["docker/compose/apps.yml"]
-env_file_path = "docker/env/shared.env"
+env_file_path = ".komodo-reputo-apps-staging.env"
 environment = """
 IMAGE_TAG=staging
 TRAEFIK_DOMAIN=[[STAGING_TRAEFIK_DOMAIN]]
@@ -25,22 +25,33 @@ OBSERVABILITY_ENV=staging
 ALLOWED_ORIGINS=[[STAGING_ALLOWED_ORIGINS]]
 NODE_ENV=production
 LOG_LEVEL=info
+MONGODB_USER=[[STAGING_MONGODB_USER]]
+MONGODB_PASSWORD=[[STAGING_MONGODB_PASSWORD]]
+AWS_ACCESS_KEY_ID=[[STAGING_AWS_ACCESS_KEY_ID]]
+AWS_SECRET_ACCESS_KEY=[[STAGING_AWS_SECRET_ACCESS_KEY]]
+DEEP_ID_CLIENT_SECRET=[[STAGING_DEEP_ID_CLIENT_SECRET]]
+AUTH_TOKEN_ENCRYPTION_KEY=[[STAGING_AUTH_TOKEN_ENCRYPTION_KEY]]
+DEEPFUNDING_API_KEY=[[STAGING_DEEPFUNDING_API_KEY]]
+ALCHEMY_API_KEY=[[STAGING_ALCHEMY_API_KEY]]
+BLOCKFROST_API_KEY=[[STAGING_BLOCKFROST_API_KEY]]
+ONCHAIN_DATA_POSTGRES_USER=[[STAGING_ONCHAIN_DATA_POSTGRES_USER]]
+ONCHAIN_DATA_POSTGRES_PASSWORD=[[STAGING_ONCHAIN_DATA_POSTGRES_PASSWORD]]
 """
 auto_pull = true
 run_build = false
-poll_for_updates = false
+poll_for_updates = true
 auto_update = false
 auto_update_all_services = false
 destroy_before_deploy = false
 send_alerts = true
-webhook_enabled = false
-webhook_force_deploy = false
+webhook_enabled = true
+webhook_force_deploy = true
 webhook_secret = "[[KOMODO_WEBHOOK_SECRET]]"
 
 [[stack]]
 name = "reputo-apps-production"
 description = "Production application stack: API, UI, and workflow workers."
-tags = ["reputo", "production", "apps"]
+tags = ["reputo", "env:production", "apps"]
 deploy = false
 
 [stack.config]
@@ -49,7 +60,7 @@ project_name = "reputo"
 files_on_host = true
 run_directory = "/opt/reputo"
 file_paths = ["docker/compose/apps.yml"]
-env_file_path = "docker/env/shared.env"
+env_file_path = ".komodo-reputo-apps-production.env"
 environment = """
 IMAGE_TAG=production
 TRAEFIK_DOMAIN=[[PRODUCTION_TRAEFIK_DOMAIN]]
@@ -64,14 +75,25 @@ OBSERVABILITY_ENV=production
 ALLOWED_ORIGINS=[[PRODUCTION_ALLOWED_ORIGINS]]
 NODE_ENV=production
 LOG_LEVEL=info
+MONGODB_USER=[[PRODUCTION_MONGODB_USER]]
+MONGODB_PASSWORD=[[PRODUCTION_MONGODB_PASSWORD]]
+AWS_ACCESS_KEY_ID=[[PRODUCTION_AWS_ACCESS_KEY_ID]]
+AWS_SECRET_ACCESS_KEY=[[PRODUCTION_AWS_SECRET_ACCESS_KEY]]
+DEEP_ID_CLIENT_SECRET=[[PRODUCTION_DEEP_ID_CLIENT_SECRET]]
+AUTH_TOKEN_ENCRYPTION_KEY=[[PRODUCTION_AUTH_TOKEN_ENCRYPTION_KEY]]
+DEEPFUNDING_API_KEY=[[PRODUCTION_DEEPFUNDING_API_KEY]]
+ALCHEMY_API_KEY=[[PRODUCTION_ALCHEMY_API_KEY]]
+BLOCKFROST_API_KEY=[[PRODUCTION_BLOCKFROST_API_KEY]]
+ONCHAIN_DATA_POSTGRES_USER=[[PRODUCTION_ONCHAIN_DATA_POSTGRES_USER]]
+ONCHAIN_DATA_POSTGRES_PASSWORD=[[PRODUCTION_ONCHAIN_DATA_POSTGRES_PASSWORD]]
 """
 auto_pull = true
 run_build = false
-poll_for_updates = false
+poll_for_updates = true
 auto_update = false
 auto_update_all_services = false
 destroy_before_deploy = false
 send_alerts = true
-webhook_enabled = false
-webhook_force_deploy = false
+webhook_enabled = true
+webhook_force_deploy = true
 webhook_secret = "[[KOMODO_WEBHOOK_SECRET]]"

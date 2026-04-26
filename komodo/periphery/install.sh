@@ -262,8 +262,6 @@ services:
             - ${PERIPHERY_ROOT_DIRECTORY:-/etc/komodo}:${PERIPHERY_ROOT_DIRECTORY:-/etc/komodo}
         networks:
             - production
-        labels:
-            - com.centurylinklabs.watchtower.enable=false
 YAML
 
 cp "$ENV_FILE" "$tmp_env"
@@ -314,4 +312,3 @@ fi
 
 log "Periphery is installed on ${PUBLISH_IP}:${PERIPHERY_PORT_VALUE}"
 log "Register this host in Komodo Core as a Server using http://${PUBLISH_IP}:${PERIPHERY_PORT_VALUE} when PERIPHERY_SSL_ENABLED=false."
-log "Watchtower was not changed and komodo-periphery is labelled out of Watchtower updates."

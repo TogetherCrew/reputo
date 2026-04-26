@@ -1,12 +1,17 @@
-# Komodo Core
+# Komodo Operations
 
-This directory contains the dedicated-host deployment for Komodo Core at
-`https://komodo.logid.xyz`. It is intentionally separate from the staging and
-production hosts.
+Komodo is the staging and production deployment control plane for Reputo. Core
+runs on the dedicated host at `https://komodo.logid.xyz`; staging and production
+run Periphery agents that execute the declared Compose stacks on each target
+host.
+
+```text
+GitHub Actions -> GHCR image tags -> Komodo webhooks -> Periphery -> Docker Compose
+```
 
 ## Host Shape
 
-- Dedicated VM only for Komodo, not colocated with staging or production.
+- Dedicated VM for Komodo Core, separate from staging and production.
 - Minimum size: 1 vCPU / 2 GB RAM.
 - Docker Engine with the Compose plugin.
 - Ports `80/tcp` and `443/tcp` open to the internet.
@@ -18,23 +23,15 @@ production hosts.
   Postgres, and a self-Periphery agent.
 - `core/core.env.example` is the non-secret template. Copy it to
   `core/core.env` on the host and fill values from the password manager.
+- `periphery/install.sh` installs the Periphery agent on staging and
+  production hosts.
+- `resources/` contains the declarative ResourceSync input for servers, stacks,
+  procedures, alerters, schedules, and UserGroups.
 
 Komodo's Postgres-backed mode uses FerretDB in front of Postgres because Core
 speaks the MongoDB wire protocol.
 
-## GitHub OAuth
-
-Create a GitHub OAuth app owned by the organization:
-
-- Homepage URL: `https://komodo.logid.xyz`
-- Authorization callback URL: `https://komodo.logid.xyz/auth/github/callback`
-
-Put the client ID and client secret in `core/core.env`. GitHub organization
-membership is enforced operationally by owning/approving the OAuth app in the
-organization and by leaving `KOMODO_ENABLE_NEW_USERS=false`, so new accounts
-must be enabled by an admin after their first login.
-
-## Deploy
+## Core Deploy
 
 On the dedicated VM:
 
@@ -68,14 +65,9 @@ docker compose \
   up -d
 ```
 
-## Staging And Production Periphery
+## Periphery Install
 
-Run this on the existing staging and production hosts only. PullPreview hosts
-stay on their current path. The install keeps Periphery separate from the app
-compose files, labels it out of Watchtower updates, and leaves Watchtower
-authoritative for deploys.
-
-On each target host:
+Run this on staging and production hosts:
 
 ```bash
 cp komodo/periphery/periphery.env.example komodo/periphery/periphery.env
@@ -88,12 +80,6 @@ chmod 600 komodo/periphery/periphery.env
 
 komodo/periphery/install.sh --env-file komodo/periphery/periphery.env
 ```
-
-Keep these defaults until Komodo takes over deployments:
-
-- `PERIPHERY_DISABLE_TERMINALS=true`
-- `PERIPHERY_DISABLE_CONTAINER_TERMINALS=true`
-- no Komodo `Stack` or `Deployment` resources for the existing app stack
 
 Register each host in the Komodo UI:
 
@@ -110,7 +96,6 @@ docker compose \
   --env-file /etc/komodo/periphery/periphery.env \
   ps
 
-docker ps --filter name=watchtower --filter status=running
 docker restart komodo-periphery
 sleep 30
 docker ps --filter name=komodo-periphery --format '{{.Names}} {{.Status}}'
@@ -121,6 +106,119 @@ From a network that is not Core or the VPN, `nc -vz <host-public-ip> 8120`
 must fail. Use the host/cloud firewall or private/VPN routing to make the port
 unreachable from the public internet; `PERIPHERY_ALLOWED_IPS` is defense in
 depth, not the public exposure control.
+
+## Resource Sync
+
+Core syncs `komodo/resources` from the `main` branch through the `reputo-main`
+ResourceSync in `resources/_sync.toml`.
+
+After merging resource changes:
+
+1. Open Komodo Core.
+2. Go to `Resources > Resource Syncs > reputo-main`.
+3. Review the pending diff.
+4. Execute the sync.
+
+The sync includes UserGroups. Apply the RBAC resources after cutover, then add
+or remove individual users from groups in Komodo. User identities are not
+hard-coded in this repository.
+
+## RBAC
+
+Configured UserGroups:
+
+- `admins`: write access on managed Reputo Servers, Stacks, Procedures,
+  Alerters, and ResourceSyncs. Komodo's platform admin flag is still managed by
+  a super admin in the UI.
+- `engineers`: read on production resources and execute on staging stacks.
+- `release-managers`: execute on the `promote-production` Procedure and read
+  the production app stack.
+
+Verification:
+
+1. Add a test user to `engineers`.
+2. Confirm they can execute `reputo-apps-staging`.
+3. Confirm they can read `reputo-apps-production`.
+4. Confirm they cannot execute `promote-production`.
+5. Add a test user to `release-managers`.
+6. Confirm they can execute `promote-production`.
+
+## Deploy Staging
+
+Normal path:
+
+1. Merge to `main`.
+2. GitHub Actions builds affected deployable apps.
+3. The build publishes immutable `sha-<commit>` tags and updates the mutable
+   `staging` tag for affected apps.
+4. The `main` workflow calls the `reputo-apps-staging` Stack webhook.
+5. Komodo pulls the changed images and deploys `docker/compose/apps.yml` on the
+   staging host.
+
+Manual path:
+
+1. Open `Stacks > reputo-apps-staging` in Komodo.
+2. Confirm `IMAGE_TAG=staging` in the generated environment.
+3. Select `Deploy`.
+4. Verify the stack events, container status, and `https://staging.logid.xyz`.
+
+## Promote Production
+
+Normal path:
+
+1. Open GitHub Actions and run `Promote to Production`.
+2. Enter the commit SHA whose `sha-<commit>` images should be promoted.
+3. The workflow resolves available app images, retags their digests to
+   `production` and `prod-<commit>`, then calls the `promote-production`
+   Procedure webhook.
+4. Komodo deploys `reputo-apps-production` with `IMAGE_TAG=production`.
+5. Verify the Komodo Procedure run, stack events, and `https://logid.xyz`.
+
+Manual path for release managers:
+
+1. Confirm the desired images already have the `production` tag in GHCR.
+2. Open `Procedures > promote-production` in Komodo.
+3. Select `Run`.
+4. Verify the production app stack deploy completed successfully.
+
+## Roll Back
+
+Staging rollback:
+
+1. Identify the previous known-good commit SHA.
+2. Retag the affected app images from `sha-<commit>` back to `staging` in GHCR.
+3. Run `Stacks > reputo-apps-staging > Deploy` in Komodo.
+4. Verify staging health and stack events.
+
+Production rollback:
+
+1. Identify the previous known-good commit SHA.
+2. Run the `Promote to Production` GitHub Actions workflow with that SHA.
+3. Verify the workflow retagged the affected images and called Komodo.
+4. Verify the `promote-production` Procedure and production stack events.
+
+## Add A New Server
+
+1. Install Docker Engine and the Compose plugin on the target host.
+2. Create or confirm the private/VPN path from Komodo Core to the host.
+3. Copy `komodo/periphery/periphery.env.example` to `periphery.env`, fill the
+   passkey and network values from the password manager, and run
+   `komodo/periphery/install.sh`.
+4. Add the server to `komodo/resources/servers.toml` with an `env:<name>` tag
+   and a `[[<ENV>_PERIPHERY_ADDRESS]]` variable reference.
+5. Add any required Stack resources under `komodo/resources/stacks/`.
+6. Add the corresponding Komodo variables and secrets.
+7. Merge, sync `reputo-main`, and verify the server is reachable.
+
+## Add A New Secret
+
+1. Create the secret in Komodo under `Settings > Variables`.
+2. Use a clear environment prefix, for example `STAGING_<NAME>` and
+   `PRODUCTION_<NAME>`.
+3. Reference it in the relevant stack `environment` block as `[[SECRET_NAME]]`.
+4. Wire it into the Compose service with an explicit `environment` entry.
+5. Merge, sync `reputo-main`, deploy the affected stack, and verify without
+   printing the secret value in logs.
 
 ## Backup
 
@@ -165,4 +263,5 @@ Expected checks:
 - Restarting `komodo-core` preserves users, sessions, and resources.
 - Power-cycling the VM brings Traefik, Postgres, FerretDB, Core, and Periphery
   back up with `restart: unless-stopped`.
-- The webhook secret in `core.env` matches any GitHub webhook configured later.
+- The webhook secret in `core.env` matches the GitHub staging and production
+  environment secrets.
