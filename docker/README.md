@@ -68,6 +68,12 @@ The staging/production stack is split across three compose files by deploy caden
 
 Set `IMAGE_TAG=staging` on the staging host and `IMAGE_TAG=production` on the production host.
 
+Komodo is authoritative for staging and production secret injection. If you run
+these Compose files directly, provide the same secret keys that the Komodo stack
+env files provide in the shell or with an additional Compose `--env-file`;
+per-service env files under `docker/env/*.env` are intended to hold only
+non-secret config after the Komodo cutover.
+
 Main branch builds publish:
 
 - `sha-<commit>`: immutable image tag per affected app
