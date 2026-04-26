@@ -21,6 +21,7 @@ permissions = [
   { target.type = "Stack", target.id = "reputo-apps-production", level = "Read" },
   { target.type = "Stack", target.id = "reputo-infra-production", level = "Read" },
   { target.type = "Procedure", target.id = "promote-production", level = "Read" },
+  { target.type = "Server", target.id = "core", level = "Read" },
 ]
 
 [[user_group]]
@@ -31,4 +32,5 @@ permissions = [
   { target.type = "Server", target.id = "production", level = "Read" },
   { target.type = "Stack", target.id = "reputo-apps-production", level = "Read" },
   { target.type = "Procedure", target.id = "promote-production", level = "Execute" },
+  { target.type = "Server", target.id = "core", level = "Read" },
 ]
