@@ -37,12 +37,19 @@ jobs:
 
             - id: resolve
               name: Resolve promotable images
+              env:
+                  PROMOTE_COMMIT: ${{ inputs.commit }}
               run: |
                   set -euo pipefail
 
+                  if ! [[ "$PROMOTE_COMMIT" =~ ^[0-9a-f]{7,40}$ ]]; then
+                      echo "commit must be a 7-40 character lowercase hex Git SHA" >&2
+                      exit 1
+                  fi
+
                   apps_json='[]'
                   for app in api ui workflows; do
-                      if docker buildx imagetools inspect "${IMAGE_PREFIX}/${app}:sha-${{ inputs.commit }}" >/dev/null 2>&1; then
+                      if docker buildx imagetools inspect "${IMAGE_PREFIX}/${app}:sha-${PROMOTE_COMMIT}" >/dev/null 2>&1; then
                           apps_json="$(jq --arg app "$app" '. + [$app]' <<<"$apps_json")"
                       fi
                   done
@@ -51,6 +58,12 @@ jobs:
                   count="$(jq 'length' <<<"$apps_json")"
 
                   echo "Promotable apps: $apps_json"
+
+                  if [ "$count" -eq 0 ]; then
+                      echo "No promotable images found for sha-${PROMOTE_COMMIT}. Expected at least one of: api, ui, workflows." >&2
+                      exit 1
+                  fi
+
                   echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
                   echo "count=$count" >> "$GITHUB_OUTPUT"
 
@@ -72,9 +85,11 @@ jobs:
               uses: docker/setup-buildx-action@v3
 
             - name: Promote ${{ matrix.image }} to production
+              env:
+                  PROMOTE_COMMIT: ${{ inputs.commit }}
               run: |
-                  SOURCE_TAG="sha-${{ inputs.commit }}"
-                  PROD_TAG="prod-${{ inputs.commit }}"
+                  SOURCE_TAG="sha-${PROMOTE_COMMIT}"
+                  PROD_TAG="prod-${PROMOTE_COMMIT}"
                   SOURCE_REF="${{ env.IMAGE_PREFIX }}/${{ matrix.image }}:${SOURCE_TAG}"
 
                   echo "Resolving digest for $SOURCE_REF"
@@ -94,8 +109,8 @@ jobs:
 
                   echo "Successfully promoted ${{ matrix.image }} to production"
 
-    wait-for-watchtower:
-        name: wait-for-watchtower
+    trigger-komodo-production:
+        name: trigger-komodo-production
         needs: [resolve-images, promote]
         if: ${{ needs.resolve-images.outputs.count != '0' }}
         runs-on: ubuntu-22.04
@@ -103,8 +118,60 @@ jobs:
             name: production
             url: https://logid.xyz
         steps:
-            - name: Wait for Watchtower to pull the new image
-              run: sleep 90
-            - name: “✅ Deployment should now be live”
+            - name: Trigger Komodo production Procedure
+              env:
+                  KOMODO_WEBHOOK_SECRET: ${{ secrets.KOMODO_WEBHOOK_SECRET }}
+                  KOMODO_WEBHOOK_URL: https://komodo.logid.xyz/listener/github/procedure/promote-production/__ANY__
+                  PROMOTE_COMMIT: ${{ inputs.commit }}
+              run: |
+                  set -euo pipefail
+
+                  if [ -z "$KOMODO_WEBHOOK_SECRET" ]; then
+                      echo "KOMODO_WEBHOOK_SECRET is required for the Komodo production Procedure webhook" >&2
+                      exit 1
+                  fi
+
+                  payload="$(
+                      jq -cn \
+                          --arg ref "refs/heads/main" \
+                          --arg after "$PROMOTE_COMMIT" \
+                          --arg repository "$GITHUB_REPOSITORY" \
+                          --arg actor "$GITHUB_ACTOR" \
+                          --arg workflow "$GITHUB_WORKFLOW" \
+                          --arg run_id "$GITHUB_RUN_ID" \
+                          --arg run_attempt "$GITHUB_RUN_ATTEMPT" \
+                          '{
+                              ref: $ref,
+                              after: $after,
+                              repository: { full_name: $repository },
+                              pusher: { name: $actor },
+                              sender: { login: $actor },
+                              head_commit: { id: $after },
+                              workflow_dispatch: {
+                                  workflow: $workflow,
+                                  run_id: $run_id,
+                                  run_attempt: $run_attempt,
+                                  commit_sha: $after
+                              }
+                          }'
+                  )"
+                  signature="$(
+                      printf '%s' "$payload" \
+                          | openssl dgst -sha256 -hmac "$KOMODO_WEBHOOK_SECRET" -hex \
+                          | awk '{ print "sha256="$2 }'
+                  )"
+
+                  curl --fail-with-body --show-error --silent \
+                      --request POST "$KOMODO_WEBHOOK_URL" \
+                      --header "Content-Type: application/json" \
+                      --header "X-GitHub-Event: push" \
+                      --header "X-GitHub-Delivery: ${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}-production" \
+                      --header "X-Hub-Signature-256: $signature" \
+                      --data "$payload"
+
+                  echo "Triggered Komodo promote-production Procedure for $PROMOTE_COMMIT"
+            - name: Wait for Komodo to deploy the production stack
+              run: sleep 60
+            - name: '✅ Deployment should now be live'
               run: |
                   echo "✅ Your app should be up at ${{ job.environment.url }}"

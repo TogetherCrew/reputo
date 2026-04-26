@@ -28,9 +28,12 @@ The staging app stack is authoritative for staging deploys in Phase 5:
 `poll_for_updates = true`, `webhook_enabled = true`,
 `webhook_force_deploy = true`, and `deploy = false`. This lets GitHub Actions
 POST to the staging Stack webhook after a successful image build while keeping
-mutable `staging` tags reliable with `compose pull && up -d`. The production app
-stack keeps polling and webhooks disabled until Phase 6. Infra stacks also keep
-polling and webhooks disabled.
+mutable `staging` tags reliable with `compose pull && up -d`.
+
+The production app stack uses the same Komodo posture for Phase 6. GitHub
+Actions still performs the digest-based production retag, then calls the
+`promote-production` Procedure webhook so Komodo runs `DeployStack` for
+`reputo-apps-production`. Infra stacks keep polling and webhooks disabled.
 
 Each stack writes a Komodo-managed env file at deploy time from the TOML
 `environment` block:
@@ -149,3 +152,50 @@ Leave production Watchtower and the `reputo-infra` stacks unchanged. Observe at
 least one full week of staging deploys before Phase 6. Roll back by disabling
 staging Komodo polling/webhook deploys and starting Watchtower from the infra
 Compose stack again.
+
+## Phase 6 Production Cutover
+
+Do not apply the production cutover until Phase 5 has been stable for at least
+one week.
+
+Before the first Komodo-driven production promotion, stop Watchtower on the
+production host and verify it is not running:
+
+```sh
+docker stop watchtower
+docker ps --filter name=watchtower --filter status=running
+```
+
+Configure the GitHub `production` environment secret `KOMODO_WEBHOOK_SECRET`
+with the same value as Komodo Core. The production promotion workflow calls:
+
+```text
+https://komodo.logid.xyz/listener/github/procedure/promote-production/__ANY__
+```
+
+Configure Komodo RBAC so only the `release-managers` group has `Execute` on the
+`promote-production` Procedure. Do not grant `Execute` on that Procedure to
+`Everyone` or broad non-release groups. Admin users still retain their Komodo
+admin privileges.
+
+Validation checklist:
+
+- Promote a known `sha-<commit>` with `.github/workflows/promote-production.yml`
+  and confirm Komodo deploys `reputo-apps-production`.
+- Promote a missing SHA and confirm the workflow fails before retagging or
+  calling Komodo.
+- Attempt to run the Procedure as a non-release-manager and confirm Komodo
+  blocks execution.
+- Confirm the Komodo audit log shows the production Procedure run and the
+  promoted commit SHA from the webhook payload.
+
+Rollback:
+
+1. Disable the production app Stack webhook and polling in
+   `stacks/reputo-apps.toml`.
+2. Disable the `promote-production` Procedure webhook.
+3. Re-enable Watchtower on production:
+
+```sh
+docker start watchtower
+```
