@@ -108,7 +108,6 @@ services:
             ENABLE_ES: "false"
             ES_SEEDS: temporal-elasticsearch
             ES_VERSION: v7
-            DYNAMIC_CONFIG_FILE_PATH: config/dynamicconfig/development-sql.yaml
         networks: [production]
         healthcheck:
             test:
