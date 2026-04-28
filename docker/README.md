@@ -16,7 +16,7 @@ docker/
 │   ├── examples/*.env.example    # tracked, source of truth
 │   └── *.env                     # runtime, gitignored
 └── config/                       # files mounted into containers
-    ├── mongo/                    # init.js, healthcheck.js, keyfile.txt
+    ├── mongo/                    # init.js, healthcheck.js
     ├── traefik/                  # traefik.yml
     ├── observability/            # grafana/, loki/, prometheus/, promtail/
     └── preview/                  # Caddyfile
@@ -43,6 +43,14 @@ cp docker/env/examples/onchain-data-postgresql.env.example docker/env/onchain-da
 ```
 
 For htpasswd-style values such as `TRAEFIK_AUTH` and `GRAFANA_AUTH`, keep the doubled dollar signs from the examples. Docker Compose env files require `$` to be escaped as `$$`.
+
+## MongoDB Keyfile
+
+MongoDB runs as a single-node replica set and requires a keyfile. The Compose
+files generate `/etc/mongo-keyfile/keyfile.txt` on first startup and persist it
+in the `mongodb_keyfile` Docker volume. Do not commit or manually provision
+`docker/config/mongo/keyfile.txt`; any local copy is ignored and unused by the
+current Compose files.
 
 ## Local Hot Reload
 
