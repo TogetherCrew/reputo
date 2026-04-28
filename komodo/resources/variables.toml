@@ -108,6 +108,11 @@ description = "Staging Deep ID OAuth redirect URI."
 is_secret = false
 
 [[variable]]
+name = "STAGING_DEEP_ID_SCOPES"
+description = "Staging Deep ID OAuth scopes."
+is_secret = false
+
+[[variable]]
 name = "STAGING_AUTH_COOKIE_DOMAIN"
 description = "Staging auth session cookie domain."
 is_secret = false
@@ -184,16 +189,6 @@ is_secret = true
 [[variable]]
 name = "STAGING_GRAFANA_ADMIN_PASSWORD"
 description = "Staging Grafana admin password."
-is_secret = true
-
-[[variable]]
-name = "STAGING_AWS_ACCESS_KEY_ID"
-description = "Staging AWS access key ID."
-is_secret = true
-
-[[variable]]
-name = "STAGING_AWS_SECRET_ACCESS_KEY"
-description = "Staging AWS secret access key."
 is_secret = true
 
 [[variable]]
@@ -286,6 +281,11 @@ description = "Production Deep ID OAuth redirect URI."
 is_secret = false
 
 [[variable]]
+name = "PRODUCTION_DEEP_ID_SCOPES"
+description = "Production Deep ID OAuth scopes."
+is_secret = false
+
+[[variable]]
 name = "PRODUCTION_AUTH_COOKIE_DOMAIN"
 description = "Production auth session cookie domain."
 is_secret = false
@@ -362,16 +362,6 @@ is_secret = true
 [[variable]]
 name = "PRODUCTION_GRAFANA_ADMIN_PASSWORD"
 description = "Production Grafana admin password."
-is_secret = true
-
-[[variable]]
-name = "PRODUCTION_AWS_ACCESS_KEY_ID"
-description = "Production AWS access key ID."
-is_secret = true
-
-[[variable]]
-name = "PRODUCTION_AWS_SECRET_ACCESS_KEY"
-description = "Production AWS secret access key."
 is_secret = true
 
 [[variable]]

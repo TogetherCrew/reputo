@@ -9,9 +9,9 @@ the tree from the `main` branch through the `reputo-main` ResourceSync in
 - `_sync.toml` defines the ResourceSync itself. `managed = false` and
   `delete = false` keep sync execution reviewable and non-destructive.
 - `servers.toml` defines the staging and production Periphery servers.
-- `stacks/reputo-infra.toml` defines staging and production infra stacks from
+- `stacks/infra.toml` defines staging and production infra stacks from
   `docker/compose/infra.yml` plus `docker/compose/observability.yml`.
-- `stacks/reputo-apps.toml` defines staging and production app stacks from
+- `stacks/apps.toml` defines staging and production app stacks from
   `docker/compose/apps.yml`.
 - `procedures/promote-production.toml` defines the manual production deploy
   procedure used after GitHub Actions promotes image tags.
@@ -118,6 +118,7 @@ non-secret variables:
 - `<ENV>_DEEP_ID_ISSUER_URL`
 - `<ENV>_DEEP_ID_CLIENT_ID`
 - `<ENV>_DEEP_ID_REDIRECT_URI`
+- `<ENV>_DEEP_ID_SCOPES`
 - `<ENV>_AUTH_COOKIE_DOMAIN`
 - `<ENV>_AWS_REGION`
 - `<ENV>_STORAGE_BUCKET`
@@ -136,8 +137,6 @@ For each environment prefix, `STAGING` and `PRODUCTION`, create these secrets:
 - `<ENV>_ONCHAIN_DATA_POSTGRES_USER`
 - `<ENV>_ONCHAIN_DATA_POSTGRES_PASSWORD`
 - `<ENV>_GRAFANA_ADMIN_PASSWORD`
-- `<ENV>_AWS_ACCESS_KEY_ID`
-- `<ENV>_AWS_SECRET_ACCESS_KEY`
 - `<ENV>_DEEP_ID_CLIENT_SECRET`
 - `<ENV>_AUTH_TOKEN_ENCRYPTION_KEY`
 - `<ENV>_DEEPFUNDING_API_KEY`
