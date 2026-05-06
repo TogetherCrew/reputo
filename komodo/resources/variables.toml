@@ -113,6 +113,26 @@ description = "Staging Deep ID OAuth scopes."
 is_secret = false
 
 [[variable]]
+name = "STAGING_DEEP_ID_CONSENT_REDIRECT_URI"
+description = "Staging Deep ID consent OAuth redirect URI."
+is_secret = false
+
+[[variable]]
+name = "STAGING_DEEP_ID_GRANT_TTL_SECONDS"
+description = "Staging transient Deep ID consent grant lifetime in seconds."
+is_secret = false
+
+[[variable]]
+name = "STAGING_VOTING_PORTAL_RETURN_URL"
+description = "Staging Voting Portal return URL after Deep ID consent."
+is_secret = false
+
+[[variable]]
+name = "STAGING_VOTING_PORTAL_SCOPES"
+description = "Staging Deep ID scopes requested for Voting Portal consent."
+is_secret = false
+
+[[variable]]
 name = "STAGING_AUTH_COOKIE_DOMAIN"
 description = "Staging auth session cookie domain."
 is_secret = false
@@ -283,6 +303,26 @@ is_secret = false
 [[variable]]
 name = "PRODUCTION_DEEP_ID_SCOPES"
 description = "Production Deep ID OAuth scopes."
+is_secret = false
+
+[[variable]]
+name = "PRODUCTION_DEEP_ID_CONSENT_REDIRECT_URI"
+description = "Production Deep ID consent OAuth redirect URI."
+is_secret = false
+
+[[variable]]
+name = "PRODUCTION_DEEP_ID_GRANT_TTL_SECONDS"
+description = "Production transient Deep ID consent grant lifetime in seconds."
+is_secret = false
+
+[[variable]]
+name = "PRODUCTION_VOTING_PORTAL_RETURN_URL"
+description = "Production Voting Portal return URL after Deep ID consent."
+is_secret = false
+
+[[variable]]
+name = "PRODUCTION_VOTING_PORTAL_SCOPES"
+description = "Production Deep ID scopes requested for Voting Portal consent."
 is_secret = false
 
 [[variable]]
