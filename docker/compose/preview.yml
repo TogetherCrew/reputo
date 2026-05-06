@@ -99,6 +99,10 @@ services:
             - DEEP_ID_CLIENT_ID=mock-client-id
             - DEEP_ID_CLIENT_SECRET=mock-client-secret
             - DEEP_ID_REDIRECT_URI=https://mock.invalid/callback
+            - DEEP_ID_CONSENT_REDIRECT_URI=https://mock.invalid/deep-id/consent/callback
+            - DEEP_ID_GRANT_TTL_SECONDS=600
+            - VOTING_PORTAL_RETURN_URL=https://mock.invalid/voting
+            - VOTING_PORTAL_SCOPES=api wallets
             - APP_PUBLIC_URL=https://mock.invalid
             - MONGODB_HOST=mongodb
             - MONGODB_PORT=27017
