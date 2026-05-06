@@ -7,6 +7,7 @@ import { AlgorithmPresetModule } from './algorithm-preset/algorithm-preset.modul
 import { DeepIdAuthModule } from './auth';
 import { configModules, configValidationSchema } from './config';
 import { pinoConfig } from './config/pino.config';
+import { DeepIdConsentModule } from './deep-id-consent';
 import { SnapshotModule } from './snapshot/snapshot.module';
 import { StorageModule } from './storage/storage.module';
 
@@ -30,6 +31,7 @@ import { StorageModule } from './storage/storage.module';
       }),
     }),
     DeepIdAuthModule,
+    DeepIdConsentModule,
     AlgorithmPresetModule,
     SnapshotModule,
     StorageModule,
