@@ -1,4 +1,3 @@
-import { createHash, randomBytes } from 'node:crypto';
 import { BadGatewayException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { type AuthSessionWithId, DeepIdProvider, type DeepIdUser, type DeepIdUserWithId } from '@reputo/database';
@@ -16,23 +15,11 @@ import {
   getAuthRequestContext,
   setAuthRequestContext,
 } from '../shared/types';
-import { decryptValue, encryptValue } from '../shared/utils';
+import { createPkceChallenge, createRandomToken, decryptValue, encryptValue } from '../shared/utils';
 import { AuthCookieService } from './auth-cookie.service';
 import { AuthSessionRepository } from './auth-session.repository';
 import { DeepIdOAuthService } from './deep-id-oauth.service';
 import { DeepIdUserRepository } from './deep-id-user.repository';
-
-function toBase64Url(buffer: Buffer): string {
-  return buffer.toString('base64url');
-}
-
-function createRandomToken(bytes = 32): string {
-  return toBase64Url(randomBytes(bytes));
-}
-
-function createPkceChallenge(codeVerifier: string): string {
-  return createHash('sha256').update(codeVerifier, 'utf8').digest('base64url');
-}
 
 function scopeToArray(scope: string | undefined, fallback: string[]): string[] {
   if (!scope) {

@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AuthSessionSchema, DeepIdUserSchema, MODEL_NAMES } from '@reputo/database';
+import { DeepIdOAuthClient } from '../shared/deep-id';
 import { SessionAuthGuard } from '../shared/guards';
 import { DeepIdAuthController } from './auth.controller';
 import { AuthCookieService } from './auth-cookie.service';
@@ -30,6 +31,7 @@ import { DeepIdUserRepository } from './deep-id-user.repository';
     AuthCookieService,
     AuthSessionRepository,
     DeepIdAuthService,
+    DeepIdOAuthClient,
     DeepIdOAuthService,
     DeepIdUserRepository,
     SessionAuthGuard,
