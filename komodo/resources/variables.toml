@@ -103,12 +103,12 @@ description = "Staging Deep ID OAuth client ID."
 is_secret = false
 
 [[variable]]
-name = "STAGING_DEEP_ID_REDIRECT_URI"
+name = "STAGING_DEEP_ID_AUTH_REDIRECT_URI"
 description = "Staging Deep ID OAuth redirect URI."
 is_secret = false
 
 [[variable]]
-name = "STAGING_DEEP_ID_SCOPES"
+name = "STAGING_DEEP_ID_AUTH_SCOPES"
 description = "Staging Deep ID OAuth scopes."
 is_secret = false
 
@@ -118,7 +118,7 @@ description = "Staging Deep ID consent OAuth redirect URI."
 is_secret = false
 
 [[variable]]
-name = "STAGING_DEEP_ID_GRANT_TTL_SECONDS"
+name = "STAGING_DEEP_ID_CONSENT_GRANT_TTL_SECONDS"
 description = "Staging transient Deep ID consent grant lifetime in seconds."
 is_secret = false
 
@@ -128,7 +128,7 @@ description = "Staging Voting Portal return URL after Deep ID consent."
 is_secret = false
 
 [[variable]]
-name = "STAGING_VOTING_PORTAL_SCOPES"
+name = "STAGING_DEEP_ID_VOTING_PORTAL_SCOPES"
 description = "Staging Deep ID scopes requested for Voting Portal consent."
 is_secret = false
 
@@ -296,12 +296,12 @@ description = "Production Deep ID OAuth client ID."
 is_secret = false
 
 [[variable]]
-name = "PRODUCTION_DEEP_ID_REDIRECT_URI"
+name = "PRODUCTION_DEEP_ID_AUTH_REDIRECT_URI"
 description = "Production Deep ID OAuth redirect URI."
 is_secret = false
 
 [[variable]]
-name = "PRODUCTION_DEEP_ID_SCOPES"
+name = "PRODUCTION_DEEP_ID_AUTH_SCOPES"
 description = "Production Deep ID OAuth scopes."
 is_secret = false
 
@@ -311,7 +311,7 @@ description = "Production Deep ID consent OAuth redirect URI."
 is_secret = false
 
 [[variable]]
-name = "PRODUCTION_DEEP_ID_GRANT_TTL_SECONDS"
+name = "PRODUCTION_DEEP_ID_CONSENT_GRANT_TTL_SECONDS"
 description = "Production transient Deep ID consent grant lifetime in seconds."
 is_secret = false
 
@@ -321,7 +321,7 @@ description = "Production Voting Portal return URL after Deep ID consent."
 is_secret = false
 
 [[variable]]
-name = "PRODUCTION_VOTING_PORTAL_SCOPES"
+name = "PRODUCTION_DEEP_ID_VOTING_PORTAL_SCOPES"
 description = "Production Deep ID scopes requested for Voting Portal consent."
 is_secret = false
 
