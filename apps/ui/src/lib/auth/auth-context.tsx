@@ -67,7 +67,7 @@ export function AuthBootstrapProvider({
 
     async function bootstrap() {
       try {
-        const res = await fetch("/api/v1/auth/deep-id/me", {
+        const res = await fetch("/api/v1/auth/me", {
           credentials: "include",
         })
 
@@ -109,7 +109,7 @@ export function AuthBootstrapProvider({
 
   const logout = useCallback(async () => {
     try {
-      await fetch("/api/v1/auth/deep-id/logout", {
+      await fetch("/api/v1/auth/logout", {
         method: "POST",
         credentials: "include",
       })
