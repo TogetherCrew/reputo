@@ -1,8 +1,8 @@
-export const DeepIdProvider = 'deep-id' as const;
-export type DeepIdProvider = typeof DeepIdProvider;
+export const OAuthProviderDeepId = 'deep-id' as const;
+export type OAuthProviderDeepId = typeof OAuthProviderDeepId;
 
-export const AUTH_PROVIDERS = [DeepIdProvider] as const;
-export type AuthProvider = (typeof AUTH_PROVIDERS)[number];
+export const OAUTH_PROVIDERS = [OAuthProviderDeepId] as const;
+export type OAuthProvider = (typeof OAUTH_PROVIDERS)[number];
 
 export const AUTH_SESSION_PRIVATE_FIELDS = [
   'accessTokenCiphertext',

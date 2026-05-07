@@ -1,33 +1,33 @@
 import { Types } from 'mongoose';
 import { describe, expect, test } from 'vitest';
-import type { AuthSession, DeepIdProvider as DeepIdProviderType, DeepIdUser } from '../../src/index.js';
+import type { AuthSession, OAuthProviderDeepId as OAuthProviderDeepIdType, OAuthUser } from '../../src/index.js';
 import {
   AuthSessionModelValue,
   AuthSessionSchema,
-  DeepIdProvider,
-  DeepIdUserModelValue,
-  DeepIdUserSchema,
   MODEL_NAMES,
+  OAuthProviderDeepId,
+  OAuthUserModelValue,
+  OAuthUserSchema,
 } from '../../src/index.js';
 import DirectAuthSessionModel from '../../src/models/AuthSession.model.js';
-import DirectDeepIdUserModel from '../../src/models/DeepIdUser.model.js';
+import DirectOAuthUserModel from '../../src/models/OAuthUser.model.js';
 import DirectAuthSessionSchema from '../../src/schemas/AuthSession.schema.js';
-import DirectDeepIdUserSchema from '../../src/schemas/DeepIdUser.schema.js';
+import DirectOAuthUserSchema from '../../src/schemas/OAuthUser.schema.js';
 
 describe('@reputo/database public exports', () => {
   test('should export the auth models, schemas, and constants from the root entrypoint', () => {
-    expect(DeepIdProvider).toBe('deep-id');
-    expect(MODEL_NAMES.DEEP_ID_USER).toBe('DeepIdUser');
+    expect(OAuthProviderDeepId).toBe('deep-id');
+    expect(MODEL_NAMES.OAUTH_USER).toBe('OAuthUser');
     expect(MODEL_NAMES.AUTH_SESSION).toBe('AuthSession');
-    expect(DeepIdUserModelValue).toBe(DirectDeepIdUserModel);
+    expect(OAuthUserModelValue).toBe(DirectOAuthUserModel);
     expect(AuthSessionModelValue).toBe(DirectAuthSessionModel);
-    expect(DeepIdUserSchema).toBe(DirectDeepIdUserSchema);
+    expect(OAuthUserSchema).toBe(DirectOAuthUserSchema);
     expect(AuthSessionSchema).toBe(DirectAuthSessionSchema);
   });
 
   test('should export the auth types from the root entrypoint', () => {
-    const provider: DeepIdProviderType = DeepIdProvider;
-    const user: DeepIdUser = {
+    const provider: OAuthProviderDeepIdType = OAuthProviderDeepId;
+    const user: OAuthUser = {
       provider,
       sub: 'did:plc:pwtlzekayxk67odbhen6v2bb',
       email: 'user@example.com',

@@ -1,17 +1,16 @@
 import { Schema } from 'mongoose';
-import { AUTH_PROVIDERS, DeepIdProvider } from '../shared/constants/index.js';
-import type { DeepIdUser, DeepIdUserModel } from '../shared/types/index.js';
+import { OAUTH_PROVIDERS } from '../shared/constants/index.js';
+import type { OAuthUser, OAuthUserModel } from '../shared/types/index.js';
 
 /**
- * Mongoose schema for DeepIdUser documents.
+ * Mongoose schema for OAuthUser documents.
  */
-const DeepIdUserSchema = new Schema<DeepIdUser, DeepIdUserModel>(
+const OAuthUserSchema = new Schema<OAuthUser, OAuthUserModel>(
   {
     provider: {
       type: String,
-      enum: AUTH_PROVIDERS,
+      enum: OAUTH_PROVIDERS,
       required: true,
-      default: DeepIdProvider,
       immutable: true,
     },
     sub: {
@@ -59,6 +58,6 @@ const DeepIdUserSchema = new Schema<DeepIdUser, DeepIdUserModel>(
   },
 );
 
-DeepIdUserSchema.index({ provider: 1, sub: 1 }, { unique: true });
+OAuthUserSchema.index({ provider: 1, sub: 1 }, { unique: true });
 
-export default DeepIdUserSchema as Schema<DeepIdUser, DeepIdUserModel>;
+export default OAuthUserSchema as Schema<OAuthUser, OAuthUserModel>;

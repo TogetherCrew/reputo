@@ -1,12 +1,12 @@
 import type { HydratedDocument, Model, Types } from 'mongoose';
-import type { DeepIdProvider } from '../constants/index.js';
+import type { OAuthProvider } from '../constants/index.js';
 
 /**
- * Interface defining the structure of a Deep ID user profile persisted by the auth subsystem.
+ * Interface defining the structure of an OAuth provider user profile persisted by the auth subsystem.
  */
-export interface DeepIdUser {
+export interface OAuthUser {
   /** Upstream auth provider identifier */
-  provider: DeepIdProvider;
+  provider: OAuthProvider;
   /** Stable subject returned by the provider */
   sub: string;
   /** Intended audience(s) returned by the provider */
@@ -34,16 +34,16 @@ export interface DeepIdUser {
 }
 
 /**
- * Type representing a hydrated DeepIdUser document with explicit _id.
+ * Type representing a hydrated OAuthUser document with explicit _id.
  */
-export type DeepIdUserDoc = HydratedDocument<DeepIdUser> & { _id: Types.ObjectId };
+export type OAuthUserDoc = HydratedDocument<OAuthUser> & { _id: Types.ObjectId };
 
 /**
- * DeepIdUser document with _id for lean query results.
+ * OAuthUser document with _id for lean query results.
  */
-export type DeepIdUserWithId = DeepIdUser & { _id: Types.ObjectId };
+export type OAuthUserWithId = OAuthUser & { _id: Types.ObjectId };
 
 /**
- * Mongoose model interface for DeepIdUser documents.
+ * Mongoose model interface for OAuthUser documents.
  */
-export interface DeepIdUserModel extends Model<DeepIdUser> {}
+export interface OAuthUserModel extends Model<OAuthUser> {}

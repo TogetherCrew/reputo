@@ -1,7 +1,7 @@
 import { Types } from 'mongoose';
 import { beforeEach, describe, expect, test } from 'vitest';
 import AuthSessionModel from '../../../src/models/AuthSession.model.js';
-import { AUTH_SESSION_PRIVATE_FIELDS, DeepIdProvider, MODEL_NAMES } from '../../../src/shared/constants/index.js';
+import { AUTH_SESSION_PRIVATE_FIELDS, MODEL_NAMES, OAuthProviderDeepId } from '../../../src/shared/constants/index.js';
 import type { AuthSession } from '../../../src/shared/types/index.js';
 
 describe('AuthSession model', () => {
@@ -11,7 +11,7 @@ describe('AuthSession model', () => {
     beforeEach(() => {
       authSession = {
         sessionId: 'session-123',
-        provider: DeepIdProvider,
+        provider: OAuthProviderDeepId,
         userId: new Types.ObjectId(),
         accessTokenCiphertext: 'enc:v1:access:deadbeef',
         refreshTokenCiphertext: 'enc:v1:refresh:cafebabe',
