@@ -3,7 +3,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { apiReference } from '@scalar/nestjs-api-reference';
 import type { NextFunction, Request, Response } from 'express';
 
-import type { DeepIdAuthService } from '../auth';
+import type { AuthService } from '../auth';
 import {
   SWAGGER_API_CURRENT_VERSION,
   SWAGGER_API_DESCRIPTION,
@@ -16,9 +16,9 @@ function normalizeMountedPath(path: string): string {
   return `/${path.replace(/^\/+/u, '')}`;
 }
 
-function createProtectedDocsMiddleware(deepIdAuthService: DeepIdAuthService) {
+function createProtectedDocsMiddleware(authService: AuthService) {
   return (request: Request, response: Response, next: NextFunction) => {
-    void deepIdAuthService.requireSession(request, response).then(
+    void authService.requireSession(request, response).then(
       () => next(),
       (exception: unknown) => {
         const status = exception instanceof HttpException ? exception.getStatus() : HttpStatus.INTERNAL_SERVER_ERROR;
@@ -35,7 +35,7 @@ function createProtectedDocsMiddleware(deepIdAuthService: DeepIdAuthService) {
   };
 }
 
-export const setupSwagger = (app: INestApplication, deepIdAuthService: DeepIdAuthService) => {
+export const setupSwagger = (app: INestApplication, authService: AuthService) => {
   const config = new DocumentBuilder()
     .setTitle(SWAGGER_API_NAME)
     .setDescription(SWAGGER_API_DESCRIPTION)
@@ -44,7 +44,7 @@ export const setupSwagger = (app: INestApplication, deepIdAuthService: DeepIdAut
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
-  const protectedDocsMiddleware = createProtectedDocsMiddleware(deepIdAuthService);
+  const protectedDocsMiddleware = createProtectedDocsMiddleware(authService);
   const swaggerRoot = normalizeMountedPath(SWAGGER_API_ROOT);
 
   for (const path of [swaggerRoot, `${swaggerRoot}-json`, `${swaggerRoot}-yaml`, '/reference']) {

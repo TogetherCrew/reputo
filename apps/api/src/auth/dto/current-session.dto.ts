@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
-export class DeepIdCurrentSessionUserDto {
+export class CurrentSessionUserDto {
   @ApiProperty()
   id!: string;
 
@@ -44,7 +44,7 @@ export class DeepIdCurrentSessionUserDto {
   updatedAt?: string;
 }
 
-export class DeepIdCurrentSessionDto {
+export class CurrentSessionDto {
   @ApiProperty()
   authenticated!: boolean;
 
@@ -57,6 +57,6 @@ export class DeepIdCurrentSessionDto {
   @ApiPropertyOptional({ type: [String] })
   scope?: string[];
 
-  @ApiPropertyOptional({ type: DeepIdCurrentSessionUserDto })
-  user?: DeepIdCurrentSessionUserDto;
+  @ApiPropertyOptional({ type: CurrentSessionUserDto })
+  user?: CurrentSessionUserDto;
 }

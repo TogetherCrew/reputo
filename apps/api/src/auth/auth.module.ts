@@ -2,15 +2,15 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { MongooseModule } from '@nestjs/mongoose';
-import { AuthSessionSchema, DeepIdUserSchema, MODEL_NAMES } from '@reputo/database';
-import { DeepIdOAuthClient } from '../shared/deep-id';
+import { AuthSessionSchema, MODEL_NAMES, OAuthUserSchema } from '@reputo/database';
 import { SessionAuthGuard } from '../shared/guards';
-import { DeepIdAuthController } from './auth.controller';
+import { OAuthProviderClient } from '../shared/oauth';
+import { AuthController } from './auth.controller';
+import { AuthService } from './auth.service';
 import { AuthCookieService } from './auth-cookie.service';
 import { AuthSessionRepository } from './auth-session.repository';
-import { DeepIdAuthService } from './deep-id-auth.service';
-import { DeepIdOAuthService } from './deep-id-oauth.service';
-import { DeepIdUserRepository } from './deep-id-user.repository';
+import { OAuthAuthProviderService } from './oauth-auth-provider.service';
+import { OAuthUserRepository } from './oauth-user.repository';
 
 @Module({
   imports: [
@@ -21,25 +21,25 @@ import { DeepIdUserRepository } from './deep-id-user.repository';
         schema: AuthSessionSchema,
       },
       {
-        name: MODEL_NAMES.DEEP_ID_USER,
-        schema: DeepIdUserSchema,
+        name: MODEL_NAMES.OAUTH_USER,
+        schema: OAuthUserSchema,
       },
     ]),
   ],
-  controllers: [DeepIdAuthController],
+  controllers: [AuthController],
   providers: [
     AuthCookieService,
     AuthSessionRepository,
-    DeepIdAuthService,
-    DeepIdOAuthClient,
-    DeepIdOAuthService,
-    DeepIdUserRepository,
+    AuthService,
+    OAuthProviderClient,
+    OAuthAuthProviderService,
+    OAuthUserRepository,
     SessionAuthGuard,
     {
       provide: APP_GUARD,
       useClass: SessionAuthGuard,
     },
   ],
-  exports: [DeepIdAuthService],
+  exports: [AuthService],
 })
-export class DeepIdAuthModule {}
+export class AuthModule {}

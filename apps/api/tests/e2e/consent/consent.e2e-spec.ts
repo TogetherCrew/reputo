@@ -3,15 +3,15 @@ import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { getModelToken, MongooseModule } from '@nestjs/mongoose';
 import { Test } from '@nestjs/testing';
-import type { AuthSession, DeepIdGrant, DeepIdUser } from '@reputo/database';
+import type { AuthSession, OAuthConsentGrant, OAuthUser } from '@reputo/database';
 import { MODEL_NAMES } from '@reputo/database';
 import type { Model } from 'mongoose';
 import { LoggerModule } from 'nestjs-pino';
 import supertest from 'supertest';
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
-import { DeepIdAuthModule } from '../../../src/auth';
+import { AuthModule } from '../../../src/auth';
 import { configModules } from '../../../src/config';
-import { DeepIdConsentModule } from '../../../src/deep-id-consent';
+import { ConsentModule } from '../../../src/consent';
 import { HttpExceptionFilter } from '../../../src/shared/filters/http-exception.filter';
 import { createPkceChallenge } from '../../../src/shared/utils';
 import { applyAuthTestEnv } from '../../utils/auth-session';
@@ -49,11 +49,11 @@ function getFetchUrl(input: RequestInfo | URL): string {
   return input.url;
 }
 
-describe('Deep ID consent e2e', () => {
+describe('OAuth consent e2e', () => {
   let app: INestApplication;
-  let deepIdGrantModel: Model<DeepIdGrant>;
+  let oauthConsentGrantModel: Model<OAuthConsentGrant>;
   let authSessionModel: Model<AuthSession>;
-  let deepIdUserModel: Model<DeepIdUser>;
+  let oauthUserModel: Model<OAuthUser>;
   let tokenRequests: FetchRequest[] = [];
   let userinfoRequests: FetchRequest[] = [];
   let tokenStatus = 200;
@@ -88,9 +88,9 @@ describe('Deep ID consent e2e', () => {
     return new Response('Not found', { status: 404 });
   });
 
-  async function startDeepIdConsentFlow() {
+  async function startConsentFlow() {
     const response = await supertest(app.getHttpServer())
-      .get(base('/deep-id/consent'))
+      .get(base('/oauth/consent/deep-id'))
       .query({ source: 'voting-portal' })
       .expect(302);
     const redirectUrl = new URL(response.headers.location);
@@ -122,14 +122,14 @@ describe('Deep ID consent e2e', () => {
           },
         }),
         MongooseModule.forRoot(mongoUri),
-        DeepIdAuthModule,
-        DeepIdConsentModule,
+        AuthModule,
+        ConsentModule,
       ],
     }).compile();
 
-    deepIdGrantModel = moduleRef.get(getModelToken(MODEL_NAMES.DEEP_ID_GRANT));
+    oauthConsentGrantModel = moduleRef.get(getModelToken(MODEL_NAMES.OAUTH_CONSENT_GRANT));
     authSessionModel = moduleRef.get(getModelToken(MODEL_NAMES.AUTH_SESSION));
-    deepIdUserModel = moduleRef.get(getModelToken(MODEL_NAMES.DEEP_ID_USER));
+    oauthUserModel = moduleRef.get(getModelToken(MODEL_NAMES.OAUTH_USER));
     app = moduleRef.createNestApplication();
 
     app.useGlobalFilters(new HttpExceptionFilter());
@@ -153,7 +153,7 @@ describe('Deep ID consent e2e', () => {
   afterEach(async () => {
     expect(userinfoRequests).toHaveLength(0);
     expect(await authSessionModel.countDocuments()).toBe(0);
-    expect(await deepIdUserModel.countDocuments()).toBe(0);
+    expect(await oauthUserModel.countDocuments()).toBe(0);
 
     tokenRequests = [];
     userinfoRequests = [];
@@ -167,9 +167,9 @@ describe('Deep ID consent e2e', () => {
     fetchMock.mockClear();
 
     await Promise.all([
-      deepIdGrantModel.deleteMany({}),
+      oauthConsentGrantModel.deleteMany({}),
       authSessionModel.deleteMany({}),
-      deepIdUserModel.deleteMany({}),
+      oauthUserModel.deleteMany({}),
     ]);
   });
 
@@ -182,28 +182,34 @@ describe('Deep ID consent e2e', () => {
   });
 
   it('rejects missing and unknown sources without redirecting', async () => {
-    await supertest(app.getHttpServer()).get(base('/deep-id/consent')).expect(400);
-    await supertest(app.getHttpServer()).get(base('/deep-id/consent')).query({ source: 'unknown-source' }).expect(400);
+    await supertest(app.getHttpServer()).get(base('/oauth/consent/deep-id')).expect(400);
+    await supertest(app.getHttpServer())
+      .get(base('/oauth/consent/deep-id'))
+      .query({ source: 'unknown-source' })
+      .expect(400);
 
     expect(tokenRequests).toHaveLength(0);
-    expect(await deepIdGrantModel.countDocuments()).toBe(0);
+    expect(await oauthConsentGrantModel.countDocuments()).toBe(0);
   });
 
-  it('starts the consent flow and persists a transient DeepIdGrant', async () => {
-    const { redirectUrl, state } = await startDeepIdConsentFlow();
+  it('starts the consent flow and persists a transient OAuthConsentGrant', async () => {
+    const { redirectUrl, state } = await startConsentFlow();
 
     expect(redirectUrl.origin).toBe('https://identity.deep-id.ai');
     expect(redirectUrl.pathname).toBe('/oauth2/auth');
     expect(redirectUrl.searchParams.get('response_type')).toBe('code');
     expect(redirectUrl.searchParams.get('client_id')).toBe('deep-id-test-client');
-    expect(redirectUrl.searchParams.get('redirect_uri')).toBe('http://localhost:3000/api/v1/deep-id/consent/callback');
+    expect(redirectUrl.searchParams.get('redirect_uri')).toBe(
+      'http://localhost:3000/api/v1/oauth/consent/deep-id/callback',
+    );
     expect(redirectUrl.searchParams.get('scope')).toBe('api wallets');
     expect(redirectUrl.searchParams.get('state')).toBe(state);
     expect(redirectUrl.searchParams.get('code_challenge_method')).toBe('S256');
 
-    const storedGrant = await deepIdGrantModel.findOne({ state }).select('+codeVerifier').lean();
+    const storedGrant = await oauthConsentGrantModel.findOne({ state }).select('+codeVerifier').lean();
 
     expect(storedGrant).toMatchObject({
+      provider: 'deep-id',
       source: 'voting-portal',
       state,
     });
@@ -214,10 +220,10 @@ describe('Deep ID consent e2e', () => {
   });
 
   it('exchanges the callback code, deletes the grant, and redirects to success', async () => {
-    const { state } = await startDeepIdConsentFlow();
+    const { state } = await startConsentFlow();
 
     const callbackResponse = await supertest(app.getHttpServer())
-      .get(base('/deep-id/consent/callback'))
+      .get(base('/oauth/consent/deep-id/callback'))
       .query({ code: 'authorization-code', state, scope: 'api wallets profile' })
       .expect(302);
 
@@ -234,22 +240,22 @@ describe('Deep ID consent e2e', () => {
     expect(headers['Content-Type']).toBe('application/x-www-form-urlencoded');
     expect(body.get('grant_type')).toBe('authorization_code');
     expect(body.get('code')).toBe('authorization-code');
-    expect(body.get('redirect_uri')).toBe('http://localhost:3000/api/v1/deep-id/consent/callback');
+    expect(body.get('redirect_uri')).toBe('http://localhost:3000/api/v1/oauth/consent/deep-id/callback');
     expect(body.get('code_verifier')).toBeTruthy();
-    expect(await deepIdGrantModel.countDocuments()).toBe(0);
+    expect(await oauthConsentGrantModel.countDocuments()).toBe(0);
 
     await supertest(app.getHttpServer())
-      .get(base('/deep-id/consent/callback'))
+      .get(base('/oauth/consent/deep-id/callback'))
       .query({ code: 'authorization-code', state })
       .expect(400)
       .expect('Content-Type', /html/u);
   });
 
   it('maps access_denied to denied_consent and deletes the grant without a token request', async () => {
-    const { state } = await startDeepIdConsentFlow();
+    const { state } = await startConsentFlow();
 
     const callbackResponse = await supertest(app.getHttpServer())
-      .get(base('/deep-id/consent/callback'))
+      .get(base('/oauth/consent/deep-id/callback'))
       .query({ error: 'access_denied', error_description: 'User denied consent', state })
       .expect(302);
 
@@ -257,16 +263,16 @@ describe('Deep ID consent e2e', () => {
       'http://localhost:3001/voting?reputo_connected=error&reason=denied_consent',
     );
     expect(tokenRequests).toHaveLength(0);
-    expect(await deepIdGrantModel.countDocuments()).toBe(0);
+    expect(await oauthConsentGrantModel.countDocuments()).toBe(0);
   });
 
   it('maps token endpoint failures to provider_error and deletes the grant', async () => {
     tokenStatus = 500;
     tokenBody = { error: 'server_error' };
-    const { state } = await startDeepIdConsentFlow();
+    const { state } = await startConsentFlow();
 
     const callbackResponse = await supertest(app.getHttpServer())
-      .get(base('/deep-id/consent/callback'))
+      .get(base('/oauth/consent/deep-id/callback'))
       .query({ code: 'authorization-code', state })
       .expect(302);
 
@@ -274,19 +280,20 @@ describe('Deep ID consent e2e', () => {
       'http://localhost:3001/voting?reputo_connected=error&reason=provider_error',
     );
     expect(tokenRequests).toHaveLength(1);
-    expect(await deepIdGrantModel.countDocuments()).toBe(0);
+    expect(await oauthConsentGrantModel.countDocuments()).toBe(0);
   });
 
   it('returns 400 HTML for unknown and expired states without redirecting', async () => {
     const unknownResponse = await supertest(app.getHttpServer())
-      .get(base('/deep-id/consent/callback'))
+      .get(base('/oauth/consent/deep-id/callback'))
       .query({ code: 'authorization-code', state: 'unknown-state' })
       .expect(400)
       .expect('Content-Type', /html/u);
 
     expect(unknownResponse.headers.location).toBeUndefined();
 
-    await deepIdGrantModel.create({
+    await oauthConsentGrantModel.create({
+      provider: 'deep-id',
       source: 'voting-portal',
       state: 'expired-state',
       codeVerifier: 'expired-verifier',
@@ -294,19 +301,19 @@ describe('Deep ID consent e2e', () => {
     });
 
     const expiredResponse = await supertest(app.getHttpServer())
-      .get(base('/deep-id/consent/callback'))
+      .get(base('/oauth/consent/deep-id/callback'))
       .query({ code: 'authorization-code', state: 'expired-state' })
       .expect(400)
       .expect('Content-Type', /html/u);
 
     expect(expiredResponse.headers.location).toBeUndefined();
-    expect(await deepIdGrantModel.countDocuments()).toBe(0);
+    expect(await oauthConsentGrantModel.countDocuments()).toBe(0);
   });
 
   it('creates the required TTL index for stale grants', async () => {
-    await deepIdGrantModel.syncIndexes();
+    await oauthConsentGrantModel.syncIndexes();
 
-    const indexes = await deepIdGrantModel.collection.indexes();
+    const indexes = await oauthConsentGrantModel.collection.indexes();
 
     expect(indexes).toEqual(
       expect.arrayContaining([

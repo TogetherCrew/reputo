@@ -1,13 +1,13 @@
-import type { DeepIdProvider } from '@reputo/database';
+import type { OAuthProvider } from '@reputo/database';
 
-export interface DeepIdDiscoveryDocument {
+export interface OAuthDiscoveryDocument {
   issuer: string;
   authorization_endpoint: string;
   token_endpoint: string;
   userinfo_endpoint: string;
 }
 
-export interface DeepIdTokenResponse {
+export interface OAuthTokenResponse {
   access_token: string;
   token_type: string;
   expires_in: number;
@@ -16,7 +16,7 @@ export interface DeepIdTokenResponse {
   scope?: string;
 }
 
-export interface DeepIdUserInfo {
+export interface OAuthUserInfo {
   aud?: string | string[];
   auth_time?: number;
   email?: string;
@@ -30,21 +30,22 @@ export interface DeepIdUserInfo {
   [key: string]: unknown;
 }
 
-export interface DeepIdCallbackQuery {
+export interface OAuthCallbackQuery {
   code?: string;
   state?: string;
   error?: string;
   error_description?: string;
 }
 
-export interface DeepIdAuthFlowState {
+export interface AuthFlowState {
+  provider: OAuthProvider;
   state: string;
   codeVerifier: string;
 }
 
-export interface DeepIdSessionUserView {
+export interface SessionUserView {
   id: string;
-  provider: DeepIdProvider;
+  provider: OAuthProvider;
   sub: string;
   aud?: string[];
   auth_time?: number;
@@ -59,10 +60,10 @@ export interface DeepIdSessionUserView {
   updatedAt?: string;
 }
 
-export interface DeepIdCurrentSession {
+export interface CurrentSessionView {
   authenticated: boolean;
-  provider?: DeepIdProvider;
+  provider?: OAuthProvider;
   expiresAt?: string;
   scope?: string[];
-  user?: DeepIdSessionUserView;
+  user?: SessionUserView;
 }

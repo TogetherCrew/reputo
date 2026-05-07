@@ -1,14 +1,14 @@
 import { type CanActivate, type ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import type { Request, Response } from 'express';
-import { DeepIdAuthService } from '../../auth/deep-id-auth.service';
+import { AuthService } from '../../auth/auth.service';
 import { IS_PUBLIC_ROUTE } from '../decorators/public.decorator';
 
 @Injectable()
 export class SessionAuthGuard implements CanActivate {
   constructor(
     private readonly reflector: Reflector,
-    private readonly deepIdAuthService: DeepIdAuthService,
+    private readonly authService: AuthService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -26,7 +26,7 @@ export class SessionAuthGuard implements CanActivate {
     }
 
     const http = context.switchToHttp();
-    await this.deepIdAuthService.requireSession(http.getRequest<Request>(), http.getResponse<Response>());
+    await this.authService.requireSession(http.getRequest<Request>(), http.getResponse<Response>());
 
     return true;
   }

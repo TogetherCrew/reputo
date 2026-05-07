@@ -1,23 +1,23 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsOptional, IsString } from 'class-validator';
 
-export class DeepIdConsentCallbackQueryDto {
+export class ConsentCallbackQueryDto {
   @ApiPropertyOptional({
-    description: 'Deep ID authorization code',
+    description: 'OAuth authorization code',
   })
   @IsString()
   @IsOptional()
   code?: string;
 
   @ApiPropertyOptional({
-    description: 'Opaque Deep ID consent flow state',
+    description: 'Opaque OAuth consent flow state',
   })
   @IsString()
   @IsOptional()
   state?: string;
 
   @ApiPropertyOptional({
-    description: 'Deep ID authorization error',
+    description: 'OAuth authorization error',
     example: 'access_denied',
   })
   @IsString()
@@ -25,14 +25,14 @@ export class DeepIdConsentCallbackQueryDto {
   error?: string;
 
   @ApiPropertyOptional({
-    description: 'Deep ID authorization error description',
+    description: 'OAuth authorization error description',
   })
   @IsString()
   @IsOptional()
   error_description?: string;
 
   @ApiPropertyOptional({
-    description: 'Deep ID echoed granted scopes. Accepted and discarded.',
+    description: 'Provider-echoed granted scopes. Accepted and discarded.',
   })
   @IsString()
   @IsOptional()

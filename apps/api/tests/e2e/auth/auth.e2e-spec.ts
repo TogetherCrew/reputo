@@ -3,27 +3,28 @@ import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { getModelToken, MongooseModule } from '@nestjs/mongoose';
 import { Test } from '@nestjs/testing';
-import type { AuthSession, DeepIdUser } from '@reputo/database';
+import type { AuthSession, OAuthUser } from '@reputo/database';
 import { MODEL_NAMES } from '@reputo/database';
 import type { Model } from 'mongoose';
 import { LoggerModule } from 'nestjs-pino';
 import supertest from 'supertest';
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
-import { DeepIdAuthModule } from '../../../src/auth';
-import { DeepIdOAuthService } from '../../../src/auth/deep-id-oauth.service';
+import { AuthModule } from '../../../src/auth';
+import { OAuthAuthProviderService } from '../../../src/auth/oauth-auth-provider.service';
 import { configModules } from '../../../src/config';
 import { HttpExceptionFilter } from '../../../src/shared/filters/http-exception.filter';
 import { AUTH_TEST_ENV, applyAuthTestEnv } from '../../utils/auth-session';
 import { startMongo, stopMongo } from '../../utils/mongo-memory-server';
 import { base } from '../../utils/request';
 
-describe('Deep ID auth e2e', () => {
+describe('OAuth auth e2e', () => {
   let app: INestApplication;
   let authSessionModel: Model<AuthSession>;
-  let deepIdUserModel: Model<DeepIdUser>;
+  let oauthUserModel: Model<OAuthUser>;
 
   const mockOAuthService = {
-    buildAuthorizationUrl: vi.fn(async (flow: { state: string }) => {
+    getScopes: vi.fn(() => ['openid', 'profile', 'email', 'offline_access']),
+    buildAuthorizationUrl: vi.fn(async (_provider: string, flow: { state: string }) => {
       const url = new URL('https://identity.deep-id.ai/oauth2/auth');
       url.searchParams.set('state', flow.state);
       return url.toString();
@@ -52,15 +53,15 @@ describe('Deep ID auth e2e', () => {
           },
         }),
         MongooseModule.forRoot(mongoUri),
-        DeepIdAuthModule,
+        AuthModule,
       ],
     })
-      .overrideProvider(DeepIdOAuthService)
+      .overrideProvider(OAuthAuthProviderService)
       .useValue(mockOAuthService)
       .compile();
 
     authSessionModel = moduleRef.get(getModelToken(MODEL_NAMES.AUTH_SESSION));
-    deepIdUserModel = moduleRef.get(getModelToken(MODEL_NAMES.DEEP_ID_USER));
+    oauthUserModel = moduleRef.get(getModelToken(MODEL_NAMES.OAUTH_USER));
     app = moduleRef.createNestApplication();
 
     app.useGlobalFilters(new HttpExceptionFilter());
@@ -83,7 +84,7 @@ describe('Deep ID auth e2e', () => {
 
   afterEach(async () => {
     vi.clearAllMocks();
-    await Promise.all([authSessionModel.deleteMany({}), deepIdUserModel.deleteMany({})]);
+    await Promise.all([authSessionModel.deleteMany({}), oauthUserModel.deleteMany({})]);
   });
 
   afterAll(async () => {
@@ -109,16 +110,16 @@ describe('Deep ID auth e2e', () => {
   it('requires a session for /me and /logout', async () => {
     const agent = supertest.agent(app.getHttpServer());
 
-    const currentSession = await agent.get(base('/auth/deep-id/me')).expect(401);
-    const logoutResponse = await agent.post(base('/auth/deep-id/logout')).expect(401);
+    const currentSession = await agent.get(base('/auth/me')).expect(401);
+    const logoutResponse = await agent.post(base('/auth/logout')).expect(401);
 
     expect(currentSession.body).toMatchObject({
       statusCode: 401,
-      path: base('/auth/deep-id/me'),
+      path: base('/auth/me'),
     });
     expect(logoutResponse.body).toMatchObject({
       statusCode: 401,
-      path: base('/auth/deep-id/logout'),
+      path: base('/auth/logout'),
     });
   });
 
@@ -159,7 +160,7 @@ describe('Deep ID auth e2e', () => {
       expect.arrayContaining([expect.stringContaining(`${AUTH_TEST_ENV.AUTH_COOKIE_NAME}=`)]),
     );
 
-    const storedUser = await deepIdUserModel.findOne({ sub: 'did:plc:pwtlzekayxk67odbhen6v2bb' }).lean();
+    const storedUser = await oauthUserModel.findOne({ sub: 'did:plc:pwtlzekayxk67odbhen6v2bb' }).lean();
     const storedSession = await authSessionModel
       .findOne({})
       .select('+accessTokenCiphertext +refreshTokenCiphertext +state +codeVerifier')
@@ -187,7 +188,7 @@ describe('Deep ID auth e2e', () => {
     expect(storedSession?.codeVerifier).toBeTruthy();
     expect(storedSession).not.toHaveProperty('nonce');
 
-    const currentSession = await agent.get(base('/auth/deep-id/me')).expect(200);
+    const currentSession = await agent.get(base('/auth/me')).expect(200);
 
     expect(currentSession.body).toMatchObject({
       authenticated: true,
@@ -268,7 +269,7 @@ describe('Deep ID auth e2e', () => {
       scope: 'openid profile email offline_access',
     });
 
-    const response = await agent.get(base('/auth/deep-id/me')).expect(200);
+    const response = await agent.get(base('/auth/me')).expect(200);
     const refreshedSession = await authSessionModel
       .findOne({})
       .select('+accessTokenCiphertext +refreshTokenCiphertext')
@@ -317,19 +318,19 @@ describe('Deep ID auth e2e', () => {
 
     expect(activeSession).toBeTruthy();
 
-    const logoutResponse = await agent.post(base('/auth/deep-id/logout')).expect(204);
+    const logoutResponse = await agent.post(base('/auth/logout')).expect(204);
 
     expect(logoutResponse.headers['set-cookie']).toEqual(
       expect.arrayContaining([expect.stringContaining(`${AUTH_TEST_ENV.AUTH_COOKIE_NAME}=;`)]),
     );
 
     const revokedSession = await authSessionModel.findById(activeSession?._id).lean();
-    const currentSession = await agent.get(base('/auth/deep-id/me')).expect(401);
+    const currentSession = await agent.get(base('/auth/me')).expect(401);
 
     expect(revokedSession?.revokedAt).toBeTruthy();
     expect(currentSession.body).toMatchObject({
       statusCode: 401,
-      path: base('/auth/deep-id/me'),
+      path: base('/auth/me'),
     });
   });
 });

@@ -1,6 +1,28 @@
 import { registerAs } from '@nestjs/config';
+import { type OAuthProvider, OAuthProviderDeepId } from '@reputo/database';
 import * as Joi from 'joi';
-import { AUTH_MODE_DEEP_ID, AUTH_MODE_MOCK } from '../shared/constants';
+import { AUTH_MODE_MOCK, AUTH_MODE_OAUTH } from '../shared/constants';
+
+export interface OAuthProviderAuthConfig {
+  clientId: string;
+  clientSecret: string;
+  issuerUrl: string;
+  redirectUri: string;
+  scope: string;
+}
+
+export interface AuthConfig {
+  appPublicUrl: string;
+  cookieDomain?: string;
+  cookieName: string;
+  cookieSameSite: string;
+  cookieSecure: boolean;
+  mode: string;
+  providers: Record<OAuthProvider, OAuthProviderAuthConfig>;
+  refreshLeewaySeconds: number;
+  sessionTtlSeconds: number;
+  tokenEncryptionKey: string;
+}
 
 function parseBoolean(value: string | undefined, defaultValue: boolean): boolean {
   if (value == null || value === '') {
@@ -10,43 +32,40 @@ function parseBoolean(value: string | undefined, defaultValue: boolean): boolean
   return value.toLowerCase() === 'true';
 }
 
-function normalizeScopes(value: string | undefined): string[] {
-  return (value ?? 'openid profile email offline_access')
-    .split(/[,\s]+/u)
-    .map((scope) => scope.trim())
-    .filter(Boolean);
-}
-
-export default registerAs('auth', () => ({
-  mode: (process.env.AUTH_MODE ?? AUTH_MODE_DEEP_ID).toLowerCase(),
-  deepIdIssuerUrl: process.env.DEEP_ID_ISSUER_URL,
-  deepIdClientId: process.env.DEEP_ID_CLIENT_ID,
-  deepIdClientSecret: process.env.DEEP_ID_CLIENT_SECRET,
-  deepIdRedirectUri: process.env.DEEP_ID_REDIRECT_URI,
-  deepIdScopes: normalizeScopes(process.env.DEEP_ID_SCOPES),
-  cookieName: process.env.AUTH_COOKIE_NAME,
-  cookieDomain: process.env.AUTH_COOKIE_DOMAIN || undefined,
-  cookieSecure: parseBoolean(process.env.AUTH_COOKIE_SECURE, process.env.NODE_ENV === 'production'),
-  cookieSameSite: (process.env.AUTH_COOKIE_SAME_SITE ?? 'lax').toLowerCase(),
-  sessionTtlSeconds: Number(process.env.AUTH_SESSION_TTL_SECONDS ?? 60 * 60 * 24 * 30),
-  refreshLeewaySeconds: Number(process.env.AUTH_REFRESH_LEEWAY_SECONDS ?? 60),
-  tokenEncryptionKey: process.env.AUTH_TOKEN_ENCRYPTION_KEY,
-  appPublicUrl: process.env.APP_PUBLIC_URL,
-}));
+export default registerAs(
+  'auth',
+  (): AuthConfig => ({
+    mode: (process.env.AUTH_MODE ?? AUTH_MODE_OAUTH).toLowerCase(),
+    providers: {
+      [OAuthProviderDeepId]: {
+        issuerUrl: process.env.DEEP_ID_ISSUER_URL as string,
+        clientId: process.env.DEEP_ID_CLIENT_ID as string,
+        clientSecret: process.env.DEEP_ID_CLIENT_SECRET as string,
+        redirectUri: process.env.DEEP_ID_AUTH_REDIRECT_URI as string,
+        scope: process.env.DEEP_ID_AUTH_SCOPES as string,
+      },
+    },
+    cookieName: process.env.AUTH_COOKIE_NAME as string,
+    cookieDomain: process.env.AUTH_COOKIE_DOMAIN || undefined,
+    cookieSecure: parseBoolean(process.env.AUTH_COOKIE_SECURE, process.env.NODE_ENV === 'production'),
+    cookieSameSite: (process.env.AUTH_COOKIE_SAME_SITE ?? 'lax').toLowerCase(),
+    sessionTtlSeconds: Number(process.env.AUTH_SESSION_TTL_SECONDS ?? 60 * 60 * 24 * 30),
+    refreshLeewaySeconds: Number(process.env.AUTH_REFRESH_LEEWAY_SECONDS ?? 60),
+    tokenEncryptionKey: process.env.AUTH_TOKEN_ENCRYPTION_KEY as string,
+    appPublicUrl: process.env.APP_PUBLIC_URL as string,
+  }),
+);
 
 export const authConfigSchema = {
   AUTH_MODE: Joi.string()
-    .valid(AUTH_MODE_DEEP_ID, AUTH_MODE_MOCK)
-    .default(AUTH_MODE_DEEP_ID)
+    .valid(AUTH_MODE_OAUTH, AUTH_MODE_MOCK)
+    .default(AUTH_MODE_OAUTH)
     .description('Authentication mode'),
   DEEP_ID_ISSUER_URL: Joi.string().uri().required().description('Deep ID issuer base URL'),
   DEEP_ID_CLIENT_ID: Joi.string().trim().required().description('Deep ID OAuth client identifier'),
   DEEP_ID_CLIENT_SECRET: Joi.string().trim().required().description('Deep ID OAuth client secret'),
-  DEEP_ID_REDIRECT_URI: Joi.string().uri().required().description('Deep ID OAuth callback URL'),
-  DEEP_ID_SCOPES: Joi.string()
-    .trim()
-    .default('openid profile email offline_access')
-    .description('Space or comma separated Deep ID scopes'),
+  DEEP_ID_AUTH_REDIRECT_URI: Joi.string().uri().required().description('Deep ID OAuth auth callback URL'),
+  DEEP_ID_AUTH_SCOPES: Joi.string().trim().required().description('Space or comma separated Deep ID auth scopes'),
   AUTH_COOKIE_NAME: Joi.string().trim().required().description('Opaque auth session cookie name'),
   AUTH_COOKIE_DOMAIN: Joi.string().allow('').optional().description('Optional cookie domain override'),
   AUTH_COOKIE_SECURE: Joi.boolean()

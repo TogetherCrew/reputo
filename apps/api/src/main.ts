@@ -5,7 +5,7 @@ import helmet from 'helmet';
 import { Logger, LoggerErrorInterceptor } from 'nestjs-pino';
 
 import { AppModule } from './app.module';
-import { DeepIdAuthService } from './auth';
+import { AuthService } from './auth';
 import { setupSwagger } from './docs';
 import { HttpExceptionFilter } from './shared/filters/http-exception.filter';
 
@@ -26,7 +26,7 @@ async function bootstrap() {
     origin: true, // Allow all origins in development
     credentials: true,
   });
-  setupSwagger(app, app.get(DeepIdAuthService));
+  setupSwagger(app, app.get(AuthService));
 
   const configService = app.get(ConfigService);
   const port = configService.get('app.port');

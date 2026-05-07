@@ -1,15 +1,15 @@
-import type { DeepIdGrantModel, DeepIdGrantWithId } from '@reputo/database';
+import type { OAuthConsentGrantModel, OAuthConsentGrantWithId } from '@reputo/database';
 import { Types } from 'mongoose';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { DeepIdGrantRepository } from '../../../src/deep-id-consent/deep-id-grant.repository';
+import { OAuthConsentGrantRepository } from '../../../src/consent/oauth-consent-grant.repository';
 
-describe('DeepIdGrantRepository', () => {
+describe('OAuthConsentGrantRepository', () => {
   let model: {
     create: ReturnType<typeof vi.fn>;
     findOne: ReturnType<typeof vi.fn>;
     deleteOne: ReturnType<typeof vi.fn>;
   };
-  let repository: DeepIdGrantRepository;
+  let repository: OAuthConsentGrantRepository;
 
   beforeEach(() => {
     model = {
@@ -17,11 +17,12 @@ describe('DeepIdGrantRepository', () => {
       findOne: vi.fn(),
       deleteOne: vi.fn(),
     };
-    repository = new DeepIdGrantRepository(model as unknown as DeepIdGrantModel);
+    repository = new OAuthConsentGrantRepository(model as unknown as OAuthConsentGrantModel);
   });
 
   it('creates a grant document', async () => {
     const data = {
+      provider: 'deep-id' as const,
       source: 'voting-portal',
       state: 'state',
       codeVerifier: 'verifier',
@@ -33,9 +34,10 @@ describe('DeepIdGrantRepository', () => {
     expect(model.create).toHaveBeenCalledWith(data);
   });
 
-  it('finds an active grant by state with codeVerifier selected', async () => {
-    const grant: DeepIdGrantWithId = {
+  it('finds an active grant by provider and state with codeVerifier selected', async () => {
+    const grant: OAuthConsentGrantWithId = {
       _id: new Types.ObjectId(),
+      provider: 'deep-id',
       source: 'voting-portal',
       state: 'state',
       codeVerifier: 'verifier',
@@ -47,9 +49,10 @@ describe('DeepIdGrantRepository', () => {
 
     model.findOne.mockReturnValue({ select });
 
-    await expect(repository.findActiveByState('state')).resolves.toBe(grant);
+    await expect(repository.findActiveByProviderAndState('deep-id', 'state')).resolves.toBe(grant);
 
     expect(model.findOne).toHaveBeenCalledWith({
+      provider: 'deep-id',
       state: 'state',
       expiresAt: { $gt: expect.any(Date) },
     });
@@ -62,15 +65,15 @@ describe('DeepIdGrantRepository', () => {
     const exec = vi.fn(async () => ({ deletedCount: 0 }));
     model.deleteOne.mockReturnValue({ exec });
 
-    await expect(repository.deleteByState('missing-state')).resolves.toBe(false);
+    await expect(repository.deleteByProviderAndState('deep-id', 'missing-state')).resolves.toBe(false);
 
-    expect(model.deleteOne).toHaveBeenCalledWith({ state: 'missing-state' });
+    expect(model.deleteOne).toHaveBeenCalledWith({ provider: 'deep-id', state: 'missing-state' });
   });
 
   it('returns true when deleting an existing grant', async () => {
     const exec = vi.fn(async () => ({ deletedCount: 1 }));
     model.deleteOne.mockReturnValue({ exec });
 
-    await expect(repository.deleteByState('state')).resolves.toBe(true);
+    await expect(repository.deleteByProviderAndState('deep-id', 'state')).resolves.toBe(true);
   });
 });

@@ -2,7 +2,7 @@ import { ConfigService } from '@nestjs/config';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AuthCookieService } from '../../../src/auth/auth-cookie.service';
 import { AUTH_FLOW_COOKIE_SUFFIX } from '../../../src/shared/constants';
-import type { DeepIdAuthFlowState } from '../../../src/shared/types';
+import type { AuthFlowState } from '../../../src/shared/types';
 
 const COOKIE_NAME = 'reputo_auth_session';
 const FLOW_COOKIE_NAME = `${COOKIE_NAME}${AUTH_FLOW_COOKIE_SUFFIX}`;
@@ -106,7 +106,8 @@ describe('AuthCookieService', () => {
   describe('setAuthFlowCookie / getAuthFlow roundtrip', () => {
     it('encrypts the auth flow state and writes it as a cookie', () => {
       const response = createMockResponse();
-      const authFlow: DeepIdAuthFlowState = {
+      const authFlow: AuthFlowState = {
+        provider: 'deep-id',
         state: 'state-xyz',
         codeVerifier: 'verifier-xyz',
       };
@@ -125,7 +126,8 @@ describe('AuthCookieService', () => {
 
     it('decrypts the auth flow state from the cookie header', () => {
       const response = createMockResponse();
-      const authFlow: DeepIdAuthFlowState = {
+      const authFlow: AuthFlowState = {
+        provider: 'deep-id',
         state: 'state-abc',
         codeVerifier: 'verifier-abc',
       };
@@ -163,7 +165,7 @@ describe('AuthCookieService', () => {
         createConfigService({ 'auth.tokenEncryptionKey': 'different-key-at-least-32-chars!!' }),
       );
       const response = createMockResponse();
-      otherService.setAuthFlowCookie(response, { state: 's', codeVerifier: 'v' });
+      otherService.setAuthFlowCookie(response, { provider: 'deep-id', state: 's', codeVerifier: 'v' });
 
       const encryptedValue = response.cookie.mock.calls[0][1];
       const request = {
