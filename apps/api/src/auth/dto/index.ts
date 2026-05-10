@@ -1,1 +1,1 @@
-export { DeepIdCurrentSessionDto, DeepIdCurrentSessionUserDto } from './current-session.dto';
+export { CurrentSessionDto, CurrentSessionUserDto } from './current-session.dto';

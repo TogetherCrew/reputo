@@ -2,13 +2,14 @@ import { BadGatewayException, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Types } from 'mongoose';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { DeepIdAuthService } from '../../../src/auth/deep-id-auth.service';
+import { AuthService } from '../../../src/auth/auth.service';
 import { encryptValue } from '../../../src/shared/utils';
 
-describe('DeepIdAuthService', () => {
+describe('AuthService', () => {
   let configValues: Record<string, unknown>;
 
   const oauthService = {
+    getScopes: vi.fn(),
     buildAuthorizationUrl: vi.fn(),
     exchangeCodeForTokens: vi.fn(),
     refreshTokens: vi.fn(),
@@ -31,23 +32,23 @@ describe('DeepIdAuthService', () => {
     revokeBySessionId: vi.fn(),
   };
 
-  const deepIdUserRepository = {
+  const oauthUserRepository = {
     upsertBySub: vi.fn(),
     findById: vi.fn(),
   };
 
-  let service: DeepIdAuthService;
+  let service: AuthService;
 
   function createService() {
     const configService = {
       get: vi.fn((key: string) => configValues[key]),
     } as unknown as ConfigService;
 
-    return new DeepIdAuthService(
+    return new AuthService(
       oauthService as never,
       cookieService as never,
       authSessionRepository as never,
-      deepIdUserRepository as never,
+      oauthUserRepository as never,
       configService,
     );
   }
@@ -55,23 +56,23 @@ describe('DeepIdAuthService', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     configValues = {
-      'auth.mode': 'deep-id',
+      'auth.mode': 'oauth',
       'auth.tokenEncryptionKey': '0123456789abcdef0123456789abcdef',
       'auth.sessionTtlSeconds': 3600,
       'auth.refreshLeewaySeconds': 60,
       'auth.appPublicUrl': 'http://localhost:5173',
-      'auth.deepIdScopes': ['openid', 'profile', 'email', 'offline_access'],
     };
+    oauthService.getScopes.mockReturnValue(['openid', 'profile', 'email', 'offline_access']);
     service = createService();
   });
 
-  it('creates auth flow state and delegates the Deep ID login redirect', async () => {
+  it('creates auth flow state and delegates the OAuth login redirect', async () => {
     const request = { headers: { host: 'localhost:5173' } } as any;
     const response = {} as any;
 
     oauthService.buildAuthorizationUrl.mockResolvedValue('https://identity.deep-id.ai/oauth2/auth?state=abc');
 
-    const redirectUrl = await service.getLoginRedirectUrl(request, response);
+    const redirectUrl = await service.getLoginRedirectUrl('deep-id', request, response);
 
     expect(redirectUrl).toBe('https://identity.deep-id.ai/oauth2/auth?state=abc');
     expect(oauthService.buildAuthorizationUrl).toHaveBeenCalledTimes(1);
@@ -79,6 +80,7 @@ describe('DeepIdAuthService', () => {
     expect(cookieService.setAuthFlowCookie).toHaveBeenCalledWith(
       response,
       expect.objectContaining({
+        provider: 'deep-id',
         state: expect.any(String),
         codeVerifier: expect.any(String),
       }),
@@ -86,7 +88,7 @@ describe('DeepIdAuthService', () => {
     expect(cookieService.setAuthFlowCookie.mock.calls[0][1]).not.toHaveProperty('nonce');
   });
 
-  it('creates a mock session during login without calling Deep ID', async () => {
+  it('creates a mock session during login without calling the OAuth provider', async () => {
     configValues['auth.mode'] = 'mock';
     configValues['auth.appPublicUrl'] = 'https://mock.invalid';
     service = createService();
@@ -101,7 +103,7 @@ describe('DeepIdAuthService', () => {
     } as any;
     const response = {} as any;
 
-    deepIdUserRepository.upsertBySub.mockResolvedValue({
+    oauthUserRepository.upsertBySub.mockResolvedValue({
       _id: userId,
       provider: 'deep-id',
       sub: 'did:deep-id:mock-preview-user',
@@ -116,11 +118,11 @@ describe('DeepIdAuthService', () => {
       ...payload,
     }));
 
-    const redirectUrl = await service.getLoginRedirectUrl(request, response);
+    const redirectUrl = await service.getLoginRedirectUrl('deep-id', request, response);
 
     expect(redirectUrl).toBe('https://preview.reputo.dev');
     expect(oauthService.buildAuthorizationUrl).not.toHaveBeenCalled();
-    expect(deepIdUserRepository.upsertBySub).toHaveBeenCalledWith('deep-id', 'did:deep-id:mock-preview-user', {
+    expect(oauthUserRepository.upsertBySub).toHaveBeenCalledWith('deep-id', 'did:deep-id:mock-preview-user', {
       email: 'preview@reputo.local',
       email_verified: true,
       username: 'preview-user',
@@ -145,6 +147,7 @@ describe('DeepIdAuthService', () => {
     const userId = new Types.ObjectId();
 
     cookieService.getAuthFlow.mockReturnValue({
+      provider: 'deep-id',
       state: 'state-123',
       codeVerifier: 'verifier-123',
     });
@@ -168,7 +171,7 @@ describe('DeepIdAuthService', () => {
       sub: 'did:deep-id:123',
       username: 'jane',
     });
-    deepIdUserRepository.upsertBySub.mockResolvedValue({
+    oauthUserRepository.upsertBySub.mockResolvedValue({
       _id: userId,
       provider: 'deep-id',
       sub: 'did:deep-id:123',
@@ -190,6 +193,7 @@ describe('DeepIdAuthService', () => {
     }));
 
     const redirectUrl = await service.handleCallback(
+      'deep-id',
       {
         code: 'code-123',
         state: 'state-123',
@@ -199,7 +203,7 @@ describe('DeepIdAuthService', () => {
     );
 
     expect(redirectUrl).toBe('http://localhost:5173');
-    expect(deepIdUserRepository.upsertBySub).toHaveBeenCalledWith(
+    expect(oauthUserRepository.upsertBySub).toHaveBeenCalledWith(
       'deep-id',
       'did:deep-id:123',
       expect.objectContaining({
@@ -244,7 +248,7 @@ describe('DeepIdAuthService', () => {
     } as any;
     const response = {} as any;
 
-    deepIdUserRepository.upsertBySub.mockResolvedValue({
+    oauthUserRepository.upsertBySub.mockResolvedValue({
       _id: userId,
       provider: 'deep-id',
       sub: 'did:deep-id:mock-preview-user',
@@ -259,7 +263,7 @@ describe('DeepIdAuthService', () => {
       ...payload,
     }));
 
-    const redirectUrl = await service.handleCallback({}, request, response);
+    const redirectUrl = await service.handleCallback('deep-id', {}, request, response);
 
     expect(redirectUrl).toBe('http://preview.local');
     expect(oauthService.exchangeCodeForTokens).not.toHaveBeenCalled();
@@ -273,12 +277,14 @@ describe('DeepIdAuthService', () => {
     const request = { headers: {} } as any;
 
     cookieService.getAuthFlow.mockReturnValue({
+      provider: 'deep-id',
       state: 'expected-state',
       codeVerifier: 'verifier-123',
     });
 
     await expect(
       service.handleCallback(
+        'deep-id',
         {
           code: 'code-123',
           state: 'wrong-state',
@@ -297,6 +303,7 @@ describe('DeepIdAuthService', () => {
     const request = { headers: {} } as any;
 
     cookieService.getAuthFlow.mockReturnValue({
+      provider: 'deep-id',
       state: 'state-123',
       codeVerifier: 'verifier-123',
     });
@@ -315,6 +322,7 @@ describe('DeepIdAuthService', () => {
 
     await expect(
       service.handleCallback(
+        'deep-id',
         {
           code: 'code-123',
           state: 'state-123',
@@ -362,7 +370,7 @@ describe('DeepIdAuthService', () => {
       codeVerifier: 'mock-verifier',
       expiresAt: new Date(Date.now() + 60 * 60 * 1_000),
     });
-    deepIdUserRepository.findById.mockResolvedValue({
+    oauthUserRepository.findById.mockResolvedValue({
       _id: userId,
       provider: 'deep-id',
       sub: 'did:deep-id:mock-preview-user',
@@ -441,7 +449,7 @@ describe('DeepIdAuthService', () => {
       sub: 'did:deep-id:123',
       username: 'jane',
     });
-    deepIdUserRepository.upsertBySub.mockResolvedValue({
+    oauthUserRepository.upsertBySub.mockResolvedValue({
       _id: userId,
       provider: 'deep-id',
       sub: 'did:deep-id:123',
@@ -450,7 +458,7 @@ describe('DeepIdAuthService', () => {
       username: 'jane',
       picture: 'https://example.com/avatar.png',
     });
-    deepIdUserRepository.findById.mockResolvedValue({
+    oauthUserRepository.findById.mockResolvedValue({
       _id: userId,
       provider: 'deep-id',
       sub: 'did:deep-id:123',
@@ -469,9 +477,9 @@ describe('DeepIdAuthService', () => {
 
     const currentSession = await service.getCurrentSession(request, response);
 
-    expect(oauthService.refreshTokens).toHaveBeenCalledWith('provider-refresh-token');
+    expect(oauthService.refreshTokens).toHaveBeenCalledWith('deep-id', 'provider-refresh-token');
     expect(authSessionRepository.updateAfterRefresh).toHaveBeenCalledTimes(1);
-    expect(deepIdUserRepository.upsertBySub).toHaveBeenCalledWith(
+    expect(oauthUserRepository.upsertBySub).toHaveBeenCalledWith(
       'deep-id',
       'did:deep-id:123',
       expect.objectContaining({

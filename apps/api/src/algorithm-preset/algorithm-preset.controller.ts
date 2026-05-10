@@ -24,7 +24,7 @@ import {
 
 @ApiExtraModels(PaginationDto, AlgorithmPresetDto)
 @ApiTags('Algorithm Presets')
-@ApiUnauthorizedResponse({ description: 'Deep ID-backed session required.' })
+@ApiUnauthorizedResponse({ description: 'Authenticated session required.' })
 @Controller('algorithm-presets')
 export class AlgorithmPresetController {
   constructor(private readonly algorithmPresetService: AlgorithmPresetService) {}

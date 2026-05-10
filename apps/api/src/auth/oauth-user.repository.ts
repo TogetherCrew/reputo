@@ -1,20 +1,20 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import type { DeepIdProvider, DeepIdUser, DeepIdUserModel, DeepIdUserWithId } from '@reputo/database';
+import type { OAuthProvider, OAuthUser, OAuthUserModel, OAuthUserWithId } from '@reputo/database';
 import { MODEL_NAMES } from '@reputo/database';
 
 @Injectable()
-export class DeepIdUserRepository {
+export class OAuthUserRepository {
   constructor(
-    @InjectModel(MODEL_NAMES.DEEP_ID_USER)
-    private readonly model: DeepIdUserModel,
+    @InjectModel(MODEL_NAMES.OAUTH_USER)
+    private readonly model: OAuthUserModel,
   ) {}
 
   async upsertBySub(
-    provider: DeepIdProvider,
+    provider: OAuthProvider,
     sub: string,
-    update: Omit<DeepIdUser, 'provider' | 'sub' | 'createdAt' | 'updatedAt'>,
-  ): Promise<DeepIdUserWithId> {
+    update: Omit<OAuthUser, 'provider' | 'sub' | 'createdAt' | 'updatedAt'>,
+  ): Promise<OAuthUserWithId> {
     const definedEntries = Object.entries(update).filter(([, value]) => value !== undefined);
     const unsetEntries = Object.entries(update).filter(([, value]) => value === undefined);
 
@@ -36,10 +36,10 @@ export class DeepIdUserRepository {
         },
       )
       .lean()
-      .exec()) as DeepIdUserWithId;
+      .exec()) as OAuthUserWithId;
   }
 
-  async findById(id: string): Promise<DeepIdUserWithId | null> {
-    return (await this.model.findById(id).lean().exec()) as DeepIdUserWithId | null;
+  async findById(id: string): Promise<OAuthUserWithId | null> {
+    return (await this.model.findById(id).lean().exec()) as OAuthUserWithId | null;
   }
 }

@@ -92,7 +92,7 @@ export function useAuthAwareSnapshotEvents(
         if (serverRejected) {
           // Verify whether the rejection was an auth failure before
           // redirecting — avoids a false redirect on non-auth HTTP errors.
-          fetch("/api/v1/auth/deep-id/me", { credentials: "include" })
+          fetch("/api/v1/auth/me", { credentials: "include" })
             .then((res) => {
               if (!res.ok) {
                 handleAuthFailure()

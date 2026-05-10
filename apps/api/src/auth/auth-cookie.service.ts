@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { CookieOptions, Request, Response } from 'express';
 import { AUTH_FLOW_COOKIE_SUFFIX } from '../shared/constants';
-import type { DeepIdAuthFlowState } from '../shared/types';
+import type { AuthFlowState } from '../shared/types';
 import { decryptValue, encryptValue } from '../shared/utils';
 
 function parseCookieHeader(cookieHeader: string | undefined): Record<string, string> {
@@ -63,7 +63,7 @@ export class AuthCookieService {
     response.clearCookie(this.cookieName, this.cookieOptions);
   }
 
-  setAuthFlowCookie(response: Response, authFlow: DeepIdAuthFlowState): void {
+  setAuthFlowCookie(response: Response, authFlow: AuthFlowState): void {
     const encrypted = encryptValue(this.encryptionKey, JSON.stringify(authFlow));
 
     response.cookie(this.authFlowCookieName, encrypted, {
@@ -72,7 +72,7 @@ export class AuthCookieService {
     });
   }
 
-  getAuthFlow(request: Request): DeepIdAuthFlowState | null {
+  getAuthFlow(request: Request): AuthFlowState | null {
     const encrypted = parseCookieHeader(request.headers.cookie)[this.authFlowCookieName];
 
     if (!encrypted) {
@@ -80,7 +80,7 @@ export class AuthCookieService {
     }
 
     try {
-      return JSON.parse(decryptValue(this.encryptionKey, encrypted)) as DeepIdAuthFlowState;
+      return JSON.parse(decryptValue(this.encryptionKey, encrypted)) as AuthFlowState;
     } catch {
       return null;
     }

@@ -3,13 +3,13 @@ import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { getModelToken, MongooseModule } from '@nestjs/mongoose';
 import { Test } from '@nestjs/testing';
-import type { AuthSession, DeepIdUser } from '@reputo/database';
+import type { AuthSession, OAuthUser } from '@reputo/database';
 import { MODEL_NAMES } from '@reputo/database';
 import type { Model } from 'mongoose';
 import { LoggerModule } from 'nestjs-pino';
 import supertest from 'supertest';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
-import { DeepIdAuthModule } from '../../../src/auth';
+import { AuthModule } from '../../../src/auth';
 import { configModules } from '../../../src/config';
 import { HttpExceptionFilter } from '../../../src/shared/filters/http-exception.filter';
 import { AUTH_TEST_ENV, applyAuthTestEnv } from '../../utils/auth-session';
@@ -19,7 +19,7 @@ import { base } from '../../utils/request';
 describe('Deep ID auth e2e (mock mode)', () => {
   let app: INestApplication;
   let authSessionModel: Model<AuthSession>;
-  let deepIdUserModel: Model<DeepIdUser>;
+  let oauthUserModel: Model<OAuthUser>;
 
   beforeAll(async () => {
     applyAuthTestEnv({
@@ -27,7 +27,7 @@ describe('Deep ID auth e2e (mock mode)', () => {
       DEEP_ID_ISSUER_URL: 'https://mock.invalid',
       DEEP_ID_CLIENT_ID: 'mock-client-id',
       DEEP_ID_CLIENT_SECRET: 'mock-client-secret',
-      DEEP_ID_REDIRECT_URI: 'https://mock.invalid/callback',
+      DEEP_ID_AUTH_REDIRECT_URI: 'https://mock.invalid/callback',
       APP_PUBLIC_URL: 'https://mock.invalid',
     });
 
@@ -46,12 +46,12 @@ describe('Deep ID auth e2e (mock mode)', () => {
           },
         }),
         MongooseModule.forRoot(mongoUri),
-        DeepIdAuthModule,
+        AuthModule,
       ],
     }).compile();
 
     authSessionModel = moduleRef.get(getModelToken(MODEL_NAMES.AUTH_SESSION));
-    deepIdUserModel = moduleRef.get(getModelToken(MODEL_NAMES.DEEP_ID_USER));
+    oauthUserModel = moduleRef.get(getModelToken(MODEL_NAMES.OAUTH_USER));
     app = moduleRef.createNestApplication();
 
     app.useGlobalFilters(new HttpExceptionFilter());
@@ -73,7 +73,7 @@ describe('Deep ID auth e2e (mock mode)', () => {
   });
 
   afterEach(async () => {
-    await Promise.all([authSessionModel.deleteMany({}), deepIdUserModel.deleteMany({})]);
+    await Promise.all([authSessionModel.deleteMany({}), oauthUserModel.deleteMany({})]);
   });
 
   afterAll(async () => {
@@ -98,9 +98,9 @@ describe('Deep ID auth e2e (mock mode)', () => {
       expect.arrayContaining([expect.stringContaining(`${AUTH_TEST_ENV.AUTH_COOKIE_NAME}.flow=`)]),
     );
 
-    const currentSession = await agent.get(base('/auth/deep-id/me')).expect(200);
+    const currentSession = await agent.get(base('/auth/me')).expect(200);
     const storedSession = await authSessionModel.findOne({}).lean();
-    const storedUser = await deepIdUserModel.findOne({ sub: 'did:deep-id:mock-preview-user' }).lean();
+    const storedUser = await oauthUserModel.findOne({ sub: 'did:deep-id:mock-preview-user' }).lean();
 
     expect(storedSession).toBeTruthy();
     expect(storedUser).toMatchObject({
@@ -138,7 +138,7 @@ describe('Deep ID auth e2e (mock mode)', () => {
       expect.arrayContaining([expect.stringContaining(`${AUTH_TEST_ENV.AUTH_COOKIE_NAME}=`)]),
     );
 
-    const currentSession = await agent.get(base('/auth/deep-id/me')).expect(200);
+    const currentSession = await agent.get(base('/auth/me')).expect(200);
 
     expect(currentSession.body.user).toMatchObject({
       sub: 'did:deep-id:mock-preview-user',
@@ -159,19 +159,19 @@ describe('Deep ID auth e2e (mock mode)', () => {
 
     expect(activeSession).toBeTruthy();
 
-    const logoutResponse = await agent.post(base('/auth/deep-id/logout')).expect(204);
+    const logoutResponse = await agent.post(base('/auth/logout')).expect(204);
 
     expect(logoutResponse.headers['set-cookie']).toEqual(
       expect.arrayContaining([expect.stringContaining(`${AUTH_TEST_ENV.AUTH_COOKIE_NAME}=;`)]),
     );
 
     const revokedSession = await authSessionModel.findById(activeSession?._id).lean();
-    const currentSession = await agent.get(base('/auth/deep-id/me')).expect(401);
+    const currentSession = await agent.get(base('/auth/me')).expect(401);
 
     expect(revokedSession?.revokedAt).toBeTruthy();
     expect(currentSession.body).toMatchObject({
       statusCode: 401,
-      path: base('/auth/deep-id/me'),
+      path: base('/auth/me'),
     });
   });
 });

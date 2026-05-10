@@ -1,5 +1,5 @@
 import type { HydratedDocument, Model, Types } from 'mongoose';
-import type { DeepIdProvider } from '../constants/index.js';
+import type { OAuthProvider } from '../constants/index.js';
 
 /**
  * Interface defining the structure of an authenticated provider session.
@@ -11,8 +11,8 @@ export interface AuthSession {
   /** Stable session identifier used by upstream auth flows */
   sessionId: string;
   /** Upstream auth provider identifier */
-  provider: DeepIdProvider;
-  /** Associated DeepIdUser document identifier */
+  provider: OAuthProvider;
+  /** Associated OAuthUser document identifier */
   userId: Types.ObjectId | string;
   /** Encrypted access token payload */
   accessTokenCiphertext: string;

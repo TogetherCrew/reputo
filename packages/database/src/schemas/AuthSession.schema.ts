@@ -1,5 +1,5 @@
 import { Schema } from 'mongoose';
-import { AUTH_PROVIDERS, AUTH_SESSION_PRIVATE_FIELDS, DeepIdProvider, MODEL_NAMES } from '../shared/constants/index.js';
+import { AUTH_SESSION_PRIVATE_FIELDS, MODEL_NAMES, OAUTH_PROVIDERS } from '../shared/constants/index.js';
 import type { AuthSession, AuthSessionModel } from '../shared/types/index.js';
 
 function stripPrivateFields(ret: Record<string, unknown>): Record<string, unknown> {
@@ -23,14 +23,13 @@ const AuthSessionSchema = new Schema<AuthSession, AuthSessionModel>(
     },
     provider: {
       type: String,
-      enum: AUTH_PROVIDERS,
+      enum: OAUTH_PROVIDERS,
       required: true,
-      default: DeepIdProvider,
       immutable: true,
     },
     userId: {
       type: Schema.Types.ObjectId,
-      ref: MODEL_NAMES.DEEP_ID_USER,
+      ref: MODEL_NAMES.OAUTH_USER,
       required: true,
     },
     accessTokenCiphertext: {

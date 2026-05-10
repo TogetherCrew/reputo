@@ -44,7 +44,7 @@ function sanitizeFilename(filename: string): string {
 }
 
 @ApiTags('Storage')
-@ApiUnauthorizedResponse({ description: 'Deep ID-backed session required.' })
+@ApiUnauthorizedResponse({ description: 'Authenticated session required.' })
 @Controller('storage')
 export class StorageController {
   constructor(private readonly storageService: StorageService) {}

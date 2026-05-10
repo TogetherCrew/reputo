@@ -12,10 +12,17 @@ export { connect, disconnect } from './connection.js';
 export {
   AlgorithmPresetModel as AlgorithmPresetModelValue,
   AuthSessionModel as AuthSessionModelValue,
-  DeepIdUserModel as DeepIdUserModelValue,
+  OAuthConsentGrantModel as OAuthConsentGrantModelValue,
+  OAuthUserModel as OAuthUserModelValue,
   SnapshotModel as SnapshotModelValue,
 } from './models/index.js';
 // Export schemas
-export { AlgorithmPresetSchema, AuthSessionSchema, DeepIdUserSchema, SnapshotSchema } from './schemas/index.js';
+export {
+  AlgorithmPresetSchema,
+  AuthSessionSchema,
+  OAuthConsentGrantSchema,
+  OAuthUserSchema,
+  SnapshotSchema,
+} from './schemas/index.js';
 // Export shared utilities (includes types AlgorithmPresetModel, SnapshotModel as interfaces)
 export * from './shared/index.js';

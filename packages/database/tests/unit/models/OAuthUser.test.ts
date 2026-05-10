@@ -1,15 +1,15 @@
 import { beforeEach, describe, expect, test } from 'vitest';
-import DeepIdUserModel from '../../../src/models/DeepIdUser.model.js';
-import { DeepIdProvider, MODEL_NAMES } from '../../../src/shared/constants/index.js';
-import type { DeepIdUser } from '../../../src/shared/types/index.js';
+import OAuthUserModel from '../../../src/models/OAuthUser.model.js';
+import { MODEL_NAMES, OAuthProviderDeepId } from '../../../src/shared/constants/index.js';
+import type { OAuthUser } from '../../../src/shared/types/index.js';
 
-describe('DeepIdUser model', () => {
-  describe('DeepIdUser validation', () => {
-    let deepIdUser: DeepIdUser;
+describe('OAuthUser model', () => {
+  describe('OAuthUser validation', () => {
+    let oauthUser: OAuthUser;
 
     beforeEach(() => {
-      deepIdUser = {
-        provider: DeepIdProvider,
+      oauthUser = {
+        provider: OAuthProviderDeepId,
         sub: 'did:plc:pwtlzekayxk67odbhen6v2bb',
         aud: ['9cad9abe-1dc6-4c66-acac-f747026c3beb'],
         auth_time: 1775166617,
@@ -23,54 +23,54 @@ describe('DeepIdUser model', () => {
       };
     });
 
-    test('should correctly validate a valid Deep ID user', async () => {
-      const doc = new DeepIdUserModel(deepIdUser);
+    test('should correctly validate a valid OAuth user', async () => {
+      const doc = new OAuthUserModel(oauthUser);
 
       await expect(doc.validate()).resolves.toBeUndefined();
       expect(doc.email).toBe('User@Example.com');
     });
   });
 
-  describe('DeepIdUser indexes', () => {
+  describe('OAuthUser indexes', () => {
     test('should define the provider and sub compound unique index', () => {
-      const indexes = DeepIdUserModel.schema.indexes();
+      const indexes = OAuthUserModel.schema.indexes();
       const providerSubIndex = indexes.find(([fields]) => fields.provider === 1 && fields.sub === 1);
 
       expect(providerSubIndex?.[1]).toMatchObject({ unique: true });
     });
 
     test('should not define a unique email index', () => {
-      const indexes = DeepIdUserModel.schema.indexes();
+      const indexes = OAuthUserModel.schema.indexes();
       const emailIndex = indexes.find(([fields]) => fields.email === 1);
 
       expect(emailIndex).toBeUndefined();
     });
   });
 
-  describe('DeepIdUser exports', () => {
+  describe('OAuthUser exports', () => {
     test('should be registered with the correct model name', () => {
-      expect(DeepIdUserModel.modelName).toBe(MODEL_NAMES.DEEP_ID_USER);
+      expect(OAuthUserModel.modelName).toBe(MODEL_NAMES.OAUTH_USER);
     });
 
-    test('should use the DeepIdUserSchema', () => {
-      expect(DeepIdUserModel.schema).toBeDefined();
-      expect(DeepIdUserModel.schema.path('sub')).toBeDefined();
-      expect(DeepIdUserModel.schema.path('provider')).toBeDefined();
+    test('should use the OAuthUserSchema', () => {
+      expect(OAuthUserModel.schema).toBeDefined();
+      expect(OAuthUserModel.schema.path('sub')).toBeDefined();
+      expect(OAuthUserModel.schema.path('provider')).toBeDefined();
     });
 
     test('should re-export through the models barrel', async () => {
       const models = await import('../../../src/models/index.js');
-      expect(models.DeepIdUserModel).toBe(DeepIdUserModel);
+      expect(models.OAuthUserModel).toBe(OAuthUserModel);
     });
 
-    test('should re-export through the package barrel as DeepIdUserModelValue', async () => {
+    test('should re-export through the package barrel as OAuthUserModelValue', async () => {
       const pkg = await import('../../../src/index.js');
-      expect(pkg.DeepIdUserModelValue).toBe(DeepIdUserModel);
+      expect(pkg.OAuthUserModelValue).toBe(OAuthUserModel);
     });
 
-    test('should re-export the DeepIdUserSchema through the package barrel', async () => {
+    test('should re-export the OAuthUserSchema through the package barrel', async () => {
       const pkg = await import('../../../src/index.js');
-      expect(pkg.DeepIdUserSchema).toBe(DeepIdUserModel.schema);
+      expect(pkg.OAuthUserSchema).toBe(OAuthUserModel.schema);
     });
   });
 });

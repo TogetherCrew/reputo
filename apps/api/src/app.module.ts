@@ -4,9 +4,10 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { LoggerModule } from 'nestjs-pino';
 
 import { AlgorithmPresetModule } from './algorithm-preset/algorithm-preset.module';
-import { DeepIdAuthModule } from './auth';
+import { AuthModule } from './auth';
 import { configModules, configValidationSchema } from './config';
 import { pinoConfig } from './config/pino.config';
+import { ConsentModule } from './consent';
 import { SnapshotModule } from './snapshot/snapshot.module';
 import { StorageModule } from './storage/storage.module';
 
@@ -29,7 +30,8 @@ import { StorageModule } from './storage/storage.module';
         uri: configService.get<string>('mongoDB.uri'),
       }),
     }),
-    DeepIdAuthModule,
+    AuthModule,
+    ConsentModule,
     AlgorithmPresetModule,
     SnapshotModule,
     StorageModule,

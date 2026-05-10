@@ -27,14 +27,14 @@ function createHttpContext(_overrides: { isPublic?: boolean } = {}): {
 describe('SessionAuthGuard', () => {
   let guard: SessionAuthGuard;
   let reflector: Reflector;
-  const deepIdAuthService = {
+  const authService = {
     requireSession: vi.fn(),
   };
 
   beforeEach(() => {
     vi.clearAllMocks();
     reflector = new Reflector();
-    guard = new SessionAuthGuard(reflector, deepIdAuthService as never);
+    guard = new SessionAuthGuard(reflector, authService as never);
   });
 
   it('allows public routes without calling requireSession', async () => {
@@ -44,24 +44,24 @@ describe('SessionAuthGuard', () => {
     const result = await guard.canActivate(context);
 
     expect(result).toBe(true);
-    expect(deepIdAuthService.requireSession).not.toHaveBeenCalled();
+    expect(authService.requireSession).not.toHaveBeenCalled();
   });
 
   it('calls requireSession for non-public routes', async () => {
     const { context, request, response } = createHttpContext();
     vi.spyOn(reflector, 'getAllAndOverride').mockReturnValue(false);
-    deepIdAuthService.requireSession.mockResolvedValue({ session: {}, user: {} });
+    authService.requireSession.mockResolvedValue({ session: {}, user: {} });
 
     const result = await guard.canActivate(context);
 
     expect(result).toBe(true);
-    expect(deepIdAuthService.requireSession).toHaveBeenCalledWith(request, response);
+    expect(authService.requireSession).toHaveBeenCalledWith(request, response);
   });
 
   it('throws UnauthorizedException when requireSession throws', async () => {
     const { context } = createHttpContext();
     vi.spyOn(reflector, 'getAllAndOverride').mockReturnValue(false);
-    deepIdAuthService.requireSession.mockRejectedValue(new UnauthorizedException('Authentication required.'));
+    authService.requireSession.mockRejectedValue(new UnauthorizedException('Authentication required.'));
 
     await expect(guard.canActivate(context)).rejects.toThrow(UnauthorizedException);
   });
@@ -74,13 +74,13 @@ describe('SessionAuthGuard', () => {
     const result = await guard.canActivate(context);
 
     expect(result).toBe(true);
-    expect(deepIdAuthService.requireSession).not.toHaveBeenCalled();
+    expect(authService.requireSession).not.toHaveBeenCalled();
   });
 
   it('checks both handler and class metadata for @Public()', async () => {
     const { context } = createHttpContext();
     const spy = vi.spyOn(reflector, 'getAllAndOverride').mockReturnValue(undefined);
-    deepIdAuthService.requireSession.mockResolvedValue({ session: {}, user: {} });
+    authService.requireSession.mockResolvedValue({ session: {}, user: {} });
 
     await guard.canActivate(context);
 

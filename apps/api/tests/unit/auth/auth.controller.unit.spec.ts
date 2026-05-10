@@ -4,8 +4,8 @@ import { Test } from '@nestjs/testing';
 import { Types } from 'mongoose';
 import request from 'supertest';
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import { DeepIdAuthController } from '../../../src/auth/auth.controller';
-import { DeepIdAuthService } from '../../../src/auth/deep-id-auth.service';
+import { AuthController } from '../../../src/auth/auth.controller';
+import { AuthService } from '../../../src/auth/auth.service';
 import { SessionAuthGuard } from '../../../src/shared/guards/session-auth.guard';
 import { setAuthRequestContext } from '../../../src/shared/types';
 
@@ -50,9 +50,9 @@ const MOCK_AUTH_CONTEXT = {
   },
 };
 
-describe('DeepIdAuthController (e2e)', () => {
+describe('AuthController (e2e)', () => {
   let app: INestApplication;
-  const deepIdAuthService = {
+  const authService = {
     getLoginRedirectUrl: vi.fn(),
     handleCallback: vi.fn(),
     getCurrentSession: vi.fn(),
@@ -63,16 +63,16 @@ describe('DeepIdAuthController (e2e)', () => {
 
   beforeAll(async () => {
     const module = await Test.createTestingModule({
-      controllers: [DeepIdAuthController],
+      controllers: [AuthController],
       providers: [
         {
-          provide: DeepIdAuthService,
-          useValue: deepIdAuthService,
+          provide: AuthService,
+          useValue: authService,
         },
         Reflector,
         {
           provide: APP_GUARD,
-          useFactory: (reflector: Reflector) => new SessionAuthGuard(reflector, deepIdAuthService as any),
+          useFactory: (reflector: Reflector) => new SessionAuthGuard(reflector, authService as any),
           inject: [Reflector],
         },
       ],
@@ -97,28 +97,29 @@ describe('DeepIdAuthController (e2e)', () => {
 
   describe('GET /api/v1/auth/deep-id/login', () => {
     it('returns a 302 redirect to the Deep ID authorization URL', async () => {
-      deepIdAuthService.getLoginRedirectUrl.mockResolvedValue('https://identity.deep-id.ai/oauth2/auth?state=abc');
+      authService.getLoginRedirectUrl.mockResolvedValue('https://identity.deep-id.ai/oauth2/auth?state=abc');
 
       const response = await request(app.getHttpServer()).get('/api/v1/auth/deep-id/login');
 
       expect(response.status).toBe(302);
       expect(response.headers.location).toBe('https://identity.deep-id.ai/oauth2/auth?state=abc');
-      expect(deepIdAuthService.requireSession).not.toHaveBeenCalled();
+      expect(authService.getLoginRedirectUrl).toHaveBeenCalledWith('deep-id', expect.anything(), expect.anything());
+      expect(authService.requireSession).not.toHaveBeenCalled();
     });
 
     it('is a public route that does not require a session', async () => {
-      deepIdAuthService.getLoginRedirectUrl.mockResolvedValue('https://example.com');
+      authService.getLoginRedirectUrl.mockResolvedValue('https://example.com');
 
       const response = await request(app.getHttpServer()).get('/api/v1/auth/deep-id/login');
 
       expect(response.status).toBe(302);
-      expect(deepIdAuthService.requireSession).not.toHaveBeenCalled();
+      expect(authService.requireSession).not.toHaveBeenCalled();
     });
   });
 
   describe('GET /api/v1/auth/deep-id/callback', () => {
     it('returns a 302 redirect on successful callback', async () => {
-      deepIdAuthService.handleCallback.mockResolvedValue('http://localhost:5173');
+      authService.handleCallback.mockResolvedValue('http://localhost:5173');
 
       const response = await request(app.getHttpServer())
         .get('/api/v1/auth/deep-id/callback')
@@ -126,11 +127,17 @@ describe('DeepIdAuthController (e2e)', () => {
 
       expect(response.status).toBe(302);
       expect(response.headers.location).toBe('http://localhost:5173');
-      expect(deepIdAuthService.requireSession).not.toHaveBeenCalled();
+      expect(authService.handleCallback).toHaveBeenCalledWith(
+        'deep-id',
+        expect.objectContaining({ code: 'auth-code', state: 'state-123' }),
+        expect.anything(),
+        expect.anything(),
+      );
+      expect(authService.requireSession).not.toHaveBeenCalled();
     });
 
     it('returns 401 when state is invalid', async () => {
-      deepIdAuthService.handleCallback.mockRejectedValue(new UnauthorizedException('Deep ID auth state mismatch.'));
+      authService.handleCallback.mockRejectedValue(new UnauthorizedException('OAuth auth state mismatch.'));
 
       const response = await request(app.getHttpServer())
         .get('/api/v1/auth/deep-id/callback')
@@ -140,23 +147,23 @@ describe('DeepIdAuthController (e2e)', () => {
     });
 
     it('is a public route that does not require a session', async () => {
-      deepIdAuthService.handleCallback.mockResolvedValue('http://localhost:5173');
+      authService.handleCallback.mockResolvedValue('http://localhost:5173');
 
       await request(app.getHttpServer()).get('/api/v1/auth/deep-id/callback').query({ code: 'code', state: 'state' });
 
-      expect(deepIdAuthService.requireSession).not.toHaveBeenCalled();
+      expect(authService.requireSession).not.toHaveBeenCalled();
     });
   });
 
-  describe('GET /api/v1/auth/deep-id/me', () => {
+  describe('GET /api/v1/auth/me', () => {
     it('returns 200 with the session bootstrap payload when authenticated', async () => {
-      deepIdAuthService.requireSession.mockImplementation(async (req: any) => {
+      authService.requireSession.mockImplementation(async (req: any) => {
         setAuthRequestContext(req, MOCK_AUTH_CONTEXT as any);
         return MOCK_AUTH_CONTEXT;
       });
-      deepIdAuthService.toCurrentSessionView.mockReturnValue(MOCK_SESSION_VIEW);
+      authService.toCurrentSessionView.mockReturnValue(MOCK_SESSION_VIEW);
 
-      const response = await request(app.getHttpServer()).get('/api/v1/auth/deep-id/me');
+      const response = await request(app.getHttpServer()).get('/api/v1/auth/me');
 
       expect(response.status).toBe(200);
       expect(response.body).toMatchObject({
@@ -170,32 +177,32 @@ describe('DeepIdAuthController (e2e)', () => {
     });
 
     it('returns 401 when no session cookie is present', async () => {
-      deepIdAuthService.requireSession.mockRejectedValue(new UnauthorizedException('Authentication required.'));
+      authService.requireSession.mockRejectedValue(new UnauthorizedException('Authentication required.'));
 
-      const response = await request(app.getHttpServer()).get('/api/v1/auth/deep-id/me');
+      const response = await request(app.getHttpServer()).get('/api/v1/auth/me');
 
       expect(response.status).toBe(401);
     });
   });
 
-  describe('POST /api/v1/auth/deep-id/logout', () => {
+  describe('POST /api/v1/auth/logout', () => {
     it('returns 204 when the session is successfully revoked', async () => {
-      deepIdAuthService.requireSession.mockImplementation(async (req: any) => {
+      authService.requireSession.mockImplementation(async (req: any) => {
         setAuthRequestContext(req, MOCK_AUTH_CONTEXT as any);
         return MOCK_AUTH_CONTEXT;
       });
-      deepIdAuthService.logout.mockResolvedValue(undefined);
+      authService.logout.mockResolvedValue(undefined);
 
-      const response = await request(app.getHttpServer()).post('/api/v1/auth/deep-id/logout');
+      const response = await request(app.getHttpServer()).post('/api/v1/auth/logout');
 
       expect(response.status).toBe(204);
-      expect(deepIdAuthService.logout).toHaveBeenCalledWith(MOCK_AUTH_CONTEXT.session, expect.anything());
+      expect(authService.logout).toHaveBeenCalledWith(MOCK_AUTH_CONTEXT.session, expect.anything());
     });
 
     it('returns 401 when not authenticated', async () => {
-      deepIdAuthService.requireSession.mockRejectedValue(new UnauthorizedException('Authentication required.'));
+      authService.requireSession.mockRejectedValue(new UnauthorizedException('Authentication required.'));
 
-      const response = await request(app.getHttpServer()).post('/api/v1/auth/deep-id/logout');
+      const response = await request(app.getHttpServer()).post('/api/v1/auth/logout');
 
       expect(response.status).toBe(401);
     });

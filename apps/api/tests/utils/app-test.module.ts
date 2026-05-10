@@ -4,8 +4,8 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { Test } from '@nestjs/testing';
 import { LoggerModule } from 'nestjs-pino';
 import { AlgorithmPresetModule } from '../../src/algorithm-preset/algorithm-preset.module';
-import { DeepIdAuthModule, DeepIdAuthService } from '../../src/auth';
-import { DeepIdOAuthService } from '../../src/auth/deep-id-oauth.service';
+import { AuthModule, AuthService } from '../../src/auth';
+import { OAuthAuthProviderService } from '../../src/auth/oauth-auth-provider.service';
 import { configModules } from '../../src/config';
 import { setupSwagger } from '../../src/docs';
 import { HttpExceptionFilter } from '../../src/shared/filters/http-exception.filter';
@@ -80,6 +80,7 @@ export async function createTestApp(options: TestAppOptions) {
   };
 
   const mockOAuthService = {
+    getScopes: () => ['openid', 'profile', 'email', 'offline_access'],
     buildAuthorizationUrl: async () => 'https://identity.deep-id.ai/oauth2/auth',
     exchangeCodeForTokens: async () => {
       throw new Error('Not implemented in test app');
@@ -111,12 +112,12 @@ export async function createTestApp(options: TestAppOptions) {
         },
       }),
       MongooseModule.forRoot(options.mongoUri),
-      DeepIdAuthModule,
+      AuthModule,
       AlgorithmPresetModule,
       SnapshotModule,
     ],
   })
-    .overrideProvider(DeepIdOAuthService)
+    .overrideProvider(OAuthAuthProviderService)
     .useValue(mockOAuthService)
     .overrideProvider(StorageService)
     .useValue(mockStorageService)
@@ -144,7 +145,7 @@ export async function createTestApp(options: TestAppOptions) {
   });
 
   if (options.includeSwagger) {
-    setupSwagger(app, moduleRef.get(DeepIdAuthService));
+    setupSwagger(app, moduleRef.get(AuthService));
   }
 
   await app.init();

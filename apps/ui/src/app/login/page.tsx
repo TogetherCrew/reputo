@@ -23,7 +23,7 @@ export default function LoginPage() {
 
     async function check() {
       try {
-        const res = await fetch("/api/v1/auth/deep-id/me", {
+        const res = await fetch("/api/v1/auth/me", {
           credentials: "include",
         })
         if (res.ok) {

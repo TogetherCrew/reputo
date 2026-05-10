@@ -8,8 +8,8 @@
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
-const BOOTSTRAP_URL = "/api/v1/auth/deep-id/me"
-const LOGOUT_URL = "/api/v1/auth/deep-id/logout"
+const BOOTSTRAP_URL = "/api/v1/auth/me"
+const LOGOUT_URL = "/api/v1/auth/logout"
 const LOGIN_PATH = "/login"
 const DASHBOARD_PATH = "/dashboard"
 
@@ -42,7 +42,7 @@ afterEach(() => {
   vi.unstubAllGlobals()
 })
 
-describe("auth bootstrap flow (/api/v1/auth/deep-id/me)", () => {
+describe("auth bootstrap flow (/api/v1/auth/me)", () => {
   /**
    * Simulates the bootstrap logic from AuthBootstrapProvider:
    * fetch /me with credentials → parse response → return routing decision.

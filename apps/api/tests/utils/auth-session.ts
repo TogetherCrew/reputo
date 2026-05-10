@@ -1,19 +1,23 @@
 import { randomUUID } from 'node:crypto';
 import { getModelToken } from '@nestjs/mongoose';
 import type { TestingModule } from '@nestjs/testing';
-import type { AuthSession, DeepIdUser } from '@reputo/database';
+import type { AuthSession, OAuthUser } from '@reputo/database';
 import { MODEL_NAMES } from '@reputo/database';
 import type { Model } from 'mongoose';
 import { encryptValue } from '../../src/shared/utils';
 
 export const AUTH_TEST_ENV = {
   NODE_ENV: 'test',
-  AUTH_MODE: 'deep-id',
+  AUTH_MODE: 'oauth',
   DEEP_ID_ISSUER_URL: 'https://identity.deep-id.ai',
   DEEP_ID_CLIENT_ID: 'deep-id-test-client',
   DEEP_ID_CLIENT_SECRET: 'deep-id-test-secret',
-  DEEP_ID_REDIRECT_URI: 'http://localhost:3000/api/v1/auth/deep-id/callback',
-  DEEP_ID_SCOPES: 'openid profile email offline_access',
+  DEEP_ID_AUTH_REDIRECT_URI: 'http://localhost:3000/api/v1/auth/deep-id/callback',
+  DEEP_ID_AUTH_SCOPES: 'openid profile email offline_access',
+  DEEP_ID_CONSENT_REDIRECT_URI: 'http://localhost:3000/api/v1/oauth/consent/deep-id/callback',
+  DEEP_ID_CONSENT_GRANT_TTL_SECONDS: '600',
+  VOTING_PORTAL_RETURN_URL: 'http://localhost:3001/voting',
+  DEEP_ID_VOTING_PORTAL_SCOPES: 'api wallets',
   AUTH_COOKIE_NAME: 'reputo_test_session',
   AUTH_COOKIE_DOMAIN: '',
   AUTH_COOKIE_SECURE: 'false',
@@ -43,10 +47,10 @@ export async function createAuthenticatedSession(
   options: CreateAuthenticatedSessionOptions = {},
 ) {
   const authSessionModel = moduleRef.get<Model<AuthSession>>(getModelToken(MODEL_NAMES.AUTH_SESSION));
-  const deepIdUserModel = moduleRef.get<Model<DeepIdUser>>(getModelToken(MODEL_NAMES.DEEP_ID_USER));
+  const oauthUserModel = moduleRef.get<Model<OAuthUser>>(getModelToken(MODEL_NAMES.OAUTH_USER));
   const subSuffix = randomUUID();
   const now = Date.now();
-  const user = await deepIdUserModel.create({
+  const user = await oauthUserModel.create({
     provider: 'deep-id',
     sub: `did:deep-id:${subSuffix}`,
     email: options.email ?? `${subSuffix}@example.com`,

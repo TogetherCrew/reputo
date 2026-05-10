@@ -1,8 +1,8 @@
-export { DeepIdAuthController } from './auth.controller';
-export { DeepIdAuthModule } from './auth.module';
+export { AuthController } from './auth.controller';
+export { AuthModule } from './auth.module';
+export { AuthService } from './auth.service';
 export { AuthCookieService } from './auth-cookie.service';
 export { AuthSessionRepository } from './auth-session.repository';
-export { DeepIdAuthService } from './deep-id-auth.service';
-export { DeepIdOAuthService } from './deep-id-oauth.service';
-export { DeepIdUserRepository } from './deep-id-user.repository';
-export { DeepIdCurrentSessionDto, DeepIdCurrentSessionUserDto } from './dto';
+export { CurrentSessionDto, CurrentSessionUserDto } from './dto';
+export { OAuthAuthProviderService } from './oauth-auth-provider.service';
+export { OAuthUserRepository } from './oauth-user.repository';

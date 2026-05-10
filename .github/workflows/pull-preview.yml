@@ -27,10 +27,10 @@ jobs:
         name: deploy
         needs: build
         if: |
-            github.event.action != 'closed' &&
-            github.event.action != 'unlabeled' &&
-            !failure() && !cancelled() &&
-            contains(github.event.pull_request.labels.*.name, 'pullpreview')
+            !cancelled() &&
+            (needs.build.result == 'success' || needs.build.result == 'skipped') &&
+            (github.event.label.name == 'pullpreview' ||
+             contains(github.event.pull_request.labels.*.name, 'pullpreview'))
         runs-on: ubuntu-22.04
         timeout-minutes: 30
         permissions:
@@ -45,6 +45,7 @@ jobs:
             - uses: actions/checkout@v4
 
             - name: Generate .env
+              if: github.event.action != 'closed' && github.event.action != 'unlabeled'
               env:
                   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
                   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -60,6 +61,7 @@ jobs:
                   EOF
 
             - name: Generate MongoDB keyfile
+              if: github.event.action != 'closed' && github.event.action != 'unlabeled'
               run: |
                   openssl rand -base64 768 > docker/config/mongo/keyfile.txt
                   chmod 400 docker/config/mongo/keyfile.txt

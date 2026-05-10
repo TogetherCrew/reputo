@@ -23,7 +23,7 @@ import { SnapshotEventsService } from './snapshot-events.service';
 
 @ApiExtraModels(PaginationDto, SnapshotDto, SnapshotEventDto)
 @ApiTags('Snapshots')
-@ApiUnauthorizedResponse({ description: 'Deep ID-backed session required.' })
+@ApiUnauthorizedResponse({ description: 'Authenticated session required.' })
 @Controller('snapshots')
 export class SnapshotController {
   constructor(
