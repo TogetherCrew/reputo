@@ -4,8 +4,6 @@ import {
   resolveAccessDeniedCopy,
 } from "../../../../src/lib/access-denied/copy"
 
-const SUPPORT = "support@reputo.example"
-
 describe("normaliseReason", () => {
   it("returns the reason verbatim when it is a known value", () => {
     expect(normaliseReason("not_allowlisted")).toBe("not_allowlisted")
@@ -23,23 +21,23 @@ describe("normaliseReason", () => {
 })
 
 describe("resolveAccessDeniedCopy", () => {
-  it("maps not_allowlisted to a mailto CTA when support email is set", () => {
-    const copy = resolveAccessDeniedCopy("not_allowlisted", {
-      supportEmail: SUPPORT,
-    })
+  it("maps not_allowlisted to the retry link", () => {
+    const copy = resolveAccessDeniedCopy("not_allowlisted")
 
     expect(copy.reason).toBe("not_allowlisted")
     expect(copy.description).toMatch(/approved list/i)
     expect(copy.cta).toEqual({
-      kind: "mailto",
-      label: "Contact administrator",
-      email: SUPPORT,
+      kind: "link",
+      label: "Back to sign in",
+      href: "/login",
     })
   })
 
-  it("falls back to the retry link for not_allowlisted when support email is missing", () => {
-    const copy = resolveAccessDeniedCopy("not_allowlisted")
+  it("maps email_unverified to a /login retry link", () => {
+    const copy = resolveAccessDeniedCopy("email_unverified")
 
+    expect(copy.reason).toBe("email_unverified")
+    expect(copy.description).toMatch(/DeepID/i)
     expect(copy.cta).toEqual({
       kind: "link",
       label: "Back to sign in",
@@ -47,49 +45,11 @@ describe("resolveAccessDeniedCopy", () => {
     })
   })
 
-  it("maps email_unverified to a /login retry link regardless of support email", () => {
-    const withEmail = resolveAccessDeniedCopy("email_unverified", {
-      supportEmail: SUPPORT,
-    })
-    const withoutEmail = resolveAccessDeniedCopy("email_unverified")
-
-    for (const copy of [withEmail, withoutEmail]) {
-      expect(copy.reason).toBe("email_unverified")
-      expect(copy.description).toMatch(/DeepID/i)
-      expect(copy.cta).toEqual({
-        kind: "link",
-        label: "Back to sign in",
-        href: "/login",
-      })
-    }
-  })
-
-  it("maps revoked to a mailto CTA when support email is set", () => {
-    const copy = resolveAccessDeniedCopy("revoked", { supportEmail: SUPPORT })
+  it("maps revoked to the retry link", () => {
+    const copy = resolveAccessDeniedCopy("revoked")
 
     expect(copy.reason).toBe("revoked")
     expect(copy.description).toMatch(/revoked/i)
-    expect(copy.cta).toEqual({
-      kind: "mailto",
-      label: "Contact administrator",
-      email: SUPPORT,
-    })
-  })
-
-  it("falls back to the retry link for revoked when support email is missing", () => {
-    const copy = resolveAccessDeniedCopy("revoked")
-    expect(copy.cta).toEqual({
-      kind: "link",
-      label: "Back to sign in",
-      href: "/login",
-    })
-  })
-
-  it("ignores whitespace-only support email values", () => {
-    const copy = resolveAccessDeniedCopy("not_allowlisted", {
-      supportEmail: "   ",
-    })
-
     expect(copy.cta).toEqual({
       kind: "link",
       label: "Back to sign in",
@@ -98,9 +58,7 @@ describe("resolveAccessDeniedCopy", () => {
   })
 
   it("uses the generic default copy for missing or unknown reasons", () => {
-    const missing = resolveAccessDeniedCopy(undefined, {
-      supportEmail: SUPPORT,
-    })
+    const missing = resolveAccessDeniedCopy(undefined)
     const unknown = resolveAccessDeniedCopy("totally-made-up")
 
     for (const copy of [missing, unknown]) {

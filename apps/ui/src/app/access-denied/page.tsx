@@ -30,12 +30,6 @@ function firstValue(value: string | string[] | undefined): string | undefined {
 
 function CtaButton({ cta }: { cta: AccessDeniedCta }) {
   switch (cta.kind) {
-    case "mailto":
-      return (
-        <Button asChild className="w-full" size="lg">
-          <a href={`mailto:${cta.email}`}>{cta.label}</a>
-        </Button>
-      )
     case "link":
       return (
         <Button asChild className="w-full" size="lg">
@@ -56,9 +50,8 @@ export default async function AccessDeniedPage({
 }: AccessDeniedPageProps) {
   const params = await searchParams
   const reason = firstValue(params.reason)
-  const supportEmail = process.env.NEXT_PUBLIC_ACCESS_SUPPORT_EMAIL?.trim()
 
-  const copy = resolveAccessDeniedCopy(reason, { supportEmail })
+  const copy = resolveAccessDeniedCopy(reason)
   const primaryGoesToLogin =
     (copy.cta.kind === "link" && copy.cta.href === "/login") ||
     copy.cta.kind === "none"

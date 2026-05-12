@@ -13,7 +13,6 @@ export type AccessDeniedReason =
   | "unknown"
 
 export type AccessDeniedCta =
-  | { kind: "mailto"; label: string; email: string }
   | { kind: "link"; label: string; href: string }
   | { kind: "none" }
 
@@ -22,11 +21,6 @@ export interface AccessDeniedCopy {
   title: string
   description: string
   cta: AccessDeniedCta
-}
-
-export interface ResolveAccessDeniedOptions {
-  /** Support address sourced from `NEXT_PUBLIC_ACCESS_SUPPORT_EMAIL`. */
-  supportEmail?: string
 }
 
 const KNOWN_REASONS: ReadonlySet<AccessDeniedReason> = new Set([
@@ -42,28 +36,14 @@ export function normaliseReason(input: unknown): AccessDeniedReason {
     : "unknown"
 }
 
-function mailtoOrFallback(
-  label: string,
-  supportEmail: string | undefined,
-  fallback: AccessDeniedCta
-): AccessDeniedCta {
-  return supportEmail
-    ? { kind: "mailto", label, email: supportEmail }
-    : fallback
-}
-
 const RETRY_LINK: AccessDeniedCta = {
   kind: "link",
   label: "Back to sign in",
   href: "/login",
 }
 
-export function resolveAccessDeniedCopy(
-  rawReason: unknown,
-  options: ResolveAccessDeniedOptions = {}
-): AccessDeniedCopy {
+export function resolveAccessDeniedCopy(rawReason: unknown): AccessDeniedCopy {
   const reason = normaliseReason(rawReason)
-  const supportEmail = options.supportEmail?.trim() || undefined
 
   switch (reason) {
     case "not_allowlisted":
@@ -72,11 +52,7 @@ export function resolveAccessDeniedCopy(
         title: "Access restricted",
         description:
           "Reputo is restricted. You're not on the approved list yet. Contact your administrator to request access.",
-        cta: mailtoOrFallback(
-          "Contact administrator",
-          supportEmail,
-          RETRY_LINK
-        ),
+        cta: RETRY_LINK,
       }
     case "email_unverified":
       return {
@@ -92,11 +68,7 @@ export function resolveAccessDeniedCopy(
         title: "Access revoked",
         description:
           "Your access has been revoked. Contact your administrator if you believe this is a mistake.",
-        cta: mailtoOrFallback(
-          "Contact administrator",
-          supportEmail,
-          RETRY_LINK
-        ),
+        cta: RETRY_LINK,
       }
     default:
       return {
