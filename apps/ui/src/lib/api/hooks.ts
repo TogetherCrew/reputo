@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { algorithmPresetsApi, snapshotsApi } from "./services"
+import { adminsApi, algorithmPresetsApi, snapshotsApi } from "./services"
 import type {
+  AdminViewDto,
   AlgorithmPresetQueryParams,
   CreateAlgorithmPresetDto,
   CreateSnapshotDto,
@@ -26,6 +27,10 @@ export const queryKeys = {
       [...queryKeys.snapshots.lists(), params] as const,
     details: () => [...queryKeys.snapshots.all, "detail"] as const,
     detail: (id: string) => [...queryKeys.snapshots.details(), id] as const,
+  },
+  admins: {
+    all: ["admins"] as const,
+    list: () => [...queryKeys.admins.all, "list"] as const,
   },
 }
 
@@ -132,6 +137,62 @@ export const useDeleteSnapshot = () => {
     mutationFn: (id: string) => snapshotsApi.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.snapshots.lists() })
+    },
+  })
+}
+
+// Admins hooks
+export const useAdmins = () => {
+  return useQuery({
+    queryKey: queryKeys.admins.list(),
+    queryFn: () => adminsApi.list(),
+  })
+}
+
+export const useAddAdmin = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (email: string) => adminsApi.add(email),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.admins.list() })
+    },
+  })
+}
+
+interface RemoveAdminContext {
+  previous: AdminViewDto[] | undefined
+}
+
+/**
+ * Optimistic delete: row is removed from the cached list immediately,
+ * rolled back on error, and the canonical list is refetched on settle.
+ */
+export const useRemoveAdmin = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation<void, unknown, string, RemoveAdminContext>({
+    mutationFn: (email: string) => adminsApi.remove(email),
+    onMutate: async (email) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.admins.list() })
+      const previous = queryClient.getQueryData<AdminViewDto[]>(
+        queryKeys.admins.list()
+      )
+      if (previous) {
+        queryClient.setQueryData<AdminViewDto[]>(
+          queryKeys.admins.list(),
+          previous.filter((admin) => admin.email !== email)
+        )
+      }
+      return { previous }
+    },
+    onError: (_err, _email, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(queryKeys.admins.list(), context.previous)
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.admins.list() })
     },
   })
 }

@@ -1,5 +1,6 @@
 import axios, { type AxiosError } from "axios"
 import type {
+  AdminViewDto,
   AlgorithmPresetQueryParams,
   AlgorithmPresetResponseDto,
   CreateAlgorithmPresetDto,
@@ -18,12 +19,35 @@ const API_BASE_PATH = "/api/v1"
 // ── Centralised auth-failure handling ─────────────────────────────────
 
 let authFailureHandled = false
+let sessionWasAuthenticated = false
 
-/** Redirect to /login on session expiry. Guarded so only one redirect fires. */
+/**
+ * Record that the current browser session has observed an authenticated
+ * `/me` response. Subsequent 401s after this flag is set are treated as a
+ * mid-session revoke and routed to `/access-denied?reason=revoked` rather
+ * than `/login`.
+ */
+export function markSessionAuthenticated(): void {
+  sessionWasAuthenticated = true
+}
+
+/** Clear the "was authenticated" flag (call on logout). */
+export function resetSessionAuthenticated(): void {
+  sessionWasAuthenticated = false
+  authFailureHandled = false
+}
+
+/**
+ * Redirect on auth failure. Guarded so only one redirect fires.
+ * - First-load 401 (no prior `/me` payload) → `/login`.
+ * - Post-bootstrap 401 (admin removed mid-session) → `/access-denied?reason=revoked`.
+ */
 export function handleAuthFailure(): void {
   if (authFailureHandled) return
   authFailureHandled = true
-  window.location.href = "/login"
+  window.location.href = sessionWasAuthenticated
+    ? "/access-denied?reason=revoked"
+    : "/login"
 }
 
 // Create axios instance with base configuration.
@@ -144,6 +168,24 @@ export const storageApi = {
   verify: async (data: { key: string }): Promise<StorageVerifyResponseDto> => {
     const response = await api.post("/storage/uploads/verify", data)
     return response.data
+  },
+}
+
+// Admins API
+export const adminsApi = {
+  /** Active owner + admin allowlist rows. */
+  list: async (): Promise<AdminViewDto[]> => {
+    const response = await api.get<AdminViewDto[]>("/admins")
+    return response.data
+  },
+  /** Owner-only. POST creates (201) or restores (200) an admin row. */
+  add: async (email: string): Promise<AdminViewDto> => {
+    const response = await api.post<AdminViewDto>("/admins", { email })
+    return response.data
+  },
+  /** Owner-only. DELETE soft-revokes the admin row and forces logout. */
+  remove: async (email: string): Promise<void> => {
+    await api.delete(`/admins/${encodeURIComponent(email)}`)
   },
 }
 
