@@ -1,7 +1,15 @@
-import { BadGatewayException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadGatewayException, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { type AuthSessionWithId, type OAuthProvider, type OAuthUser, type OAuthUserWithId } from '@reputo/database';
+import {
+  ACCESS_ROLE_OWNER,
+  type AccessRole,
+  type AuthSessionWithId,
+  type OAuthProvider,
+  type OAuthUser,
+  type OAuthUserWithId,
+} from '@reputo/database';
 import type { Request, Response } from 'express';
+import { AccessService } from '../access';
 import { AUTH_MODE_MOCK, AUTH_MODE_OAUTH } from '../shared/constants';
 import {
   type AuthFlowState,
@@ -69,12 +77,15 @@ function getHeaderValue(value: string | string[] | undefined): string | undefine
   return firstValue && firstValue.length > 0 ? firstValue : undefined;
 }
 
+type AccessDeniedReason = 'email_unverified' | 'not_allowlisted';
+
 @Injectable()
 export class AuthService {
   private static readonly UNAUTHORIZED_MESSAGE = 'Authentication required.';
   private static readonly MOCK_SUB = 'did:deep-id:mock-preview-user';
   private static readonly MOCK_EMAIL = 'preview@reputo.local';
   private static readonly MOCK_USERNAME = 'preview-user';
+  private readonly logger = new Logger(AuthService.name);
   private readonly tokenEncryptionKey: string;
   private readonly sessionTtlSeconds: number;
   private readonly refreshLeewaySeconds: number;
@@ -86,6 +97,7 @@ export class AuthService {
     private readonly authCookieService: AuthCookieService,
     private readonly authSessionRepository: AuthSessionRepository,
     private readonly oauthUserRepository: OAuthUserRepository,
+    private readonly accessService: AccessService,
     configService: ConfigService,
   ) {
     this.tokenEncryptionKey = configService.get<string>('auth.tokenEncryptionKey') as string;
@@ -152,6 +164,12 @@ export class AuthService {
         authFlow.codeVerifier,
       );
       const userInfo = await this.oauthAuthProviderService.fetchUserInfo(provider, tokenResponse.access_token);
+      const accessDeniedRedirectUrl = await this.getCallbackAccessDeniedRedirectUrl(provider, userInfo);
+
+      if (accessDeniedRedirectUrl) {
+        return accessDeniedRedirectUrl;
+      }
+
       const user = await this.syncUserFromUserInfo(provider, userInfo);
       const session = await this.createApplicationSession(user, tokenResponse, authFlow);
 
@@ -164,8 +182,8 @@ export class AuthService {
   }
 
   async getCurrentSession(request: Request, response: Response): Promise<CurrentSessionView> {
-    const { session, user } = await this.requireSession(request, response);
-    return this.toCurrentSessionView(session, user);
+    const { session, user, role } = await this.requireSession(request, response);
+    return this.toCurrentSessionView(session, user, role);
   }
 
   async requireSession(request: Request, response: Response): Promise<AuthRequestContext> {
@@ -203,9 +221,18 @@ export class AuthService {
       throw new UnauthorizedException(AuthService.UNAUTHORIZED_MESSAGE);
     }
 
+    const role = await this.resolveSessionRole(activeSession.provider, user);
+
+    if (!role) {
+      await this.authSessionRepository.revokeBySessionId(activeSession.sessionId);
+      this.authCookieService.clearSessionCookie(response);
+      throw new UnauthorizedException(AuthService.UNAUTHORIZED_MESSAGE);
+    }
+
     this.authCookieService.setSessionCookie(response, activeSession.sessionId, activeSession.expiresAt);
 
     return setAuthRequestContext(request, {
+      role,
       session: this.toCurrentAuthSession(activeSession),
       user,
     });
@@ -218,13 +245,14 @@ export class AuthService {
     this.authCookieService.clearAuthFlowCookie(response);
   }
 
-  toCurrentSessionView(session: CurrentAuthSession, user: OAuthUserWithId): CurrentSessionView {
+  toCurrentSessionView(session: CurrentAuthSession, user: OAuthUserWithId, role: AccessRole): CurrentSessionView {
     return {
       authenticated: true,
       provider: session.provider,
+      role,
       expiresAt: session.expiresAt.toISOString(),
       scope: session.scope,
-      user: this.toSessionUserView(user),
+      user: this.toSessionUserView(user, role),
     };
   }
 
@@ -285,6 +313,46 @@ export class AuthService {
     };
 
     return this.oauthUserRepository.upsertBySub(provider, userInfo.sub, update);
+  }
+
+  private async getCallbackAccessDeniedRedirectUrl(
+    provider: OAuthProvider,
+    userInfo: OAuthUserInfo,
+  ): Promise<string | null> {
+    const email = this.normalizeEmail(userInfo.email);
+    const sub = typeof userInfo.sub === 'string' && userInfo.sub.trim().length > 0 ? userInfo.sub : undefined;
+
+    if (!email || userInfo.email_verified !== true) {
+      return this.denyCallbackAccess('email_unverified', email, sub);
+    }
+
+    const allowlistRow = await this.accessService.isAllowlisted(provider, email);
+
+    if (!allowlistRow) {
+      return this.denyCallbackAccess('not_allowlisted', email, sub);
+    }
+
+    return null;
+  }
+
+  private denyCallbackAccess(reason: AccessDeniedReason, email: string | undefined, sub: string | undefined): string {
+    this.logger.warn({
+      email,
+      sub,
+      reason,
+    });
+
+    return `${this.appPublicUrl.replace(/\/+$/u, '')}/access-denied?reason=${reason}`;
+  }
+
+  private normalizeEmail(email: unknown): string | undefined {
+    if (typeof email !== 'string') {
+      return undefined;
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+
+    return normalizedEmail.length > 0 ? normalizedEmail : undefined;
   }
 
   private async createApplicationSession(
@@ -401,6 +469,18 @@ export class AuthService {
     }
   }
 
+  private async resolveSessionRole(provider: OAuthProvider, user: OAuthUserWithId): Promise<AccessRole | null> {
+    if (this.authMode === AUTH_MODE_MOCK) {
+      return ACCESS_ROLE_OWNER;
+    }
+
+    if (!user.email) {
+      return null;
+    }
+
+    return this.accessService.resolveRole(provider, user.email);
+  }
+
   private toCurrentAuthSession(session: AuthSessionWithId): CurrentAuthSession {
     const {
       accessTokenCiphertext: _accessTokenCiphertext,
@@ -413,10 +493,11 @@ export class AuthService {
     return currentSession;
   }
 
-  private toSessionUserView(user: OAuthUserWithId): SessionUserView {
+  private toSessionUserView(user: OAuthUserWithId, role: AccessRole): SessionUserView {
     return {
       id: String(user._id),
       provider: user.provider,
+      role,
       sub: user.sub,
       aud: user.aud,
       auth_time: user.auth_time,

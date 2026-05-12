@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AuthSessionSchema, MODEL_NAMES, OAuthUserSchema } from '@reputo/database';
+import { AccessModule } from '../access';
 import { SessionAuthGuard } from '../shared/guards';
 import { OAuthProviderClient } from '../shared/oauth';
 import { AuthController } from './auth.controller';
@@ -15,6 +16,7 @@ import { OAuthUserRepository } from './oauth-user.repository';
 @Module({
   imports: [
     ConfigModule,
+    AccessModule,
     MongooseModule.forFeature([
       {
         name: MODEL_NAMES.AUTH_SESSION,
