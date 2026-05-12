@@ -1,6 +1,7 @@
 "use client"
 
 import { LogIn } from "lucide-react"
+import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
@@ -62,13 +63,21 @@ export default function LoginPage() {
             Sign in with your Deep ID account to continue.
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="flex flex-col gap-4">
           <Button asChild className="w-full" size="lg">
             <a href="/api/v1/auth/deep-id/login">
               <LogIn className="mr-2 size-4" />
               Sign in with Deep ID
             </a>
           </Button>
+          <p className="text-muted-foreground text-center text-xs">
+            <Link
+              href="/access-denied?reason=not_allowlisted"
+              className="hover:text-foreground underline-offset-4 hover:underline"
+            >
+              Why am I being asked to log in?
+            </Link>
+          </p>
         </CardContent>
       </Card>
     </div>
