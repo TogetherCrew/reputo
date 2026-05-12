@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { getModelToken } from '@nestjs/mongoose';
 import type { TestingModule } from '@nestjs/testing';
-import type { AccessAllowlist, AuthSession, OAuthUser } from '@reputo/database';
+import type { AccessAllowlist, AccessRole, AuthSession, OAuthUser } from '@reputo/database';
 import { MODEL_NAMES } from '@reputo/database';
 import type { Model } from 'mongoose';
 import { encryptValue } from '../../src/shared/utils';
@@ -34,6 +34,7 @@ export interface CreateAuthenticatedSessionOptions {
   email?: string;
   expiresAt?: Date;
   refreshTokenExpiresAt?: Date;
+  role?: AccessRole;
   scope?: string[];
 }
 
@@ -53,6 +54,7 @@ export async function createAuthenticatedSession(
   const subSuffix = randomUUID();
   const now = Date.now();
   const email = options.email ?? `${subSuffix}@example.com`;
+  const role = options.role ?? 'admin';
   const user = await oauthUserModel.create({
     provider: 'deep-id',
     sub: `did:deep-id:${subSuffix}`,
@@ -68,11 +70,13 @@ export async function createAuthenticatedSession(
       email: email.trim().toLowerCase(),
     },
     {
-      $setOnInsert: {
+      $set: {
         provider: 'deep-id',
         email: email.trim().toLowerCase(),
-        role: 'admin',
+        role,
         invitedBy: null,
+      },
+      $setOnInsert: {
         invitedAt: new Date(now),
       },
       $unset: {
