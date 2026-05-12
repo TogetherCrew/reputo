@@ -1,7 +1,11 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
-import { AccessAllowlistSchema, MODEL_NAMES } from '@reputo/database';
+import { AccessAllowlistSchema, AuthSessionSchema, MODEL_NAMES, OAuthUserSchema } from '@reputo/database';
+import { AuthSessionRepository } from '../auth/auth-session.repository';
+import { OAuthUserRepository } from '../auth/oauth-user.repository';
+import { RolesGuard } from '../shared/guards/roles.guard';
+import { AccessController } from './access.controller';
 import { AccessService } from './access.service';
 import { AccessAllowlistRepository } from './access-allowlist.repository';
 import { AccessOwnerBootstrap } from './access-owner.bootstrap';
@@ -14,9 +18,25 @@ import { AccessOwnerBootstrap } from './access-owner.bootstrap';
         name: MODEL_NAMES.ACCESS_ALLOWLIST,
         schema: AccessAllowlistSchema,
       },
+      {
+        name: MODEL_NAMES.AUTH_SESSION,
+        schema: AuthSessionSchema,
+      },
+      {
+        name: MODEL_NAMES.OAUTH_USER,
+        schema: OAuthUserSchema,
+      },
     ]),
   ],
-  providers: [AccessAllowlistRepository, AccessService, AccessOwnerBootstrap],
+  controllers: [AccessController],
+  providers: [
+    AccessAllowlistRepository,
+    AccessService,
+    AccessOwnerBootstrap,
+    AuthSessionRepository,
+    OAuthUserRepository,
+    RolesGuard,
+  ],
   exports: [AccessService],
 })
 export class AccessModule {}

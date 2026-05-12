@@ -6,9 +6,19 @@ import { AccessService, OwnerEmailConflictError } from '../../../src/access';
 
 describe('AccessService', () => {
   const accessAllowlistRepository = {
+    addAdmin: vi.fn(),
     findActiveByEmail: vi.fn(),
     findActiveOwner: vi.fn(),
     createOwner: vi.fn(),
+    listActive: vi.fn(),
+    softRevoke: vi.fn(),
+  };
+  const authSessionRepository = {
+    revokeAllByUserId: vi.fn(),
+  };
+  const oauthUserRepository = {
+    findByIds: vi.fn(),
+    findByProviderEmail: vi.fn(),
   };
 
   function createService(ownerEmail?: string) {
@@ -16,7 +26,12 @@ describe('AccessService', () => {
       get: vi.fn((key: string) => (key === 'auth.ownerEmail' ? ownerEmail : undefined)),
     } as unknown as ConfigService;
 
-    return new AccessService(accessAllowlistRepository as never, configService);
+    return new AccessService(
+      accessAllowlistRepository as never,
+      authSessionRepository as never,
+      oauthUserRepository as never,
+      configService,
+    );
   }
 
   beforeEach(() => {
