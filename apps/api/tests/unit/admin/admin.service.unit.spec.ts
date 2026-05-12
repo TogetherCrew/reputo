@@ -2,10 +2,10 @@ import { Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Types } from 'mongoose';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { AccessService, OwnerEmailConflictError } from '../../../src/access';
+import { AdminService, OwnerEmailConflictError } from '../../../src/admin';
 
-describe('AccessService', () => {
-  const accessAllowlistRepository = {
+describe('AdminService', () => {
+  const adminAllowlistRepository = {
     addAdmin: vi.fn(),
     findActiveByEmail: vi.fn(),
     findActiveOwner: vi.fn(),
@@ -26,8 +26,8 @@ describe('AccessService', () => {
       get: vi.fn((key: string) => (key === 'auth.ownerEmail' ? ownerEmail : undefined)),
     } as unknown as ConfigService;
 
-    return new AccessService(
-      accessAllowlistRepository as never,
+    return new AdminService(
+      adminAllowlistRepository as never,
       authSessionRepository as never,
       oauthUserRepository as never,
       configService,
@@ -41,7 +41,7 @@ describe('AccessService', () => {
   it('resolves an active allowlist role', async () => {
     const service = createService();
 
-    accessAllowlistRepository.findActiveByEmail.mockResolvedValue({
+    adminAllowlistRepository.findActiveByEmail.mockResolvedValue({
       _id: new Types.ObjectId(),
       provider: 'deep-id',
       email: 'admin@example.com',
@@ -50,31 +50,31 @@ describe('AccessService', () => {
     });
 
     await expect(service.resolveRole('deep-id', 'ADMIN@example.com')).resolves.toBe('admin');
-    expect(accessAllowlistRepository.findActiveByEmail).toHaveBeenCalledWith('deep-id', 'ADMIN@example.com');
+    expect(adminAllowlistRepository.findActiveByEmail).toHaveBeenCalledWith('deep-id', 'ADMIN@example.com');
   });
 
   it('returns null when no active allowlist role exists', async () => {
     const service = createService();
 
-    accessAllowlistRepository.findActiveByEmail.mockResolvedValue(null);
+    adminAllowlistRepository.findActiveByEmail.mockResolvedValue(null);
 
     await expect(service.resolveRole('deep-id', 'missing@example.com')).resolves.toBeNull();
   });
 
-  it('bootstraps the configured owner when no active owner exists', async () => {
+  it('seeds the configured owner when no active owner exists', async () => {
     const service = createService('owner@example.com');
 
-    accessAllowlistRepository.findActiveOwner.mockResolvedValue(null);
+    adminAllowlistRepository.findActiveOwner.mockResolvedValue(null);
 
-    await service.bootstrapOwner();
+    await service.seedOwner();
 
-    expect(accessAllowlistRepository.createOwner).toHaveBeenCalledWith('deep-id', 'owner@example.com');
+    expect(adminAllowlistRepository.createOwner).toHaveBeenCalledWith('deep-id', 'owner@example.com');
   });
 
   it('does not write when the active owner already matches OWNER_EMAIL', async () => {
     const service = createService('owner@example.com');
 
-    accessAllowlistRepository.findActiveOwner.mockResolvedValue({
+    adminAllowlistRepository.findActiveOwner.mockResolvedValue({
       _id: new Types.ObjectId(),
       provider: 'deep-id',
       email: 'owner@example.com',
@@ -82,16 +82,16 @@ describe('AccessService', () => {
       invitedAt: new Date('2026-04-01T00:00:00.000Z'),
     });
 
-    await service.bootstrapOwner();
+    await service.seedOwner();
 
-    expect(accessAllowlistRepository.createOwner).not.toHaveBeenCalled();
+    expect(adminAllowlistRepository.createOwner).not.toHaveBeenCalled();
   });
 
   it('logs fatal and throws when an active owner conflicts with OWNER_EMAIL', async () => {
     const loggerFatalSpy = vi.spyOn(Logger.prototype, 'fatal').mockImplementation(() => undefined);
     const service = createService('owner@example.com');
 
-    accessAllowlistRepository.findActiveOwner.mockResolvedValue({
+    adminAllowlistRepository.findActiveOwner.mockResolvedValue({
       _id: new Types.ObjectId(),
       provider: 'deep-id',
       email: 'other@example.com',
@@ -99,7 +99,7 @@ describe('AccessService', () => {
       invitedAt: new Date('2026-04-01T00:00:00.000Z'),
     });
 
-    await expect(service.bootstrapOwner()).rejects.toThrow(OwnerEmailConflictError);
+    await expect(service.seedOwner()).rejects.toThrow(OwnerEmailConflictError);
 
     expect(loggerFatalSpy).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -108,17 +108,17 @@ describe('AccessService', () => {
         activeOwnerEmail: 'other@example.com',
       }),
     );
-    expect(accessAllowlistRepository.createOwner).not.toHaveBeenCalled();
+    expect(adminAllowlistRepository.createOwner).not.toHaveBeenCalled();
 
     loggerFatalSpy.mockRestore();
   });
 
-  it('skips owner bootstrap when OWNER_EMAIL is not configured', async () => {
+  it('skips owner seed when OWNER_EMAIL is not configured', async () => {
     const service = createService(undefined);
 
-    await service.bootstrapOwner();
+    await service.seedOwner();
 
-    expect(accessAllowlistRepository.findActiveOwner).not.toHaveBeenCalled();
-    expect(accessAllowlistRepository.createOwner).not.toHaveBeenCalled();
+    expect(adminAllowlistRepository.findActiveOwner).not.toHaveBeenCalled();
+    expect(adminAllowlistRepository.createOwner).not.toHaveBeenCalled();
   });
 });

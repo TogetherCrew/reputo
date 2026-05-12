@@ -291,7 +291,7 @@ describe('AuthService', () => {
     expect(cookieService.clearAuthFlowCookie).toHaveBeenCalledWith(response);
     expect(loggerWarnSpy).toHaveBeenCalledWith(
       expect.objectContaining({
-        email: 'jane@example.com',
+        email: 'j***@example.com',
         sub: 'did:deep-id:123',
         reason: 'email_unverified',
       }),
@@ -344,7 +344,7 @@ describe('AuthService', () => {
     expect(cookieService.clearAuthFlowCookie).toHaveBeenCalledWith(response);
     expect(loggerWarnSpy).toHaveBeenCalledWith(
       expect.objectContaining({
-        email: 'blocked@example.com',
+        email: 'b***@example.com',
         sub: 'did:deep-id:blocked',
         reason: 'not_allowlisted',
       }),
@@ -463,7 +463,7 @@ describe('AuthService', () => {
     cookieService.getSessionId.mockReturnValue('missing-session');
     authSessionRepository.findActiveBySessionId.mockResolvedValue(null);
 
-    await expect(service.getCurrentSession(request, response)).rejects.toThrow(UnauthorizedException);
+    await expect(service.requireSession(request, response)).rejects.toThrow(UnauthorizedException);
     expect(cookieService.clearSessionCookie).toHaveBeenCalledWith(response);
   });
 
@@ -588,7 +588,8 @@ describe('AuthService', () => {
       updatedAt: new Date('2026-04-03T10:05:00.000Z'),
     });
 
-    const currentSession = await service.getCurrentSession(request, response);
+    const context = await service.requireSession(request, response);
+    const currentSession = service.toCurrentSessionView(context.session, context.user, context.role);
 
     expect(currentSession).toMatchObject({
       authenticated: true,
@@ -685,7 +686,8 @@ describe('AuthService', () => {
       updatedAt: new Date('2026-04-03T10:05:00.000Z'),
     });
 
-    const currentSession = await service.getCurrentSession(request, response);
+    const context = await service.requireSession(request, response);
+    const currentSession = service.toCurrentSessionView(context.session, context.user, context.role);
 
     expect(oauthService.refreshTokens).toHaveBeenCalledWith('deep-id', 'provider-refresh-token');
     expect(authSessionRepository.updateAfterRefresh).toHaveBeenCalledTimes(1);

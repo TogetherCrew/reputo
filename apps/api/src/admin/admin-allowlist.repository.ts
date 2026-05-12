@@ -28,7 +28,7 @@ export type AddAdminAllowlistResult =
     };
 
 @Injectable()
-export class AccessAllowlistRepository {
+export class AdminAllowlistRepository {
   constructor(
     @InjectModel(MODEL_NAMES.ACCESS_ALLOWLIST)
     private readonly model: Model<AccessAllowlist>,

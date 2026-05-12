@@ -13,21 +13,22 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import type { OAuthUserWithId } from '@reputo/database';
+import { ACCESS_ROLE_ADMIN, ACCESS_ROLE_OWNER, type OAuthUserWithId } from '@reputo/database';
 import type { Response } from 'express';
 import { CurrentUser, Roles } from '../shared/decorators';
 import { RolesGuard } from '../shared/guards/roles.guard';
-import { AccessService } from './access.service';
+import { AdminService } from './admin.service';
 import { AdminViewDto, CreateAdminDto } from './dto';
 
 @ApiTags('Admins')
 @ApiUnauthorizedResponse({ description: 'Authenticated session required.' })
 @UseGuards(RolesGuard)
 @Controller('admins')
-export class AccessController {
-  constructor(private readonly accessService: AccessService) {}
+export class AdminController {
+  constructor(private readonly adminService: AdminService) {}
 
   @Get()
+  @Roles(ACCESS_ROLE_OWNER, ACCESS_ROLE_ADMIN)
   @ApiOperation({
     summary: 'List active admin access rows',
     description: 'Returns the active owner and admin allowlist rows without internal document identifiers.',
@@ -36,12 +37,13 @@ export class AccessController {
     description: 'Active allowlist rows with owner first and admins sorted by email.',
     type: [AdminViewDto],
   })
+  @ApiForbiddenResponse({ description: 'Admin or owner role required.' })
   listAdmins(): Promise<AdminViewDto[]> {
-    return this.accessService.listAllAccess();
+    return this.adminService.listAllAccess();
   }
 
   @Post()
-  @Roles('owner')
+  @Roles(ACCESS_ROLE_OWNER)
   @ApiOperation({
     summary: 'Add an admin',
     description: 'Creates a new active admin allowlist row or restores a previously revoked admin row.',
@@ -63,14 +65,14 @@ export class AccessController {
     @Body() body: CreateAdminDto,
     @Res({ passthrough: true }) response: Response,
   ): Promise<AdminViewDto> {
-    const result = await this.accessService.addAdmin(actor, body.email);
+    const result = await this.adminService.addAdmin(actor, body.email);
     response.status(result.created ? HttpStatus.CREATED : HttpStatus.OK);
 
     return result.admin;
   }
 
   @Delete(':email')
-  @Roles('owner')
+  @Roles(ACCESS_ROLE_OWNER)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     summary: 'Remove an admin',
@@ -86,6 +88,6 @@ export class AccessController {
   @ApiForbiddenResponse({ description: 'Owner role required, or owner attempted to remove themselves.' })
   @ApiNotFoundResponse({ description: 'No active allowlist row exists for this email.' })
   removeAdmin(@CurrentUser() actor: OAuthUserWithId, @Param('email') email: string): Promise<void> {
-    return this.accessService.removeAdmin(actor, email);
+    return this.adminService.removeAdmin(actor, email);
   }
 }

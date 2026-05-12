@@ -16,9 +16,9 @@ import {
   type OAuthUserWithId,
 } from '@reputo/database';
 import { isEmail } from 'class-validator';
-import { AuthSessionRepository } from '../auth/auth-session.repository';
-import { OAuthUserRepository } from '../auth/oauth-user.repository';
-import { AccessAllowlistRepository } from './access-allowlist.repository';
+import { AuthSessionRepository } from '../sessions';
+import { OAuthUserRepository } from '../users';
+import { AdminAllowlistRepository } from './admin-allowlist.repository';
 import type { AdminViewDto } from './dto';
 
 export class OwnerEmailConflictError extends Error {
@@ -33,12 +33,12 @@ export class OwnerEmailConflictError extends Error {
 }
 
 @Injectable()
-export class AccessService {
-  private readonly logger = new Logger(AccessService.name);
+export class AdminService {
+  private readonly logger = new Logger(AdminService.name);
   private readonly ownerEmail?: string;
 
   constructor(
-    private readonly accessAllowlistRepository: AccessAllowlistRepository,
+    private readonly adminAllowlistRepository: AdminAllowlistRepository,
     private readonly authSessionRepository: AuthSessionRepository,
     private readonly oauthUserRepository: OAuthUserRepository,
     configService: ConfigService,
@@ -47,7 +47,7 @@ export class AccessService {
   }
 
   isAllowlisted(provider: OAuthProvider, email: string): Promise<AccessAllowlistWithId | null> {
-    return this.accessAllowlistRepository.findActiveByEmail(provider, email);
+    return this.adminAllowlistRepository.findActiveByEmail(provider, email);
   }
 
   async resolveRole(provider: OAuthProvider, email: string): Promise<AccessRole | null> {
@@ -57,7 +57,7 @@ export class AccessService {
   }
 
   async listAllAccess(): Promise<AdminViewDto[]> {
-    const rows = await this.accessAllowlistRepository.listActive(OAuthProviderDeepId);
+    const rows = await this.adminAllowlistRepository.listActive(OAuthProviderDeepId);
     const invitedByEmailById = await this.resolveInviterEmails(rows);
 
     return rows
@@ -78,7 +78,7 @@ export class AccessService {
 
   async addAdmin(actor: OAuthUserWithId, email: string): Promise<{ admin: AdminViewDto; created: boolean }> {
     const targetEmail = this.normalizeEmailOrThrow(email);
-    const result = await this.accessAllowlistRepository.addAdmin(OAuthProviderDeepId, targetEmail, actor._id);
+    const result = await this.adminAllowlistRepository.addAdmin(OAuthProviderDeepId, targetEmail, actor._id);
 
     if (result.status === 'active') {
       this.logMutation(actor, 'admin.add', targetEmail, 'active_conflict');
@@ -105,7 +105,7 @@ export class AccessService {
       throw new ForbiddenException('Owners cannot remove themselves.');
     }
 
-    const revokedAllowlistRow = await this.accessAllowlistRepository.softRevoke(
+    const revokedAllowlistRow = await this.adminAllowlistRepository.softRevoke(
       OAuthProviderDeepId,
       targetEmail,
       actor._id,
@@ -129,15 +129,15 @@ export class AccessService {
     });
   }
 
-  async bootstrapOwner(): Promise<void> {
+  async seedOwner(): Promise<void> {
     if (!this.ownerEmail) {
       return;
     }
 
-    const activeOwner = await this.accessAllowlistRepository.findActiveOwner(OAuthProviderDeepId);
+    const activeOwner = await this.adminAllowlistRepository.findActiveOwner(OAuthProviderDeepId);
 
     if (!activeOwner) {
-      await this.accessAllowlistRepository.createOwner(OAuthProviderDeepId, this.ownerEmail);
+      await this.adminAllowlistRepository.createOwner(OAuthProviderDeepId, this.ownerEmail);
       return;
     }
 

@@ -9,7 +9,8 @@ import {
   type OAuthUserWithId,
 } from '@reputo/database';
 import type { Request, Response } from 'express';
-import { AccessService } from '../access';
+import { AdminService } from '../admin';
+import { AuthSessionRepository } from '../sessions';
 import { AUTH_MODE_MOCK, AUTH_MODE_OAUTH } from '../shared/constants';
 import {
   type AuthFlowState,
@@ -23,11 +24,10 @@ import {
   type SessionUserView,
   setAuthRequestContext,
 } from '../shared/types';
-import { createPkceChallenge, createRandomToken, decryptValue, encryptValue } from '../shared/utils';
+import { createPkceChallenge, createRandomToken, decryptValue, encryptValue, redactEmail } from '../shared/utils';
+import { OAuthUserRepository } from '../users';
 import { AuthCookieService } from './auth-cookie.service';
-import { AuthSessionRepository } from './auth-session.repository';
 import { OAuthAuthProviderService } from './oauth-auth-provider.service';
-import { OAuthUserRepository } from './oauth-user.repository';
 
 function scopeToArray(scope: string | undefined, fallback: string[]): string[] {
   if (!scope) {
@@ -97,7 +97,7 @@ export class AuthService {
     private readonly authCookieService: AuthCookieService,
     private readonly authSessionRepository: AuthSessionRepository,
     private readonly oauthUserRepository: OAuthUserRepository,
-    private readonly accessService: AccessService,
+    private readonly adminService: AdminService,
     configService: ConfigService,
   ) {
     this.tokenEncryptionKey = configService.get<string>('auth.tokenEncryptionKey') as string;
@@ -179,11 +179,6 @@ export class AuthService {
     } finally {
       this.authCookieService.clearAuthFlowCookie(response);
     }
-  }
-
-  async getCurrentSession(request: Request, response: Response): Promise<CurrentSessionView> {
-    const { session, user, role } = await this.requireSession(request, response);
-    return this.toCurrentSessionView(session, user, role);
   }
 
   async requireSession(request: Request, response: Response): Promise<AuthRequestContext> {
@@ -326,7 +321,7 @@ export class AuthService {
       return this.denyCallbackAccess('email_unverified', email, sub);
     }
 
-    const allowlistRow = await this.accessService.isAllowlisted(provider, email);
+    const allowlistRow = await this.adminService.isAllowlisted(provider, email);
 
     if (!allowlistRow) {
       return this.denyCallbackAccess('not_allowlisted', email, sub);
@@ -337,7 +332,7 @@ export class AuthService {
 
   private denyCallbackAccess(reason: AccessDeniedReason, email: string | undefined, sub: string | undefined): string {
     this.logger.warn({
-      email,
+      email: redactEmail(email),
       sub,
       reason,
     });
@@ -478,7 +473,7 @@ export class AuthService {
       return null;
     }
 
-    return this.accessService.resolveRole(provider, user.email);
+    return this.adminService.resolveRole(provider, user.email);
   }
 
   private toCurrentAuthSession(session: AuthSessionWithId): CurrentAuthSession {

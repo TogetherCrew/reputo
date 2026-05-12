@@ -64,7 +64,7 @@ export class AuthController {
 
   @Get('me')
   @ApiOperation({
-    summary: 'Bootstrap the current application session',
+    summary: 'Get the current application session',
     description:
       'Reads the opaque auth cookie, refreshes provider tokens when needed, and returns the current session state.',
   })
