@@ -61,10 +61,14 @@ export default registerAs(
 );
 
 export const authConfigSchema = {
-  AUTH_MODE: Joi.string()
-    .valid(AUTH_MODE_OAUTH, AUTH_MODE_MOCK)
-    .default(AUTH_MODE_OAUTH)
-    .description('Authentication mode'),
+  AUTH_MODE: Joi.when('NODE_ENV', {
+    is: 'production',
+    // biome-ignore lint/suspicious/noThenProperty: Joi conditional schemas require a then key.
+    then: Joi.string().valid(AUTH_MODE_OAUTH).default(AUTH_MODE_OAUTH).messages({
+      'any.only': 'AUTH_MODE=mock is not permitted when NODE_ENV=production.',
+    }),
+    otherwise: Joi.string().valid(AUTH_MODE_OAUTH, AUTH_MODE_MOCK).default(AUTH_MODE_OAUTH),
+  }).description('Authentication mode'),
   OWNER_EMAIL: Joi.when('AUTH_MODE', {
     is: AUTH_MODE_OAUTH,
     // biome-ignore lint/suspicious/noThenProperty: Joi conditional schemas require a then key.
