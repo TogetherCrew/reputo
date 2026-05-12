@@ -18,6 +18,7 @@ export interface AuthConfig {
   cookieSameSite: string;
   cookieSecure: boolean;
   mode: string;
+  ownerEmail?: string;
   providers: Record<OAuthProvider, OAuthProviderAuthConfig>;
   refreshLeewaySeconds: number;
   sessionTtlSeconds: number;
@@ -32,10 +33,13 @@ function parseBoolean(value: string | undefined, defaultValue: boolean): boolean
   return value.toLowerCase() === 'true';
 }
 
+const ownerEmailSchema = Joi.string().trim().lowercase().email();
+
 export default registerAs(
   'auth',
   (): AuthConfig => ({
     mode: (process.env.AUTH_MODE ?? AUTH_MODE_OAUTH).toLowerCase(),
+    ownerEmail: process.env.OWNER_EMAIL?.trim().toLowerCase() || undefined,
     providers: {
       [OAuthProviderDeepId]: {
         issuerUrl: process.env.DEEP_ID_ISSUER_URL as string,
@@ -61,6 +65,12 @@ export const authConfigSchema = {
     .valid(AUTH_MODE_OAUTH, AUTH_MODE_MOCK)
     .default(AUTH_MODE_OAUTH)
     .description('Authentication mode'),
+  OWNER_EMAIL: Joi.when('AUTH_MODE', {
+    is: AUTH_MODE_OAUTH,
+    // biome-ignore lint/suspicious/noThenProperty: Joi conditional schemas require a then key.
+    then: ownerEmailSchema.required(),
+    otherwise: ownerEmailSchema.allow('').optional(),
+  }).description('Email address seeded as the single owner allowlist entry'),
   DEEP_ID_ISSUER_URL: Joi.string().uri().required().description('Deep ID issuer base URL'),
   DEEP_ID_CLIENT_ID: Joi.string().trim().required().description('Deep ID OAuth client identifier'),
   DEEP_ID_CLIENT_SECRET: Joi.string().trim().required().description('Deep ID OAuth client secret'),

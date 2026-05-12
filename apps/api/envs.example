@@ -2,6 +2,7 @@ NODE_ENV=development
 PORT=3000
 LOG_LEVEL=info
 AUTH_MODE=oauth
+OWNER_EMAIL=owner@example.com
 APP_PUBLIC_URL=http://localhost:5173
 
 MONGODB_HOST=localhost
