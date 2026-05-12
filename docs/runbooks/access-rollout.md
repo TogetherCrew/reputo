@@ -9,7 +9,7 @@ Set `OWNER_EMAIL` before deploying an OAuth environment. It is the email seeded 
 Environment handling:
 
 - Local dev: set `OWNER_EMAIL` in `apps/api/envs.example` or copied local env files. For Docker dev, copy `docker/env/examples/api.env.example` into `docker/env/api.env` and fill the value.
-- PullPreview: `.github/workflows/pull-preview.yml` and `docker/compose/preview.yml` set `OWNER_EMAIL=preview@reputo.local` for the mock preview user.
+- PullPreview: `.github/workflows/pull-preview.yml` and `docker/compose/preview.yml` set `OWNER_EMAIL=preview@example.com` for the mock preview user.
 - Staging: set `STAGING_OWNER_EMAIL` in Komodo variables before deploying `reputo-apps-staging`.
 - Production: set `PRODUCTION_OWNER_EMAIL` in Komodo variables before running `promote-production`.
 
