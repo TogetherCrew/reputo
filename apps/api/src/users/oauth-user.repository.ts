@@ -68,14 +68,10 @@ export class OAuthUserRepository {
     return (await this.model
       .findOne({
         provider,
-        email: new RegExp(`^${this.escapeRegExp(normalizedEmail)}$`, 'iu'),
+        email: normalizedEmail,
       })
       .sort({ updatedAt: -1 })
       .lean()
       .exec()) as OAuthUserWithId | null;
-  }
-
-  private escapeRegExp(value: string): string {
-    return value.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');
   }
 }
