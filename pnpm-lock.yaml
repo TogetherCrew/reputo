@@ -662,6 +662,9 @@ importers:
       '@types/node':
         specifier: 'catalog:'
         version: 22.19.1
+      mongodb-memory-server:
+        specifier: ^10.2.3
+        version: 10.3.0
       tsx:
         specifier: 'catalog:'
         version: 4.20.6

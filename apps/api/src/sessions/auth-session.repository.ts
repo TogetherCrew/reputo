@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import type { AuthSession, AuthSessionModel, AuthSessionWithId } from '@reputo/database';
 import { MODEL_NAMES } from '@reputo/database';
+import type { Types } from 'mongoose';
 
 @Injectable()
 export class AuthSessionRepository {
@@ -69,5 +70,25 @@ export class AuthSessionRepository {
         { new: false },
       )
       .exec();
+  }
+
+  async revokeAllByUserId(userId: Types.ObjectId | string, revokedAt = new Date()): Promise<number> {
+    const result = await this.model
+      .updateMany(
+        {
+          userId,
+          revokedAt: { $exists: false },
+          expiresAt: { $gt: revokedAt },
+        },
+        {
+          $set: {
+            revokedAt,
+            expiresAt: revokedAt,
+          },
+        },
+      )
+      .exec();
+
+    return result.modifiedCount;
   }
 }

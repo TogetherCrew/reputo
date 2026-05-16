@@ -142,3 +142,17 @@ export interface StorageVerifyResponseDto {
   key: string
   metadata: StorageMetadataDto
 }
+
+// Admins
+export type AdminRole = "owner" | "admin"
+
+export interface AdminViewDto {
+  email: string
+  role: AdminRole
+  invitedAt: string
+  invitedByEmail?: string
+}
+
+export interface CreateAdminDto {
+  email: string
+}
